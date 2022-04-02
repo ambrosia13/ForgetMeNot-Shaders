@@ -1,0 +1,271 @@
+{
+    nameKey: "pipeline.forgetmenot.name",
+    descriptionKey: "pipeline.forgetmenot.desc",
+
+    smoothBrightnessBidirectionaly: true,
+    // brightnessSmoothingFrames: 200,
+    enablePBR: true,
+    runVanillaClear: false,
+
+    materialProgram: {
+        vertexSource: "forgetmenot:shaders/gbuffer/main.vert",
+        fragmentSource: "forgetmenot:shaders/gbuffer/main.frag",
+        samplers: [
+            "u_glint"
+        ],
+        samplerImages: [
+            "minecraft:textures/misc/enchanted_item_glint.png"
+        ]
+    },
+
+    drawTargets: {
+        solidTerrain: "main_gbuffer",
+        translucentTerrain: "translucent_gbuffer",
+        translucentEntity: "entity_gbuffer",
+        weather: "weather_gbuffer",
+        clouds: "clouds_gbuffer",
+        translucentParticles: "particles_gbuffer"
+    },
+
+    fabulousTargets: {
+        translucent: "translucent_unmanaged",
+        entity: "entity_unmanaged",
+        weather: "weather_unmanaged",
+        clouds: "clouds_unmanaged",
+        particles: "particles_unmanaged"
+    },
+
+    defaultFramebuffer: "main_unmanaged",
+
+    beforeWorldRender: {
+        passes: [
+            {
+                name: "clear_main_gbuffer",
+                framebuffer: "main_gbuffer",
+                program: "frex_clear",
+            },
+            {
+                name: "clear_translucent_gbuffer",
+                framebuffer: "translucent_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_entity_gbuffer",
+                framebuffer: "entity_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_weather_gbuffer",
+                framebuffer: "weather_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_clouds_gbuffer",
+                framebuffer: "clouds_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_particles_gbuffer",
+                framebuffer: "particles_gbuffer",
+                program: "frex_clear"
+            }
+        ]
+    },
+
+    images: [
+        {
+            name: "main_color",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+            ]
+        },
+        {
+            name: "main_normal",
+            lod: 0,
+            internalFormat: "RGB8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+            ]
+        },
+        {
+            name: "main_data",
+            lod: 0,
+            internalFormat: "RGBA16",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+            ]
+        },
+        {
+            name: "main_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [ 
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"}, 
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"},
+                {name: "TEXTURE_COMPARE_MODE", val: "NONE"}
+            ]
+        }
+    ],
+
+    framebuffers: [
+        {
+            name: "main_gbuffer",
+            depthAttachment: {
+                image: "main_depth", 
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "main_color",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "main_normal",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "main_data",
+                    clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "main_unmanaged",
+            depthAttachment: {
+                image: "main_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "main_color"
+                }
+            ]
+        }
+    ],
+
+    sky: {
+        defaultZenithAngle: -30   
+    },
+
+    options: [
+        {
+            includeToken: "forgetmenot:performance_config",
+            categoryKey: "config.forgetmenot.category.performance",
+            elements: {
+                sky_resolution: {
+                    define: "SKY_RESOLUTION",
+                    default: "quarter",
+                    choices: [
+                        "quarter", "half", "full"
+                    ],
+                    enum: true, 
+                    prefix: "RESOLUTION_",
+                    nameKey: "config.forgetmenot.name.sky_resolution",
+                    descriptionKey: "config.forgetmenot.desc.sky_resolution"
+                },
+                sky_upsample_filter: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.sky_upsample_filter",
+                    descriptionKey: "config.forgetmenot.desc.sky_upsample_filter"
+                },
+                // blur_filter: {
+                //     default: true,
+                //     nameKey: "config.forgetmenot.name.blur_filter",
+                //     descriptionKey: "config.forgetmenot.desc.blur_filter"
+                // }
+            }
+        },
+        {
+            includeToken: "forgetmenot:general_config",
+            categoryKey: "config.forgetmenot.category.general",
+            elements: {
+                emissive_boost: {
+                    default: 5,
+                    min: 0,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.emissive_boost",
+                    descriptionKey: "config.forgetmenot.desc.emissive_boost"
+                },
+                bloom_mix_factor: {
+                    default: 1,
+                    min: 0,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.bloom_mix_factor",
+                    descriptionKey: "config.forgetmenot.desc.bloom_mix_factor"
+                },
+                pixel_locked_glint: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.pixel_locked_glint",
+                    descriptionKey: "config.forgetmenot.desc.pixel_locked_glint"
+                }
+            }
+        },
+        {
+            includeToken: "forgetmenot:experimental",
+            categoryKey: "config.forgetmenot.category.experimental",
+            elements: {
+                global_illumination: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.global_illumination",
+                    descriptionKey: "config.forgetmenot.desc.global_illumination"
+                },
+                steps: {
+                    default: 10,
+                    min: 1,
+                    max: 20,
+                    nameKey: "config.forgetmenot.name.steps",
+                    descriptionKey: "config.forgetmenot.desc.steps"
+                },
+                apply_mc_lightmap: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.apply_mc_lightmap",
+                    descriptionKey: "config.forgetmenot.desc.apply_mc_lightmap"
+                },
+                vanilla_ao: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.vanilla_ao",
+                    descriptionKey: "config.forgetmenot.desc.vanilla_ao"
+                },
+                directional_shading: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.directional_shading",
+                    descriptionKey: "config.forgetmenot.desc.directional_shading"
+                }
+            }
+        }
+    ],
+
+    include: [
+        "forgetmenot:include/composite/clouds.json5",
+        "forgetmenot:include/composite/entity.json5",
+        "forgetmenot:include/composite/particles.json5",
+        "forgetmenot:include/composite/translucent.json5",
+        "forgetmenot:include/composite/weather.json5",
+        "forgetmenot:include/stage_fabulous.json5"
+        "forgetmenot:include/stage_fullscreen.json5"
+    ]
+}

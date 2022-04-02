@@ -1,0 +1,391 @@
+{
+    images: [
+        {
+            name: "min_depth",
+            lod: 0,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "max_depth",
+            lod: 0,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "sky",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "sort",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "global_illumination",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "composite_normal",
+            lod: 0,
+            internalFormat: "RGBA32F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "composite_fresnel",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "reflection",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        }
+    ],
+
+    framebuffers: [
+        {
+            name: "prepare",
+            colorAttachments: [
+                {
+                    image: "min_depth", clearColor: 0x00000000
+                },
+                {
+                    image: "max_depth", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "sky",
+            colorAttachments: [
+                {
+                    image: "sky", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "sort",
+            colorAttachments: [
+                {
+                    image: "sort", clearColor: 0x00000000
+                },
+                {
+                    image: "global_illumination", clearColor: 0x00000000
+                },
+                {
+                    image: "composite_normal", clearColor: 0x00000000
+                },
+                {
+                    image: "composite_fresnel", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "reflection",
+            colorAttachments: [
+                {
+                    image: "reflection", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "reflection_merge",
+            colorAttachments: [
+                {
+                    image: "sort", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "copy_to_main",
+            colorAttachments: [
+                {
+                    image: "main_color", clearColor: 0x00000000
+                }
+            ]
+        }
+    ],
+
+    programs: [
+        {
+            name: "prepare",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/prepare.frag",
+            samplers: [
+                "u_main_depth",
+                "u_translucent_depth",
+                "u_particles_depth"
+            ]
+        },
+        {
+            name: "sky",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/sky.frag",
+            samplers: [
+            ]
+        },
+        {
+            name: "sort",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
+            samplers: [
+                "u_main_color",
+                "u_main_depth",
+                "u_translucent_color",
+                "u_translucent_depth",
+                "u_entity_color",
+                "u_entity_depth",
+                "u_weather_color",
+                "u_weather_depth",
+                "u_clouds_color",
+                "u_clouds_depth",
+                "u_particles_color",
+                "u_particles_depth",
+                "u_sky",
+                "u_translucent_data",
+                "u_translucent_normal",
+                "u_solid_data"
+                "u_solid_normal",
+                "u_global_illumination"
+            ]
+        },
+        {
+            name: "reflection",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection.frag",
+            samplers: [
+                "u_normal",
+                "u_fresnel",
+                "u_color"
+            ]
+        },
+        {
+            name: "reflection_merge",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_merge.frag",
+            samplers: [
+                "u_color",
+                "u_reflection"
+            ]
+        },
+        {
+            name: "copy",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
+            samplers: [
+                "u_composite",
+                "u_global_illumination"
+            ]
+        }
+    ],
+
+    fabulous: {
+        passes: [
+            // {
+            //     name: "prepare",
+            //     program: "prepare",
+            //     framebuffer: "prepare",
+            //     samplerImages: [
+            //         "main_depth",
+            //         "translucent_depth",
+            //         "particles_depth"
+            //     ]
+            // },
+            {
+                name: "sky",
+                program: "sky",
+                framebuffer: "sky",
+                samplerImages: [
+                ]
+            },
+            {
+                name: "sort",
+                program: "sort",
+                framebuffer: "sort",
+                samplerImages: [
+                    "main_color",
+                    "main_depth",
+                    "translucent_color",
+                    "translucent_depth",
+                    "entity_color",
+                    "entity_depth",
+                    "weather_color",
+                    "weather_depth",
+                    "clouds_color",
+                    "clouds_depth",
+                    "particles_color",
+                    "particles_depth",
+                    "sky",
+                    "translucent_data",
+                    "translucent_normal",
+                    "main_data",
+                    "main_normal",
+                    "global_illumination"
+                ]
+            },
+            // {
+            //     name: "reflection",
+            //     program: "reflection",
+            //     framebuffer: "reflection",
+            //     samplerImages: [
+            //         "composite_normal",
+            //         "composite_fresnel",
+            //         "sort"
+            //     ]
+            // },
+            // {
+            //     name: "reflection_merge",
+            //     program: "reflection_merge",
+            //     framebuffer: "reflection_merge",
+            //     samplerImages: [
+            //         "sort",
+            //         "reflection"
+            //     ]
+            // },
+            {
+                name: "copy",
+                program: "copy",
+                framebuffer: "copy_to_main",
+                samplerImages: [
+                    "sort"
+                    "global_illumination"
+                ]
+            }
+        ]
+    }
+}

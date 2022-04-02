@@ -1,0 +1,29 @@
+{
+    "pipeline.forgetmenot.name": "Forget-Me-Not Shaders",
+    "pipeline.forgetmenot.desc": "",
+
+    "config.forgetmenot.category.performance": "Performance Options",
+
+    "config.forgetmenot.name.sky_resolution": "Sky Resolution",
+    "config.forgetmenot.desc.sky_resolution": "Resolution at which the sky is computed.",
+    "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
+    "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
+
+    "config.forgetmenot.category.general": "General Options",
+
+    "config.forgetmenot.name.emissive_boost": "Emissive Boost",
+    "config.forgetmenot.desc.emissive_boost": "Brightness of emissive boost. Affects bloom and global illumination.",
+    "config.forgetmenot.name.bloom_mix_factor": "Bloom Amount",
+    "config.forgetmenot.desc.bloom_mix_factor": "Bloom amount. 10 for 100 percent. Does not affect brightness of bloom, just the amount.",
+    "config.forgetmenot.name.pixel_locked_glint": "Pixel Locked Enchantment Glint",
+    "config.forgetmenot.desc.pixel_locked_glint": "Locks the enchantment glint to the pixels of the texture. Similar to Bedrock edition glint.",
+    "config.forgetmenot.name.vanilla_ao": "Soft Ambient Occlusion",
+    "config.forgetmenot.desc.vanilla_ao": "Vanilla ambient occlusion is softer when exposed to more light.",
+
+    "config.forgetmenot.category.experimental": "Experimental Stuff",
+
+    "config.forgetmenot.name.global_illumination": "Screen Space Global Illumination",
+    "config.forgetmenot.desc.global_illumination": "Raytraces in screen space for global illumination. For colored lighting & ambient occlusion.",
+    "config.forgetmenot.name.steps": "Step Count",
+    "config.forgetmenot.desc.steps": "Number of times to run the raytracing loop. 1 for decent colored light, 10 for ambient occlusion and colored lights."
+}

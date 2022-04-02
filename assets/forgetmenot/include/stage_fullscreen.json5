@@ -1,0 +1,944 @@
+{
+    images: [
+        {
+            name: "pre_bloom_copy",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bright_color",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h1",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v1",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h2",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v2",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h3",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v3",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h4",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v4",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h5",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v5",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_h6",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_v6",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u1",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u2",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u3",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u4",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u5",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "bloom_u6",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "exposure",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "final",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+    ],
+
+    framebuffers: [
+        {
+            name: "pre_bloom_copy",
+            colorAttachments: [
+                {
+                    image: "pre_bloom_copy"
+                }
+            ]
+        },
+        {
+            name: "bright_color",
+            colorAttachments: [
+                {
+                    image: "bright_color"
+                }
+            ]
+        },
+        {
+            name: "bloom_h1",
+            colorAttachments: [
+                {
+                    image: "bloom_h1"
+                }
+            ]
+        },
+        {
+            name: "bloom_v1",
+            colorAttachments: [
+                {
+                    image: "bloom_v1"
+                }
+            ]
+        },
+        {
+            name: "bloom_h2",
+            colorAttachments: [
+                {
+                    image: "bloom_h2"
+                }
+            ]
+        },
+        {
+            name: "bloom_v2",
+            colorAttachments: [
+                {
+                    image: "bloom_v2"
+                }
+            ]
+        },
+        {
+            name: "bloom_h3",
+            colorAttachments: [
+                {
+                    image: "bloom_h3"
+                }
+            ]
+        },
+        {
+            name: "bloom_v3",
+            colorAttachments: [
+                {
+                    image: "bloom_v3"
+                }
+            ]
+        },
+        {
+            name: "bloom_h4",
+            colorAttachments: [
+                {
+                    image: "bloom_h4"
+                }
+            ]
+        },
+        {
+            name: "bloom_v4",
+            colorAttachments: [
+                {
+                    image: "bloom_v4"
+                }
+            ]
+        },
+        {
+            name: "bloom_h5",
+            colorAttachments: [
+                {
+                    image: "bloom_h5"
+                }
+            ]
+        },
+        {
+            name: "bloom_v5",
+            colorAttachments: [
+                {
+                    image: "bloom_v5"
+                }
+            ]
+        },
+        {
+            name: "bloom_h6",
+            colorAttachments: [
+                {
+                    image: "bloom_h6"
+                }
+            ]
+        },
+        {
+            name: "bloom_v6",
+            colorAttachments: [
+                {
+                    image: "bloom_v6"
+                }
+            ]
+        },
+        {
+            name: "bloom_u1",
+            colorAttachments: [
+                {
+                    image: "bloom_u1"
+                }
+            ]
+        },
+        {
+            name: "bloom_u2",
+            colorAttachments: [
+                {
+                    image: "bloom_u2"
+                }
+            ]
+        },
+        {
+            name: "bloom_u3",
+            colorAttachments: [
+                {
+                    image: "bloom_u3"
+                }
+            ]
+        },
+        {
+            name: "bloom_u4",
+            colorAttachments: [
+                {
+                    image: "bloom_u4"
+                }
+            ]
+        },
+        {
+            name: "bloom_u5",
+            colorAttachments: [
+                {
+                    image: "bloom_u5"
+                }
+            ]
+        },
+        {
+            name: "bloom_u6",
+            colorAttachments: [
+                {
+                    image: "bloom_u6"
+                }
+            ]
+        },
+        {
+            name: "exposure",
+            colorAttachments: [
+                {
+                    image: "exposure"
+                }
+            ]
+        },
+        {
+            name: "final",
+            colorAttachments: [
+                {
+                    image: "final"
+                }
+            ]
+        },
+    ],
+
+    programs: [
+        {
+            name: "pre_bloom_copy",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/copy_color.frag",
+            samplers: [
+                "u_color"
+            ]
+        },
+        {
+            name: "bright_color",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bright_color.frag",
+            samplers: [
+                "u_color",
+                "u_emissive"
+            ]
+        },
+        {
+            name: "blur_horizontal",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/blur_horizontal.frag",
+            samplers: [
+                "u_color"
+            ]
+        },
+        {
+            name: "blur_vertical",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/blur_vertical.frag",
+            samplers: [
+                "u_color"
+            ]
+        },
+        {
+            name: "bloom_upscale",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_upscale.frag",
+            samplers: [
+                "u_prior", 
+                "u_color"
+            ]
+        },
+        {
+            name: "bloom_merge",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_merge.frag",
+            samplers: [
+                "u_color", 
+                "u_bright_color",
+                "u_bloom"
+            ]
+        },
+        {
+            name: "final",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/final.frag",
+            samplers: [
+                "u_color",
+                "u_exposure"
+            ]
+        },
+    ],
+
+    afterRenderHand: {
+        passes: [
+            {
+                name: "pre_bloom_copy",
+                program: "pre_bloom_copy",
+                framebuffer: "pre_bloom_copy",
+                samplerImages: [
+                    "main_color"
+                ]
+            },
+            {
+                name: "bright_color",
+                program: "bright_color",
+                framebuffer: "bright_color",
+                samplerImages: [
+                    "main_color",
+                    "main_data"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_h1",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h1",
+                samplerImages: [
+                    "bright_color"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v1",
+                program: "blur_vertical",
+                framebuffer: "bloom_v1",
+                samplerImages: [
+                    "bloom_h1"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_h2",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h2",
+                samplerImages: [
+                    "bloom_v1"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v2",
+                program: "blur_vertical",
+                framebuffer: "bloom_v2",
+                samplerImages: [
+                    "bloom_h2"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_h3",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h3",
+                samplerImages: [
+                    "bloom_v2"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v3",
+                program: "blur_vertical",
+                framebuffer: "bloom_v3",
+                samplerImages: [
+                    "bloom_h3"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_h4",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h4",
+                samplerImages: [
+                    "bloom_v3"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v4",
+                program: "blur_vertical",
+                framebuffer: "bloom_v4",
+                samplerImages: [
+                    "bloom_h4"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_h5",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h5",
+                samplerImages: [
+                    "bloom_v4"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v5",
+                program: "blur_vertical",
+                framebuffer: "bloom_v5",
+                samplerImages: [
+                    "bloom_h5"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_h6",
+                program: "blur_horizontal",
+                framebuffer: "bloom_h6",
+                samplerImages: [
+                    "bloom_v5"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_v6",
+                program: "blur_vertical",
+                framebuffer: "bloom_v6",
+                samplerImages: [
+                    "bloom_h6"
+                ],
+                lod: 0
+            },
+            {
+                name: "bloom_u1",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u1",
+                samplerImages: [
+                    "bloom_v6",
+                    "bloom_v5"
+                ],
+            },
+            {
+                name: "bloom_u2",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u2",
+                samplerImages: [
+                    "bloom_u1",
+                    "bloom_v4"
+                ],
+            },
+            {
+                name: "bloom_u3",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u3",
+                samplerImages: [
+                    "bloom_u2",
+                    "bloom_v3"
+                ],
+            },
+            {
+                name: "bloom_u4",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u4",
+                samplerImages: [
+                    "bloom_u3",
+                    "bloom_v2"
+                ],
+            },
+            {
+                name: "bloom_u5",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u5",
+                samplerImages: [
+                    "bloom_u4",
+                    "bloom_v1"
+                ],
+            },
+            {
+                name: "bloom_u6",
+                program: "bloom_upscale",
+                framebuffer: "bloom_u6",
+                samplerImages: [
+                    "bloom_u5",
+                    "bright_color"
+                ],
+            },
+            {
+                name: "bloom_merge",
+                program: "bloom_merge",
+                framebuffer: "final",
+                samplerImages: [
+                    "pre_bloom_copy",
+                    "bright_color",
+                    "bloom_u6"
+                ],
+            },
+            // {
+            //     name: "exposure",
+            //     program: "copy",
+            //     framebuffer: "exposure",
+            //     samplerImages: [
+            //         "final",
+            //     ],
+            //     lod: 9
+            // },
+            {
+                name: "final",
+                program: "final",
+                framebuffer: "copy_to_main",
+                samplerImages: [
+                    "final",
+                    "exposure"
+                ],
+            },
+        ]
+    }
+}
