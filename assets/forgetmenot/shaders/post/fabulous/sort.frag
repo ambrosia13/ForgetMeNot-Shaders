@@ -190,7 +190,7 @@ void main() {
         vec3 lastFrameViewSpacePos = tempViewSpacePos - posDiff;
         vec2 lastFrameCoords = lastFrameViewSpaceToScreenSpace(lastFrameViewSpacePos).xy;
         if(clamp01(lastFrameCoords) != lastFrameCoords) lastFrameCoords = texcoord;
-        lastFrameSample = texture(u_global_illumination, lastFrameCoords.xy);
+        lastFrameSample = blur5(u_global_illumination, lastFrameCoords.xy, frxu_size, vec2(1.0, 0.0));
 
         vec3 lighting = vec3(1.0);
         
@@ -200,21 +200,25 @@ void main() {
 
             // #define STEPS 10
             for(int i = 0; i < STEPS; i++) {
-                rayView += (solidNormal / STEPS) + (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) / STEPS;
+                rayView += (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord + mod(frx_renderFrames, 10.0))) * GI_RANGE / STEPS;
+                //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
                 vec3 rayScreen = viewSpaceToScreenSpace(rayView);
                 if(clamp01(rayScreen.xy) != rayScreen.xy) break;
                 float depthQuery = texture(u_particles_depth, rayScreen.xy).r;
                 vec3 color = texture(u_main_color, rayScreen.xy).rgb;
+                // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery) {
-                    lighting *= color;
+                    lighting *= color + color * frx_luminance(color);
                     break;
+                } else {
                 }
             }
         }
 
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
 
-        globalIllumination = mix(lastFrameSample, vec4(lighting, 1.0), 0.1 + 0.9 * float(min_depth == 1.0));
+        globalIllumination = mix(lastFrameSample, vec4(lighting, 1.0), 0.05 + 0.9 * float(min_depth == 1.0));
+        // globalIllumination = max(lastFrameSample, vec4(lighting, 1.0));
     #endif
 
     // compositeNormal.rgb = solidNormal * 0.5 + 0.5;

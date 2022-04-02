@@ -240,6 +240,13 @@
                     nameKey: "config.forgetmenot.name.steps",
                     descriptionKey: "config.forgetmenot.desc.steps"
                 },
+                gi_range: {
+                    default: 1,
+                    min: 1,
+                    max: 5,
+                    nameKey: "config.forgetmenot.name.gi_range",
+                    descriptionKey: "config.forgetmenot.desc.gi_range"
+                },
                 apply_mc_lightmap: {
                     default: true,
                     nameKey: "config.forgetmenot.name.apply_mc_lightmap",
