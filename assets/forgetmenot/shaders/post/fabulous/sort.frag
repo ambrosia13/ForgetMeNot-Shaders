@@ -205,15 +205,17 @@ void main() {
             //rayDirection = frx_skyLightVector + rand3D(texcoord + mod(frx_renderFrames, 100)) / (STEPS);
             //vec3 rayDirection = (solidNormal * GI_RANGE / (STEPS)) * (rand3D(texcoord + mod(frx_renderFrames, 100)) + 1.0) * GI_RANGE / STEPS;
 
-            // #define STEPS 10
             for(int i = 0; i < STEPS; i++) {
                 rayView += rayDirection;
                 blurAmount += 0.5;
                 //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
                 vec3 rayScreen = viewSpaceToScreenSpace(rayView);
+
                 if(clamp01(rayScreen.xy) != rayScreen.xy) break;
+
                 float depthQuery = texture(u_particles_depth, rayScreen.xy).r;
                 vec3 color = texture(u_main_color, rayScreen.xy).rgb;
+                
                 // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery) {
                     #ifdef APPLY_MC_LIGHTMAP
@@ -222,10 +224,28 @@ void main() {
                         lighting += color * mix(1.0, 3.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
                     break;
-                } else {
-                    // rayDirection = (texture(u_solid_normal, rayScreen.xy).rgb * GI_RANGE / (STEPS)) + (rand3D(texcoord + mod(frx_renderFrames, 10))) * GI_RANGE / (STEPS);
                 }
             }
+            // for(int i = 0; i < STEPS; i++) {
+            //     rayView += rayDirection;
+            //     blurAmount += 0.5;
+            //     //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
+            //     vec3 rayScreen = viewSpaceToScreenSpace(rayView);
+            //     if(clamp01(rayScreen.xy) != rayScreen.xy) break;
+            //     float depthQuery = texture(u_particles_depth, rayScreen.xy).r;
+            //     vec3 color = texture(u_main_color, rayScreen.xy).rgb;
+            //     // color *= 1.0 - i / STEPS.0;
+            //     if(rayScreen.z > depthQuery) {
+            //         #ifdef APPLY_MC_LIGHTMAP
+            //             lighting *= color;
+            //         #else
+            //             lighting += color;
+            //         #endif
+            //         break;
+            //     } else {
+            //         // rayDirection = (texture(u_solid_normal, rayScreen.xy).rgb * GI_RANGE / (STEPS)) + (rand3D(texcoord + mod(frx_renderFrames, 10))) * GI_RANGE / (STEPS);
+            //     }
+            // }
         }
 
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
