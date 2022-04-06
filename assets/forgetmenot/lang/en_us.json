@@ -17,13 +17,26 @@
     "config.forgetmenot.desc.bloom_mix_factor": "Bloom amount. 10 for 100 percent. Does not affect brightness of bloom, just the amount.",
     "config.forgetmenot.name.pixel_locked_glint": "Pixel Locked Enchantment Glint",
     "config.forgetmenot.desc.pixel_locked_glint": "Locks the enchantment glint to the pixels of the texture. Similar to Bedrock edition glint.",
-    "config.forgetmenot.name.vanilla_ao": "Soft Ambient Occlusion",
-    "config.forgetmenot.desc.vanilla_ao": "Vanilla ambient occlusion is softer when exposed to more light.",
+    "config.forgetmenot.name.danger_sight": "Danger Sight",
+    "config.forgetmenot.desc.danger_sight": "Turns blocks more red when it is dark enough for mobs to spawn.",
+    "config.forgetmenot.name.contrast": "Contrast",
+    "config.forgetmenot.desc.contrast": "Adjusts contrast. 10 means no adjustment to contrast.",
 
     "config.forgetmenot.category.experimental": "Experimental Stuff",
 
     "config.forgetmenot.name.global_illumination": "Screen Space Global Illumination",
     "config.forgetmenot.desc.global_illumination": "Raytraces in screen space for global illumination. For colored lighting & ambient occlusion.",
     "config.forgetmenot.name.steps": "Step Count",
-    "config.forgetmenot.desc.steps": "Number of times to run the raytracing loop. 1 for decent colored light, 10 for ambient occlusion and colored lights."
+    "config.forgetmenot.desc.steps": "Number of times to run the raytracing loop. 1 for decent colored light, 10 for ambient occlusion and good colored lights.",
+    "config.forgetmenot.name.gi_range": "Global Illumination Range",
+    "config.forgetmenot.desc.gi_range": "Range of global illumination in blocks. 1 is good for gameplay, increase for better screenshots and longer range lighting.",
+    "config.forgetmenot.name.gi_filter": "Global Illumination Filter",
+    "config.forgetmenot.desc.gi_filter": "Filter to reduce noise of global illumination.",
+    "config.forgetmenot.name.apply_mc_lightmap": "Apply Minecraft Lightmap",
+    "config.forgetmenot.desc.apply_mc_lightmap": "When disabled, won't apply vanilla lightmap.",
+    "config.forgetmenot.name.vanilla_ao": "Vanilla Ambient Occlusion",
+    "config.forgetmenot.desc.vanilla_ao": "Enables and disables Vanilla AO. Recommended to leave on.",
+    "config.forgetmenot.name.directional_shading": "Directional Shading",
+    "config.forgetmenot.desc.directional_shading": "Enables and disables directional sunlight shading."
+
 }

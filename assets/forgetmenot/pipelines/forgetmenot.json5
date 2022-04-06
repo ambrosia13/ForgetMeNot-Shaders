@@ -221,6 +221,18 @@
                     default: true,
                     nameKey: "config.forgetmenot.name.pixel_locked_glint",
                     descriptionKey: "config.forgetmenot.desc.pixel_locked_glint"
+                },
+                danger_sight: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.danger_sight",
+                    descriptionKey: "config.forgetmenot.desc.danger_sight"
+                },
+                contrast: {
+                    default: 12,
+                    min: 5,
+                    max: 20,
+                    nameKey: "config.forgetmenot.name.contrast",
+                    descriptionKey: "config.forgetmenot.desc.contrast"
                 }
             }
         },
@@ -243,9 +255,14 @@
                 gi_range: {
                     default: 1,
                     min: 1,
-                    max: 5,
+                    max: 120,
                     nameKey: "config.forgetmenot.name.gi_range",
                     descriptionKey: "config.forgetmenot.desc.gi_range"
+                },
+                gi_filter: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.gi_filter",
+                    descriptionKey: "config.forgetmenot.desc.gi_filter"
                 },
                 apply_mc_lightmap: {
                     default: true,

@@ -110,7 +110,7 @@ void main() {
     vec3 viewDir = normalize(viewSpacePos);
     if(translucent_depth != max_depth) {
         vec3 translucentf0 = translucentData.ggg;
-        if(all(lessThan(translucentf0.rgb - 0.04, vec3(0.001)))) {
+        if(all(lessThan(translucentf0.rgb - 0.04, vec3(0.1)))) {
             vec3 translucentNormal = (texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0);
             float transNdotV = max(0.0, dot(viewDir, -translucentNormal));
             vec3 transReflectance = getReflectance(translucentf0, transNdotV);
@@ -176,8 +176,8 @@ void main() {
     fogFactor = mix(fogFactor, fogFactor * 1.0, tdata.x);
     fogFactor = mix(fogFactor, fogFactor * 2.5, tdata.y);
     fogFactor = mix(fogFactor, fogFactor * 2.0, tdata.z);
-    fogFactor = mix(fogFactor, fogFactor * 4.0, frx_worldIsNether);
-    fogFactor = mix(fogFactor, fogFactor * 3.0, frx_worldIsEnd);
+    fogFactor = mix(fogFactor, fogFactor * 2.0, frx_worldIsNether);
+    fogFactor = mix(fogFactor, fogFactor * 2.0, frx_worldIsEnd);
 
     if(frx_effectBlindness == 1) fogFactor = 1.0 - exp(-blockDist / 5.0);
 
@@ -190,17 +190,25 @@ void main() {
         vec3 lastFrameViewSpacePos = tempViewSpacePos - posDiff;
         vec2 lastFrameCoords = lastFrameViewSpaceToScreenSpace(lastFrameViewSpacePos).xy;
         if(clamp01(lastFrameCoords) != lastFrameCoords) lastFrameCoords = texcoord;
-        lastFrameSample = blur5(u_global_illumination, lastFrameCoords.xy, frxu_size, vec2(1.0, 0.0));
+        lastFrameSample = texture(u_global_illumination, lastFrameCoords.xy);
 
-        vec3 lighting = vec3(1.0);
+        #ifdef APPLY_MC_LIGHTMAP
+            vec3 lighting = vec3(1.0);
+        #else
+            vec3 lighting = vec3(0.0);
+        #endif
+        float blurAmount = 0.5;
         
         if(min_depth < 1.0) {
             vec3 rayView = setupViewSpacePos(texcoord, min_depth);
-            vec3 rayDirection = solidNormal;
+            vec3 rayDirection = (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
+            //rayDirection = frx_skyLightVector + rand3D(texcoord + mod(frx_renderFrames, 100)) / (STEPS);
+            //vec3 rayDirection = (solidNormal * GI_RANGE / (STEPS)) * (rand3D(texcoord + mod(frx_renderFrames, 100)) + 1.0) * GI_RANGE / STEPS;
 
             // #define STEPS 10
             for(int i = 0; i < STEPS; i++) {
-                rayView += (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord + mod(frx_renderFrames, 10.0))) * GI_RANGE / STEPS;
+                rayView += rayDirection;
+                blurAmount += 0.5;
                 //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
                 vec3 rayScreen = viewSpaceToScreenSpace(rayView);
                 if(clamp01(rayScreen.xy) != rayScreen.xy) break;
@@ -208,16 +216,22 @@ void main() {
                 vec3 color = texture(u_main_color, rayScreen.xy).rgb;
                 // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery) {
-                    lighting *= color + color * frx_luminance(color);
+                    #ifdef APPLY_MC_LIGHTMAP
+                        lighting *= color * mix(1.0, 3.0, (1.0 - solidData.b) * frx_luminance(color));
+                    #else
+                        lighting += color * mix(1.0, 3.0, (1.0 - solidData.b) * frx_luminance(color));
+                    #endif
                     break;
                 } else {
+                    // rayDirection = (texture(u_solid_normal, rayScreen.xy).rgb * GI_RANGE / (STEPS)) + (rand3D(texcoord + mod(frx_renderFrames, 10))) * GI_RANGE / (STEPS);
                 }
             }
         }
 
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
+        lighting = mix(lighting, vec3(1.0), clamp01(frx_luminance(composite)));
 
-        globalIllumination = mix(lastFrameSample, vec4(lighting, 1.0), 0.05 + 0.9 * float(min_depth == 1.0));
+        globalIllumination = vec4(mix(lastFrameSample.rgb, lighting, 0.05 + 0.95 * floor(min_depth)), blurAmount);
         // globalIllumination = max(lastFrameSample, vec4(lighting, 1.0));
     #endif
 
@@ -229,6 +243,9 @@ void main() {
     // else compositeFresnel.rgb = solidf0;
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
+    #ifdef DANGER_SIGHT
+        if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
+    #endif
     
     fragColor = vec4(composite.rgb, 1.0);
 }

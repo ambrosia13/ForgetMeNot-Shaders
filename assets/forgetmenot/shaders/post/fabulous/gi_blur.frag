@@ -1,8 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 
-uniform sampler2D u_composite;
 uniform sampler2D u_global_illumination;
-uniform sampler2D u_solid_normal;
+uniform sampler2D u_normal;
 
 in vec2 texcoord;
 
@@ -13,12 +12,11 @@ void main() {
     #ifdef GLOBAL_ILLUMINATION
         float blurAmount = 8.0;//texture(u_global_illumination, texcoord).a;
         #ifdef GI_FILTER
-            rays = normalAwareBlur(u_global_illumination, texcoord, blurAmount, 5, u_solid_normal);
+            rays = normalAwareBlur(u_global_illumination, texcoord, blurAmount, 5, u_normal);
         #else
             rays = texture(u_global_illumination, texcoord);
         #endif
     #endif
 
-    vec4 composite = texture(u_composite, texcoord);
-    fragColor = composite * rays;
+    fragColor = rays;
 }

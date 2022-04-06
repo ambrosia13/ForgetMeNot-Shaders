@@ -8,10 +8,28 @@ float luma(in vec4 color) {
     return sqrt(frx_luminance(color.rgb));
 }
 
-#define EDGE_THRESHOLD_MIN 0.0312
+float quality(in int i) {
+    if(i <= 5) {
+        return 1.0;
+    }
+    if(i == 6) {
+        return 1.5;
+    }
+    if(i <= 10 && i >= 7) {
+        return 2.0;
+    }
+    if(i == 11) {
+        return 4.0;
+    }
+    if(i == 12) {
+        return 8.0;
+    }
+}
+
+#define EDGE_THRESHOLD_MIN 0.0212
 #define EDGE_THRESHOLD_MAX 0.125
 
-vec3 fxaa(in sampler2D image, in vec2 texcoord, in vec2 inverseScreenSize) {
+vec3 fxaa(in sampler2D image, in vec2 texcoord) {
     vec3 centerColor = texture(image, texcoord).rgb;
     float center = luma(centerColor);
 
@@ -26,7 +44,7 @@ vec3 fxaa(in sampler2D image, in vec2 texcoord, in vec2 inverseScreenSize) {
     float lrange = lmax - lmin;
 
     if(lrange < max(EDGE_THRESHOLD_MIN, lmax * EDGE_THRESHOLD_MAX)) {
-        return centerColor;
+        // return centerColor;
     }
 
     float downLeft = luma(texture(image, texcoord + ivec2(-1, -1) / frxu_size));
@@ -92,6 +110,64 @@ vec3 fxaa(in sampler2D image, in vec2 texcoord, in vec2 inverseScreenSize) {
         uv1 -= offset;
     }
     if(!reached2) {
-        uv2 -= offset;
+        uv2 += offset;
     }
+
+    if(!reachedBoth) {
+        for(int i = 2; i < 12; i++) {
+            if(!reached1) {
+                lumaEnd1 = luma(texture(image, uv1));
+                lumaEnd1 = lumaEnd1 - localAverage;
+            }
+            if(!reached2) {
+                lumaEnd2 = luma(texture(image, uv2));
+                lumaEnd2 = lumaEnd2 - localAverage;
+            }
+
+            reached1 = abs(lumaEnd1) >= gradScaled;
+            reached2 = abs(lumaEnd2) >= gradScaled;
+            reachedBoth = reached1 && reached2;
+
+            if(!reached1) {
+                uv1 -= offset * quality(i);
+            }
+            if(!reached2) {
+                uv2 += offset * quality(i);
+            }
+            if(reachedBoth) break;
+        }
+    }
+
+    float distance1 = isHorizontal ? (texcoord.x - uv1.x) : (texcoord.y - uv1.y);
+    float distance2 = isHorizontal ? (uv2.x - texcoord.x) : (uv2.y - texcoord.y);
+
+    bool isDirection1 = distance1 < distance2;
+    float distanceFinal = min(distance1, distance2);
+
+    float edgeThickness = distance1 + distance2;
+
+    float pixelOffset = -distanceFinal / edgeThickness + 0.5;
+
+    bool isLumaCenterSmaller = center < localAverage;
+    bool correctVariation = ((isDirection1 ? lumaEnd1 : lumaEnd2) < 0.0) != isLumaCenterSmaller;
+
+    float finalOffset = correctVariation ? pixelOffset : 0.0;
+
+    float lumaAverage = (1.0 / 12.0) * (2.0 * (downUp + leftRight) + leftCorners + rightCorners);
+
+    float subPixelOffset1 = clamp01(abs(lumaAverage - center) / lrange);
+    float subPixelOffset2 = (-2.0 * subPixelOffset1 + 3.0) * subPixelOffset1 * subPixelOffset1;
+    float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * 0.75;
+
+    finalOffset = max(finalOffset, subPixelOffsetFinal);
+
+    vec2 finalUv = texcoord;
+    if(!isHorizontal) {
+        finalUv.y += finalOffset * stepLength;
+    } else {
+        finalUv.x += finalOffset * stepLength;
+    }
+
+    vec3 finalColor = texture(image, finalUv).rgb;
+    return finalColor;
 }

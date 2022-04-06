@@ -91,7 +91,29 @@
         {
             name: "global_illumination",
             lod: 0,
-            internalFormat: "R11F_G11F_B10F",
+            internalFormat: "RGBA32F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "gi_blur",
+            lod: 0,
+            internalFormat: "RGBA32F",
             pixelFormat: "RGB",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -205,7 +227,7 @@
                     image: "sort", clearColor: 0x00000000
                 },
                 {
-                    image: "global_illumination", clearColor: 0x00000000
+                    image: "global_illumination"
                 },
                 {
                     image: "composite_normal", clearColor: 0x00000000
@@ -228,6 +250,22 @@
             colorAttachments: [
                 {
                     image: "sort", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "gi_blur1",
+            colorAttachments: [
+                {
+                    image: "gi_blur"
+                }
+            ]
+        },
+        {
+            name: "gi_blur2",
+            colorAttachments: [
+                {
+                    image: "global_illumination"
                 }
             ]
         },
@@ -295,6 +333,25 @@
             ]
         },
         {
+            name: "gi_blur",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/gi_blur.frag",
+            samplers: [
+                "u_global_illumination",
+                "u_normal"
+            ]
+        },
+        // {
+        //     name: "gi_blur2",
+        //     vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+        //     fragmentSource: "forgetmenot:shaders/post/fabulous/reflection.frag",
+        //     samplers: [
+        //         "u_normal",
+        //         "u_fresnel",
+        //         "u_color"
+        //     ]
+        // },
+        {
             name: "reflection_merge",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_merge.frag",
@@ -309,7 +366,8 @@
             fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
             samplers: [
                 "u_composite",
-                "u_global_illumination"
+                "u_global_illumination",
+                "u_solid_normal"
             ]
         }
     ],
@@ -358,16 +416,24 @@
                     "global_illumination"
                 ]
             },
-            // {
-            //     name: "reflection",
-            //     program: "reflection",
-            //     framebuffer: "reflection",
-            //     samplerImages: [
-            //         "composite_normal",
-            //         "composite_fresnel",
-            //         "sort"
-            //     ]
-            // },
+            {
+                name: "gi_blur1",
+                program: "gi_blur",
+                framebuffer: "gi_blur1",
+                samplerImages: [
+                    "global_illumination",
+                    "main_normal",
+                ]
+            },
+            {
+                name: "gi_blur2",
+                program: "gi_blur",
+                framebuffer: "gi_blur2",
+                samplerImages: [
+                    "gi_blur",
+                    "main_normal",
+                ]
+            },
             // {
             //     name: "reflection_merge",
             //     program: "reflection_merge",
@@ -383,7 +449,8 @@
                 framebuffer: "copy_to_main",
                 samplerImages: [
                     "sort"
-                    "global_illumination"
+                    "global_illumination",
+                    "main_normal"
                 ]
             }
         ]
