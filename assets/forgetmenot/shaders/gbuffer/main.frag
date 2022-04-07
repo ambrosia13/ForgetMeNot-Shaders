@@ -32,7 +32,7 @@ void frx_pipelineFragment() {
     vec3 moonVector = getMoonVector();
 
     vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.5 + 0.5) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.5 + 0.5);
-    vec3 dayDiffuseColor = vec3(1.1, 1.0, 0.9) * dot(frx_fragNormal, sunVector) * 0.35 + 0.65;
+    vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.0;
     vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.1) * dot(frx_fragNormal, moonVector) * 0.35 + 0.65;
         
     directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);

@@ -13,7 +13,7 @@ void main() {
     #ifdef GLOBAL_ILLUMINATION
         float blurAmount = 8.0;//texture(u_global_illumination, texcoord).a;
         #ifdef GI_FILTER
-            rays = normalAwareBlur(u_global_illumination, texcoord, blurAmount, 3, u_solid_normal);
+            rays = normalAwareBlur(u_global_illumination, texcoord, blurAmount, GI_FILTER_QUALITY, u_solid_normal);
         #else
             rays = texture(u_global_illumination, texcoord);
         #endif

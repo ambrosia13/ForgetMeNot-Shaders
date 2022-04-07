@@ -264,6 +264,13 @@
                     nameKey: "config.forgetmenot.name.gi_filter",
                     descriptionKey: "config.forgetmenot.desc.gi_filter"
                 },
+                gi_filter_quality: {
+                    default: 3,
+                    min: 3,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.gi_filter_quality",
+                    descriptionKey: "config.forgetmenot.desc.gi_filter_quality"
+                },
                 apply_mc_lightmap: {
                     default: true,
                     nameKey: "config.forgetmenot.name.apply_mc_lightmap",
