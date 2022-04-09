@@ -1,53 +1,9 @@
 {
     images: [
         {
-            name: "min_depth",
-            lod: 0,
-            internalFormat: "R32F",
-            pixelFormat: "RED",
-            pixelDataType: "FLOAT",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "max_depth",
-            lod: 0,
-            internalFormat: "R32F",
-            pixelFormat: "RED",
-            pixelDataType: "FLOAT",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
             name: "sky",
             lod: 0,
-            internalFormat: "R11F_G11F_B10F",
+            internalFormat: "RGB16F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -202,17 +158,6 @@
 
     framebuffers: [
         {
-            name: "prepare",
-            colorAttachments: [
-                {
-                    image: "min_depth", clearColor: 0x00000000
-                },
-                {
-                    image: "max_depth", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
             name: "sky",
             colorAttachments: [
                 {
@@ -281,16 +226,6 @@
 
     programs: [
         {
-            name: "prepare",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/prepare.frag",
-            samplers: [
-                "u_main_depth",
-                "u_translucent_depth",
-                "u_particles_depth"
-            ]
-        },
-        {
             name: "sky",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sky.frag",
@@ -341,16 +276,6 @@
                 "u_normal"
             ]
         },
-        // {
-        //     name: "gi_blur2",
-        //     vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-        //     fragmentSource: "forgetmenot:shaders/post/fabulous/reflection.frag",
-        //     samplers: [
-        //         "u_normal",
-        //         "u_fresnel",
-        //         "u_color"
-        //     ]
-        // },
         {
             name: "reflection_merge",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
@@ -374,16 +299,6 @@
 
     fabulous: {
         passes: [
-            // {
-            //     name: "prepare",
-            //     program: "prepare",
-            //     framebuffer: "prepare",
-            //     samplerImages: [
-            //         "main_depth",
-            //         "translucent_depth",
-            //         "particles_depth"
-            //     ]
-            // },
             {
                 name: "sky",
                 program: "sky",
@@ -423,7 +338,8 @@
                 samplerImages: [
                     "global_illumination",
                     "main_normal",
-                ]
+                ],
+                toggleConfig: "global_illumination"
             },
             {
                 name: "gi_blur2",
@@ -432,7 +348,8 @@
                 samplerImages: [
                     "gi_blur",
                     "main_normal",
-                ]
+                ],
+                toggleConfig: "global_illumination"
             },
             // {
             //     name: "reflection_merge",

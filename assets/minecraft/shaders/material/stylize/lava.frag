@@ -8,8 +8,8 @@ void frx_materialFragment() {
         vec2 uv = vec2(
             normalizedUV.x + (sin(frx_renderSeconds / 10.0) / 20 + frx_renderSeconds / 15.0),
             normalizedUV.y + (sin(frx_renderSeconds / 5.0) / 2.0 + frx_renderSeconds / 10.0)
-        ) + frx_renderSeconds * 
-        mix(vec2(0.5), ((frx_vertexNormal.y - 1.0) > 0.01 ? (-normalize(frx_vertexNormal.xz) + mix(vec2(0.0, 0.5), vec2(0.0, 1.0), 1.0 - abs(frx_vertexNormal.y))) : vec2(0.0)), 1.0 - frx_worldIsOverworld);
+        ) + frx_renderSeconds *
+        mix(vec2(0.5), ((frx_vertexNormal.y - 1.0) > 0.01 ? (-normalize(frx_vertexNormal.xz) + mix(vec2(0.0, 0.5), vec2(0.0, 1.0), 1.0 - abs(frx_vertexNormal.y))) : vec2(0.0)), 1.0);
 
         float distortX = sin(normalizedUV.y * 1.0 + frx_renderSeconds * 0.25) * 0.2;
         float distortY = cos(normalizedUV.x * 1.0 + frx_renderSeconds * 0.25) * 0.2;

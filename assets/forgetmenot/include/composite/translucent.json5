@@ -17,7 +17,7 @@
         {
             name: "translucent_normal",
             lod: 0,
-            internalFormat: "RGB8",
+            internalFormat: "RGB16",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

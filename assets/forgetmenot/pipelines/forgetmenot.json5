@@ -228,7 +228,7 @@
                     descriptionKey: "config.forgetmenot.desc.danger_sight"
                 },
                 contrast: {
-                    default: 12,
+                    default: 13,
                     min: 5,
                     max: 20,
                     nameKey: "config.forgetmenot.name.contrast",
@@ -248,7 +248,7 @@
                 steps: {
                     default: 10,
                     min: 1,
-                    max: 20,
+                    max: 100,
                     nameKey: "config.forgetmenot.name.steps",
                     descriptionKey: "config.forgetmenot.desc.steps"
                 },

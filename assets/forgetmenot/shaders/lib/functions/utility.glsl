@@ -116,5 +116,5 @@ vec3 rand3D(vec2 st) {
 
 vec3 getReflectance(in vec3 f0, in float NdotV) {
     NdotV = max(0.0, NdotV);
-    return f0 + (1.0 - f0) * pow((1.0 - NdotV), 5.0);
+    return f0 + (0.95 - f0) * pow((1.0 - NdotV), 5.0);
 }

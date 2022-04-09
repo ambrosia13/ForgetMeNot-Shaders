@@ -32,9 +32,12 @@ void frx_pipelineFragment() {
     vec3 moonVector = getMoonVector();
 
     vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.5 + 0.5) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.5 + 0.5);
-    vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.0;
+    vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.3;
     vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.1) * dot(frx_fragNormal, moonVector) * 0.35 + 0.65;
-        
+
+    float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
+    maxLightVal = mix(maxLightVal, 0.65, getTimeOfDayFactors().y);    
+    
     directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);
     directionalLight = mix(directionalLight, dayDiffuseColor, getTimeOfDayFactors().x);
     directionalLight = mix(directionalLight, nightDiffuseColor, getTimeOfDayFactors().y);
@@ -62,6 +65,7 @@ void frx_pipelineFragment() {
             #endif
             #ifdef DIRECTIONAL_SHADING
                 if(frx_matDisableDiffuse == 0) lightmap *= directionalLight;
+                else lightmap *= maxLightVal;
             #endif
 
             lightmap = max(lightmap, vec3(0.05));
