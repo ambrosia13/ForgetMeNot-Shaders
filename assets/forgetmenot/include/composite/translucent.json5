@@ -31,7 +31,7 @@
         {
             name: "translucent_data",
             lod: 0,
-            internalFormat: "RGBA8",
+            internalFormat: "RGBA16",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

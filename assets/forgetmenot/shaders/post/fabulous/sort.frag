@@ -117,10 +117,11 @@ void main() {
 
     // reflections stuff
     vec3 viewDir = normalize(minViewSpacePos);
+
+    vec3 translucentNormal = (texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0);
+    vec3 translucentf0 = translucentData.ggg;
     if(translucent_depth != max_depth) {
-        vec3 translucentf0 = translucentData.ggg;
         if(all(lessThan(translucentf0.rgb - 0.04, vec3(0.1)))) {
-            vec3 translucentNormal = (texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0);
             float transNdotV = (dot(viewDir, -translucentNormal));
             vec3 transReflectance = getReflectance(translucentf0, transNdotV);
             vec3 transReflectedView = reflect(minViewSpacePos, translucentNormal + rand3D(texcoord) / 400.0);
@@ -131,7 +132,7 @@ void main() {
             }
         }
     }
-    //vec3 solidf0 = solidData.ggg;
+    vec3 solidf0 = solidData.ggg;
     // vec3 solidReflectedView = reflect(minViewSpacePos, solidNormal + rand3D(texcoord) / 40.0);
     // vec3 solidReflectance;
 
@@ -248,17 +249,17 @@ void main() {
         globalIllumination = vec4(0.0);
     #endif
 
-    // compositeNormal.rgb = solidNormal * 0.5 + 0.5;
-    // if(translucent_depth != max_depth) compositeNormal.rgb = translucentNormal * 0.5 + 0.5;
-    // compositeNormal.a = min_depth; // I'm lazy to make another image 
+    compositeNormal.rgb = solidNormal * 0.5 + 0.5;
+    if(translucent_depth != max_depth) compositeNormal.rgb = translucentNormal * 0.5 + 0.5;
+    compositeNormal.a = min_depth; // I'm lazy to make another image 
 
-    // if(translucent_depth != max_depth) compositeFresnel.rgb = translucentf0;
-    // else compositeFresnel.rgb = solidf0;
+    if(translucent_depth != max_depth) compositeFresnel.rgb = translucentf0;
+    else compositeFresnel.rgb = solidf0;
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
     #ifdef DANGER_SIGHT
         if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
     #endif
-    
+
     fragColor = vec4(composite.rgb, 1.0);
 }

@@ -91,7 +91,7 @@
         {
             name: "composite_normal",
             lod: 0,
-            internalFormat: "RGBA32F",
+            internalFormat: "RGBA16",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -263,8 +263,8 @@
             fragmentSource: "forgetmenot:shaders/post/fabulous/reflection.frag",
             samplers: [
                 "u_normal",
-                "u_fresnel",
-                "u_color"
+                "u_color",
+                "u_depth"
             ]
         },
         {
@@ -352,12 +352,22 @@
                 toggleConfig: "global_illumination"
             },
             // {
+            //     name: "reflection",
+            //     program: "reflection",
+            //     framebuffer: "reflection",
+            //     samplerImages: [
+            //         "translucent_normal",
+            //         "sort"
+            //     ]
+            // }
+            // {
             //     name: "reflection_merge",
             //     program: "reflection_merge",
             //     framebuffer: "reflection_merge",
             //     samplerImages: [
             //         "sort",
-            //         "reflection"
+            //         "reflection",
+            //         "translucent_depth"
             //     ]
             // },
             {
