@@ -22,6 +22,16 @@
     "config.forgetmenot.name.contrast": "Contrast",
     "config.forgetmenot.desc.contrast": "Adjusts contrast. 10 means no adjustment to contrast.",
 
+    "config.forgetmenot.category.materials": "Material Options",
+
+    "config.forgetmenot.name.simple_water": "Fast Water",
+    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
+    "config.forgetmenot.name.ice_normals": "Ice Normals",
+    "config.forgetmenot.desc.ice_normals": "Enables pixel locked normals for ice.",
+    "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
+    "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture.",
+
+
     "config.forgetmenot.category.experimental": "Experimental Stuff",
 
     "config.forgetmenot.name.global_illumination": "Screen Space Global Illumination",

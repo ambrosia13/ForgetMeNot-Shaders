@@ -7,16 +7,16 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         vec3 overworldSkyColor = vec3(0.0);
 
         // a whole lot of magic numbers
-        vec3 daytimeSky = vec3(0.764,0.918,1.100) * 0.9;
+        vec3 daytimeSky = vec3(0.864,1.018,1.200) * 0.9;
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840), frx_smootherstep(-0.1, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805), frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760), frx_smootherstep(0.4, 0.9, viewSpacePos.y));
-        daytimeSky = mix(daytimeSky, vec3(0.942,0.939,0.900) * 1.0, clamp01(pow(dot(viewSpacePos, getSunVector()), 17.0)));
+        daytimeSky = mix(daytimeSky, vec3(1.042,1.039,0.900) * 1.0, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0)));
         daytimeSky *= 1.1;
 
 
-        vec3 nighttimeSky = vec3(0.506,0.577,0.620) * 2.5;
-        nighttimeSky = mix(nighttimeSky, vec3(0.401,0.453,0.565) * 2.8, frx_smootherstep(-0.1, 0.2, viewSpacePos.y));
+        vec3 nighttimeSky = vec3(0.506,0.577,0.620) * 3.5;
+        nighttimeSky = mix(nighttimeSky, vec3(0.401,0.453,0.565) * 3.8, frx_smootherstep(-0.1, 0.2, viewSpacePos.y));
         nighttimeSky = mix(nighttimeSky, vec3(0.344,0.376,0.500) * 2.5, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         nighttimeSky = mix(nighttimeSky, vec3(0.291,0.327,0.460) * 2.2, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         nighttimeSky *= 0.1;
@@ -60,6 +60,13 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
 vec3 calculateSun(in vec3 viewSpacePos) {
     viewSpacePos = normalize(viewSpacePos);
     float sun = dot(viewSpacePos, getSunVector()) * 0.5 + 0.5;
+    // float sun2 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.2, 0.3, 0.4))) * 0.5 + 0.5;
+    // float sun3 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.5, 1.7, -0.4))) * 0.5 + 0.5;
+    // float sun4 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.4, 0.8, 0.3))) * 0.5 + 0.5;
+    // float sun5 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.7, 0.3, -0.7))) * 0.5 + 0.5;
+    // float sun6 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.9, 0.1, 0.7))) * 0.5 + 0.5;
+    // float sun7 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.1, 0.5, 0.9))) * 0.5 + 0.5;
+    // float sun8 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.3, 0.4, 0.1))) * 0.5 + 0.5;
 
     // bool fullMoon = mod(frx_worldDay, 8.0) == 0.0;
     // bool phase1 = mod(frx_worldDay, 8.0) == 1.0;
@@ -77,11 +84,21 @@ vec3 calculateSun(in vec3 viewSpacePos) {
     // if(phase4) moon = 0.0;
     
     sun = step(0.9995, sun);
+    // sun2 = step(0.9995, sun2);
+    // sun3 = step(0.9995, sun3);
+    // sun4 = step(0.9995, sun4);
+    // sun5 = step(0.9995, sun5);
+    // sun6 = step(0.9995, sun6);
+    // sun7 = step(0.9995, sun7);
+    // sun8 = step(0.9995, sun8);
     moon = step(0.9996, moon);
-    vec3 sunCol = sun * SUN_COLOR;
+    vec3 sunCol = (sun) * SUN_COLOR;
     vec3 moonCol = moon * MOON_COLOR;
 
-    return (sunCol.rgb + moonCol.rgb) * frx_smootherstep(-0.1, 0.1, viewSpacePos.y);
+    float factor = mix(1.0, 0.5, frx_rainGradient);
+    factor = mix(factor, 0.0, frx_thunderGradient);
+
+    return (sunCol.rgb + moonCol.rgb) * frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * factor * frx_worldIsOverworld;
 } 
 
 vec2 calculateBasicClouds(in vec3 viewSpacePos) {
@@ -104,7 +121,7 @@ vec2 calculateBasicClouds(in vec3 viewSpacePos) {
 
     if(frx_worldIsOverworld == 0) clouds = 0.0;
 
-    return vec2(pow(clouds, 3.0 - 2.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), dot(cloudsNormal, frx_skyLightVector) + 1.01);
+    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), dot(cloudsNormal, frx_skyLightVector) + 1.5);
 }
 
 float getOverworldFogDensity(in vec3 timeFactors, in float blockDist) {

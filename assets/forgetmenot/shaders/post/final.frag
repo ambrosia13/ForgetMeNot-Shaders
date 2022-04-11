@@ -23,5 +23,7 @@ void main() {
 
     if(any(greaterThan(finalColor, vec3(1.0)))) finalColor = vec3(0.0);
 
+    vibrance(finalColor, 1.2);
+
     fragColor = vec4(finalColor.rgb, 1.0);
 }

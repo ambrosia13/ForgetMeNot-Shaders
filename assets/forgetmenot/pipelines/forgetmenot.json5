@@ -168,7 +168,7 @@
     ],
 
     sky: {
-        defaultZenithAngle: -30   
+        defaultZenithAngle: -40   
     },
 
     options: [
@@ -228,11 +228,32 @@
                     descriptionKey: "config.forgetmenot.desc.danger_sight"
                 },
                 contrast: {
-                    default: 13,
+                    default: 11,
                     min: 5,
                     max: 20,
                     nameKey: "config.forgetmenot.name.contrast",
                     descriptionKey: "config.forgetmenot.desc.contrast"
+                }
+            }
+        },
+        {
+            includeToken: "forgetmenot:materials",
+            categoryKey: "config.forgetmenot.category.materials",
+            elements: {
+                simple_water: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.simple_water",
+                    descriptionKey: "config.forgetmenot.desc.simple_water"
+                },
+                ice_normals: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.ice_normals",
+                    descriptionKey: "config.forgetmenot.desc.ice_normals"
+                },
+                vanilla_lava: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.vanilla_lava",
+                    descriptionKey: "config.forgetmenot.desc.vanilla_lava"
                 }
             }
         },
@@ -260,7 +281,7 @@
                     descriptionKey: "config.forgetmenot.desc.gi_range"
                 },
                 gi_filter: {
-                    default: true,
+                    default: false,
                     nameKey: "config.forgetmenot.name.gi_filter",
                     descriptionKey: "config.forgetmenot.desc.gi_filter"
                 },

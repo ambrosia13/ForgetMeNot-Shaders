@@ -19,6 +19,7 @@
 #include frex:shaders/lib/noise/noise2d.glsl
 #include frex:shaders/lib/noise/classicnoise2d.glsl
 #include frex:shaders/lib/noise/cellular2d.glsl
+#include frex:shaders/lib/noise/cellular2x2.glsl
 #include frex:shaders/lib/noise/noise3d.glsl
 
 uniform ivec2 frxu_size;

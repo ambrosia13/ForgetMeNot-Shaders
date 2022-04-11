@@ -121,4 +121,15 @@ vec3 tonemapFilmic(vec3 x) {
 void contrast(inout vec3 color, float contrast) {
     color = (color - 0.5) * contrast + 0.5;
 }
+void vibrance(inout vec3 color, float intensity) {
+    float mn       = min(color.r, min(color.g, color.b));
+    float mx       = max(color.r, max(color.g, color.b));
+    float sat      = (1.0 - clamp01(mx - mn)) * clamp01(1.0 - mx) * frx_luminance(color) * 5.0;
+    vec3 lightness = vec3((mn + mx) * 0.5);
+
+    // Vibrance
+    color = mix(color, mix(lightness, color, intensity), sat);
+    // Negative vibrance
+    color = mix(color, lightness, (1.0 - lightness) * (1.0 - intensity) * 0.5 * abs(intensity));
+}
 // --------------------------------------------------------------------------------------------------------

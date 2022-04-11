@@ -1,36 +1,16 @@
 #include forgetmenot:shaders/lib/includes.glsl
 
-float waterHeightNoise(in vec2 uv) {
-    float waterHeight;
-    float waves;
-    float w;
-    float time = frx_renderSeconds / 50.0;
-
-    vec2 coord = uv * 0.3;
-
-    waterHeight += fbm2D(coord * vec2(2.0, 1.0) + vec2(1.2, 0.7) * time);
-    waterHeight += fbm2D(coord * vec2(3.1, 1.2) - vec2(0.8, 1.2) * time);
-    waterHeight += fbm2D(coord * vec2(3.5, 2.3) + vec2(1.5, 0.4) * time);
-    waterHeight += fbm2D(coord * vec2(2.4, 4.1) - vec2(1.2, 0.3) * time);
-
-    waterHeight *= 1.0;
-
-    if(frx_playerEyeInWater == 0 && frx_playerWet == 1) waterHeight += sin(frx_distance * 3.0 - frx_renderSeconds * 7.0) * frx_smootherstep(10.0, 0.0, frx_distance);
-
-    return pow(waterHeight, 2.0) * 0.15;
-}
-
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
     vec2 uv = vec2(
         uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
         uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
-    ) * 0.05;
+    ) * 0.3;
 
     //frx_fragNormal += cellular(uv).x * 0.1;
 
     #ifdef PBR_ENABLED
-        float offset = 0.02;
+        float offset = 0.015;
 
         float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
         float height2 = waterHeightNoise(uv - vec2(offset, 0.0));

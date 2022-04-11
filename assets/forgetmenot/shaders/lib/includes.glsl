@@ -3,6 +3,7 @@
 */
 #include forgetmenot:performance_config
 #include forgetmenot:general_config
+#include forgetmenot:materials
 #include forgetmenot:experimental
 
 #include forgetmenot:shaders/lib/api_includes.glsl 

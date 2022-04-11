@@ -1,5 +1,3 @@
-#include forgetmenot:shaders/lib/functions/external.glsl 
-
 // Space conversions
 vec3 setupViewSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
@@ -89,7 +87,7 @@ vec2 rotate2D(vec2 uv, float angle) {
 }
 
 float fbm2D(vec2 uv) {
-    int octaves = 6;
+    int octaves = 3;
 	float noise = 0.01;
 	float amp = 0.5;
 
@@ -97,7 +95,7 @@ float fbm2D(vec2 uv) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = uv * 2.0 + frx_renderSeconds / 20.0;
 		amp *= 0.5;
 	}
 
@@ -115,6 +113,10 @@ vec3 rand3D(vec2 st) {
 }
 
 vec3 getReflectance(in vec3 f0, in float NdotV) {
-    NdotV = max(0.0, NdotV);
+    NdotV = clamp01(NdotV);
     return f0 + (0.95 - f0) * pow((1.0 - NdotV), 5.0);
 }
+
+
+#include forgetmenot:shaders/lib/functions/external.glsl 
+#include forgetmenot:shaders/lib/functions/noise.glsl 

@@ -26,7 +26,7 @@ float quality(in int i) {
     }
 }
 
-#define EDGE_THRESHOLD_MIN 0.0212
+#define EDGE_THRESHOLD_MIN 0.0312
 #define EDGE_THRESHOLD_MAX 0.125
 
 vec3 fxaa(in sampler2D image, in vec2 texcoord) {
@@ -44,7 +44,7 @@ vec3 fxaa(in sampler2D image, in vec2 texcoord) {
     float lrange = lmax - lmin;
 
     if(lrange < max(EDGE_THRESHOLD_MIN, lmax * EDGE_THRESHOLD_MAX)) {
-        // return centerColor;
+        return centerColor;
     }
 
     float downLeft = luma(texture(image, texcoord + ivec2(-1, -1) / frxu_size));

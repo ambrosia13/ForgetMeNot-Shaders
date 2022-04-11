@@ -9,7 +9,7 @@ layout(location = 0) out vec4 fragColor;
 
 void main() {
     vec4 sample = texture(u_color, texcoord);
-    vec3 color = sample.rgb;
+    vec3 color = pow(sample.rgb, vec3(1.5));
     // float emissive = max(0.0, sample.a - 1.0);
 
     // float luminance = frx_luminance(color);

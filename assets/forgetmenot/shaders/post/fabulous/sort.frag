@@ -54,7 +54,7 @@ vec3 blend( vec3 dst, vec4 src ) {
     return ( dst * ( 1.0 - src.a ) ) + src.rgb;
 }
 
-vec2 coordFrom3D(vec3 viewDir) // stumbled across this and it does not work toward two poles, but is OK i guess
+vec2 coordFrom3D(vec3 viewDir)
 {
     return vec2(atan(viewDir.x, viewDir.y), acos(viewDir.z));   
 }
@@ -84,9 +84,6 @@ void main() {
     vec4 translucentData = texture(u_translucent_data, texcoord);
     vec4 solidData = texture(u_solid_data, texcoord);
 
-    vec3 solidNormal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
-
-
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
@@ -95,7 +92,7 @@ void main() {
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
     float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
-    if(max_depth != 1.0 && abs(translucentData.g - 0.05) < 0.01) translucent_color = mix(translucent_color, vec4(0.0, 0.1, 0.2, 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+    if(max_depth != 1.0 && abs(translucentData.g * 20.0 - 1.0) < 0.1) translucent_color = mix(translucent_color, vec4(0.0, 0.1, 0.2, 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
 
     #if SKY_RESOLUTION == RESOLUTION_QUARTER
         #define RESOLUTION_SCALE 0.25
@@ -118,20 +115,10 @@ void main() {
     // reflections stuff
     vec3 viewDir = normalize(minViewSpacePos);
 
-    vec3 translucentNormal = (texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0);
+    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
     vec3 translucentf0 = translucentData.ggg;
-    if(translucent_depth != max_depth) {
-        if(all(lessThan(translucentf0.rgb - 0.04, vec3(0.1)))) {
-            float transNdotV = (dot(viewDir, -translucentNormal));
-            vec3 transReflectance = getReflectance(translucentf0, transNdotV);
-            vec3 transReflectedView = reflect(minViewSpacePos, translucentNormal + rand3D(texcoord) / 400.0);
-            vec3 transReflectedColor = mix(calculateSkyColor(normalize(transReflectedView)), vec3(1.0), calculateBasicClouds(normalize(transReflectedView)).x * cloudsColor);
-            if(translucent_depth != max_depth) {
-                translucent_color = mix(translucent_color, vec4(transReflectedColor, 1.0), clamp01(vec4(transReflectance, frx_luminance(transReflectance))) * translucentData.a);
-                translucent_color += vec4(calculateSun(normalize(transReflectedView)) * 0.5, 0.0) * frx_smootherstep(0.6, 0.9, translucentData.a);
-            }
-        }
-    }
+
+    vec3 solidNormal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
     vec3 solidf0 = solidData.ggg;
     // vec3 solidReflectedView = reflect(minViewSpacePos, solidNormal + rand3D(texcoord) / 40.0);
     // vec3 solidReflectance;
@@ -141,9 +128,9 @@ void main() {
     //     vec3 solidReflectedColor = mix(calculateSkyColor(normalize(solidReflectedView)), vec3(1.0), calculateBasicClouds(normalize(solidReflectedView)).x * cloudsColor);
     //     main_color.rgb *= max(vec3(0.5), solidReflectedColor);
     // } else {// if(frx_rainGradient != 0.0 && dot(solidNormal, vec3(0.0, 1.0, 0.0)) > 0.7) {
-    //     solidReflectance = getReflectance(solidf0, dot(viewDir, -solidNormal)) * frx_rainGradient;
-    //     vec3 solidReflectedColor = mix(calculateSkyColor(normalize(solidReflectedView)), vec3(1.0), calculateBasicClouds(normalize(solidReflectedView)).x * cloudsColor);
-    //     main_color = mix(main_color, vec4(solidReflectedColor, 1.0), clamp01(vec4(solidReflectance, frx_luminance(solidReflectance))) * solidData.a);
+        // solidReflectance = getReflectance(solidf0, dot(viewDir, -solidNormal)) * frx_rainGradient;
+        // vec3 solidReflectedColor = mix(calculateSkyColor(normalize(solidReflectedView)), vec3(1.0), calculateBasicClouds(normalize(solidReflectedView)).x * cloudsColor);
+        // main_color = mix(main_color, vec4(solidReflectedColor, 1.0), clamp01(vec4(solidReflectance, frx_luminance(solidReflectance))) * solidData.a);
     // }
 
     vec2 cloudsDensity = calculateBasicClouds(viewDir);
@@ -158,7 +145,7 @@ void main() {
         main_color.rgb, mix(
             sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.1, viewDir.y) * cloudsDensity.x)
         ) + 
-        (frx_worldIsOverworld == 1 ? mix(calculateSun(normalize(minViewSpacePos)), vec3(0.0), clamp01(frx_rainGradient * 0.75 + frx_thunderGradient)) : vec3(0.0)) + 
+        (frx_worldIsOverworld == 1 ? calculateSun(normalize(minViewSpacePos)) : vec3(0.0)) + 
         step(0.989, 1.0 - cellular(starCoord * 8.0).x) * (1.0 - tdata.x), floor(max_depth)
     );
 
@@ -186,7 +173,7 @@ void main() {
     if(frx_effectBlindness == 1) fogStartMin = 1.0;
     blockDist = max(0.0, blockDist - fogStartMin);
     float fogFactor = 1.0 - exp(-blockDist / frx_viewDistance);
-    fogFactor = mix(fogFactor, fogFactor * 1.0, tdata.x);
+    fogFactor = mix(fogFactor, fogFactor * 1.5, tdata.x);
     fogFactor = mix(fogFactor, fogFactor * 2.5, tdata.y);
     fogFactor = mix(fogFactor, fogFactor * 2.0, tdata.z);
     fogFactor = mix(fogFactor, fogFactor * 2.0, frx_worldIsNether);
@@ -251,10 +238,17 @@ void main() {
 
     compositeNormal.rgb = solidNormal * 0.5 + 0.5;
     if(translucent_depth != max_depth) compositeNormal.rgb = translucentNormal * 0.5 + 0.5;
-    compositeNormal.a = min_depth; // I'm lazy to make another image 
 
-    if(translucent_depth != max_depth) compositeFresnel.rgb = translucentf0;
-    else compositeFresnel.rgb = solidf0;
+    if(translucent_depth != max_depth) {
+        compositeFresnel.r = translucentf0.r;
+        compositeFresnel.gb = translucentData.ba;
+    } else {
+        compositeFresnel.r = solidf0.r;
+        compositeFresnel.gb = solidData.ba;
+    }
+    if(any(lessThan(abs(compositeFresnel.rgb - 0.04), vec3(0.001)))) compositeFresnel.r = 0.0;
+    compositeFresnel *= 20.0;
+
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
     #ifdef DANGER_SIGHT

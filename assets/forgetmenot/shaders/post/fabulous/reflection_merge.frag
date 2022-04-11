@@ -8,14 +8,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    vec3 color = texture(u_color, texcoord).rgb;
-    vec4 sample = frx_sampleTent(u_reflection, texcoord, 0.0 / frxu_size);
-    vec3 reflection = sample.rgb;
-    float reflectance = sample.a;
-
-    //if(reflectance > 0.95) reflectance *= color;
-
-    color = mix(color, reflection, reflectance);
+    vec3 color = texture(u_reflection, texcoord).rgb;
 
     fragColor = vec4(color, 1.0);
 }
