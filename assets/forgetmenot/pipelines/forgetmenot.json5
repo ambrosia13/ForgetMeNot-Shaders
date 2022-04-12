@@ -269,7 +269,7 @@
                 steps: {
                     default: 10,
                     min: 1,
-                    max: 100,
+                    max: 200,
                     nameKey: "config.forgetmenot.name.steps",
                     descriptionKey: "config.forgetmenot.desc.steps"
                 },

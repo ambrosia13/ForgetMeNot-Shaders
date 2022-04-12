@@ -60,13 +60,6 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
 vec3 calculateSun(in vec3 viewSpacePos) {
     viewSpacePos = normalize(viewSpacePos);
     float sun = dot(viewSpacePos, getSunVector()) * 0.5 + 0.5;
-    // float sun2 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.2, 0.3, 0.4))) * 0.5 + 0.5;
-    // float sun3 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.5, 1.7, -0.4))) * 0.5 + 0.5;
-    // float sun4 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.4, 0.8, 0.3))) * 0.5 + 0.5;
-    // float sun5 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.7, 0.3, -0.7))) * 0.5 + 0.5;
-    // float sun6 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.9, 0.1, 0.7))) * 0.5 + 0.5;
-    // float sun7 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.1, 0.5, 0.9))) * 0.5 + 0.5;
-    // float sun8 = dot(viewSpacePos, normalize(getSunVector() * vec3(0.3, 0.4, 0.1))) * 0.5 + 0.5;
 
     // bool fullMoon = mod(frx_worldDay, 8.0) == 0.0;
     // bool phase1 = mod(frx_worldDay, 8.0) == 1.0;
@@ -84,21 +77,14 @@ vec3 calculateSun(in vec3 viewSpacePos) {
     // if(phase4) moon = 0.0;
     
     sun = step(0.9995, sun);
-    // sun2 = step(0.9995, sun2);
-    // sun3 = step(0.9995, sun3);
-    // sun4 = step(0.9995, sun4);
-    // sun5 = step(0.9995, sun5);
-    // sun6 = step(0.9995, sun6);
-    // sun7 = step(0.9995, sun7);
-    // sun8 = step(0.9995, sun8);
     moon = step(0.9996, moon);
-    vec3 sunCol = (sun) * SUN_COLOR;
+    vec3 sunCol = sun * SUN_COLOR;
     vec3 moonCol = moon * MOON_COLOR;
 
     float factor = mix(1.0, 0.5, frx_rainGradient);
     factor = mix(factor, 0.0, frx_thunderGradient);
 
-    return (sunCol.rgb + moonCol.rgb) * frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * factor * frx_worldIsOverworld;
+    return (sunCol.rgb + moonCol.rgb) * frx_smootherstep(0.0, 0.2, viewSpacePos.y) * factor * frx_worldIsOverworld;
 } 
 
 vec2 calculateBasicClouds(in vec3 viewSpacePos) {
@@ -108,7 +94,29 @@ vec2 calculateBasicClouds(in vec3 viewSpacePos) {
     
     float clouds;
 
-    clouds = fbm2D(plane);
+    clouds = fbmOctaves(plane, 5);
+    float offset = 0.2;
+    float cloudsUp = fbm2D(plane + vec2(0.0, offset));
+    float cloudsRight = fbm2D(plane + vec2(offset, 0.0));
+    float cloudsDown = fbm2D(plane - vec2(0.0, offset));
+    float cloudsLeft = fbm2D(plane - vec2(offset, 0.0));
+    vec3 cloudsNormal = vec3(0.0);
+    cloudsNormal = mix(cloudsNormal, vec3(1.0, 0.0, 0.0), (clouds - cloudsRight));
+    cloudsNormal = mix(cloudsNormal, vec3(0.0, 1.0, 0.0), (clouds - cloudsUp));
+    cloudsNormal = mix(cloudsNormal, vec3(0.0, 0.0, 1.0), (clouds - cloudsLeft));
+
+    if(frx_worldIsOverworld == 0) clouds = 0.0;
+
+    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), dot(cloudsNormal, frx_skyLightVector) + 1.5);
+}
+vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
+    vec2 plane = viewSpacePos.xz / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y);
+    plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
+    plane += frx_renderSeconds / 35.0;
+    
+    float clouds;
+
+    clouds = fbmOctaves(plane, octaves) * 2.0;
     float offset = 0.2;
     float cloudsUp = fbm2D(plane + vec2(0.0, offset));
     float cloudsRight = fbm2D(plane + vec2(offset, 0.0));

@@ -95,7 +95,21 @@ float fbm2D(vec2 uv) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 20.0;
+		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		amp *= 0.5;
+	}
+
+	return noise;
+}
+float fbmOctaves(vec2 uv, int octaves) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+    mat2 rotationMatrix = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (snoise(uv) * 0.5 + 0.51);
+		uv = uv * 2.0 + frx_renderSeconds / 10.0;
 		amp *= 0.5;
 	}
 

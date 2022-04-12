@@ -220,6 +220,7 @@ void main() {
                 if(rayScreen.z > depthQuery) {
                     #ifdef APPLY_MC_LIGHTMAP
                         lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        //lighting *= 0.8;
                     #else
                         lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 2.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
@@ -227,7 +228,6 @@ void main() {
                 }
             }
         }
-
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
         // lighting = mix(lighting, vec3(1.0), clamp01(frx_luminance(composite)));
 

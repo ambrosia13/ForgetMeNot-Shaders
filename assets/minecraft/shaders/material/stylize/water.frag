@@ -10,7 +10,7 @@ void frx_materialFragment() {
     //frx_fragNormal += cellular(uv).x * 0.1;
 
     #ifdef PBR_ENABLED
-        float offset = 0.015;
+        float offset = 0.2;
 
         float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
         float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
