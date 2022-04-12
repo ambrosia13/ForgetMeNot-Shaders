@@ -131,6 +131,9 @@ vec3 getReflectance(in vec3 f0, in float NdotV) {
     return f0 + (0.95 - f0) * pow((1.0 - NdotV), 5.0);
 }
 
+vec2 coordFrom3D(vec3 viewDir){
+    return vec2(atan(viewDir.x, viewDir.y), acos(viewDir.z));   
+}
 
 #include forgetmenot:shaders/lib/functions/external.glsl 
 #include forgetmenot:shaders/lib/functions/noise.glsl 
