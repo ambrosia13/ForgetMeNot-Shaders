@@ -32,7 +32,7 @@ void main() {
     vec3 reflectance = vec3(0.0);
     vec3 sunReflection = vec3(0.0);
 
-    if(depth != 1.0 && f0.r > 0.9) {
+    if(depth != 1.0 && f0.r > 0.0) {
         vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
         vec3 cleanViewSpacePos = setupCleanViewSpacePos(texcoord, depth);
 
