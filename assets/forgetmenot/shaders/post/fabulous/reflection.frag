@@ -54,7 +54,7 @@ void main() {
 
         if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
             cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
-            reflectColor = mix(mix(calculateSkyColor(reflectedViewDir), vec3(1.0), calculateBasicCloudsOctaves(reflectedViewDir, 1).x * cloudsColor), vec3(0.2), 1.0 - step(0.9, light.y));
+            reflectColor = mix(mix(calculateSkyColor(reflectedViewDir), vec3(1.0), calculateBasicCloudsOctaves(reflectedViewDir, 1).x * 0.5 * cloudsColor), vec3(0.2), 1.0 - step(0.9, light.y));
             reflectColor += calculateSun(reflectedViewDir);
         } else {
             reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;
@@ -70,7 +70,7 @@ void main() {
         //reflectance = vec3(0.05 + (1.0 - 0.05) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)));
     }
 
-    if(frx_luminance(reflectColor) > 10.0) reflectance = vec3(0.5); // test for sun
+    if(frx_luminance(reflectColor) > 5.0) reflectance = vec3(0.5); // test for sun
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 

@@ -222,11 +222,11 @@
                     nameKey: "config.forgetmenot.name.pixel_locked_glint",
                     descriptionKey: "config.forgetmenot.desc.pixel_locked_glint"
                 },
-                danger_sight: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.danger_sight",
-                    descriptionKey: "config.forgetmenot.desc.danger_sight"
-                },
+                // danger_sight: {
+                //     default: false,
+                //     nameKey: "config.forgetmenot.name.danger_sight",
+                //     descriptionKey: "config.forgetmenot.desc.danger_sight"
+                // },
                 contrast: {
                     default: 11,
                     min: 5,

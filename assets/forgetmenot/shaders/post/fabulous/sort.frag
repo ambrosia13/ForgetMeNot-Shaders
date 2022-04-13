@@ -245,9 +245,9 @@ void main() {
 
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
-    #ifdef DANGER_SIGHT
-        if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
-    #endif
+    // #ifdef DANGER_SIGHT
+    //     if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
+    // #endif
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 
