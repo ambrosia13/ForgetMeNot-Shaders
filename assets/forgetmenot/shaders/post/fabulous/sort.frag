@@ -103,7 +103,7 @@ void main() {
     // ---
 
     float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
-    if(max_depth != 1.0 && abs(translucentData.g * 20.0 - 1.0) < 0.1) translucent_color = mix(translucent_color, vec4(0.0, 0.1, 0.2, 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(0.0, 0.1, 0.2, 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
 
     // sky stuff
     #if SKY_RESOLUTION == RESOLUTION_QUARTER
@@ -120,20 +120,23 @@ void main() {
         vec3 sky = texture(u_sky, texcoord * RESOLUTION_SCALE).rgb + rand3D(texcoord) / 100.0;
     #endif
 
-    vec3 cloudsColor = vec3(1.0);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+    if(floor(max_depth) > 0.5) {
+        vec3 cloudsColor = vec3(1.0);
+        cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
+        cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+        cloudsColor *= 1.5;
 
-    vec2 cloudsDensity = calculateBasicClouds(viewDir); // x = clouds, y = shading
-    cloudsColor *= cloudsDensity.y;
+        vec2 cloudsDensity = calculateBasicClouds(viewDir); // x = clouds, y = shading
+        cloudsColor *= cloudsDensity.y;
 
-    vec2 starCoord = coordFrom3D(viewDir.brg);
+        vec2 starCoord = coordFrom3D(viewDir.brg);
 
-    vec3 finalSky = mix(sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.1, viewDir.y) * cloudsDensity.x));
-    finalSky += calculateSun(viewDir);
-    finalSky += step(0.989, 1.0 - cellular(starCoord * 8.0).x) * (1.0 - tdata.x);
+        vec3 finalSky = mix(sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.1, viewDir.y) * cloudsDensity.x));
+        finalSky += calculateSun(viewDir);
+        finalSky += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
 
-    main_color.rgb = mix(main_color.rgb, finalSky, floor(max_depth));
+        main_color.rgb = finalSky;
+    }
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending part here
@@ -237,6 +240,7 @@ void main() {
         compositeFresnel.gb = solidData.ba;
     }
     if(any(lessThan(abs(compositeFresnel.rgb - 0.04), vec3(0.001)))) compositeFresnel.r = 0.0;
+    if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
     compositeFresnel *= 20.0;
 
     
@@ -244,6 +248,8 @@ void main() {
     #ifdef DANGER_SIGHT
         if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
     #endif
+
+    // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 
     fragColor = vec4(composite.rgb, 1.0);
 }

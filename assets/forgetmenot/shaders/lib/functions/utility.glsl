@@ -95,7 +95,7 @@ float fbm2D(vec2 uv) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = uv * 2.0 + frx_renderSeconds / 5.0 * (mod(i, 2) - 2);
 		amp *= 0.5;
 	}
 
@@ -109,7 +109,7 @@ float fbmOctaves(vec2 uv, int octaves) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = uv * 2.0 + frx_renderSeconds / 10.0 * (mod(i, 2) - 2);
 		amp *= 0.5;
 	}
 

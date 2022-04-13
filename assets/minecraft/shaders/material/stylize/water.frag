@@ -1,5 +1,8 @@
 #include forgetmenot:shaders/lib/includes.glsl
 
+#define FORGET_ME_NOT
+int isWater = 0;
+
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
     vec2 uv = vec2(
@@ -25,6 +28,8 @@ void frx_materialFragment() {
 
         frx_fragReflectance = 0.05;
     #endif
+
+    isWater = 1;
 
     //frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
     frx_fragColor.a *= 0.5;

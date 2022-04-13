@@ -116,7 +116,7 @@ void frx_pipelineFragment() {
     //fragData = vec4(frx_fragEmissive, 0.0, frx_distance, 1.0); // data for other post shaders to access
     //fragLight = vec4(frx_fragLight.xy, frx_fragLight.z, directionalLight * 0.5 + 0.5);
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    fragData = vec4(frx_fragEmissive, frx_fragReflectance, frx_fragLight.xy);
+    fragData = vec4(frx_fragEmissive, frx_fragReflectance, float(isWater), frx_fragLight.y);
 
     gl_FragDepth = gl_FragCoord.z;
 }

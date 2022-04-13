@@ -94,20 +94,11 @@ vec2 calculateBasicClouds(in vec3 viewSpacePos) {
     
     float clouds;
 
-    clouds = fbmOctaves(plane, 5);
-    float offset = 0.2;
-    float cloudsUp = fbm2D(plane + vec2(0.0, offset));
-    float cloudsRight = fbm2D(plane + vec2(offset, 0.0));
-    float cloudsDown = fbm2D(plane - vec2(0.0, offset));
-    float cloudsLeft = fbm2D(plane - vec2(offset, 0.0));
-    vec3 cloudsNormal = vec3(0.0);
-    cloudsNormal = mix(cloudsNormal, vec3(1.0, 0.0, 0.0), (clouds - cloudsRight));
-    cloudsNormal = mix(cloudsNormal, vec3(0.0, 1.0, 0.0), (clouds - cloudsUp));
-    cloudsNormal = mix(cloudsNormal, vec3(0.0, 0.0, 1.0), (clouds - cloudsLeft));
+    clouds = fbmOctaves(plane, 6);
 
     if(frx_worldIsOverworld == 0) clouds = 0.0;
 
-    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), dot(cloudsNormal, frx_skyLightVector) + 1.5);
+    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), 1.0);
 }
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
     vec2 plane = viewSpacePos.xz / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y);
@@ -116,20 +107,11 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
     
     float clouds;
 
-    clouds = fbmOctaves(plane, octaves) * 2.0;
-    float offset = 0.2;
-    float cloudsUp = fbm2D(plane + vec2(0.0, offset));
-    float cloudsRight = fbm2D(plane + vec2(offset, 0.0));
-    float cloudsDown = fbm2D(plane - vec2(0.0, offset));
-    float cloudsLeft = fbm2D(plane - vec2(offset, 0.0));
-    vec3 cloudsNormal = vec3(0.0);
-    cloudsNormal = mix(cloudsNormal, vec3(1.0, 0.0, 0.0), (clouds - cloudsRight));
-    cloudsNormal = mix(cloudsNormal, vec3(0.0, 1.0, 0.0), (clouds - cloudsUp));
-    cloudsNormal = mix(cloudsNormal, vec3(0.0, 0.0, 1.0), (clouds - cloudsLeft));
+    clouds = fbmOctaves(plane, octaves) * (float(octaves) + 1.5) / float(octaves);
 
     if(frx_worldIsOverworld == 0) clouds = 0.0;
 
-    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), dot(cloudsNormal, frx_skyLightVector) + 1.5);
+    return vec2(pow(clouds, 5.0 - 4.0 * frx_rainGradient) * (snoise(plane * 0.5) * 0.5 + 0.5), 1.0);
 }
 
 float getOverworldFogDensity(in vec3 timeFactors, in float blockDist) {
