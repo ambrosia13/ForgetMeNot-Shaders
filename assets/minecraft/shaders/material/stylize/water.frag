@@ -1,4 +1,5 @@
 #include forgetmenot:shaders/lib/includes.glsl
+#include lumi:shaders/api/pbr_ext.glsl
 
 #define FORGET_ME_NOT
 int isWater = 0;
@@ -9,8 +10,6 @@ void frx_materialFragment() {
         uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
         uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
     ) * 0.3;
-
-    //frx_fragNormal += cellular(uv).x * 0.1;
 
     #ifdef PBR_ENABLED
         float offset = 0.2;
@@ -30,6 +29,12 @@ void frx_materialFragment() {
     #endif
 
     isWater = 1;
+
+    #if LUMI_PBR_API >= 8
+        pbr_f0 = 0.05;
+        pbr_roughness = 0.05;
+        pbr_isWater = true;
+    #endif
 
     //frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
     frx_fragColor.a *= 0.5;

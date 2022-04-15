@@ -245,11 +245,11 @@
                     nameKey: "config.forgetmenot.name.simple_water",
                     descriptionKey: "config.forgetmenot.desc.simple_water"
                 },
-                ice_normals: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.ice_normals",
-                    descriptionKey: "config.forgetmenot.desc.ice_normals"
-                },
+                // ice_normals: {
+                //     default: true,
+                //     nameKey: "config.forgetmenot.name.ice_normals",
+                //     descriptionKey: "config.forgetmenot.desc.ice_normals"
+                // },
                 vanilla_lava: {
                     default: false,
                     nameKey: "config.forgetmenot.name.vanilla_lava",

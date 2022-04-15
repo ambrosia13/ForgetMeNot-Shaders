@@ -1,11 +1,12 @@
 #include forgetmenot:shaders/lib/includes.glsl
+#include lumi:shaders/api/pbr_ext.glsl
 
 void frx_materialFragment() {
     vec2 uv = floor(frx_var0.xy * 16.0) / 16.0;
 
     //frx_fragNormal += cellular(uv).x * 0.1;
 
-    #if defined PBR_ENABLED && defined ICE_NORMALS
+    #if defined PBR_ENABLED
         float offset = 0.015;
 
         float height1 = iceHeightNoise(uv + vec2(offset, 0.0));
@@ -20,6 +21,12 @@ void frx_materialFragment() {
         frx_fragNormal = normalize(frx_fragNormal);
 
         frx_fragReflectance = 0.06;
+    #endif
+
+    #if LUMI_PBR_API >= 8
+        pbr_f0 = 1.0;
+        pbr_roughness = 0.05;
+        pbr_isWater = false;
     #endif
 
     // frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
