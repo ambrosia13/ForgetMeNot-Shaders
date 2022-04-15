@@ -159,8 +159,6 @@ void main() {
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 cleanViewSpacePos = setupCleanViewSpacePos(texcoord, depth);
 
-            float lengthC = length(cleanViewSpacePos);
-
             vec3 viewDir = normalize(viewSpacePos);
             vec3 cleanViewDir = normalize(cleanViewSpacePos);
 
@@ -168,12 +166,12 @@ void main() {
             vec3 cleanReflectedViewDir = reflect(cleanViewDir, normal);
 
             vec3 reflectedScreenDir = viewSpaceToScreenSpace(reflectedViewDir);
-            vec3 cleanReflectedScreenDir = cleanViewSpaceToScreenSpace(cleanReflectedViewDir * lengthC);
+            vec3 cleanReflectedScreenDir = cleanViewSpaceToScreenSpace(cleanReflectedViewDir);
 
-            bool isMetal = false;
-            if(f0.r == 20.0) {
-                isMetal = true;
-            }
+            // bool isMetal = false;
+            // if(f0.r == 20.0) {
+            //     isMetal = true;
+            // }
 
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
@@ -186,12 +184,8 @@ void main() {
 
             sunReflection = calculateSun(reflectedViewDir) * (1.0 / 20.0);
 
-            //reflectColor = cleanReflectedScreenDir.xyy;
-
             float NdotV = max(0.0, dot(-normal, viewDir));
-            // for some reason schlick function returns NaN:
             reflectance = getReflectance(f0 / 20.0, clamp01(NdotV));
-            //reflectance = vec3(0.05 + (1.0 - 0.05) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)) * (1.0 - dot(viewDir, -normal)));
         }
     #endif
 
