@@ -19,6 +19,6 @@ void main() {
     // fragColor = vec4(color * (frx_smootherstep(0.8, 2.0, luminance)), 1.0);
 
     // #ifdef BLOOM_MIX_FACTOR
-        fragColor = vec4(color + color * frx_luminance(color) * 1.0, 1.0);
+        fragColor = vec4(color + color * frx_luminance(color), 1.0);
     // #endif
 }

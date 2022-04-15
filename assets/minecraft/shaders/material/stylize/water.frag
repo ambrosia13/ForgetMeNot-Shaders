@@ -1,8 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl
 #include lumi:shaders/api/pbr_ext.glsl
 
-#define FORGET_ME_NOT
-int isWater = 0;
+int fmn_isWater = 0;
 
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
@@ -28,7 +27,7 @@ void frx_materialFragment() {
         frx_fragReflectance = 0.05;
     #endif
 
-    isWater = 1;
+    fmn_isWater = 1;
 
     #if LUMI_PBR_API >= 8
         pbr_f0 = 0.05;

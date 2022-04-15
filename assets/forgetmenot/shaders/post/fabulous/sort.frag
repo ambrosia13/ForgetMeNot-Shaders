@@ -80,6 +80,8 @@ void main() {
     float entity_depth = texture(u_entity_depth, texcoord).r;
 
     vec4  weather_color = texture(u_weather_color, texcoord);
+    //weather_color.rgb = mix(frx_luminance(weather_color.rgb) < 0.5 ? (weather_color.rgb * vec3(0.0, 0.9, 0.8)) : weather_color.rgb, vec3(frx_luminance(weather_color.rgb)), -0.5 * frx_smoothedRainGradient);
+    weather_color.rgb = mix(weather_color.rgb, vec3(frx_luminance(weather_color.rgb)), 0.75 * frx_thunderGradient);
     float weather_depth = texture(u_weather_depth, texcoord).r;
 
     // vec4  clouds_color = texture(u_clouds_color, texcoord);
@@ -103,7 +105,7 @@ void main() {
     // ---
 
     float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
-    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(0.0, 0.1, 0.2, 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.1, 0.2), vec3(0.1, 0.2, 0.3), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
 
     // sky stuff
     #if SKY_RESOLUTION == RESOLUTION_QUARTER
@@ -122,16 +124,16 @@ void main() {
 
     if(floor(max_depth) > 0.5) {
         vec3 cloudsColor = vec3(1.0);
-        cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
+        cloudsColor = mix(cloudsColor, vec3(0.35, 0.3, 0.4), tdata.z);
         cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
         cloudsColor *= 1.5;
 
-        vec2 cloudsDensity = calculateBasicClouds(viewDir); // x = clouds, y = shading
-        cloudsColor *= cloudsDensity.y;
+        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewDir, 5); // x = clouds, y = shading
+        cloudsColor *= cloudsDensity.y * 0.66;
 
         vec2 starCoord = coordFrom3D(viewDir.brg);
 
-        vec3 finalSky = mix(sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.1, viewDir.y) * cloudsDensity.x));
+        vec3 finalSky = mix(sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.2, viewDir.y) * cloudsDensity.x));
         finalSky += calculateSun(viewDir);
         finalSky += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
 
@@ -146,7 +148,7 @@ void main() {
 
     try_insert(translucent_color, translucent_depth);
     try_insert(entity_color, entity_depth);
-    try_insert(weather_color, weather_depth);
+    // try_insert(weather_color, weather_depth);
     //try_insert(clouds_color, clouds_depth);
     try_insert(particles_color, particles_depth);
 
@@ -161,12 +163,14 @@ void main() {
     float fogStartMin = mix(10.0, 1.0, float(frx_effectBlindness));
     blockDist = max(0.0, blockDist - fogStartMin);
 
-    float fogFactor = 1.0 - exp(-blockDist / frx_viewDistance);
-    fogFactor = mix(fogFactor, fogFactor * 1.5, tdata.x);
-    fogFactor = mix(fogFactor, fogFactor * 2.5, tdata.y);
-    fogFactor = mix(fogFactor, fogFactor * 2.0, tdata.z);
-    fogFactor = mix(fogFactor, fogFactor * 2.0, frx_worldIsNether);
-    fogFactor = mix(fogFactor, fogFactor * 2.0, frx_worldIsEnd);
+    float fogDensity = mix(1.0, 0.8, tdata.x);
+    fogDensity = mix(fogDensity, 5.5, tdata.y);
+    fogDensity = mix(fogDensity, 4.0, tdata.z);
+    fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);
+    fogDensity = mix(fogDensity, 5.5, frx_smoothedRainGradient);
+    fogDensity = mix(fogDensity, 6.5, frx_thunderGradient);
+
+    float fogFactor = 1.0 - exp((-blockDist / frx_viewDistance) * fogDensity);
 
     fogFactor = mix(fogFactor, 1.0 - exp(-blockDist / 5.0), float(frx_effectBlindness));
 
@@ -249,7 +253,9 @@ void main() {
     //     if(int(solidData.b * 16.0) < 3) composite *= vec3(1.2, 0.8, 0.8);
     // #endif
 
-    // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
+    // this looks ugly otherwise so I blend in weather after fog has been rendered
+    if(weather_depth < min_depth) composite.rgb = mix(composite.rgb, weather_color.rgb, weather_color.a * (1.0 - 0.5 * frx_smoothedRainGradient + 0.5 * frx_thunderGradient));
 
+    // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
     fragColor = vec4(composite.rgb, 1.0);
 }

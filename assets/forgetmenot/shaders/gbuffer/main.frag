@@ -26,36 +26,44 @@ void frx_pipelineFragment() {
         #define frx_fragNormal frx_vertexNormal
     #endif
 
-    vec3 directionalLight = vec3(1.0);
+    #ifdef DIRECTIONAL_SHADING
+        vec3 directionalLight = vec3(1.0);
 
-    vec3 sunVector = getSunVector();
-    vec3 moonVector = getMoonVector();
+        vec3 sunVector = getSunVector();
+        vec3 moonVector = getMoonVector();
 
-    vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.5 + 0.5) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.5 + 0.5);
-    vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.3;
-    vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.1) * dot(frx_fragNormal, moonVector) * 0.35 + 0.65;
+        vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.45 + 0.65) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.45 + 0.65);
+        vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.3;
+        vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.1) * dot(frx_fragNormal, moonVector) * 0.25 + 1.0;
 
-    float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
-    maxLightVal = mix(maxLightVal, 0.65, getTimeOfDayFactors().y);    
-    
-    directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);
-    directionalLight = mix(directionalLight, dayDiffuseColor, getTimeOfDayFactors().x);
-    directionalLight = mix(directionalLight, nightDiffuseColor, getTimeOfDayFactors().y);
+        float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
+        maxLightVal = mix(maxLightVal, 1.0, getTimeOfDayFactors().y);    
+        
+        directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);
+        directionalLight = mix(directionalLight, dayDiffuseColor, getTimeOfDayFactors().x);
+        directionalLight = mix(directionalLight, nightDiffuseColor, getTimeOfDayFactors().y);
 
-    directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
+        directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
+    #else
+        vec3 directionalLight = vec3(1.0);
+    #endif
 
     #ifdef VANILLA_LIGHTING
         #ifdef CUSTOM_LIGHTING
-            // nothing to see here
-            vec3 lightmap = vec3(0.0);
-            lightmap.rgb = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+            // // nothing to see here
+            // vec3 lightmap = vec3(0.0);
+            // lightmap.rgb = texture(frxs_lightmap, frx_fragLight.xy).rgb;
 
-            vec3 L = frx_skyLightVector;
-            vec3 V = normalize(frx_vertex.xyz);
-            vec3 N = frx_fragNormal;
-            vec3 H = (L + V) / length(L + V);
+            // vec3 L = frx_skyLightVector;
+            // vec3 V = normalize(frx_vertex.xyz);
+            // vec3 N = frx_fragNormal;
+            // vec3 H = (L + V) / length(L + V);
         #else
             vec3 lightmap = vec3(1.0);
+            lightmap.rgb *= mix(1.0, 1.5, getTimeOfDayFactors().x * frx_fragLight.y);
+
+            frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_smoothedRainGradient);
+            frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.4, frx_thunderGradient);
             lightmap.rgb = texture(frxs_lightmap, frx_fragLight.xy).rgb;
             vec3 ldata = frx_fragLight;
             vec3 tdata = getTimeOfDayFactors();
@@ -70,11 +78,11 @@ void frx_pipelineFragment() {
 
             lightmap = max(lightmap, vec3(0.05));
 
-            float heldLightFactor = frx_smootherstep(frx_heldLight.a * 10.0, frx_heldLight.a * 0.0, frx_distance);
+            float heldLightFactor = frx_smootherstep(frx_heldLight.a * 15.0, frx_heldLight.a * 0.0, frx_distance);
             heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
             if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
             heldLightFactor = clamp01(heldLightFactor);
-            lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.1, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
+            lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.5, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
 
             #ifdef APPLY_MC_LIGHTMAP
                 if(!frx_isGui || frx_isHand) color.rgb *= lightmap;
@@ -98,25 +106,22 @@ void frx_pipelineFragment() {
     }
 
     frx_fragEmissive += float(frx_matHurt) * 0.5;
-    unshadedColor.rgb = mix(unshadedColor.rgb, unshadedColor.rgb * vec3(2.0, 0.2, 0.2), float(frx_matHurt)); // g;ow for hurt entities
+    unshadedColor.rgb = mix(unshadedColor.rgb, vec3(1.5, 0.2, 0.2), 0.8 * float(frx_matHurt)); // g;ow for hurt entities
     color.rgb = mix(color.rgb, color.rgb * 5.0, float(frx_matFlash));
     color.rgb = mix(color.rgb, unshadedColor.rgb, frx_fragEmissive);
     //if(frx_fragEmissive > 0.0) color.a = 0.5;
 
     if(color.a <= 0.01) discard;
 
-    if(!frx_isGui || frx_isHand) color.rgb += color.rgb * frx_fragEmissive * EMISSIVE_BOOST.0;
+    if(!frx_isGui || frx_isHand) color.rgb += color.rgb * frx_fragEmissive * mix(EMISSIVE_BOOST.0, 1.0, frx_smoothedRainGradient * 0.5 + frx_thunderGradient * 0.5);
 
     // fog that uses vanilla fog color done here, other fog done in post
     float fogFactor = frx_smootherstep(frx_fogStart, frx_fogEnd, frx_distance);
     if(frx_cameraInFluid == 1 && !frx_isGui) color.rgb = mix(color.rgb, frx_fogColor.rgb, fogFactor);
 
     fragColor = color;
-    //fragNormal = vec4((frx_vertexNormal * 0.5 + 0.5), 1.0);
-    //fragData = vec4(frx_fragEmissive, 0.0, frx_distance, 1.0); // data for other post shaders to access
-    //fragLight = vec4(frx_fragLight.xy, frx_fragLight.z, directionalLight * 0.5 + 0.5);
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    fragData = vec4(frx_fragEmissive, frx_fragReflectance, float(isWater), frx_fragLight.y);
+    fragData = vec4(frx_fragEmissive, frx_fragReflectance, float(fmn_isWater), frx_fragLight.y);
 
     gl_FragDepth = gl_FragCoord.z;
 }

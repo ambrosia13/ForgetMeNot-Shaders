@@ -8,6 +8,12 @@
     "config.forgetmenot.desc.sky_resolution": "Resolution at which the sky is computed.",
     "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
     "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
+    "config.forgetmenot.name.clouds": "Clouds",
+    "config.forgetmenot.desc.clouds": "Enables expensive 2D clouds.",
+    "config.forgetmenot.name.simple_water": "Fast Water",
+    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
+    "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
+    "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
 
     "config.forgetmenot.category.general": "General Options",
 
@@ -21,16 +27,6 @@
     "config.forgetmenot.desc.danger_sight": "Turns blocks more red when it is dark enough for mobs to spawn.",
     "config.forgetmenot.name.contrast": "Contrast",
     "config.forgetmenot.desc.contrast": "Adjusts contrast. 10 means no adjustment to contrast.",
-
-    "config.forgetmenot.category.materials": "Material Options",
-
-    "config.forgetmenot.name.simple_water": "Fast Water",
-    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
-    "config.forgetmenot.name.ice_normals": "Ice Normals",
-    "config.forgetmenot.desc.ice_normals": "Enables pixel locked normals for ice.",
-    "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
-    "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture.",
-
 
     "config.forgetmenot.category.experimental": "Experimental Stuff",
 
