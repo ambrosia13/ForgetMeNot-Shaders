@@ -7,8 +7,9 @@ float waterHeightNoise(in vec2 uv) {
     vec2 coord = uv * 0.3;
     
     #ifndef SIMPLE_WATER
-        waterHeight += fbm2D(rotate2D(coord, -PI / 12.0) * vec2(2.5, 1.0) - 10.0 + vec2(1.2, 0.7) * time);
-        waterHeight += fbm2D(rotate2D(coord, PI / 12.0) * vec2(3.1, 1.2) + 10.0 - vec2(0.8, 1.2) * time);
+        waterHeight += fbmOctaves(rotate2D(coord, -PI / 12.0) * vec2(2.5, 1.0) - 10.0 + vec2(1.2, 0.7) * time, 3);
+        waterHeight += fbmOctaves(rotate2D(coord, PI / 12.0) * vec2(3.1, 1.2) + 10.0 - vec2(0.8, 1.2) * time, 2);
+        // waterHeight += snoise(coord * vec2(100.0, 10.0)) * 0.05;
         waterHeight *= 1.0;
     #else
         // waterHeight += snoise(coord * vec2(2.5, 1.0) + vec2(10.7, 1.2) * time) + 1.0;

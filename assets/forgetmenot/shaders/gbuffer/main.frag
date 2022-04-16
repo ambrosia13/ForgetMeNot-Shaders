@@ -26,6 +26,13 @@ void frx_pipelineFragment() {
         #define frx_fragNormal frx_vertexNormal
     #endif
 
+    float pixelScale = frx_isGui ? 16.0 : 32.0; 
+    #ifdef PIXEL_LOCKED_GLINT
+        vec3 glint = texture(u_glint, (floor(frx_normalizeMappedUV(frx_texcoord) * pixelScale) / pixelScale) + frx_renderSeconds / 15.0).rgb;
+    #else
+        vec3 glint = texture(u_glint, (frx_normalizeMappedUV(frx_texcoord)) + frx_renderSeconds / 15.0).rgb;
+    #endif
+
     #ifdef DIRECTIONAL_SHADING
         vec3 directionalLight = vec3(1.0);
 
@@ -92,14 +99,8 @@ void frx_pipelineFragment() {
     #endif
 
     // this is used for pixel locking enchantment glint, for some reason the scale is different in gui compared to in world enchantment glint
-    float pixelScale = frx_isGui ? 16.0 : 32.0; 
 
     if(frx_matGlint == 1) {
-        #ifdef PIXEL_LOCKED_GLINT
-            vec3 glint = texture(u_glint, (floor(frx_normalizeMappedUV(frx_texcoord) * pixelScale) / pixelScale) + frx_renderSeconds / 15.0).rgb;
-        #else
-            vec3 glint = texture(u_glint, (frx_normalizeMappedUV(frx_texcoord)) + frx_renderSeconds / 15.0).rgb;
-        #endif
         glint = pow(glint, vec3(4.0));
         color.rgb += glint;
         frx_fragEmissive += frx_luminance(glint) * 0.5;

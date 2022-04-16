@@ -90,23 +90,6 @@ void main() {
     vec4  particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
-
-    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // common things
-    float max_depth = max(max(translucent_depth, particles_depth), main_depth);
-    float min_depth = min(min(translucent_depth, particles_depth), main_depth);
-
-    vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
-    vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
-    vec3 viewDir = normalize(minViewSpacePos);
-
-    vec3 tdata = getTimeOfDayFactors();
-    // ---
-
-    float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
-    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.1, 0.2), vec3(0.1, 0.2, 0.3), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
-
     // sky stuff
     #if SKY_RESOLUTION == RESOLUTION_QUARTER
         #define RESOLUTION_SCALE 0.25
@@ -121,6 +104,33 @@ void main() {
     #else
         vec3 sky = texture(u_sky, texcoord * RESOLUTION_SCALE).rgb + rand3D(texcoord) / 100.0;
     #endif
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // common things
+    float max_depth = max(max(translucent_depth, particles_depth), main_depth);
+    float min_depth = min(min(translucent_depth, particles_depth), main_depth);
+
+    vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
+    vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
+    vec3 viewDir = normalize(minViewSpacePos);
+
+    vec3 tdata = getTimeOfDayFactors();
+    // ---
+
+    #ifdef GLOBAL_ILLUMINATION
+        vec4 lastFrameSample;
+        vec3 tempViewSpacePos = minViewSpacePos;
+        vec3 posDiff = frx_lastCameraPos - frx_cameraPos;
+        vec3 lastFrameViewSpacePos = tempViewSpacePos - posDiff;
+        vec2 lastFrameCoords = lastFrameViewSpaceToScreenSpace(lastFrameViewSpacePos).xy;
+        if(clamp01(lastFrameCoords) != lastFrameCoords) lastFrameCoords = texcoord;
+        lastFrameSample = texture(u_global_illumination, lastFrameCoords.xy);
+    #endif
+
+    float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
+    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.1, 0.2), vec3(0.1, 0.2, 0.3), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+
 
     if(floor(max_depth) > 0.5) {
         vec3 cloudsColor = vec3(1.0);
@@ -180,14 +190,6 @@ void main() {
     composite.rgb = mix(tempColor, composite, floor(min_depth));
 
     #ifdef GLOBAL_ILLUMINATION
-        vec4 lastFrameSample;
-        vec3 tempViewSpacePos = minViewSpacePos;
-        vec3 posDiff = frx_lastCameraPos - frx_cameraPos;
-        vec3 lastFrameViewSpacePos = tempViewSpacePos - posDiff;
-        vec2 lastFrameCoords = lastFrameViewSpaceToScreenSpace(lastFrameViewSpacePos).xy;
-        if(clamp01(lastFrameCoords) != lastFrameCoords) lastFrameCoords = texcoord;
-        lastFrameSample = texture(u_global_illumination, lastFrameCoords.xy);
-
         #ifdef APPLY_MC_LIGHTMAP
             vec3 lighting = vec3(1.0);
         #else

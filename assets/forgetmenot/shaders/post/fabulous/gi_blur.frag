@@ -10,8 +10,8 @@ layout(location = 0) out vec4 fragColor;
 void main() {
     vec4 rays = vec4(1.0);
     #ifdef GLOBAL_ILLUMINATION
-        float blurAmount = texture(u_global_illumination, texcoord).a;
         #ifdef GI_FILTER
+            float blurAmount = texture(u_global_illumination, texcoord).a;
             rays = normalAwareBlur(u_global_illumination, texcoord, blurAmount, GI_FILTER_QUALITY, u_normal);
         #else
             rays = texture(u_global_illumination, texcoord);

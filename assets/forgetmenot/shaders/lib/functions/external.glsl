@@ -72,6 +72,9 @@ vec4 normalLockedBlur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction,
 // Adapted from Xordev's Ominous Shaderpack https://github.com/XorDev/Ominous-Shaderpack/blob/main/shaders/lib/Blur.inc, with permission
 // --------------------------------------------------------------------------------------------------------
 vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2D normal) {
+  vec3 centerNormal = texture(normal, uv).rgb;
+  vec4 centerColor = texture(image, uv);
+
 	vec2 texel = 1.0 / frxu_size;
 
   float weight = 0.0;
@@ -82,19 +85,17 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
 
 	mat2 ang = mat2(0.73736882209777832, -0.67549037933349609, 0.67549037933349609, 0.73736882209777832);
 
-  vec3 centerNormal = texture(normal, uv).rgb;
-  vec4 centerColor = texture(image, uv);
 
 	for(int i = 0; i < quality * quality; i++) {
     d += 1.0 / d;
     samp *= ang;
-
-    float w = 1.0 / max(0.01, d - 1.0);
     vec2 uv = uv + samp * (d - 1.0) * texel;
     vec3 currentNormal = texture(normal, uv).rgb;
+
+    float w = 1.0 / max(0.01, d - 1.0);
     if(all(equal(currentNormal, centerNormal))) {
-      col += texture(image, uv) * w;
       weight += w;
+      col += texture(image, uv) * w;
     } else {
       col += centerColor * w;
       weight += w;  

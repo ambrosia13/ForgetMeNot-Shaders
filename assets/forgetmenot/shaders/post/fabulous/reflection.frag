@@ -12,25 +12,23 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    vec3 tdata = getTimeOfDayFactors();
-    vec3 cloudsColor = vec3(1.0);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
-
     vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-    //normal += rand3D(texcoord) / 255.0;
     float depth = texture(u_depth, texcoord).r;
     float particlesDepth = texture(u_particles_depth, texcoord).r;
-
     vec3 sample = texture(u_data, texcoord).rgb;
-    vec2 light = sample.gb;
-    vec3 f0 = sample.rrr;
-
     vec3 sceneColor = texture(u_color, texcoord).rgb;
 
     vec3 reflectColor = vec3(0.0);
     vec3 reflectance = vec3(0.0);
     vec3 sunReflection = vec3(0.0);
+
+    vec3 tdata = getTimeOfDayFactors();
+    vec3 cloudsColor = vec3(1.0);
+    cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
+    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+
+    vec2 light = sample.gb;
+    vec3 f0 = sample.rrr;
 
     #ifdef RAYTRACE_SSR
         #define SSR_STEPS 10
