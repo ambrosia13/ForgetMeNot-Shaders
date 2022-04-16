@@ -26,5 +26,5 @@ void main() {
 
     vibrance(finalColor, 1.2);
 
-    fragColor = vec4(finalColor.rgb + rand3D(texcoord) / 255.0, 1.0);
+    fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + rand3D(texcoord) / 255.0, 1.0));
 }

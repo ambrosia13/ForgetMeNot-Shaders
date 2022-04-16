@@ -18,5 +18,5 @@ void main() {
         #endif
     #endif
 
-    fragColor = rays;
+    fragColor = max(vec4(1.0 / 65536.0), rays);
 }

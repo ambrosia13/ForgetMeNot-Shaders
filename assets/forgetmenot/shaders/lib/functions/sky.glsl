@@ -131,7 +131,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
 // -----------------------------------------------------------------------------------------------------------------------
 float getOverworldFogDensity(in vec3 timeFactors, in float blockDist) {
     float fogStartMin = 10.0;
-    float fogFactor = 1.0 - exp(-blockDist / frx_viewDistance);
+    float fogFactor = 1.0 - exp2(-blockDist / frx_viewDistance);
 
     fogFactor = mix(fogFactor, fogFactor * 1.5, timeFactors.z);
     fogFactor = mix(fogFactor, fogFactor * 1.2, timeFactors.y);
@@ -140,7 +140,7 @@ float getOverworldFogDensity(in vec3 timeFactors, in float blockDist) {
     return fogFactor;
 }
 float getNetherFogDensity(in float blockDist, in bool reverse) {
-    float fogFactor = 1.0 - exp(-blockDist / frx_viewDistance);
+    float fogFactor = 1.0 - exp2(-blockDist / frx_viewDistance);
     if(reverse) fogFactor = 1.0 - fogFactor;
     fogFactor *= 3.0;
     

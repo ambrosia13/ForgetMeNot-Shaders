@@ -191,5 +191,5 @@ void main() {
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 
-    fragColor = vec4(sceneColor + sunReflection * 0.0, 1.0);
+    fragColor = max(vec4(1.0 / 65536.0), vec4(sceneColor + sunReflection * 0.0, 1.0));
 }

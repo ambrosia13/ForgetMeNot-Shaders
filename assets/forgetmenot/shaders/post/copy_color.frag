@@ -7,5 +7,6 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    fragColor = texture(u_color, texcoord);
+    vec4 color = texture(u_color, texcoord);
+    fragColor = max(vec4(1.0 / 65536.0), color);
 }

@@ -180,9 +180,9 @@ void main() {
     fogDensity = mix(fogDensity, 5.5, frx_smoothedRainGradient);
     fogDensity = mix(fogDensity, 6.5, frx_thunderGradient);
 
-    float fogFactor = 1.0 - exp((-blockDist / frx_viewDistance) * fogDensity);
+    float fogFactor = 1.0 - exp2((-blockDist / frx_viewDistance) * fogDensity);
 
-    fogFactor = mix(fogFactor, 1.0 - exp(-blockDist / 5.0), float(frx_effectBlindness));
+    fogFactor = mix(fogFactor, 1.0 - exp2(-blockDist / 5.0), float(frx_effectBlindness));
 
     vec3 fogColor = mix(sky.rgb, vec3(0.0), frx_effectBlindness);
     fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld);
@@ -259,5 +259,5 @@ void main() {
     if(weather_depth < min_depth) composite.rgb = mix(composite.rgb, weather_color.rgb, weather_color.a * (1.0 - 0.5 * frx_smoothedRainGradient + 0.5 * frx_thunderGradient));
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
-    fragColor = vec4(composite.rgb, 1.0);
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));
 }

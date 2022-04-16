@@ -21,5 +21,5 @@ void main() {
 
     vec3 sky = calculateSkyColor(viewSpacePos);
     
-    skyColor = vec4(sky, 1.0);
+    skyColor = max(vec4(1.0 / 65536.0), vec4(sky, 1.0));
 }

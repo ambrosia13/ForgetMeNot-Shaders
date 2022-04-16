@@ -20,5 +20,5 @@ void main() {
     #endif
 
     vec4 composite = texture(u_composite, texcoord);
-    fragColor = composite * rays;
+    fragColor = max(vec4(1.0 / 65536.0), composite * rays);
 }

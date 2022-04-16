@@ -10,5 +10,5 @@ layout(location = 0) out vec4 fragColor;
 void main() {
     vec3 color = texture(u_reflection, texcoord).rgb;
 
-    fragColor = vec4(color, 1.0);
+    fragColor = max(vec4(1.0 / 65536.0), vec4(color, 1.0));
 }
