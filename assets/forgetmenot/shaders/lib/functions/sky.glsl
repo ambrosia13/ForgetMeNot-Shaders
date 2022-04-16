@@ -1,5 +1,6 @@
 // -----------------------------------------------------------------------------------------------------------------------
 vec3 calculateSkyColor(in vec3 viewSpacePos) {
+    viewSpacePos = normalize(viewSpacePos);
     vec3 tdata = getTimeOfDayFactors();
 
     vec3 skyColor = vec3(0.0);
@@ -7,7 +8,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
     if(frx_worldIsOverworld == 1) {
         vec3 overworldSkyColor = vec3(0.0);
 
-        // a whole lot of magic numbers
+        // // a whole lot of magic numbers
         vec3 daytimeSky = vec3(0.864,1.118,1.300) * 0.9;
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840), frx_smootherstep(-0.1, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805), frx_smootherstep(0.1, 0.6, viewSpacePos.y));

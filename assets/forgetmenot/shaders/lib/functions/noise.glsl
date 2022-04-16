@@ -23,9 +23,6 @@ float waterHeightNoise(in vec2 uv) {
     // waterHeight += fbm2D(coord * vec2(3.5, 1.3) + 100.0 + vec2(1.5, 0.4) * time);
     // waterHeight += fbm2D(coord * vec2(4.4, 1.1) + 10.0 - vec2(1.2, 0.3) * time);
 
-
-    //if(frx_playerEyeInWater == 0 && frx_playerWet == 1) waterHeight += 2.0 * sin(frx_distance * 3.0 - frx_renderSeconds * 10.0) * frx_smootherstep(10.0, 0.0, frx_distance);
-
     return pow(waterHeight, 1.0) * 0.15;
 }
 

@@ -11,7 +11,7 @@ void main() {
     //vec3 color = fxaa(u_color, texcoord);
     vec3 color = texture(u_color, texcoord).rgb;
 
-    vec3 finalColor = pow(color.rgb, vec3(1.3));
+    vec3 finalColor = pow(color.rgb, vec3(1.2));
 
     finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), frx_effectWither);
     finalColor = mix(finalColor, finalColor * vec3(0.7, 1.0, 0.7), frx_effectPoison);
@@ -20,7 +20,7 @@ void main() {
 
     // Credit to Zombye#7365 for making the tone map
     finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
-    // finalColor = frx_toneMap(finalColor * 1.0);
+    //finalColor = frx_toneMap(finalColor * 1.0);
 
     // if(any(greaterThan(finalColor, vec3(1.0)))) finalColor = vec3(0.0);
 
