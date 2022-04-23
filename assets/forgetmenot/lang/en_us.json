@@ -9,7 +9,7 @@
     "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
     "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
     "config.forgetmenot.name.clouds": "Clouds",
-    "config.forgetmenot.desc.clouds": "Enables expensive 2D clouds.",
+    "config.forgetmenot.desc.clouds": "Enables cheap 2D clouds.",
     "config.forgetmenot.name.simple_water": "Fast Water",
     "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
     "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",

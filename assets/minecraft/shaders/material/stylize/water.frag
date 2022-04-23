@@ -5,10 +5,11 @@ int fmn_isWater = 0;
 
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
-    vec2 uv = vec2(
-        uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
-        uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
-    ) * 0.3;
+    vec2 uv = uv0 * 0.3;
+    // vec2(
+    //     uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
+    //     uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
+    // ) * 0.3;
 
     #ifdef PBR_ENABLED
         float offset = 0.2;

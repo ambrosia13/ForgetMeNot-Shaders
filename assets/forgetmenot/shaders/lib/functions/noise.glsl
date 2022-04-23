@@ -2,7 +2,7 @@ float waterHeightNoise(in vec2 uv) {
     float waterHeight;
     float waves;
     float w;
-    float time = frx_renderSeconds / 50.0;
+    float time = frx_renderSeconds / 7.0;
 
     vec2 coord = uv * 0.3;
     

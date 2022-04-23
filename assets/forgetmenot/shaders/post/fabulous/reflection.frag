@@ -29,129 +29,50 @@ void main() {
 
     vec2 light = sample.gb;
     vec3 f0 = sample.rrr;
+    if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(10.0, light.y);
+    if(f0.r / 20.0 > 0.99) normal.rgb += rand3D(texcoord) / 100.0;
 
-    #ifdef RAYTRACE_SSR
-        #define SSR_STEPS 10
+    #ifndef RAYTRACE_SSR
+        #define SSR_STEPS 40
         if(depth != 1.0 && f0.r > 0.0) {
-            vec3 rayViewPos = setupViewSpacePos(texcoord, depth);
-            vec3 nRayViewPos = normalize(rayViewPos);
-            vec3 rayDirection = normalize(reflect(nRayViewPos, normal));
+            vec3 clipSpacePos = vec3(texcoord, depth) * 2.0 - 1.0;
+            vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
+            vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) * 2.0 - 1.0 - clipSpacePos);
 
-            float NdotV = max(0.0, dot(-normal, nRayViewPos));
-            float stepLength = 40.0 / SSR_STEPS;
-            //stepLength = mix(stepLength, stepLength * 2.0, 1.0 - NdotV);
+            float stepLength = 1.0 / SSR_STEPS;
+
+            // sky reflection
+            vec3 cloudsColor = vec3(1.2);
+            cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
+            cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+            cloudsColor *= 1.5;
+
+            vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectionView, 10); // x = clouds, y = shading
+            cloudsColor *= cloudsDensity.y * 0.7;
+            cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+            cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
+
+            reflectColor = mix(calculateSkyColor(reflectionView), vec3(0.2), 1.0 - step(0.9, light.y));
+            reflectColor += calculateSun(reflectionView);
+            reflectColor = mix(reflectColor, mix(reflectColor, cloudsColor, 0.75), clamp01(cloudsDensity.x));
+            reflectColor = mix(vec3(0.2), reflectColor, frx_smoothedEyeBrightness.y);
 
             for(int i = 0; i < SSR_STEPS; i++) {
-                rayViewPos += rayDirection * ((mix(4.0, 80.0, 1.0 - NdotV)) / SSR_STEPS) + rand3D(texcoord) / 2515.0;
+                vec3 currentScreenPos = (clipSpacePos + rayScreenDir * float(i) * stepLength) * 0.5 + 0.5;
 
-                vec3 rayScreenPos = viewSpaceToScreenSpace(rayViewPos);
-
-                if(clamp01(rayScreenPos.xy) != rayScreenPos.xy) {
-                    reflectColor = mix(mix(calculateSkyColor(rayDirection), vec3(1.0), calculateBasicCloudsOctaves(rayDirection, 1).x * 0.5 * cloudsColor), vec3(0.2), 1.0 - step(0.9, light.y));
-                    reflectColor += calculateSun(rayDirection);
+                if(clamp01(currentScreenPos.xy) != currentScreenPos.xy) {
                     break;
-                }
-
-                float depthQuery = texture(u_depth, rayScreenPos.xy).r;
-                // if(depthQuery == 1.0) {
-                //     break;
-                // }
-
-                if(rayScreenPos.z > depthQuery) {
-                    reflectColor = texture(u_color, rayScreenPos.xy).rgb;
+                } else if(currentScreenPos.z > texelFetch(u_depth, ivec2(frxu_size * currentScreenPos.xy), 0).r) {
+                    reflectColor = texture(u_previous_frame, currentScreenPos.xy).rgb;
+                    break;
                 } else {
-                    reflectColor = mix(mix(calculateSkyColor(rayDirection), vec3(1.0), calculateBasicCloudsOctaves(rayDirection, 1).x * 0.5 * cloudsColor), vec3(0.2), 1.0 - step(0.9, light.y));
-                    reflectColor += calculateSun(rayDirection);
                 }
             }
-            reflectance = getReflectance(f0 / 20.0, NdotV);
-            reflectance = vec3(1.0);
+            reflectance = getReflectance(f0 / 20.0, clamp01(dot(normal, -normalize(viewSpacePos))));
+            // if(f0.r / 20.0 > 0.99) reflectance *= 0.5 * sceneColor * sceneColor;
+            // reflectance = vec3(1.0);
         }
-
-        // vec2 reflectionUv;
-
-        // float maxDistance = frx_viewDistance;
-        // float resolution = 0.2;
-        // int steps = 15;
-        // float thickness = 0.5;
-
-        // vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
-        // vec3 positionTo = viewSpacePos;
-        // vec3 viewDir = normalize(viewSpacePos);
-        // vec3 rayDir = reflect(viewDir, normal);
-
-        // vec3 startView = viewSpacePos;
-        // vec3 endView = viewSpacePos + rayDir * maxDistance;
-
-        // vec3 startFrag = viewSpaceToScreenSpace(startView);
-        // startFrag.xy *= frxu_size;
-
-        // vec3 endFrag = viewSpaceToScreenSpace(endView);
-        // endFrag.xy *= frxu_size;
-
-        // vec2 frag = startFrag.xy;
-        // reflectionUv = frag / frxu_size;
-
-        // float deltaX = endFrag.x - startFrag.x;
-        // float deltaY = endFrag.y - startFrag,y;
-
-        // float useX = float(abs(deltaX) >= abs(deltaY));
-        // float delta = mix(abs(deltaY), abs(deltaX), useX) * clamp01(resolution);
-
-        // vec2 increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-
-        // float search0 = 0.0;
-        // float search1 = 0.0;
-
-        // int hit0 = 0;
-        // int hit1 = 0;
-
-        // float viewDistance = length(startView);
-        // float rayDepth = thickness;
-
-        // for(int i = 0; i < int(delta); i++) {
-        //     frag += increment;
-        //     reflectionUv.xy = frag / frxu_size;
-
-        //     search1 = mix(
-        //         (frag.y - startFrag.y) / deltaY,
-        //         (frag.x - startFrag.x) / deltaX,
-        //         useX
-        //     );
-
-        //     viewDistance = length(startView) * length(endView) / mix(length(endView), length(startView), search1);
-
-        //     rayDepth = viewDistance - length(setupViewSpacePos(reflectionUv.xy, depth));
-
-        //     if(depth > 0.0 && depth < thickness) {
-        //         hit0 = 1;
-        //         break;
-        //     } else {
-        //         search0 = search1;
-        //     }
-        // }
-
-        // search1 = search0 + ((search1 - search0) / 2.0);
-
-        // steps *= hit0;
-        // for(int i = 0; i < steps; i++) {
-        //     frag = mix(startFrag.xy, endFrag.xy, search1);
-        //     reflectionUv.xy = frag / frxu_size;
-        //     positionTo = setupViewSpacePos(reflectionUv, depth);
-
-        //     viewDistance = (length(startView) * length(endView)) / mix(length(startView), length(endView), search1);
-        //     depth = viewDistance - length(positionTo);
-
-        //     if(depth > 0.0 && depth < thickness) {
-        //         hit1 = 1;
-        //         search1 = search0 + ((search1 - search0) / 2.0);
-        //     } else {
-        //         float temp = search1;
-        //         search1 = search0 + ((search1 - search0) / 2.0);
-        //         search0 = temp;
-        //     }
-        // }
-
     #else
         if(depth != 1.0 && f0.r > 0.0) {
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
@@ -173,7 +94,7 @@ void main() {
 
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
-                reflectColor = mix(mix(calculateSkyColor(reflectedViewDir), vec3(1.0), calculateBasicCloudsOctaves(reflectedViewDir, 1).x * 0.5 * cloudsColor), vec3(0.2), 1.0 - step(0.9, light.y));
+                reflectColor = mix(calculateSkyColor(reflectedViewDir), vec3(0.2), 1.0 - step(0.9, light.y));
                 reflectColor += calculateSun(reflectedViewDir);
                 reflectColor = mix(vec3(0.2), reflectColor, frx_smoothedEyeBrightness.y);
             } else {
@@ -187,7 +108,7 @@ void main() {
         }
     #endif
 
-    if(frx_luminance(reflectColor) > 5.0) reflectance = vec3(0.5); // test for sun
+    if(frx_luminance(reflectColor) > 7.0) reflectance = vec3(0.5); // test for sun
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 

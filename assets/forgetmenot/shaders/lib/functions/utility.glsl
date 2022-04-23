@@ -52,6 +52,18 @@ vec3 getTimeOfDayFactors() {
     dayFactor *= frx_skyLightTransitionFactor;
     float sunsetFactor = 1.0 - frx_skyLightTransitionFactor;
 
+    // float dayFactor, nightFactor, sunsetFactor;
+
+    // float ticks = frx_worldTime * 24000.0;
+
+    // dayFactor = frx_smootherstep(0.0, 1500.0, ticks) - frx_smootherstep(11500.0, 13000.0, ticks);
+    // nightFactor = frx_smootherstep(13000.0, 14500.0, ticks) - frx_smootherstep(21500.0, 23000.0, ticks);
+    // // branching doesn't have much impact if condition is universal across the whole screen, so this is not as cursed as it looks
+    // // Okay, maybe it is still pretty cursed
+    // if(ticks < 15000.0 && ticks > 6000.0) sunsetFactor = frx_smootherstep(11500.0, 13000.0, ticks) - frx_smootherstep(13000.0, 14500.0, ticks);
+    // else if(ticks > 20000.0) sunsetFactor = frx_smootherstep(21500.0, 23000.0, ticks);// - frx_smootherstep(23000.0, 25500.0, ticks);
+    // else sunsetFactor = frx_smootherstep(1500.0, 0.0, ticks);
+
     return vec3(dayFactor, nightFactor, sunsetFactor);
 }
 
@@ -109,7 +121,7 @@ float fbmOctaves(vec2 uv, int octaves) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0 * (mod(i, 2) - 2);
+		uv = uv * 2.0 + frx_renderSeconds / 10.0;
 		amp *= 0.5;
 	}
 
@@ -134,6 +146,46 @@ vec3 getReflectance(in vec3 f0, in float NdotV) {
 vec2 coordFrom3D(vec3 viewDir){
     return vec2(atan(viewDir.x, viewDir.y), acos(viewDir.z));   
 }
+
+float smoothHash(in vec2 st) 
+{
+	vec2 p = floor(st);
+	vec2 f = fract(st);
+		
+	float n = p.x + p.y*57.0;
+
+	float a = rand1D(vec2(n + 0.0));
+	float b = rand1D(vec2(n + 1.0));
+	float c = rand1D(vec2(n + 57.0));
+	float d = rand1D(vec2(n + 58.0));
+	
+	vec2 f2 = f * f;
+	vec2 f3 = f2 * f;
+	
+	vec2 t = 3.0 * f2 - 2.0 * f3;
+	
+	float u = t.x;
+	float v = t.y;
+
+	float res = a + (b - a) * u +(c - a) * v + (a - b + d - c) * u * v;
+    
+    return res;
+}
+float fbmHash(vec2 uv, int octaves) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+    mat2 rotationMatrix = mat2(cos(0.25 * PI), sin(0.25 * PI), -sin(0.25 * PI), cos(0.25 * PI));
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
+		uv = rotationMatrix * uv * 2.0 + frx_renderSeconds / 10.0;
+		amp *= 0.5;
+	}
+
+	return noise;
+}
+
 
 #include forgetmenot:shaders/lib/functions/external.glsl 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

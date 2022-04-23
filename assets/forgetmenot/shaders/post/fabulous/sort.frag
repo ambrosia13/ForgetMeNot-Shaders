@@ -129,22 +129,34 @@ void main() {
     #endif
 
     float waterFogDist = distance(maxViewSpacePos, minViewSpacePos);
-    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.1, 0.2), vec3(0.1, 0.2, 0.3), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+    if(max_depth != 1.0 && translucentData.b > 0.5) translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.1, 0.2), vec3(0.0, 0.2, 0.3), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
 
 
     if(floor(max_depth) > 0.5) {
-        vec3 cloudsColor = vec3(1.0);
-        cloudsColor = mix(cloudsColor, vec3(0.35, 0.3, 0.4), tdata.z);
+        vec3 cloudsColor = vec3(1.2);
+        cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
         cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
         cloudsColor *= 1.5;
 
-        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewDir, 5); // x = clouds, y = shading
-        cloudsColor *= cloudsDensity.y * 0.66;
+        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewDir, 10); // x = clouds, y = shading
+        cloudsColor *= cloudsDensity.y * 0.7;
+        cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+        cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
         vec2 starCoord = coordFrom3D(viewDir.brg);
 
-        vec3 finalSky = mix(sky.rgb, cloudsColor, clamp01(frx_smootherstep(0.0, 0.2, viewDir.y) * cloudsDensity.x));
-        finalSky += calculateSun(viewDir);
+        vec3 finalSky = sky.rgb + calculateSun(viewDir) * 1.0;
+        
+        if(frx_worldIsEnd == 1) {
+            finalSky -= mix(0.0, 0.5, (pow(clamp01(viewDir.y), 0.7)));
+            float dist = 1.0 * distance(viewDir, normalize(vec3(0.0, 0.1, -0.4)));
+            //dist *= step(0.05, dist);
+            finalSky = mix(finalSky, vec3(0.9, 0.5, 1.0), 1.0 / max(0.0001, pow(dist, 0.6)) * 0.1);
+            // finalSky += rand3D(viewDir.yy * 0.01) / 15.0;
+        }
+
+        finalSky = mix(finalSky.rgb, mix(finalSky, cloudsColor, 0.75), (frx_smootherstep(0.0, 0.2, viewDir.y) * cloudsDensity.x));
+        // finalSky += cloudsColor * frx_smootherstep(0.0, 0.2, viewDir.y) * cloudsDensity.x * 0.5;
         finalSky += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
 
         main_color.rgb = finalSky;
@@ -185,7 +197,7 @@ void main() {
     fogFactor = mix(fogFactor, 1.0 - exp2(-blockDist / 5.0), float(frx_effectBlindness));
 
     vec3 fogColor = mix(sky.rgb, vec3(0.0), frx_effectBlindness);
-    fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld);
+    fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld + frx_worldIsEnd);
     vec3 tempColor = mix(composite.rgb, fogColor, clamp01(fogFactor));
     composite.rgb = mix(tempColor, composite, floor(min_depth));
 

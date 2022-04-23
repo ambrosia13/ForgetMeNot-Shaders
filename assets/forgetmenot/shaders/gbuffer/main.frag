@@ -35,7 +35,7 @@ void frx_pipelineFragment() {
 
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
-            if(!frx_isGui || frx_isHand) {
+            if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
                 vec3 lightmap = vec3(1.0);
                 lightmap.rgb *= mix(1.0, 1.5, getTimeOfDayFactors().x * frx_fragLight.y);
 
@@ -46,7 +46,9 @@ void frx_pipelineFragment() {
                 vec3 tdata = getTimeOfDayFactors();
 
                 #ifdef VANILLA_AO
-                    if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;
+                    // if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;
+                    float invAO = 1.0 - frx_fragLight.z;
+                    if(frx_matDisableAo == 0) lightmap = mix(lightmap, lightmap * color.rgb, invAO);
                 #endif
                 #ifdef DIRECTIONAL_SHADING
                     if(frx_matDisableDiffuse == 0)  {
@@ -56,7 +58,7 @@ void frx_pipelineFragment() {
                         vec3 moonVector = getMoonVector();
 
                         vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.45 + 0.65) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.45 + 0.65);
-                        vec3 dayDiffuseColor = vec3(1.3, 1.15, 0.9) * dot(frx_fragNormal, sunVector) * 0.5 + 1.3;
+                        vec3 dayDiffuseColor = vec3(1.4, 1.35, 0.9) * dot(frx_fragNormal, sunVector) * 0.3 + 1.2;
                         vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.3) * dot(frx_fragNormal, moonVector) * 0.25 + 1.0;
                         
                         directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);
@@ -64,7 +66,8 @@ void frx_pipelineFragment() {
                         directionalLight = mix(directionalLight, nightDiffuseColor, getTimeOfDayFactors().y);
 
                         directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
-                        lightmap *= directionalLight;
+
+                        lightmap *= mix(vec3(frx_luminance(directionalLight)), directionalLight, 1.0);
                     } else {
                         float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
                         maxLightVal = mix(maxLightVal, 1.0, getTimeOfDayFactors().y);    
@@ -95,8 +98,8 @@ void frx_pipelineFragment() {
         frx_fragEmissive += frx_luminance(glint) * 0.5;
     }
 
-    frx_fragEmissive += float(frx_matHurt) * 0.5;
-    unshadedColor.rgb = mix(unshadedColor.rgb, vec3(1.5, 0.2, 0.2), 0.8 * float(frx_matHurt)); // g;ow for hurt entities
+    // frx_fragEmissive += float(frx_matHurt) * 0.5;
+    color.rgb = mix(color.rgb, vec3(2.5, 0.2, 0.2), 0.25 * float(frx_matHurt)); // g;ow for hurt entities
     color.rgb = mix(color.rgb, color.rgb * 5.0, float(frx_matFlash));
     color.rgb = mix(color.rgb, unshadedColor.rgb, frx_fragEmissive * float(!frx_renderTargetParticles));
     //if(frx_fragEmissive > 0.0) color.a = 0.5;
