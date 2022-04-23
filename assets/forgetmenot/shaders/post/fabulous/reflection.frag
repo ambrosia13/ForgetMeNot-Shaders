@@ -29,7 +29,7 @@ void main() {
 
     vec2 light = sample.gb;
     vec3 f0 = sample.rrr;
-    if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(10.0, light.y);
+    if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(5.0, light.y);
     if(f0.r / 20.0 > 0.99) normal.rgb += rand3D(texcoord) / 100.0;
 
     #ifndef RAYTRACE_SSR

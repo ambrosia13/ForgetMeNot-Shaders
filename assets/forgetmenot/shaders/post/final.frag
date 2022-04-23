@@ -16,7 +16,7 @@ void main() {
     finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), frx_effectWither);
     finalColor = mix(finalColor, finalColor * vec3(0.7, 1.0, 0.7), frx_effectPoison);
 
-    // contrast(finalColor, CONTRAST / 10.0);
+    contrast(finalColor, CONTRAST / 10.0);
 
     // Credit to Zombye#7365 for making the tone map
     finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
