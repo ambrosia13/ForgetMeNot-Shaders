@@ -197,6 +197,16 @@
                     nameKey: "config.forgetmenot.name.clouds",
                     descriptionKey: "config.forgetmenot.desc.clouds"
                 },
+                cloud_normals: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cloud_normals",
+                    descriptionKey: "config.forgetmenot.desc.cloud_normals"
+                },
+                fancy_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.fancy_clouds",
+                    descriptionKey: "config.forgetmenot.desc.fancy_clouds"
+                },
                 simple_water: {
                     default: false,
                     nameKey: "config.forgetmenot.name.simple_water",

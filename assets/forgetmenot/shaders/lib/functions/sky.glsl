@@ -136,18 +136,42 @@ vec2 calculateBasicClouds(in vec3 viewSpacePos) {
         return vec2(0.0);
     #endif
 }
+float getCloudNoise(in vec2 plane, in int octaves) {
+    #ifdef FANCY_CLOUDS
+        return pow(fbmHash(plane * 0.5, octaves) * smoothstep(0.5, 0.7, fbmHash(plane + 10.0, 7)), 1.0 - 0.5 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient);
+    #else 
+        return pow(fbmHash(plane * 0.5, octaves), 2.0 - 1.0 * frx_smoothedRainGradient - 0.5 * frx_thunderGradient);
+    #endif
+}
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
     #ifdef CLOUDS
         if(frx_worldIsOverworld == 1) {
-            vec2 plane = (viewSpacePos.xz * 1.5) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y);
+            vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y);
             plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
             plane += frx_renderSeconds / 35.0;
             
             float clouds;
 
-            clouds = fbmHash(plane * 0.5, octaves);
+            clouds = getCloudNoise(plane, octaves);
 
-            return vec2(pow(clouds, 2.0 - 1.0 * frx_smoothedRainGradient), (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient));
+            #ifdef CLOUD_NORMALS
+                float offset = 0.1;
+                float height1 = getCloudNoise(plane + vec2(offset, 0.0), octaves / 4);
+                float height2 = getCloudNoise(plane + vec2(0.0, offset), octaves / 4);
+                float height3 = getCloudNoise(plane - vec2(offset, 0.0), octaves / 4);
+                float height4 = getCloudNoise(plane - vec2(0.0, offset), octaves / 4);
+
+                float deltaX = height3 - height1;
+                float deltaY = height4 - height2;
+
+                vec3 cloudNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+                cloudNormal = normalize(cloudNormal);
+                float cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.7 + 1.0);
+            #else
+                float cloudLighting = 1.0;
+            #endif
+
+            return vec2(clouds, (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);
         } else {
             return vec2(0.0);
         }
