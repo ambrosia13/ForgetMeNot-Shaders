@@ -178,7 +178,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
                 //     cloudNormal = normalize(vec3(-cloudDXY.y, -cloudDXY.z, 1.0));
                 // #endif
                 cloudNormal = normalize(cloudNormal);
-                float cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.7 + 1.0);
+                float cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.7 + 1.3);
             #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
                 float cloudLighting = 2.0;
                 vec2 rayPos = plane;
