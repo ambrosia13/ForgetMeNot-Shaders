@@ -100,9 +100,9 @@ void main() {
     #endif
 
     #ifdef SKY_UPSAMPLE_FILTER
-        vec3 sky = frx_sampleTent(u_sky, texcoord * RESOLUTION_SCALE, 1.0 / frxu_size).rgb + rand3D(texcoord) / 100.0;
+        vec3 sky = frx_sampleTent(u_sky, texcoord * RESOLUTION_SCALE, 1.0 / frxu_size).rgb + (frx_noise2d(texcoord) * 2.0 - 1.0) / 100.0;
     #else
-        vec3 sky = texture(u_sky, texcoord * RESOLUTION_SCALE).rgb + rand3D(texcoord) / 100.0;
+        vec3 sky = texture(u_sky, texcoord * RESOLUTION_SCALE).rgb + frx_noise2d(texcoord) / 100.0;
     #endif
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ void main() {
         cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
         cloudsColor *= 1.5;
 
-        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewDir, 10); // x = clouds, y = shading
+        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewDir, 1) * vec2(1.0, 1.0); // x = clouds, y = shading
         cloudsColor *= cloudsDensity.y * 0.7;
         cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
         cloudsDensity.x *= mix(1.0, 0.75, tdata.y);

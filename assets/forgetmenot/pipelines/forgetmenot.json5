@@ -192,20 +192,10 @@
                     nameKey: "config.forgetmenot.name.sky_upsample_filter",
                     descriptionKey: "config.forgetmenot.desc.sky_upsample_filter"
                 },
-                clouds: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.clouds",
-                    descriptionKey: "config.forgetmenot.desc.clouds"
-                },
-                cloud_normals: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.cloud_normals",
-                    descriptionKey: "config.forgetmenot.desc.cloud_normals"
-                },
-                fancy_clouds: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.fancy_clouds",
-                    descriptionKey: "config.forgetmenot.desc.fancy_clouds"
+                raytrace_ssr: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.raytrace_ssr",
+                    descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
                 },
                 simple_water: {
                     default: false,
@@ -217,6 +207,40 @@
                     nameKey: "config.forgetmenot.name.vanilla_lava",
                     descriptionKey: "config.forgetmenot.desc.vanilla_lava"
                 }
+            }
+        },
+        {
+            includeToken: "forgetmenot:clouds",
+            categoryKey: "config.forgetmenot.category.clouds",
+            elements: {
+                clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.clouds",
+                    descriptionKey: "config.forgetmenot.desc.clouds"
+                },
+                clouds_sharpness: {
+                    default: 5,
+                    min: 3,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.clouds_sharpness",
+                    descriptionKey: "config.forgetmenot.desc.clouds_sharpness"
+                },
+                fancy_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.fancy_clouds",
+                    descriptionKey: "config.forgetmenot.desc.fancy_clouds"
+                },
+                cloud_lighting: {
+                    define: "CLOUD_LIGHTING",
+                    default: "none",
+                    choices: [
+                        "none", "normals", "raymarched"
+                    ],
+                    enum: true, 
+                    prefix: "LIGHTING_",
+                    nameKey: "config.forgetmenot.name.cloud_lighting",
+                    descriptionKey: "config.forgetmenot.desc.cloud_lighting"
+                },
             }
         },
         {

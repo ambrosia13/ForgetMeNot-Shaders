@@ -136,11 +136,15 @@ vec2 calculateBasicClouds(in vec3 viewSpacePos) {
         return vec2(0.0);
     #endif
 }
+
+#ifndef CLOUDS_SHARPNESS
+    #define CLOUDS_SHARPNESS 3
+#endif
 float getCloudNoise(in vec2 plane, in int octaves) {
     #ifdef FANCY_CLOUDS
-        return pow(fbmHash(plane * 0.5, octaves) * smoothstep(0.5, 0.7, fbmHash(plane + 10.0, 7)), 1.0 - 0.5 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient);
+        return smoothstep(0.5 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, 0.7, fbmHash(plane + 10.0, CLOUDS_SHARPNESS));
     #else 
-        return pow(fbmHash(plane * 0.5, octaves), 2.0 - 1.0 * frx_smoothedRainGradient - 0.5 * frx_thunderGradient);
+        return pow(fbmHash(plane * 0.5, CLOUDS_SHARPNESS), 4.0 - 3.0 * frx_smoothedRainGradient - 0.5 * frx_thunderGradient);
     #endif
 }
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
@@ -154,8 +158,10 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
 
             clouds = getCloudNoise(plane, octaves);
 
-            #ifdef CLOUD_NORMALS
-                float offset = 0.1;
+            #if CLOUD_LIGHTING == LIGHTING_NONE
+                float cloudLighting = 1.0;
+            #elif CLOUD_LIGHTING == LIGHTING_NORMALS
+                float offset = 0.4;
                 float height1 = getCloudNoise(plane + vec2(offset, 0.0), octaves / 4);
                 float height2 = getCloudNoise(plane + vec2(0.0, offset), octaves / 4);
                 float height3 = getCloudNoise(plane - vec2(offset, 0.0), octaves / 4);
@@ -165,10 +171,22 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves) {
                 float deltaY = height4 - height2;
 
                 vec3 cloudNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+                // vec3 cloudPos = vec3(plane.x, plane.y, clouds);
+                // vec3 cloudNormal;
+                // #ifndef VERTEX_SHADER
+                //     vec3 cloudDXY = max(vec3(0.01), getCloudNoiseDerivative(plane, octaves));
+                //     cloudNormal = normalize(vec3(-cloudDXY.y, -cloudDXY.z, 1.0));
+                // #endif
                 cloudNormal = normalize(cloudNormal);
                 float cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.7 + 1.0);
-            #else
-                float cloudLighting = 1.0;
+            #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
+                float cloudLighting = 2.0;
+                vec2 rayPos = plane;
+                vec2 rayDir = frx_skyLightVector.xz / 20.0;
+                for(int i = 0; i < 10; i++) {
+                    rayPos += rayDir;
+                    cloudLighting -= getCloudNoise(rayPos, 5) / 8.0;
+                }
             #endif
 
             return vec2(clouds, (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);

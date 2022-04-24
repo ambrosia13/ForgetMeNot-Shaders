@@ -8,16 +8,24 @@
     "config.forgetmenot.desc.sky_resolution": "Resolution at which the sky is computed.",
     "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
     "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
-    "config.forgetmenot.name.clouds": "Clouds",
-    "config.forgetmenot.desc.clouds": "Enables cheap 2D clouds. Low performance cost.",
-    "config.forgetmenot.name.cloud_normals": "Cloud Normals",
-    "config.forgetmenot.desc.cloud_normals": "Enables cloud lighting calculations. High performance cost.",
-    "config.forgetmenot.name.fancy_clouds": "Fancy Cloud Shape",
-    "config.forgetmenot.desc.fancy_clouds": "Fancier cloud shape. Low performance cost.",
+    "config.forgetmenot.name.raytrace_ssr": "Raymarch Reflections",
+    "config.forgetmenot.desc.raytrace_ssr": "Uses raymarching to give accurate reflections. Else will just flip the screen for reflections, which is inaccurate but faster.",
     "config.forgetmenot.name.simple_water": "Fast Water",
     "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
     "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
     "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
+
+    "config.forgetmenot.category.clouds": "Cloud Options",
+
+    "config.forgetmenot.name.clouds": "Clouds",
+    "config.forgetmenot.desc.clouds": "Enables cheap 2D clouds. Low performance cost.",
+    "config.forgetmenot.name.clouds_sharpness": "Clouds Sharpness",
+    "config.forgetmenot.desc.clouds_sharpness": "Needs fancy cloud shape on. Controls sharpness of the cloud shape, ;lower for blurry-ish but faster clouds, higher for sharper but slower clouds.",
+    "config.forgetmenot.name.fancy_clouds": "Fancy Cloud Shape",
+    "config.forgetmenot.desc.fancy_clouds": "Fancier cloud shape. Low performance cost. ;Enable this when you have cloud lighting set to NONE.",
+    "config.forgetmenot.name.cloud_lighting": "Cloud Lighting Mode",
+    "config.forgetmenot.desc.cloud_lighting": "Cloud lighting mode. ;None - fastest;Normals - slow;Raymarched - slowest",
+
 
     "config.forgetmenot.category.general": "General Options",
 

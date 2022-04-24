@@ -32,7 +32,7 @@ void main() {
     if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(5.0, light.y);
     if(f0.r / 20.0 > 0.99) normal.rgb += rand3D(texcoord) / 100.0;
 
-    #ifndef RAYTRACE_SSR
+    #ifdef RAYTRACE_SSR
         #define SSR_STEPS 40
         if(depth != 1.0 && f0.r > 0.0) {
             vec3 clipSpacePos = vec3(texcoord, depth) * 2.0 - 1.0;
@@ -48,7 +48,7 @@ void main() {
             cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
             cloudsColor *= 1.5;
 
-            vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectionView, 10); // x = clouds, y = shading
+            vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectionView, 5); // x = clouds, y = shading
             cloudsColor *= cloudsDensity.y * 0.7;
             cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
             cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
@@ -94,8 +94,20 @@ void main() {
 
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
+                // sky reflection
+                vec3 cloudsColor = vec3(1.2);
+                cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
+                cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+                cloudsColor *= 1.5;
+
+                vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectedViewDir, 1) * vec2(1.0, 1.0); // x = clouds, y = shading
+                cloudsColor *= cloudsDensity.y * 0.7;
+                cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+                cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
+
                 reflectColor = mix(calculateSkyColor(reflectedViewDir), vec3(0.2), 1.0 - step(0.9, light.y));
                 reflectColor += calculateSun(reflectedViewDir);
+                reflectColor = mix(reflectColor, mix(reflectColor, cloudsColor, 0.75), clamp01(cloudsDensity.x));
                 reflectColor = mix(vec3(0.2), reflectColor, frx_smoothedEyeBrightness.y);
             } else {
                 reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;

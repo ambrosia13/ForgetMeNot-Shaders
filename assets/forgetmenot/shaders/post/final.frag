@@ -31,5 +31,5 @@ void main() {
     vibrance(finalColor, 1.2);
     // finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), 0.1);
 
-    fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + rand3D(texcoord) / 255.0, 1.0));
+    fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + frx_noise2d(texcoord) / 255.0, 1.0));
 }

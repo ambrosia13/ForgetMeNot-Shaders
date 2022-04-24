@@ -128,14 +128,19 @@ float fbmOctaves(vec2 uv, int octaves) {
 	return noise;
 }
 
+#include forgetmenot:shaders/lib/functions/external.glsl 
+
 float rand1D(vec2 st) {
-    return frx_noise2d(st) * 2.0 - 1.0;
+    //return frx_noise2d(st) * 2.0 - 1.0;
+    return hash12(st) * 2.0 - 1.0;
 }
 vec2 rand2D(vec2 st) {
-    return vec2(frx_noise2d(st), frx_noise2d(st + 10.0)) * 2.0 - 1.0;
+    //return vec2(frx_noise2d(st), frx_noise2d(st + 10.0)) * 2.0 - 1.0;
+    return hash22(st) * 2.0 - 1.0;
 }
 vec3 rand3D(vec2 st) {
-    return vec3(frx_noise2d(st), frx_noise2d(st + 10.0), frx_noise2d(st + 20.0)) * 2.0 - 1.0;
+    //return vec3(frx_noise2d(st), frx_noise2d(st + 10.0), frx_noise2d(st + 20.0)) * 2.0 - 1.0;
+    return hash32(st) * 2.0 - 1.0;
 }
 
 vec3 getReflectance(in vec3 f0, in float NdotV) {
@@ -147,8 +152,7 @@ vec2 coordFrom3D(vec3 viewDir){
     return vec2(atan(viewDir.x, viewDir.y), acos(viewDir.z));   
 }
 
-float smoothHash(in vec2 st) 
-{
+float smoothHash(in vec2 st) {
 	vec2 p = floor(st);
 	vec2 f = fract(st);
 		
@@ -175,17 +179,16 @@ float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(0.25 * PI), sin(0.25 * PI), -sin(0.25 * PI), cos(0.25 * PI));
+    mat2 rotationMatrix = mat2(cos(PI / 12.0), sin(PI / 12.0), -sin(PI / 12.0), cos(PI / 12.0));
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = rotationMatrix * uv * 2.0 + mod(frx_renderSeconds / 10.0, 1000.0);
 		amp *= 0.5;
 	}
 
-	return noise;
+    return noise;
 }
 
 
-#include forgetmenot:shaders/lib/functions/external.glsl 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

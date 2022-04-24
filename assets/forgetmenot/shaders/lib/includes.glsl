@@ -2,6 +2,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 */
 #include forgetmenot:performance_config
+#include forgetmenot:clouds
 #include forgetmenot:general_config
 #include forgetmenot:experimental
 
