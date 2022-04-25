@@ -218,17 +218,29 @@
                     nameKey: "config.forgetmenot.name.clouds",
                     descriptionKey: "config.forgetmenot.desc.clouds"
                 },
-                clouds_sharpness: {
+                stratus_clouds: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.stratus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.stratus_clouds"
+                },
+                cirrus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cirrus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.cirrus_clouds"
+                },
+                stratus_clouds_sharpness: {
                     default: 5,
                     min: 3,
                     max: 10,
-                    nameKey: "config.forgetmenot.name.clouds_sharpness",
-                    descriptionKey: "config.forgetmenot.desc.clouds_sharpness"
+                    nameKey: "config.forgetmenot.name.stratus_clouds_sharpness",
+                    descriptionKey: "config.forgetmenot.desc.stratus_clouds_sharpness"
                 },
-                fancy_clouds: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.fancy_clouds",
-                    descriptionKey: "config.forgetmenot.desc.fancy_clouds"
+                cirrus_clouds_sharpness: {
+                    default: 7,
+                    min: 3,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.cirrus_clouds_sharpness",
+                    descriptionKey: "config.forgetmenot.desc.cirrus_clouds_sharpness"
                 },
                 cloud_lighting: {
                     define: "CLOUD_LIGHTING",

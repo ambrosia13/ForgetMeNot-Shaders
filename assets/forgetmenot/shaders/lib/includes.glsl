@@ -1,6 +1,10 @@
 /* 
 #include forgetmenot:shaders/lib/includes.glsl 
 */
+
+uniform ivec2 frxu_size;
+uniform int frxu_lod;
+
 #include forgetmenot:performance_config
 #include forgetmenot:clouds
 #include forgetmenot:general_config

@@ -27,7 +27,7 @@ void main() {
     cloudsColor = mix(cloudsColor, vec3(0.3, 0.2, 0.3), tdata.z);
     cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
 
-    vec2 light = sample.gb;
+    vec2 light = sample.rr;
     vec3 f0 = sample.rrr;
     if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(5.0, light.y);
     if(f0.r / 20.0 > 0.99) normal.rgb += rand3D(texcoord) / 100.0;
@@ -43,20 +43,7 @@ void main() {
             float stepLength = 1.0 / SSR_STEPS;
 
             // sky reflection
-            vec3 cloudsColor = vec3(1.2);
-            cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
-            cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
-            cloudsColor *= 1.5;
-
-            vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectionView, 5); // x = clouds, y = shading
-            cloudsColor *= cloudsDensity.y * 0.7;
-            cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
-            cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
-
-            reflectColor = mix(calculateSkyColor(reflectionView), vec3(0.2), 1.0 - step(0.9, light.y));
-            reflectColor += calculateSun(reflectionView);
-            reflectColor = mix(reflectColor, mix(reflectColor, cloudsColor, 0.75), clamp01(cloudsDensity.x));
-            reflectColor = mix(vec3(0.2), reflectColor, frx_smoothedEyeBrightness.y);
+            reflectColor = mix(vec3(0.2), sampleSky(reflectionView), frx_smoothedEyeBrightness.y);
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 vec3 currentScreenPos = (clipSpacePos + rayScreenDir * float(i) * stepLength) * 0.5 + 0.5;
@@ -95,25 +82,10 @@ void main() {
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
                 // sky reflection
-                vec3 cloudsColor = vec3(1.2);
-                cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
-                cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
-                cloudsColor *= 1.5;
-
-                vec2 cloudsDensity = calculateBasicCloudsOctaves(reflectedViewDir, 1) * vec2(1.0, 1.0); // x = clouds, y = shading
-                cloudsColor *= cloudsDensity.y * 0.7;
-                cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
-                cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
-
-                reflectColor = mix(calculateSkyColor(reflectedViewDir), vec3(0.2), 1.0 - step(0.9, light.y));
-                reflectColor += calculateSun(reflectedViewDir);
-                reflectColor = mix(reflectColor, mix(reflectColor, cloudsColor, 0.75), clamp01(cloudsDensity.x));
-                reflectColor = mix(vec3(0.2), reflectColor, frx_smoothedEyeBrightness.y);
+                reflectColor = mix(vec3(0.2), sampleSky(reflectedViewDir), frx_smoothedEyeBrightness.y);
             } else {
                 reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;
             }
-
-            sunReflection = calculateSun(reflectedViewDir) * (1.0 / 20.0);
 
             float NdotV = max(0.0, dot(-normal, viewDir));
             reflectance = getReflectance(f0 / 20.0, clamp01(NdotV));
@@ -124,5 +96,5 @@ void main() {
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 
-    fragColor = max(vec4(1.0 / 65536.0), vec4(sceneColor + sunReflection * 0.0, 1.0));
+    fragColor = max(vec4(1.0 / 65536.0), vec4(sceneColor, 1.0));
 }

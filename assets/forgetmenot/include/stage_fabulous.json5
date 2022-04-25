@@ -3,7 +3,7 @@
         {
             name: "sky",
             lod: 0,
-            internalFormat: "RGB16F",
+            internalFormat: "RGB8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -302,13 +302,13 @@
 
     fabulous: {
         passes: [
-            {
-                name: "sky",
-                program: "sky",
-                framebuffer: "sky",
-                samplerImages: [
-                ]
-            },
+            // {
+            //     name: "sky",
+            //     program: "sky",
+            //     framebuffer: "sky",
+            //     samplerImages: [
+            //     ]
+            // },
             {
                 name: "sort",
                 program: "sort",

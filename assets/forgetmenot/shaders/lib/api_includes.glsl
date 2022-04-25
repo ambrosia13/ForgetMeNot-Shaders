@@ -22,5 +22,3 @@
 #include frex:shaders/lib/noise/cellular2x2.glsl
 #include frex:shaders/lib/noise/noise3d.glsl
 
-uniform ivec2 frxu_size;
-uniform int frxu_lod;

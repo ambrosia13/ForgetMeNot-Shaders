@@ -42,6 +42,7 @@ void frx_pipelineFragment() {
                 frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_smoothedRainGradient);
                 frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.4, frx_thunderGradient);
                 lightmap.rgb = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+                if(frx_worldIsOverworld == 0) lightmap = max(vec3(0.85), lightmap);
                 vec3 ldata = frx_fragLight;
                 vec3 tdata = getTimeOfDayFactors();
 
@@ -114,7 +115,7 @@ void frx_pipelineFragment() {
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    fragData = vec4(frx_fragEmissive, frx_fragReflectance, float(fmn_isWater), frx_fragLight.y);
+    fragData = vec4(frx_fragLight.y, frx_fragReflectance, float(fmn_isWater), 1.0);
 
     gl_FragDepth = gl_FragCoord.z;
 }

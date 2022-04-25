@@ -15,7 +15,7 @@ void frx_materialFragment() {
         float distortY = cos(normalizedUV.x * 1.0 + frx_renderSeconds * 0.25) * 0.2;
         vec2 distort = vec2(distortX * cos(frx_renderSeconds * 0.25), distortY * sin(frx_renderSeconds * 0.25));
 
-        float lavaNoise = fbm2D(uv.xy * 1.0 + distort) * 2.0;
+        float lavaNoise = fbmHash(uv.xy * 1.0 + distort / 2.0, 6) * 2.0;
         lavaNoise *= fbm2D(uv.yx * 0.5 - distort) * 2.0;
         lavaNoise *= fbm2D(uv.xy * 0.1 + distort) * 2.0;
         // (0.0) (1.5, 0.1, 0.0) (4.0, 0.3, 0.0)
