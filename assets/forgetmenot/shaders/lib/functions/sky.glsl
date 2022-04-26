@@ -113,7 +113,7 @@ float getCloudNoise(in vec2 plane, in int octaves) {
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLighting) {
     #ifdef CLOUDS
         if(frx_worldIsOverworld == 1) {
-            vec2 plane = (viewSpacePos.xz * 1.5) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y);
+            vec2 plane = (viewSpacePos.xz * 1.5) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y + pow(length(viewSpacePos.xz), 2.0) * 0.1);
             plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
             plane += frx_renderSeconds / 35.0;
             
@@ -127,10 +127,10 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                 #if CLOUD_LIGHTING == LIGHTING_NORMALS
                     if(doLighting) {
                         float offset = 0.2;
-                        float height1 = getCloudNoise(plane + vec2(offset, 0.0), octaves / 4);
-                        float height2 = getCloudNoise(plane + vec2(0.0, offset), octaves / 4);
-                        float height3 = getCloudNoise(plane - vec2(offset, 0.0), octaves / 4);
-                        float height4 = getCloudNoise(plane - vec2(0.0, offset), octaves / 4);
+                        float height1 = getCloudNoise(plane + vec2(offset, 0.0), 2);
+                        float height2 = getCloudNoise(plane + vec2(0.0, offset), 2);
+                        float height3 = getCloudNoise(plane - vec2(offset, 0.0), 2);
+                        float height4 = getCloudNoise(plane - vec2(0.0, offset), 2);
 
                         float deltaX = height3 - height1;
                         float deltaY = height4 - height2;
@@ -141,12 +141,12 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                     }
                 #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
                     if(doLighting) {
-                        cloudLighting = 2.0;
+                        cloudLighting = 1.6;
                         vec2 rayPos = plane;
                         vec2 rayDir = frx_skyLightVector.xz / 15.0;
                         for(int i = 0; i < 10; i++) {
                             rayPos += rayDir;
-                            cloudLighting -= getCloudNoise(rayPos, 3)  * 0.15;
+                            cloudLighting -= getCloudNoise(rayPos, 3)  * 0.1;
                         }
                     }
                 #endif
@@ -189,7 +189,48 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
     cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
-    skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(0.0, 0.2, viewSpacePos.y) * cloudsDensity.x);
+    skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+    
+    vec2 starCoord = coordFrom3D(viewSpacePos.brg);
+    skyResult += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
+
+    if(frx_worldIsEnd == 1) {
+        skyResult -= mix(0.0, 0.5, (pow(clamp01(viewSpacePos.y), 0.7)));
+        float dist = distance(viewSpacePos, normalize(vec3(0.0, 0.1, -0.4)));
+        skyResult = mix(skyResult, vec3(0.9, 0.5, 1.0), 1.0 / max(0.0001, pow(dist, 0.6)) * 0.1);
+    }
+
+    return skyResult;
+}
+vec3 sampleSkyReflection(in vec3 viewSpacePos) {
+    viewSpacePos = normalize(viewSpacePos);
+    vec3 skyResult = vec3(0.0);
+    vec3 tdata = getTimeOfDayFactors();
+
+    skyResult = calculateSkyColor(viewSpacePos);
+    skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    skyResult += calculateSun(viewSpacePos);
+
+    // clouds
+    vec3 cloudsColor = vec3(1.2);
+    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
+    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+    cloudsColor *= 1.5;
+
+    #if CLOUD_LIGHTING == LIGHTING_NONE
+        #define BRIGHTNESS_MODIFIER vec2(1.0,1.0)
+    #elif CLOUD_LIGHTING == LIGHTING_NORMALS
+        #define BRIGHTNESS_MODIFIER vec2(1.0, 1.5)
+    #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
+        #define BRIGHTNESS_MODIFIER vec2(1.0,2.0)
+    #endif
+
+    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, 3, false) * BRIGHTNESS_MODIFIER; // x = clouds, y = shading
+    cloudsColor *= cloudsDensity.y * 0.7;
+    cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+    cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
+
+    skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
     
     vec2 starCoord = coordFrom3D(viewSpacePos.brg);
     skyResult += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);

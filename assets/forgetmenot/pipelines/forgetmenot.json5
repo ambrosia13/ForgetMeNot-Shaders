@@ -236,7 +236,7 @@
                     descriptionKey: "config.forgetmenot.desc.stratus_clouds_sharpness"
                 },
                 cirrus_clouds_sharpness: {
-                    default: 7,
+                    default: 5,
                     min: 3,
                     max: 10,
                     nameKey: "config.forgetmenot.name.cirrus_clouds_sharpness",

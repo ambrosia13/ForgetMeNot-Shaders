@@ -171,9 +171,10 @@ float smoothHash(in vec2 st) {
 	float u = t.x;
 	float v = t.y;
 
-	float res = a + (b - a) * u +(c - a) * v + (a - b + d - c) * u * v;
-    
-    return res;
+	float noise = a + (b - a) * u +(c - a) * v + (a - b + d - c) * u * v;
+    // float noise = mix(a, b, f.x) + (c - a) * f.y * (1.0 - f.x) + (d - b) * f.x * f.y;
+
+    return noise;
 }
 float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;

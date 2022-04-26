@@ -43,7 +43,7 @@ void main() {
             float stepLength = 1.0 / SSR_STEPS;
 
             // sky reflection
-            reflectColor = mix(vec3(0.2), sampleSky(reflectionView), frx_smoothedEyeBrightness.y);
+            reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectionView), frx_smoothedEyeBrightness.y);
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 vec3 currentScreenPos = (clipSpacePos + rayScreenDir * float(i) * stepLength) * 0.5 + 0.5;
@@ -82,7 +82,7 @@ void main() {
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
                 // sky reflection
-                reflectColor = mix(vec3(0.2), sampleSky(reflectedViewDir), frx_smoothedEyeBrightness.y);
+                reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectedViewDir), frx_smoothedEyeBrightness.y);
             } else {
                 reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;
             }

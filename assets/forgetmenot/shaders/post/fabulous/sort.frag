@@ -201,7 +201,7 @@ void main() {
                 vec3 color = texture(u_main_color, rayScreen.xy).rgb;
                 
                 // color *= 1.0 - i / STEPS.0;
-                if(rayScreen.z > depthQuery) {
+                if(rayScreen.z > depthQuery && abs(length(rayView) - length(setupViewSpacePos(rayScreen.xy, texture(u_translucent_depth, rayScreen.xy).x))) < 0.1) {
                     #ifdef APPLY_MC_LIGHTMAP
                         lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                         //lighting *= 0.8;
@@ -210,6 +210,11 @@ void main() {
                     #endif
                     break;
                 }
+                #ifndef APPLY_MC_LIGHTMAP
+                else {
+                    lighting += sampleFogColor(rayView) / STEPS * frx_smoothedEyeBrightness.y;
+                }
+                #endif
             }
         }
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
