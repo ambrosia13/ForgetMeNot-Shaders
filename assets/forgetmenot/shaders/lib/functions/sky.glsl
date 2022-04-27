@@ -98,8 +98,8 @@ vec3 calculateSun(in vec3 viewSpacePos) {
 // -----------------------------------------------------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------------------------------------------------
-#ifndef CLOUDS_SHARPNESS
-    #define CLOUDS_SHARPNESS 3
+#ifndef STRATUS_CLOUDS_SHARPNESS
+    #define STRATUS_CLOUDS_SHARPNESS 3
 #endif
 
 float getCloudNoise(in vec2 plane, in int octaves) {
