@@ -15,6 +15,9 @@ Immersive and atmospheric shaderpack for Canvas.
 - Contrast and vibrance post processing function from Belmu#4066 in the [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849)
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help
 
+## discord
+https://discord.gg/Zzn4jJapRH
+
 ## screenshots
 ![a](https://cdn.discordapp.com/attachments/754818831238561878/968660252025299004/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/734161464184799296/961154329191010314/unknown.png)
