@@ -255,7 +255,7 @@
                     descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
                 },
                 ssr_steps: {
-                    default: 25,
+                    default: 60,
                     min: 10,
                     max: 60,
                     nameKey: "config.forgetmenot.name.ssr_steps",
