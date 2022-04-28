@@ -36,8 +36,8 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         sunsetSky = mix(sunsetSky, vec3(0.225,0.302,0.510) * 0.6, smoothstep(0.3, 0.8, viewSpacePos.y));
         sunsetSky = mix(sunsetSky, vec3(0.181,0.251,0.485) * 0.5, smoothstep(0.5, 1.5, viewSpacePos.y));
         sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(0.7, 0.5, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0)));
-        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(1.5, 1.0, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.25));
-        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(0.475,0.505,0.685), clamp01(pow(dot(viewSpacePos, getMoonVector()), 3.0)));
+        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.25));
+        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(0.475,0.505,0.685), clamp01(pow(dot(viewSpacePos, getMoonVector()), 5.0)));
         sunsetSky = mix(sunsetSky, sunsetSky * vec3(1.2, 0.5, 0.3), clamp01(dot(frx_cameraView, getSunVector()) * 0.2));
         sunsetSky = mix(sunsetSky, sunsetSky * vec3(0.5, 0.7, 1.0), clamp01(dot(frx_cameraView, getMoonVector()) * 0.2));
         // sunsetSky = mix(sunsetSky, vec3(frx_luminance(sunsetSky)), -1.0);
@@ -146,7 +146,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                         vec2 rayDir = frx_skyLightVector.xz / 15.0;
                         for(int i = 0; i < 10; i++) {
                             rayPos += rayDir;
-                            cloudLighting -= getCloudNoise(rayPos, 3)  * 0.1;
+                            cloudLighting -= getCloudNoise(rayPos, 3) * 0.1;
                         }
                     }
                 #endif
@@ -180,7 +180,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
 
     // clouds
     vec3 cloudsColor = vec3(1.2);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
+    cloudsColor = mix(cloudsColor, vec3(0.6, 0.55, 0.7), tdata.z);
     cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
     cloudsColor *= 1.5;
 

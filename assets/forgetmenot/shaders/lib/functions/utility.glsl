@@ -180,7 +180,7 @@ float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(PI / 12.0), sin(PI / 12.0), -sin(PI / 12.0), cos(PI / 12.0));
+    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);

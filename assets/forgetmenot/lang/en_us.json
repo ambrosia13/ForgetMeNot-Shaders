@@ -8,10 +8,6 @@
     "config.forgetmenot.desc.sky_resolution": "Resolution at which the sky is computed.",
     "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
     "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
-    "config.forgetmenot.name.raytrace_ssr": "Raymarch Reflections",
-    "config.forgetmenot.desc.raytrace_ssr": "Uses raymarching to give accurate reflections. Else will just flip the screen for reflections, which is inaccurate but faster.",
-    "config.forgetmenot.name.simple_water": "Fast Water",
-    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
     "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
     "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
 
@@ -29,7 +25,19 @@
     "config.forgetmenot.desc.cirrus_clouds": "Cloud shape that resembles cirrus clouds. Low performance cost.",
     "config.forgetmenot.name.cloud_lighting": "Cloud Lighting Mode",
     "config.forgetmenot.desc.cloud_lighting": "Cloud lighting mode. ;None - fastest;Normals - slow;Raymarched - slowest",
+    
+    "config.forgetmenot.category.water_reflections": "Water & Reflections",
 
+    "config.forgetmenot.name.raytrace_ssr": "Raymarch Reflections",
+    "config.forgetmenot.desc.raytrace_ssr": "Uses raymarching to give accurate reflections. Else will just flip the screen for reflections, which is inaccurate but a bit faster.",
+    "config.forgetmenot.name.ssr_steps": "SSR Steps",
+    "config.forgetmenot.desc.ssr_steps": "Number of raymarching steps for raymarched reflections. Increase for a mild performance decrease but better quality reflections. Doesn't seem to impact performance much.",
+    "config.forgetmenot.name.simple_water": "Fast Water",
+    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
+    "config.forgetmenot.name.simple_sky_reflection": "Simple Sky Reflection",
+    "config.forgetmenot.desc.simple_sky_reflection": "If enabled, will skip calculating clouds & stars when calculating sky in reflections. May improve performance, will look weird.",
+    "config.forgetmenot.name.illegal_ssr": "Illegal SSR",
+    "config.forgetmenot.desc.illegal_ssr": "Uses cursed and highly illegal method to have easy mutli-bounce reflections. Usually doesn't cause issues. May decrease performance.",
 
     "config.forgetmenot.category.general": "General Options",
 

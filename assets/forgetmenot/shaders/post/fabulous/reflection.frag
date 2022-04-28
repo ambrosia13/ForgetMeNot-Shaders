@@ -32,8 +32,12 @@ void main() {
     if(dot(normal, vec3(0.0, 1.0, 0.0)) > 0.7) f0 += (0.4 * frx_rainGradient + 0.35 * frx_thunderGradient) * step(5.0, light.y);
     if(f0.r / 20.0 > 0.99) normal.rgb += rand3D(texcoord) / 100.0;
 
+    #ifndef ILLEGAL_SSR
+        #define u_previous_frame u_color
+    #endif
+
     #ifdef RAYTRACE_SSR
-        #define SSR_STEPS 40
+        //#define SSR_STEPS 40
         if(depth != 1.0 && f0.r > 0.0) {
             vec3 clipSpacePos = vec3(texcoord, depth) * 2.0 - 1.0;
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
@@ -43,7 +47,11 @@ void main() {
             float stepLength = 1.0 / SSR_STEPS;
 
             // sky reflection
-            reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectionView), frx_smoothedEyeBrightness.y);
+            #ifdef SIMPLE_SKY_REFLECTION
+                reflectColor = mix(vec3(0.2), sampleFogColor(reflectionView), frx_smoothedEyeBrightness.y);
+            #else
+                reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectionView), frx_smoothedEyeBrightness.y);
+            #endif
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 vec3 currentScreenPos = (clipSpacePos + rayScreenDir * float(i) * stepLength) * 0.5 + 0.5;
@@ -82,7 +90,11 @@ void main() {
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
                 // sky reflection
-                reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectedViewDir), frx_smoothedEyeBrightness.y);
+                #ifdef SIMPLE_SKY_REFLECTION
+                    reflectColor = mix(vec3(0.2), sampleFogColor(reflectedViewDir), frx_smoothedEyeBrightness.y);
+                #else
+                    reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectedViewDir), frx_smoothedEyeBrightness.y);
+                #endif
             } else {
                 reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;
             }

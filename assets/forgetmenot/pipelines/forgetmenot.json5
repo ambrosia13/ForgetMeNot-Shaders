@@ -192,16 +192,6 @@
                     nameKey: "config.forgetmenot.name.sky_upsample_filter",
                     descriptionKey: "config.forgetmenot.desc.sky_upsample_filter"
                 },
-                raytrace_ssr: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.raytrace_ssr",
-                    descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
-                },
-                simple_water: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.simple_water",
-                    descriptionKey: "config.forgetmenot.desc.simple_water"
-                },
                 vanilla_lava: {
                     default: false,
                     nameKey: "config.forgetmenot.name.vanilla_lava",
@@ -252,6 +242,39 @@
                     prefix: "LIGHTING_",
                     nameKey: "config.forgetmenot.name.cloud_lighting",
                     descriptionKey: "config.forgetmenot.desc.cloud_lighting"
+                },
+            }
+        },
+        {
+            includeToken: "forgetmenot:water_reflections",
+            categoryKey: "config.forgetmenot.category.water_reflections",
+            elements: {
+                raytrace_ssr: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.raytrace_ssr",
+                    descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
+                },
+                ssr_steps: {
+                    default: 25,
+                    min: 10,
+                    max: 60,
+                    nameKey: "config.forgetmenot.name.ssr_steps",
+                    descriptionKey: "config.forgetmenot.desc.ssr_steps"
+                },
+                simple_water: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.simple_water",
+                    descriptionKey: "config.forgetmenot.desc.simple_water"
+                },
+                simple_sky_reflection: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.simple_sky_reflection",
+                    descriptionKey: "config.forgetmenot.desc.simple_sky_reflection"
+                },
+                illegal_ssr: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.illegal_ssr",
+                    descriptionKey: "config.forgetmenot.desc.illegal_ssr"
                 },
             }
         },

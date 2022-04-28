@@ -7,6 +7,7 @@ uniform int frxu_lod;
 
 #include forgetmenot:performance_config
 #include forgetmenot:clouds
+#include forgetmenot:water_reflections
 #include forgetmenot:general_config
 #include forgetmenot:experimental
 
