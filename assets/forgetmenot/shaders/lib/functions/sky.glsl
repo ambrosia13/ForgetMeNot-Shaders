@@ -174,7 +174,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     vec3 skyResult = vec3(0.0);
     vec3 tdata = getTimeOfDayFactors();
 
-    skyResult = calculateSkyColor(viewSpacePos);
+    skyResult = calculateSkyColor(viewSpacePos) + rand3D(viewSpacePos.xz * 2000.0) / 200.0;
     skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
@@ -184,7 +184,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
     cloudsColor *= 1.5;
 
-    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0); // x = clouds, y = shading
+    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
     cloudsColor *= cloudsDensity.y * 0.7;
     cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
     cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
