@@ -172,33 +172,28 @@
     },
 
     options: [
-        {
-            includeToken: "forgetmenot:performance_config",
-            categoryKey: "config.forgetmenot.category.performance",
-            elements: {
-                sky_resolution: {
-                    define: "SKY_RESOLUTION",
-                    default: "quarter",
-                    choices: [
-                        "quarter", "half", "full"
-                    ],
-                    enum: true, 
-                    prefix: "RESOLUTION_",
-                    nameKey: "config.forgetmenot.name.sky_resolution",
-                    descriptionKey: "config.forgetmenot.desc.sky_resolution"
-                },
-                sky_upsample_filter: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.sky_upsample_filter",
-                    descriptionKey: "config.forgetmenot.desc.sky_upsample_filter"
-                },
-                vanilla_lava: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.vanilla_lava",
-                    descriptionKey: "config.forgetmenot.desc.vanilla_lava"
-                }
-            }
-        },
+        // {
+        //     includeToken: "forgetmenot:performance_config",
+        //     categoryKey: "config.forgetmenot.category.performance",
+        //     elements: {
+        //         sky_resolution: {
+        //             define: "SKY_RESOLUTION",
+        //             default: "quarter",
+        //             choices: [
+        //                 "quarter", "half", "full"
+        //             ],
+        //             enum: true, 
+        //             prefix: "RESOLUTION_",
+        //             nameKey: "config.forgetmenot.name.sky_resolution",
+        //             descriptionKey: "config.forgetmenot.desc.sky_resolution"
+        //         },
+        //         sky_upsample_filter: {
+        //             default: false,
+        //             nameKey: "config.forgetmenot.name.sky_upsample_filter",
+        //             descriptionKey: "config.forgetmenot.desc.sky_upsample_filter"
+        //         },
+        //     }
+        // },
         {
             includeToken: "forgetmenot:clouds",
             categoryKey: "config.forgetmenot.category.clouds",
@@ -234,7 +229,7 @@
                 },
                 cloud_lighting: {
                     define: "CLOUD_LIGHTING",
-                    default: "none",
+                    default: "normals",
                     choices: [
                         "none", "normals", "raymarched"
                     ],
@@ -308,6 +303,11 @@
                     nameKey: "config.forgetmenot.name.contrast",
                     descriptionKey: "config.forgetmenot.desc.contrast"
                 },
+                vanilla_lava: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.vanilla_lava",
+                    descriptionKey: "config.forgetmenot.desc.vanilla_lava"
+                }
             }
         },
         {
