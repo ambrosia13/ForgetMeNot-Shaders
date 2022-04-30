@@ -15,6 +15,15 @@ layout(location = 2) out vec4 fragData;
 
 void frx_pipelineFragment() {
     vec4 color = frx_fragColor;
+    // float offset = 0.0001;
+    // float height1 = frx_luminance(texture(frxs_baseColor, frx_texcoord + vec2(offset, 0.0)).rgb);
+    // float height2 = frx_luminance(texture(frxs_baseColor, frx_texcoord - vec2(offset, 0.0)).rgb);
+    // float height3 = frx_luminance(texture(frxs_baseColor, frx_texcoord + vec2(0.0, offset)).rgb);
+    // float height4 = frx_luminance(texture(frxs_baseColor, frx_texcoord - vec2(0.0, offset)).rgb);
+    // float deltaX = (height2 - height1) * 2.0;
+    // float deltaY = (height4 - height3) * 2.0;
+
+    // frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
     //if(any(greaterThan(abs(texture(frxs_baseColor, frx_texcoord + 0.00004) - frx_sampleColor), vec4(0.001))) && !frx_isGui) color *= 0.5;
     vec4 unshadedColor = color;
 

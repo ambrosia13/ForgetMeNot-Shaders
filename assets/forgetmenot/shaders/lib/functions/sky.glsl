@@ -10,6 +10,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
 
         // // a whole lot of magic numbers
         vec3 daytimeSky = vec3(0.864,1.118,1.300) * 1.2;
+        daytimeSky = mix(daytimeSky, vec3(1.2), frx_smootherstep(-0.9, -1.0, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840) * 1.1, frx_smootherstep(-0.5, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805) * 0.9, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
@@ -103,8 +104,14 @@ vec3 calculateSun(in vec3 viewSpacePos) {
 #endif
 
 float getCloudNoise(in vec2 plane, in int octaves) {
+    #ifdef RANDOM_CLOUD_DENSITY
+        float cloudDensity = 0.5 + smoothHash(vec2(frx_worldTime * 24000.0 + (frx_worldDay - 1.0) * 24000.0) * 0.001) * 0.15;
+    #else
+        float cloudDensity = 0.5;
+    #endif
+
     #ifdef STRATUS_CLOUDS
-        return smoothstep(0.5 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, 0.7, fbmHash(plane + 10.0, octaves));
+        return smoothstep(cloudDensity - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudDensity + 0.2, fbmHash(plane + 10.0, octaves));
     #else 
         return 0.0;
     #endif
@@ -142,8 +149,8 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                 #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
                     if(doLighting) {
                         cloudLighting = 1.6;
-                        vec2 rayPos = plane;
                         vec2 rayDir = frx_skyLightVector.xz / 15.0;
+                        vec2 rayPos = plane + rayDir;
                         for(int i = 0; i < 10; i++) {
                             rayPos += rayDir;
                             cloudLighting -= getCloudNoise(rayPos, 3) * 0.1;
@@ -179,9 +186,8 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     skyResult += calculateSun(viewSpacePos);
 
     // clouds
-    vec3 cloudsColor = vec3(1.2);
-    cloudsColor = mix(cloudsColor, vec3(0.6, 0.55, 0.7), tdata.z);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+    vec3 cloudsColor = vec3(0.0);
+    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos), 0.5);
     cloudsColor *= 1.5;
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
@@ -212,9 +218,8 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     skyResult += calculateSun(viewSpacePos);
 
     // clouds
-    vec3 cloudsColor = vec3(1.2);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.z);
-    cloudsColor = mix(cloudsColor, vec3(0.3, 0.3, 0.4), tdata.y);
+    vec3 cloudsColor = vec3(0.0);
+    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos), 0.5);
     cloudsColor *= 1.5;
 
     #if CLOUD_LIGHTING == LIGHTING_NONE

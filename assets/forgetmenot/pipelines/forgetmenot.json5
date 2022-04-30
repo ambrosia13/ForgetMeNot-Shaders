@@ -227,6 +227,11 @@
                     nameKey: "config.forgetmenot.name.cirrus_clouds_sharpness",
                     descriptionKey: "config.forgetmenot.desc.cirrus_clouds_sharpness"
                 },
+                random_cloud_density: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.random_cloud_density",
+                    descriptionKey: "config.forgetmenot.desc.random_cloud_density"
+                },
                 cloud_lighting: {
                     define: "CLOUD_LIGHTING",
                     default: "normals",
@@ -250,7 +255,7 @@
                     descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
                 },
                 ssr_steps: {
-                    default: 60,
+                    default: 30,
                     min: 10,
                     max: 60,
                     nameKey: "config.forgetmenot.name.ssr_steps",

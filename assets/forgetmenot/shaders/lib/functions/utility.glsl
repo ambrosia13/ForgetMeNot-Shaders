@@ -66,6 +66,9 @@ vec3 getTimeOfDayFactors() {
 
     return vec3(dayFactor, nightFactor, sunsetFactor);
 }
+float getWorldTime() {
+    return frx_worldTime * 24000.0 + frx_worldDay * 24000.0;
+}
 
 // More canvas utility stuff
 vec3 getSunVector() {

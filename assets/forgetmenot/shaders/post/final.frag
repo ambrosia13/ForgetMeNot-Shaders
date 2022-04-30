@@ -20,7 +20,7 @@ void main() {
 
     // Credit to Zombye#7365 for making the tone map
     finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
-    //finalColor = frx_toneMap(finalColor * 1.2); // aces
+    // finalColor = frx_toneMap(finalColor * 1.2); // aces
     //finalColor = atan(finalColor * 1.6) / (PI / 2.0);
     //finalColor = 1.0 - exp(-finalColor);
     //finalColor /= finalColor + 1.0; // reinhard
