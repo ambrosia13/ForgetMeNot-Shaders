@@ -100,8 +100,6 @@ void frx_pipelineFragment() {
         if(frx_isGui && !frx_isHand) color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7; // directional shading in inventory
     #endif
 
-    // this is used for pixel locking enchantment glint, for some reason the scale is different in gui compared to in world enchantment glint
-
     if(frx_matGlint == 1) {
         glint = pow(glint, vec3(4.0));
         color.rgb += glint;
@@ -118,9 +116,9 @@ void frx_pipelineFragment() {
 
     if(!frx_isGui || frx_isHand && !frx_renderTargetParticles) color.rgb += color.rgb * frx_fragEmissive * mix(EMISSIVE_BOOST.0, 1.0, frx_smoothedRainGradient * 0.5 + frx_thunderGradient * 0.5);
 
-    // fog that uses vanilla fog color done here, other fog done in post
-    float fogFactor = frx_smootherstep(frx_fogStart, frx_fogEnd, frx_distance);
-    if(frx_cameraInFluid == 1 && !frx_isGui) color.rgb = mix(color.rgb, frx_fogColor.rgb, fogFactor);
+    // // fog that uses vanilla fog color done here, other fog done in post
+    // float fogFactor = frx_smootherstep(frx_fogStart, frx_fogEnd, frx_distance);
+    // if(frx_cameraInFluid == 1 && !frx_isGui) color.rgb = mix(color.rgb, frx_fogColor.rgb, fogFactor);
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);

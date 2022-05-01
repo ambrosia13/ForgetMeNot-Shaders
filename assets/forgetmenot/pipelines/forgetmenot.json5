@@ -3,7 +3,7 @@
     descriptionKey: "pipeline.forgetmenot.desc",
 
     smoothBrightnessBidirectionaly: true,
-    rainSmoothingFrames: 1000,
+    rainSmoothingFrames: 100,
     enablePBR: true,
     runVanillaClear: false,
 

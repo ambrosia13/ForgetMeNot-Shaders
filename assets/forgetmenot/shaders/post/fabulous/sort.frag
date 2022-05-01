@@ -156,7 +156,7 @@ void main() {
 
     float blockDist = length(minViewSpacePos);
 
-    float fogStartMin = mix(10.0, 1.0, float(frx_effectBlindness));
+    float fogStartMin = mix(10.0, 1.0, clamp01(frx_cameraInLava + frx_cameraInWater + frx_effectBlindness));
     blockDist = max(0.0, blockDist - fogStartMin);
 
     float fogDensity = mix(1.0, 0.8, tdata.x);
@@ -165,6 +165,8 @@ void main() {
     fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);
     fogDensity = mix(fogDensity, 5.5, frx_smoothedRainGradient);
     fogDensity = mix(fogDensity, 6.5, frx_thunderGradient);
+    fogDensity = mix(fogDensity, 66.0, clamp01(frx_cameraInWater - frx_effectWaterBreathing - frx_effectConduitPower));
+    fogDensity = mix(fogDensity, 66.0, clamp01(frx_cameraInLava - frx_effectFireResistance));
 
     float fogFactor = 1.0 - exp2((-blockDist / frx_viewDistance) * fogDensity);
 

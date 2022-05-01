@@ -113,14 +113,13 @@ float getCloudNoise(in vec2 plane, in int octaves) {
         float cloudMixFactor = 1.0;
     #endif
 
+    cloudMixFactor = pow(cloudMixFactor, 1.5);
+
+    float lowerBound = mix(0.0, cloudDensity - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudMixFactor);
+    float upperBound = mix(1.0, cloudDensity + 0.2, cloudMixFactor);
+
     #ifdef STRATUS_CLOUDS
-        float densityA = smoothstep(cloudDensity - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudDensity + 0.2, fbmHash(plane + 10.0, octaves));
-        #ifdef RANDOM_CLOUD_DENSITY
-            float densityB = smoothstep(0.0, 1.0, fbmHash(plane * 3.0, octaves));
-            return mix(densityB, densityA, pow(cloudMixFactor, 1.5));
-        #else
-            return densityA;
-        #endif
+        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves));
     #else 
         return 0.0;
     #endif
@@ -257,7 +256,10 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     return skyResult;
 }
 vec3 sampleFogColor(in vec3 viewSpacePos) {
-    return mix(calculateSkyColor(normalize(viewSpacePos)), vec3(0.0), frx_effectBlindness);
+    vec3 color = mix(calculateSkyColor(normalize(viewSpacePos)), vec3(0.0), frx_effectBlindness);
+    color = mix(color, vec3(0.1, 0.5, 0.7) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
+    color = mix(color, vec3(1.9, 0.5, 0.1) * max(0.75, sqrt(frx_smoothedEyeBrightness.y)), frx_cameraInLava);
+    return color;
 }
 
 // -----------------------------------------------------------------------------------------------------------------------

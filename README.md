@@ -22,5 +22,5 @@ https://discord.gg/Zzn4jJapRH
 ![a](https://cdn.discordapp.com/attachments/754818831238561878/968660252025299004/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/734161464184799296/961154329191010314/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/734161464184799296/968210355715190804/unknown.png)
-![a](https://cdn.discordapp.com/attachments/734161464184799296/967901349775835186/unknown.png)
+![a](https://cdn.discordapp.com/attachments/286649185468678144/970420149029068880/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/901517934629908583/963205333709389834/unknown.png)
