@@ -20,7 +20,7 @@ void main() {
 
     // Credit to Zombye#7365 for making the tone map
     finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
-    // finalColor = frx_toneMap(finalColor * 1.2); // aces
+    //finalColor = frx_toneMap(finalColor * 1.2); // aces
     //finalColor = atan(finalColor * 1.6) / (PI / 2.0);
     //finalColor = 1.0 - exp(-finalColor);
     //finalColor /= finalColor + 1.0; // reinhard
@@ -28,8 +28,8 @@ void main() {
 
     // if(any(greaterThan(finalColor, vec3(1.0)))) finalColor = vec3(0.0);
 
-    vibrance(finalColor, 1.2);
-    // finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), 0.1);
+    //vibrance(finalColor, 1.2);
+    //finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), 0.1);
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + rand3D(texcoord * 2000.0) / 255.0, 1.0));
 }
