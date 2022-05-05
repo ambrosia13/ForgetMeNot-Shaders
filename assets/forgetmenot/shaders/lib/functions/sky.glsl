@@ -14,6 +14,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840) * 1.1, frx_smootherstep(-0.5, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805) * 0.9, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
+        daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
         //daytimeSky = mix(daytimeSky, mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5), (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 2.0)) * 1.0);
         //daytimeSky += mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
         // daytimeSky += SUN_COLOR * max(0.1, 1.0 / clamp01(dot(viewSpacePos, getSunVector()))) * 0.01;
@@ -30,6 +31,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         nighttimeSky *= 0.1;
         nighttimeSky.b *= 1.8;
         nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 11.0)));
+        //nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.885) * 2.0, clamp01(pow(dot(viewSpacePos, getMoonVector()), 15.0) * 0.55));
         nighttimeSky = mix(nighttimeSky, vec3(frx_luminance(nighttimeSky)) * 1.5, 0.25);
 
         vec3 sunsetSky = vec3(0.605,0.382,0.361) * 1.0; // red 
@@ -39,7 +41,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         sunsetSky = mix(sunsetSky, vec3(0.225,0.302,0.510) * 0.6, smoothstep(0.3, 0.8, viewSpacePos.y));
         sunsetSky = mix(sunsetSky, vec3(0.181,0.251,0.485) * 0.5, smoothstep(0.5, 1.5, viewSpacePos.y));
         sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(0.7, 0.5, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0)));
-        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.25));
+        sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.6, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
         sunsetSky = mix(sunsetSky, sunsetSky * 0.5 + vec3(0.475,0.505,0.685), clamp01(pow(dot(viewSpacePos, getMoonVector()), 5.0)));
         sunsetSky = mix(sunsetSky, sunsetSky * vec3(1.2, 0.5, 0.3), clamp01(dot(frx_cameraView, getSunVector()) * 0.2));
         sunsetSky = mix(sunsetSky, sunsetSky * vec3(0.5, 0.7, 1.0), clamp01(dot(frx_cameraView, getMoonVector()) * 0.2));
@@ -192,7 +194,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     vec3 tdata = getTimeOfDayFactors();
 
     skyResult = calculateSkyColor(viewSpacePos) + rand3D(viewSpacePos.xz * 2000.0) / 200.0;
-    skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
     vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
@@ -203,7 +205,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
 
     // clouds
     vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
+    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
     cloudsColor *= 1.5;
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
@@ -237,7 +239,7 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     vec3 tdata = getTimeOfDayFactors();
 
     skyResult = calculateSkyColor(viewSpacePos);
-    skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
     vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));

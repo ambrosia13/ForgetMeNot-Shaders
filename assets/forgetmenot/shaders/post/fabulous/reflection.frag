@@ -44,7 +44,7 @@ void main() {
             vec3 screenPos = vec3(texcoord, depth);
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
-            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + frx_renderSeconds) * 2.0, 0.25);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 2.0, 0.25);
 
             float stepLength = 0.5 / SSR_STEPS;
 

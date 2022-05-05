@@ -130,7 +130,7 @@ void main() {
 
     float waterFogDist = abs(distance(maxViewSpacePos, minViewSpacePos));
     if(max_depth != 1.0 && translucentData.b > 0.1) {
-        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.5, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.2), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
     }
 
 
@@ -188,7 +188,7 @@ void main() {
         float blurAmount = 0.5;
         
         if(min_depth < 1.0) {
-            #define GI_RANGE 0.5
+            //#define GI_RANGE 0.5
             vec3 rayView = minViewSpacePos;
             vec3 rayDirection = (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
             //rayDirection = frx_skyLightVector / 10.0 + rand3D(texcoord + mod(frx_renderFrames, 100)) / (10.0 * STEPS);
@@ -208,8 +208,8 @@ void main() {
                 // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery && abs(length(rayView) - length(setupViewSpacePos(rayScreen.xy, texture(u_translucent_depth, rayScreen.xy).x))) < 0.1) {
                     #ifdef APPLY_MC_LIGHTMAP
-                        //lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
-                        lighting *= 0.25;
+                        lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        //lighting *= 0.25;
                     #else
                         lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 2.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
@@ -217,7 +217,7 @@ void main() {
                 }
                 #ifndef APPLY_MC_LIGHTMAP
                 else {
-                    lighting += sampleFogColor(rayView) / STEPS * frx_smoothedEyeBrightness.y;
+                    lighting += normalize(sampleSkyReflection(rayDirection)) * 2.0 / STEPS * frx_smoothedEyeBrightness.y;
                 }
                 #endif
             }

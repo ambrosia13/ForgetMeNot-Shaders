@@ -43,6 +43,20 @@ vec4 clamp01(in vec4 angle) {
     return clamp(angle, vec4(0.0), vec4(1.0));
 }
 
+// More canvas utility stuff
+vec3 getSunVector() {
+    vec3 sun = frx_worldIsMoonlit == 0 ? frx_skyLightVector : -frx_skyLightVector;
+    return sun;
+}
+vec3 getMoonVector() {
+    vec3 moon = frx_worldIsMoonlit == 1 ? frx_skyLightVector : -frx_skyLightVector;
+    return moon;
+}
+
+float cubic(in float x) {
+	return x * x * (3.0 - 2.0 * x);
+}
+
 // Utility function to get frex time of day factors 
 // vec3(dayFactor, nightFactor, sunsetFactor)
 vec3 getTimeOfDayFactors() {
@@ -51,6 +65,16 @@ vec3 getTimeOfDayFactors() {
     float dayFactor = frx_worldIsMoonlit == 0.0 ? 1.0 : 0.0;
     dayFactor *= frx_skyLightTransitionFactor;
     float sunsetFactor = 1.0 - frx_skyLightTransitionFactor;
+
+    float sunUp = dot(vec3(0.0, 1.0, 0.0), getSunVector());
+    float sunDown = dot(vec3(0.0, -1.0, 0.0), getSunVector());
+
+    dayFactor = 1.0 - pow(1.0 - clamp01(sunUp), 6.0);
+    sunsetFactor = 1.0 - dayFactor;
+    nightFactor = cubic(cubic(clamp01(sunDown * 20.0 + 0.4)));
+    nightFactor = 1.0 - pow(1.0 - nightFactor, 2.0);
+    sunsetFactor *= 1.0 - nightFactor;
+    dayFactor *= 1.0 - nightFactor;
 
     // float dayFactor, nightFactor, sunsetFactor;
 
@@ -70,15 +94,6 @@ float getWorldTime() {
     return frx_worldTime * 24000.0 + frx_worldDay * 24000.0;
 }
 
-// More canvas utility stuff
-vec3 getSunVector() {
-    vec3 sun = frx_worldIsMoonlit == 0 ? frx_skyLightVector : -frx_skyLightVector;
-    return sun;
-}
-vec3 getMoonVector() {
-    vec3 moon = frx_worldIsMoonlit == 1 ? frx_skyLightVector : -frx_skyLightVector;
-    return moon;
-}
 
 float fbm2D(in vec2 uv, in int octaves) {
 	float s = 0.0;

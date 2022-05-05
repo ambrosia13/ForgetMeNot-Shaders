@@ -79,7 +79,11 @@ void frx_pipelineFragment() {
                         directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
 
                         contrast(directionalLight, 1.2);
-                        lightmap *= directionalLight;
+                        #ifdef DEPRESSING_MODE
+                            lightmap *= mix(normalize(calculateSkyColor(frx_fragNormal)) * 2.5, directionalLight, 1.0 - frx_fragLight.y);
+                        #else 
+                            lightmap *= directionalLight;
+                        #endif
                     } else {
                         float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
                         maxLightVal = mix(maxLightVal, 1.0, getTimeOfDayFactors().y);    
