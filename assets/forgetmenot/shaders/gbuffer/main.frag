@@ -128,7 +128,7 @@ void frx_pipelineFragment() {
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    fragData = vec4(frx_fragLight.y, frx_fragReflectance, float(fmn_isWater), 1.0);
+    fragData = vec4(frx_fragRoughness, frx_fragReflectance, float(fmn_isWater), 1.0);
 
     gl_FragDepth = gl_FragCoord.z;
 }

@@ -32,6 +32,7 @@ void frx_materialFragment() {
         #endif
 
         frx_fragReflectance = 0.05;
+        frx_fragRoughness = 0.05;
     #endif
 
     fmn_isWater = 1;

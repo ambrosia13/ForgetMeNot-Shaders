@@ -236,14 +236,14 @@ void main() {
 
     if(translucent_depth != max_depth) {
         compositeFresnel.r = translucentf0.r;
-        compositeFresnel.gb = translucentData.ba;
+        compositeFresnel.gb = translucentData.br;
     } else {
         compositeFresnel.r = solidf0.r;
-        compositeFresnel.gb = solidData.ba;
+        compositeFresnel.gb = solidData.br;
     }
     if(any(lessThan(abs(compositeFresnel.rgb - 0.04), vec3(0.001)))) compositeFresnel.r = 0.0;
     if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
-    compositeFresnel *= 20.0;
+    compositeFresnel.r *= 20.0;
 
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
