@@ -14,7 +14,7 @@ layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
 
 void frx_pipelineFragment() {
-    vec4 color = frx_fragColor;
+    vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
     // float offset = 0.0001;
     // float height1 = frx_luminance(texture(frxs_baseColor, frx_texcoord + vec2(offset, 0.0)).rgb);
     // float height2 = frx_luminance(texture(frxs_baseColor, frx_texcoord - vec2(offset, 0.0)).rgb);
@@ -49,8 +49,9 @@ void frx_pipelineFragment() {
                 lightmap.rgb *= mix(1.0, 1.5, getTimeOfDayFactors().x * frx_fragLight.y);
 
                 frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_smoothedRainGradient);
-                frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.4, frx_thunderGradient);
-                lightmap.rgb = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+                frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_thunderGradient);
+                // frx_fragLight.y *= mix(1.0, 0.7, getCloudNoise(frx_skyLightVector.xz / frx_skyLightVector.y, 5));
+                lightmap.rgb = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(1.0));
                 if(frx_worldIsOverworld == 0) lightmap = max(vec3(0.85), lightmap);
                 vec3 ldata = frx_fragLight;
                 vec3 tdata = getTimeOfDayFactors();
@@ -58,7 +59,7 @@ void frx_pipelineFragment() {
                 #ifdef VANILLA_AO
                     // if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;
                     float invAO = 1.0 - frx_fragLight.z;
-                    if(frx_matDisableAo == 0) lightmap = mix(lightmap, lightmap * color.rgb, invAO);
+                    if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;//mix(lightmap, lightmap * color.rgb, invAO);
                 #endif
                 #ifdef DIRECTIONAL_SHADING
                     if(frx_matDisableDiffuse == 0)  {
@@ -77,7 +78,8 @@ void frx_pipelineFragment() {
 
                         directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
 
-                        lightmap *= mix(vec3(frx_luminance(directionalLight)), directionalLight, 1.0);
+                        contrast(directionalLight, 1.2);
+                        lightmap *= directionalLight;
                     } else {
                         float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
                         maxLightVal = mix(maxLightVal, 1.0, getTimeOfDayFactors().y);    

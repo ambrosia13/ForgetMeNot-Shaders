@@ -12,6 +12,9 @@ uniform int frxu_lod;
 #include forgetmenot:experimental
 
 #include forgetmenot:shaders/lib/api_includes.glsl 
+#ifdef DEPRESSING_MODE
+    #define frx_thunderGradient 1.0
+#endif
 // #define frx_renderSeconds 1.0
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl

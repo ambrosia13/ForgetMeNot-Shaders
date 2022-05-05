@@ -255,7 +255,7 @@
                     descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
                 },
                 ssr_steps: {
-                    default: 30,
+                    default: 20,
                     min: 10,
                     max: 60,
                     nameKey: "config.forgetmenot.name.ssr_steps",
@@ -282,8 +282,13 @@
             includeToken: "forgetmenot:general_config",
             categoryKey: "config.forgetmenot.category.general",
             elements: {
+                depressing_mode: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.depressing_mode",
+                    descriptionKey: "config.forgetmenot.desc.depressing_mode"
+                },
                 emissive_boost: {
-                    default: 5,
+                    default: 7,
                     min: 0,
                     max: 10,
                     nameKey: "config.forgetmenot.name.emissive_boost",
@@ -300,6 +305,11 @@
                     default: true,
                     nameKey: "config.forgetmenot.name.pixel_locked_glint",
                     descriptionKey: "config.forgetmenot.desc.pixel_locked_glint"
+                },
+                fake_eye_adjust: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.fake_eye_adjust",
+                    descriptionKey: "config.forgetmenot.desc.fake_eye_adjust"
                 },
                 contrast: {
                     default: 11,

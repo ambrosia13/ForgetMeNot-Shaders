@@ -11,7 +11,7 @@ void main() {
     vec4 color = texture(u_color, texcoord);
     vec4 bloom = texture(u_bloom, texcoord * 0.5);
     bloom.rgb = pow(bloom.rgb, vec3(1.0 / 1.5));
-    color = mix(color, bloom / 6.0, clamp01((BLOOM_MIX_FACTOR / 10.0) + 0.0 * frx_worldIsNether + 0.3 * frx_smoothedRainGradient + 0.2 * frx_thunderGradient + 0.5 * frx_cameraInFluid));
+    color = mix(color, bloom / 6.0, float(all(greaterThan(bloom.rgb, vec3(0.0)))) * clamp01((BLOOM_MIX_FACTOR / 10.0) + 0.0 * frx_worldIsNether + 0.3 * frx_smoothedRainGradient + 0.2 * frx_thunderGradient + 0.5 * frx_cameraInFluid));
 
     fragColor = color;
 }

@@ -37,36 +37,47 @@ void main() {
     #endif
 
     #ifdef RAYTRACE_SSR
-        //#define SSR_STEPS 40
+        // #define SSR_STEPS 400
         if(depth != 1.0 && f0.r > 0.0) {
-            vec3 clipSpacePos = vec3(texcoord, depth) * 2.0 - 1.0;
+            int numRefinements = 0;
+            int maxRefinements = 10;
+            vec3 screenPos = vec3(texcoord, depth);
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
-            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) * 2.0 - 1.0 - clipSpacePos);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + frx_renderSeconds) * 2.0, 0.25);
 
-            float stepLength = 1.0 / SSR_STEPS;
+            float stepLength = 0.5 / SSR_STEPS;
 
             // sky reflection
             #ifdef SIMPLE_SKY_REFLECTION
-                reflectColor = mix(vec3(0.2), sampleFogColor(reflectionView), frx_smoothedEyeBrightness.y);
+                reflectColor = mix(vec3(0.2), sampleFogColor(reflectionView), frx_smoothedEyeBrightness.y) + calculateSun(reflectionView);
             #else
                 reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectionView), frx_smoothedEyeBrightness.y);
             #endif
 
             for(int i = 0; i < SSR_STEPS; i++) {
-                vec3 currentScreenPos = (clipSpacePos + rayScreenDir * float(i) * stepLength) * 0.5 + 0.5;
+                //vec3 currentScreenPos = (screenPos + rayScreenDir * float(i / 1) * stepLength);
+                screenPos += rayScreenDir * stepLength;
 
-                if(clamp01(currentScreenPos.xy) != currentScreenPos.xy) {
+                float depthQuery = texelFetch(u_depth, ivec2(frxu_size * screenPos.xy), 0).r;
+
+                if(clamp01(screenPos.xy) != screenPos.xy) {
                     break;
-                } else if(currentScreenPos.z > texelFetch(u_depth, ivec2(frxu_size * currentScreenPos.xy), 0).r) {
-                    reflectColor = texture(u_previous_frame, currentScreenPos.xy).rgb;
+                } else if(screenPos.z > depthQuery && abs(screenPos.z - depthQuery) < .01) {
+                    // if(numRefinements < maxRefinements) {
+                    //     screenPos -= rayScreenDir * stepLength;
+                    //     stepLength *= 0.5;
+                    //     numRefinements++;
+                    // } else {
+                        reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
+                    // }
                     break;
                 } else {
                 }
             }
             reflectance = getReflectance(f0 / 20.0, clamp01(dot(normal, -normalize(viewSpacePos))));
             // if(f0.r / 20.0 > 0.99) reflectance *= 0.5 * sceneColor * sceneColor;
-            // reflectance = vec3(1.0);
+            //reflectance = vec3(0.5);
         }
     #else
         if(depth != 1.0 && f0.r > 0.0) {

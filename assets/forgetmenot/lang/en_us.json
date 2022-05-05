@@ -24,7 +24,7 @@
     "config.forgetmenot.name.cirrus_clouds_sharpness": "Cirrus Clouds Sharpness",
     "config.forgetmenot.desc.cirrus_clouds_sharpness": "Controls sharpness of the cirrus cloud shape, ;lower for blurry-ish but faster clouds, higher for sharper but slower clouds.",
     "config.forgetmenot.name.random_cloud_density": "Variable Cloud Density",
-    "config.forgetmenot.desc.random_cloud_density": "Pseudo-random cloud density based on world time and world day.",
+    "config.forgetmenot.desc.random_cloud_density": "Pseudo-random cloud density based on world time and world day. Performance impact.",
     "config.forgetmenot.name.cloud_lighting": "Cloud Lighting Mode",
     "config.forgetmenot.desc.cloud_lighting": "Cloud lighting mode. ;None - fastest;Normals - slow;Raymarched - slowest",
     
@@ -43,12 +43,16 @@
 
     "config.forgetmenot.category.general": "General Options",
 
+    "config.forgetmenot.name.depressing_mode": "Depressing Mode",
+    "config.forgetmenot.desc.depressing_mode": "Makes the entire game mode more moody, depressing, and gray.",
     "config.forgetmenot.name.emissive_boost": "Emissive Boost",
     "config.forgetmenot.desc.emissive_boost": "Brightness of emissive boost. Affects bloom and global illumination.",
     "config.forgetmenot.name.bloom_mix_factor": "Bloom Amount",
     "config.forgetmenot.desc.bloom_mix_factor": "Bloom amount. 10 for 100 percent. Does not affect brightness of bloom, just the amount.",
     "config.forgetmenot.name.pixel_locked_glint": "Pixel Locked Enchantment Glint",
     "config.forgetmenot.desc.pixel_locked_glint": "Locks the enchantment glint to the pixels of the texture. Similar to Bedrock edition glint.",
+    "config.forgetmenot.name.fake_eye_adjust": "Fake Eye Adjust",
+    "config.forgetmenot.desc.fake_eye_adjust": "Uses current lightmap value at the player position to adjust brightness when the player is in a dark area.",
     "config.forgetmenot.name.danger_sight": "Danger Sight",
     "config.forgetmenot.desc.danger_sight": "Turns blocks more red when it is dark enough for mobs to spawn.",
     "config.forgetmenot.name.contrast": "Contrast",

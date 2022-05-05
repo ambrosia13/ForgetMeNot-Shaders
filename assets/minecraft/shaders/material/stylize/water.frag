@@ -12,18 +12,24 @@ void frx_materialFragment() {
     // ) * 0.3;
 
     #ifdef PBR_ENABLED
-        float offset = 0.2;
+        #ifndef SIMPLE_WATER
+            float offset = 0.2;
 
-        float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
-        float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
-        float height3 = waterHeightNoise(uv + vec2(0.0, offset));
-        float height4 = waterHeightNoise(uv - vec2(0.0, offset));
+            float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
+            float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
+            float height3 = waterHeightNoise(uv + vec2(0.0, offset));
+            float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-        float deltaX = (height2 - height1);
-        float deltaY = (height4 - height3);
+            float deltaX = (height2 - height1);
+            float deltaY = (height4 - height3);
 
-        frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
-        frx_fragNormal = normalize(frx_fragNormal);
+            frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+            frx_fragNormal = normalize(frx_fragNormal);
+        #else
+            float height = waterHeightNoise(uv);
+            frx_fragNormal = normalize(cross(dFdx(frx_vertex.xyz - vec3(0.0, height, 0.0)), dFdy(frx_vertex.xyz - vec3(0.0, height, 0.0))))
+                            *mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
+        #endif
 
         frx_fragReflectance = 0.05;
     #endif

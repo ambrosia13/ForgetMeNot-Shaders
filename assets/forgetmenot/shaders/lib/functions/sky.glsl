@@ -9,8 +9,8 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         vec3 overworldSkyColor = vec3(0.0);
 
         // // a whole lot of magic numbers
-        vec3 daytimeSky = vec3(0.864,1.118,1.300) * 1.2;
-        daytimeSky = mix(daytimeSky, vec3(1.2), frx_smootherstep(-0.9, -1.0, viewSpacePos.y));
+        vec3 daytimeSky = vec3(0.864,1.018,1.300) * 1.2;
+        daytimeSky = mix(daytimeSky, vec3(1.2), clamp01(1.0 - frx_smoothedRainGradient - frx_thunderGradient) * frx_smootherstep(-0.9, -1.0, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840) * 1.1, frx_smootherstep(-0.5, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805) * 0.9, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
@@ -20,6 +20,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky *= 1.1;
         daytimeSky.rg *= vec2(1.0, 1.0);
         daytimeSky = mix(vec3(frx_luminance(daytimeSky)), daytimeSky, 0.9);
+        // contrast(daytimeSky, 1.5);
 
 
         vec3 nighttimeSky = vec3(0.506,0.577,0.620) * 3.5;
@@ -128,7 +129,7 @@ float getCloudNoise(in vec2 plane, in int octaves) {
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLighting) {
     #ifdef CLOUDS
         if(frx_worldIsOverworld == 1) {
-            vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y + pow(length(viewSpacePos.xz), 2.0) * 0.15);
+            vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y + pow(length(viewSpacePos.xz), 2.0) * 0.18);
             plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
             plane += frx_renderSeconds / 35.0;
             
@@ -160,7 +161,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                         vec2 rayDir = frx_skyLightVector.xz / 15.0;
                         vec2 rayPos = plane + rayDir;
                         for(int i = 0; i < 10; i++) {
-                            rayPos += rayDir;
+                            rayPos += rayDir;// * exp2(float(-i));
                             cloudLighting -= getCloudNoise(rayPos, 3) * 0.1;
                         }
                     }
@@ -168,9 +169,10 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             #endif
 
             #ifdef CIRRUS_CLOUDS
-                clouds += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 0.5;
+                clouds += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
                 #ifndef STRATUS_CLOUDS
                     clouds *= 2.0;
+                #else 
                 #endif
             #endif
             return vec2(clouds, (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);
@@ -184,6 +186,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
 // -----------------------------------------------------------------------------------------------------------------------
 
 vec3 sampleSky(in vec3 viewSpacePos) {
+    float l = length(viewSpacePos);
     viewSpacePos = normalize(viewSpacePos);
     vec3 skyResult = vec3(0.0);
     vec3 tdata = getTimeOfDayFactors();
@@ -192,9 +195,15 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
+    vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
+    vec3 starColor = vec3(smoothHash(starCoord * 40.0) * 0.5 + 0.5, smoothHash(starCoord * 40.0 + 10.0) * 0.5 + 0.5, smoothHash(starCoord * 40.0 + 20.0) * 0.5 + 0.5);
+    skyResult += (step(0.98 + smoothHash(starCoord * 40.0) * 0.01, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x)) * mix(starColor, vec3(1.0), 0.5);
+    // skyResult += 50.0 * normalize(vec3(smoothHash(starCoord * 40.0) * 0.5 + 0.5,smoothHash(starCoord * 40.0 + 1.0) * 0.5 + 0.5,smoothHash(starCoord * 40.0 + 20.0) * 0.5 + 0.5)) * 
+    //                 (smoothstep(0.95, 0.99, 1.0 - cellular2x2(starCoord * 1.0).x) * (1.0 - tdata.x));
+
     // clouds
     vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos), 0.5);
+    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
     cloudsColor *= 1.5;
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
@@ -203,9 +212,16 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
     skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+
+    // vec3 rayPos = viewSpacePos * l;
+    // vec3 rayDir = frx_skyLightVector;
+    // vec3 rays;
+    // for(int i = 0; i < 10; i++) {
+    //     rayPos += rayDir / 100.0;
+    //     rays += length(rayPos * 0.5) * (SUN_COLOR * 0.1) * (1.0 - getCloudNoise((rayPos.xz * 2.0) / (rayPos.y == 0.0 ? 0.1 : rayPos.y + pow(length(rayPos.xz), 2.0) * 0.15) + frx_cameraPos.xz / 75.0 + frx_renderSeconds / 35.0, 10)) / 25.0;
+    // }
+    // skyResult += rays * frx_luminance(rays) * 2.0;
     
-    vec2 starCoord = coordFrom3D(viewSpacePos.brg);
-    skyResult += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
 
     if(frx_worldIsEnd == 1) {
         skyResult -= mix(0.0, 0.5, (pow(clamp01(viewSpacePos.y), 0.7)));
@@ -213,7 +229,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
         skyResult = mix(skyResult, vec3(0.9, 0.5, 1.0), 1.0 / max(0.0001, pow(dist, 0.6)) * 0.1);
     }
 
-    return skyResult;
+    return pow(skyResult, vec3(1.0));
 }
 vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     viewSpacePos = normalize(viewSpacePos);
@@ -224,9 +240,12 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     skyResult += tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
+    vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
+    skyResult += step(0.98, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x);
+
     // clouds
     vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos), 0.5);
+    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
     cloudsColor *= 1.5;
 
     #if CLOUD_LIGHTING == LIGHTING_NONE
@@ -234,7 +253,7 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     #elif CLOUD_LIGHTING == LIGHTING_NORMALS
         #define BRIGHTNESS_MODIFIER vec2(1.0, 1.5)
     #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
-        #define BRIGHTNESS_MODIFIER vec2(1.0,2.0)
+        #define BRIGHTNESS_MODIFIER vec2(1.0,1.5)
     #endif
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, 3, false) * BRIGHTNESS_MODIFIER; // x = clouds, y = shading
@@ -244,9 +263,6 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
 
     skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
     
-    vec2 starCoord = coordFrom3D(viewSpacePos.brg);
-    skyResult += step(0.989, 1.0 - cellular2x2(starCoord * 8.0).x) * (1.0 - tdata.x);
-
     if(frx_worldIsEnd == 1) {
         skyResult -= mix(0.0, 0.5, (pow(clamp01(viewSpacePos.y), 0.7)));
         float dist = distance(viewSpacePos, normalize(vec3(0.0, 0.1, -0.4)));
@@ -257,7 +273,7 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
 }
 vec3 sampleFogColor(in vec3 viewSpacePos) {
     vec3 color = mix(calculateSkyColor(normalize(viewSpacePos)), vec3(0.0), frx_effectBlindness);
-    color = mix(color, vec3(0.1, 0.5, 0.7) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
+    color = mix(color, vec3(0.1, 0.5, 0.7) * mix(0.5, 1.0, getTimeOfDayFactors().x) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
     color = mix(color, vec3(1.9, 0.5, 0.1) * max(0.75, sqrt(frx_smoothedEyeBrightness.y)), frx_cameraInLava);
     return color;
 }
