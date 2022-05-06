@@ -66,15 +66,15 @@ vec3 getTimeOfDayFactors() {
     dayFactor *= frx_skyLightTransitionFactor;
     float sunsetFactor = 1.0 - frx_skyLightTransitionFactor;
 
-    float sunUp = dot(vec3(0.0, 1.0, 0.0), getSunVector());
-    float sunDown = dot(vec3(0.0, -1.0, 0.0), getSunVector());
+    // float sunUp = dot(vec3(0.0, 1.0, 0.0), getSunVector());
+    // float sunDown = dot(vec3(0.0, -1.0, 0.0), getSunVector());
 
-    dayFactor = 1.0 - pow(1.0 - clamp01(sunUp), 6.0);
-    sunsetFactor = 1.0 - dayFactor;
-    nightFactor = cubic(cubic(clamp01(sunDown * 20.0 + 0.4)));
-    nightFactor = 1.0 - pow(1.0 - nightFactor, 2.0);
-    sunsetFactor *= 1.0 - nightFactor;
-    dayFactor *= 1.0 - nightFactor;
+    // dayFactor = 1.0 - pow(1.0 - clamp01(sunUp), 6.0);
+    // sunsetFactor = 1.0 - dayFactor;
+    // nightFactor = cubic(cubic(clamp01(sunDown * 20.0 + 0.4)));
+    // nightFactor = 1.0 - pow(1.0 - nightFactor, 2.0);
+    // sunsetFactor *= 1.0 - nightFactor;
+    // dayFactor *= 1.0 - nightFactor;
 
     // float dayFactor, nightFactor, sunsetFactor;
 

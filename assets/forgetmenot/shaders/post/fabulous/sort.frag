@@ -129,9 +129,13 @@ void main() {
     #endif
 
     float waterFogDist = abs(distance(maxViewSpacePos, minViewSpacePos));
-    if(max_depth != 1.0 && translucentData.b > 0.1) {
-        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.2), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), clamp01(waterFogDist / 10.0) * (1.0 - frx_playerEyeInFluid));
+    if(max_depth != 1.0 && translucentData.b > 0.5) {
+        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.2), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
     }
+
+    // if(translucentData.b > 0.5) {
+    //     translucentf0 = mix(translucentf0, vec3(1.0), 1.0 - step(0.5, clamp01(dot(normalize(maxViewSpacePos), -translucentNormal))));
+    // }
 
 
     if(floor(max_depth) > 0.5) {
@@ -242,7 +246,7 @@ void main() {
         compositeFresnel.gb = solidData.br;
     }
     if(any(lessThan(abs(compositeFresnel.rgb - 0.04), vec3(0.001)))) compositeFresnel.r = 0.0;
-    if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
+    //if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
     compositeFresnel.r *= 20.0;
 
     

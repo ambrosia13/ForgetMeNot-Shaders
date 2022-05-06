@@ -51,7 +51,15 @@ void frx_pipelineFragment() {
                 frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_smoothedRainGradient);
                 frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_thunderGradient);
                 // frx_fragLight.y *= mix(1.0, 0.7, getCloudNoise(frx_skyLightVector.xz / frx_skyLightVector.y, 5));
-                lightmap.rgb = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(1.0));
+                #ifdef DEPRESSING_MODE
+                    #define LIGHTMAP_GAMMA 1.5
+                #else 
+                    #define LIGHTMAP_GAMMA 1.0
+                #endif
+                lightmap.rgb = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(1.0 / LIGHTMAP_GAMMA));
+                #ifdef DEPRESSING_MODE
+                    //lightmap *= mix(1.0, 1.8, 1.0 - getTimeOfDayFactors().x);
+                #endif
                 if(frx_worldIsOverworld == 0) lightmap = max(vec3(0.85), lightmap);
                 vec3 ldata = frx_fragLight;
                 vec3 tdata = getTimeOfDayFactors();
@@ -80,7 +88,7 @@ void frx_pipelineFragment() {
 
                         contrast(directionalLight, 1.2);
                         #ifdef DEPRESSING_MODE
-                            lightmap *= mix(normalize(calculateSkyColor(frx_fragNormal)) * 2.5, directionalLight, 1.0 - frx_fragLight.y);
+                            lightmap *= directionalLight;//mix(normalize(calculateSkyColor(frx_fragNormal)) * 2.5, directionalLight, 1.0 - frx_fragLight.y);
                         #else 
                             lightmap *= directionalLight;
                         #endif

@@ -55,7 +55,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         skyColor = overworldSkyColor;
 
         skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 0.5, 0.5 * frx_smoothedRainGradient);
-        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 0.75, 0.5 * frx_thunderGradient);
+        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * (0.75 + 0.2 * (1.0 - tdata.x)), 0.5 * frx_thunderGradient);
         // skyColor = mix(skyColor, vec3(frx_luminance(skyColor)), -0.5);
 
         // this saturates the sky but is it really needed?
@@ -66,6 +66,11 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
     } else if(frx_worldIsEnd == 1) {
         skyColor = vec3(0.4, 0.2, 0.4);
     } else skyColor = frx_fogColor.rgb * 2.0;
+
+    #ifdef DEPRESSING_MODE
+        //skyColor = skyColor * 0.5 + 0.5;
+    #endif
+
     return skyColor;// + frx_noise2d(viewSpacePos.xz) / 150.0;
 }
 // -----------------------------------------------------------------------------------------------------------------------
@@ -238,32 +243,36 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     vec3 skyResult = vec3(0.0);
     vec3 tdata = getTimeOfDayFactors();
 
-    skyResult = calculateSkyColor(viewSpacePos);
-    skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
-    skyResult += calculateSun(viewSpacePos);
+    if(frx_cameraInWater == 0) {
+        skyResult = calculateSkyColor(viewSpacePos);
+        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+        skyResult += calculateSun(viewSpacePos);
 
-    vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
-    skyResult += step(0.98, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x);
+        vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
+        skyResult += step(0.98, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x);
 
-    // clouds
-    vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
-    cloudsColor *= 1.5;
+        // clouds
+        vec3 cloudsColor = vec3(0.0);
+        cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
+        cloudsColor *= 1.5;
 
-    #if CLOUD_LIGHTING == LIGHTING_NONE
-        #define BRIGHTNESS_MODIFIER vec2(1.0,1.0)
-    #elif CLOUD_LIGHTING == LIGHTING_NORMALS
-        #define BRIGHTNESS_MODIFIER vec2(1.0, 1.5)
-    #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
-        #define BRIGHTNESS_MODIFIER vec2(1.0,1.5)
-    #endif
+        #if CLOUD_LIGHTING == LIGHTING_NONE
+            #define BRIGHTNESS_MODIFIER vec2(1.0,1.0)
+        #elif CLOUD_LIGHTING == LIGHTING_NORMALS
+            #define BRIGHTNESS_MODIFIER vec2(1.0, 1.5)
+        #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
+            #define BRIGHTNESS_MODIFIER vec2(1.0,1.5)
+        #endif
 
-    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, 3, false) * BRIGHTNESS_MODIFIER; // x = clouds, y = shading
-    cloudsColor *= cloudsDensity.y * 0.7;
-    cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
-    cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
+        vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, 3, false) * BRIGHTNESS_MODIFIER; // x = clouds, y = shading
+        cloudsColor *= cloudsDensity.y * 0.7;
+        cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+        cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
-    skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+        skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+    } else {
+        skyResult = vec3(0.1, 0.5, 0.7);
+    }
     
     if(frx_worldIsEnd == 1) {
         skyResult -= mix(0.0, 0.5, (pow(clamp01(viewSpacePos.y), 0.7)));
