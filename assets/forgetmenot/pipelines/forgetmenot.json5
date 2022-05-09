@@ -381,6 +381,7 @@
     ],
 
     include: [
+        "forgetmenot:include/shadow.json5",
         "forgetmenot:include/composite/clouds.json5",
         "forgetmenot:include/composite/entity.json5",
         "forgetmenot:include/composite/particles.json5",

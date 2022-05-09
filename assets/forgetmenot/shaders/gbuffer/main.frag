@@ -6,12 +6,41 @@ uniform sampler2D u_glint;
     //in vec3 directionalLight;
 #endif
 
+in vec4 shadowViewSpacePos;
+
 layout(location = 0) out vec4 fragColor;
 // layout(location = 1) out vec4 fragNormal;
 // layout(location = 2) out vec4 fragData;
 // layout(location = 3) out vec4 fragLight;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
+
+// Helper function
+vec3 shadowDist(int cascade)
+{
+  vec4 c = frx_shadowCenter(cascade);
+  return abs((c.xyz - shadowViewSpacePos.xyz) / c.w);
+}
+
+// Function for obtaining the cascade level
+int selectShadowCascade()
+{
+  vec3 d3 = shadowDist(3);
+  vec3 d2 = shadowDist(2);
+  vec3 d1 = shadowDist(1);
+
+  int cascade = 0;
+
+  if (d3.x < 1.0 && d3.y < 1.0 && d3.z < 1.0) {
+    cascade = 3;
+  } else if (d2.x < 1.0 && d2.y < 1.0 && d2.z < 1.0) {
+    cascade = 2;
+  } else if (d1.x < 1.0 && d1.y < 1.0 && d1.z < 1.0) {
+    cascade = 1;
+  }
+
+  return cascade;
+}
 
 void frx_pipelineFragment() {
     vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
@@ -47,11 +76,50 @@ void frx_pipelineFragment() {
 
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
+            int cascade = selectShadowCascade();
+            vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
+            vec3 shadowScreenPos = shadowSpacePos.xyz * 0.5 + 0.5;
+            //shadowScreenPos.xy = floor(shadowScreenPos.xy * 1024.0) / 1024.0;
+            // shadowScreenPos.xy += rand2D(shadowScreenPos.xy * 20000.0) * 0.01;
+            // float shadowMap;
+            // for(int i = -2; i < 2; i++) {
+            //     for(int j = -2; j < 2; j++) {
+            //         shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 1024.0, cascade, shadowScreenPos.z)) / 16.0;
+            //     }
+            // }
+            // float shadowProbe = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy, cascade)).r;
+            // float up = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy + vec2(0.0, 1.0 / 1024.0), cascade)).r;
+            // float down = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy - vec2(0.0, 1.0 / 1024.0), cascade)).r;
+            // float left = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy + vec2(1.0 / 1024.0, 0.0), cascade)).r;
+            // float right = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy - vec2(1.0 / 1024.0, 0.0), cascade)).r;
+            // float variance = max(max(abs(shadowProbe - up), abs(shadowProbe - down)), max(abs(shadowProbe - left), abs(shadowProbe - right))) * 50.0;
+            // variance = abs(shadowProbe - up) + abs(shadowProbe - down) + abs(shadowProbe - left) + abs(shadowProbe - right);
+            // variance *= 500.0;
+
+            // if(shadowProbe < shadowScreenPos.z) color.rgb *= 0.2;
+            //variance *= 250.0;
+
+            // float amt = 10.0;
+
+            int blurAmount = 2;
+
+            #ifndef SHADOW_FILTER
+                float shadowMap = 0.0;
+                for(int i = -blurAmount; i < blurAmount; i++) {
+                    for(int j = -blurAmount; j < blurAmount; j++) {
+                        shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 800.0, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
+                    }
+                }
+            #else
+                float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
+            #endif
+            if(frx_isHand) shadowMap = 0.0;
+            //color.rgb = shadowSpacePos.xyz;
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
-                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.;
+                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.25;
                 vec3 directLightColorDay = vec3(1.1, 1.0, 0.9) * 1.5;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
@@ -60,13 +128,14 @@ void frx_pipelineFragment() {
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
                 vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0);
-                vec3 directLightColorNight = vec3(0.9, 1.0, 1.1);
+                vec3 directLightColorNight = vec3(0.9, 1.0, 1.1) * 1.5;
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
-                if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z * 0.5 + 0.5;
+                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += 0.0 + tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                if(frx_matDisableDiffuse == 0) lightmap += tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                lightmap *= mix(vec3(1.0), shadowMap * directLightColorDay * 0.5 + 0.5, tdata.x);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];
@@ -74,6 +143,13 @@ void frx_pipelineFragment() {
 
                 lightmap *= mix(vec3(1.0), ambientLightColorNight, tdata.y * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
+                lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * directLightColorNight * 0.5 + 0.5, tdata.y);
+
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
+
+                // if(!frx_isGui || frx_isHand) {
+                //     lightmap +
+                // }
 
                 float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
                 heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
