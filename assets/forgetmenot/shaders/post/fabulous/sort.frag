@@ -176,7 +176,7 @@ void main() {
     float fogStartMin = mix(10.0, 1.0, clamp01(frx_cameraInLava + frx_cameraInWater + frx_effectBlindness));
     blockDist = max(0.0, blockDist - fogStartMin);
 
-    float fogDensity = mix(1.0, 0.8, tdata.x);
+    float fogDensity = mix(1.0, 0.1, tdata.x);
     fogDensity = mix(fogDensity, 5.5, tdata.y);
     fogDensity = mix(fogDensity, 4.0, tdata.z);
     fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);
@@ -191,6 +191,7 @@ void main() {
 
     vec3 fogColor = sampleFogColor(viewDir);
     //fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld + frx_worldIsEnd);
+    fogFactor = mix(fogFactor, 1.0, frx_smootherstep(frx_viewDistance * 0.7, frx_viewDistance * 0.9, blockDist));
     vec3 tempColor = mix(composite.rgb, fogColor, clamp01(fogFactor));
     composite.rgb = mix(tempColor, composite, floor(min_depth));
 

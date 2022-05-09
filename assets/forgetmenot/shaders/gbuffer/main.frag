@@ -49,72 +49,68 @@ void frx_pipelineFragment() {
         #ifdef APPLY_MC_LIGHTMAP
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
                 vec3 lightmap = vec3(1.0);
-                lightmap.rgb *= mix(1.0, 1.5, getTimeOfDayFactors().x * frx_fragLight.y);
-
-                frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_smoothedRainGradient);
-                frx_fragLight.y = mix(frx_fragLight.y, frx_fragLight.y * 0.8, frx_thunderGradient);
-                // frx_fragLight.y *= mix(1.0, 0.7, getCloudNoise(frx_skyLightVector.xz / frx_skyLightVector.y, 5));
-                #ifdef DEPRESSING_MODE
-                    #define LIGHTMAP_GAMMA 1.5
-                #else 
-                    #define LIGHTMAP_GAMMA 1.0
-                #endif
-                lightmap.rgb = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(1.0 / LIGHTMAP_GAMMA));
-                #ifdef DEPRESSING_MODE
-                    //lightmap *= mix(1.0, 1.8, 1.0 - getTimeOfDayFactors().x);
-                #endif
-                if(frx_worldIsOverworld == 0) lightmap = max(vec3(0.85), lightmap);
-                vec3 ldata = frx_fragLight;
                 vec3 tdata = getTimeOfDayFactors();
 
-                #ifdef VANILLA_AO
-                    // if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;
-                    float invAO = 1.0 - frx_fragLight.z;
-                    if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z;//mix(lightmap, lightmap * color.rgb, invAO);
-                #endif
-                #ifdef DIRECTIONAL_SHADING
-                    if(frx_matDisableDiffuse == 0)  {
-                        vec3 directionalLight = vec3(1.0);
+                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.;
+                vec3 directLightColorDay = vec3(1.1, 1.0, 0.9) * 1.5;
 
-                        vec3 sunVector = getSunVector();
-                        vec3 moonVector = getMoonVector();
+                vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
+                vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
+                directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
+                directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                        vec3 sunsetDiffuseColor = vec3(0.8, 0.9, 1.1) * (dot(frx_fragNormal, moonVector) * 0.45 + 0.65) + vec3(1.1, 0.9, 0.8) * (dot(frx_fragNormal, sunVector) * 0.45 + 0.65);
-                        vec3 dayDiffuseColor = vec3(1.4, 1.35, 0.9) * dot(frx_fragNormal, sunVector) * 0.3 + 1.2;
-                        vec3 nightDiffuseColor = vec3(0.8, 1.0, 1.3) * dot(frx_fragNormal, moonVector) * 0.25 + 1.0;
-                        
-                        directionalLight = mix(directionalLight, sunsetDiffuseColor, getTimeOfDayFactors().z);
-                        directionalLight = mix(directionalLight, dayDiffuseColor, getTimeOfDayFactors().x);
-                        directionalLight = mix(directionalLight, nightDiffuseColor, getTimeOfDayFactors().y);
+                vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0);
+                vec3 directLightColorNight = vec3(0.9, 1.0, 1.1);
 
-                        directionalLight = mix(directionalLight, vec3(dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75), 1.0 - frx_vertexLight.y);
+                lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+                if(frx_matDisableAo == 0) lightmap *= frx_fragLight.z * 0.5 + 0.5;
 
-                        contrast(directionalLight, 1.2);
-                        #ifdef DEPRESSING_MODE
-                            lightmap *= directionalLight;//mix(normalize(calculateSkyColor(frx_fragNormal)) * 2.5, directionalLight, 1.0 - frx_fragLight.y);
-                        #else 
-                            lightmap *= directionalLight;
-                        #endif
-                    } else {
-                        float maxLightVal = mix(1.3, 1.0, getTimeOfDayFactors().z);
-                        maxLightVal = mix(maxLightVal, 1.0, getTimeOfDayFactors().y);    
+                lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
+                if(frx_matDisableDiffuse == 0) lightmap += 0.0 + tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
 
-                        lightmap *= maxLightVal;
-                    }
-                #endif
+                lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
+                if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];
+                if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getMoonVector()) * directLightColorSunset[1];
 
-                lightmap = max(lightmap, vec3(0.05));
+                lightmap *= mix(vec3(1.0), ambientLightColorNight, tdata.y * frx_fragLight.y);
+                if(frx_matDisableDiffuse == 0) lightmap += tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
 
-                float heldLightFactor = frx_smootherstep(frx_heldLight.a * 15.0, frx_heldLight.a * 0.0, frx_distance);
+                float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
                 heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
                 heldLightFactor = clamp01(heldLightFactor);
                 lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.5, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
 
-                color.rgb *= lightmap;
+                color.rgb *= max(vec3(0.05), lightmap);
             }
         #endif
         if(frx_isGui && !frx_isHand) color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7; // directional shading in inventory
+    #else
+        if(!frx_isGui || frx_isHand) {
+            vec3 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+            lightmap *= frx_fragLight.z * 0.5 + 0.5;
+
+            vec3 tdata = getTimeOfDayFactors();
+
+            if(!frx_isHand) {
+                lightmap *= mix(vec3(1.0) * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4)) * 0.25 + 0.75, normalize(calculateSkyColor(frx_fragNormal)) * 0.5 + 0.5, frx_fragLight.y);
+                lightmap += frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * (calculateSkyColor(getSunVector())) * (tdata.x + tdata.z);
+                lightmap += frx_fragLight.y * 0.2 * dot(frx_fragNormal, getMoonVector()) * (calculateSkyColor(getMoonVector())) * (tdata.y + tdata.z);
+            }
+
+            lightmap *= mix(1.0, 1.5, frx_fragLight.y * tdata.x);
+            lightmap *= mix(1.0, 1.5, frx_fragLight.x * clamp01(1.0 - tdata.x + (1.0 - frx_fragLight.y)));
+
+            float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
+            heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+            if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
+            heldLightFactor = clamp01(heldLightFactor);
+            lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.5, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
+
+            color.rgb *= lightmap;
+        } else {
+            color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7;
+        }
     #endif
 
     if(frx_matGlint == 1) {
