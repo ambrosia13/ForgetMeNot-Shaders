@@ -15,11 +15,12 @@ layout(location = 2) out vec4 fragData;
 
 void frx_pipelineFragment() {
     vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
-    // float offset = 0.0001;
-    // float height1 = frx_luminance(texture(frxs_baseColor, frx_texcoord + vec2(offset, 0.0)).rgb);
-    // float height2 = frx_luminance(texture(frxs_baseColor, frx_texcoord - vec2(offset, 0.0)).rgb);
-    // float height3 = frx_luminance(texture(frxs_baseColor, frx_texcoord + vec2(0.0, offset)).rgb);
-    // float height4 = frx_luminance(texture(frxs_baseColor, frx_texcoord - vec2(0.0, offset)).rgb);
+    // vec2 uv = frx_faceUv(frx_vertex.xyz, frx_vertexNormal.xyz);
+    // float offset = 0.1;
+    // float height1 = fbmHash(uv + vec2(offset, 0.0), 6);
+    // float height2 = fbmHash(uv - vec2(offset, 0.0), 6);
+    // float height3 = fbmHash(uv + vec2(0.0, offset), 6);
+    // float height4 = fbmHash(uv - vec2(0.0, offset), 6);
     // float deltaX = (height2 - height1) * 2.0;
     // float deltaY = (height4 - height3) * 2.0;
 

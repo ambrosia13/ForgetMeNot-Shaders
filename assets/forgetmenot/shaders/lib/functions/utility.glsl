@@ -209,5 +209,19 @@ float fbmHash(vec2 uv, int octaves) {
     return noise;
 }
 
+// https://www.shadertoy.com/view/fsjBWm
+vec4 fastDownsample(sampler2D image, vec2 uv) {
+    vec4 col = vec4(0.0);
+    col += 0.37487566 * texture(image, uv + vec2(-0.75777156,-0.75777156) / frxu_size);
+    col += 0.37487566 * texture(image, uv + vec2(0.75777156,-0.75777156) / frxu_size);
+    col += 0.37487566 * texture(image, uv + vec2(0.75777156,0.75777156) / frxu_size);
+    col += 0.37487566 * texture(image, uv + vec2(-0.75777156,0.75777156) / frxu_size);
+    col += -0.12487566 * texture(image, uv + vec2(-2.90709914,0.0) / frxu_size);
+    col += -0.12487566 * texture(image, uv + vec2(2.90709914,0.0) / frxu_size);
+    col += -0.12487566 * texture(image, uv + vec2(0.0,-2.90709914) / frxu_size);
+    col += -0.12487566 * texture(image, uv + vec2(0.0,2.90709914) / frxu_size);
+
+    return col;
+}
 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

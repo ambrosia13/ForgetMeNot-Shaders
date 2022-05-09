@@ -44,7 +44,7 @@ vec3 fxaa(in sampler2D image, in vec2 texcoord) {
     float lrange = lmax - lmin;
 
     if(lrange < max(EDGE_THRESHOLD_MIN, lmax * EDGE_THRESHOLD_MAX)) {
-        return centerColor;
+        //return centerColor;
     }
 
     float downLeft = luma(texture(image, texcoord + ivec2(-1, -1) / frxu_size));

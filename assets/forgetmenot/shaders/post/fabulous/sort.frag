@@ -63,18 +63,29 @@ vec3 blend( vec3 dst, vec4 src ) {
 
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    vec4  main_color = texture(u_main_color, texcoord);
+    //translucent_color.a *= 0.75;
+    float translucent_depth = texture(u_translucent_depth, texcoord).r;
+    vec4 translucentData = texture(u_translucent_data, texcoord);
+    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 translucentf0 = translucentData.ggg;
+    vec3 transViewSpacePos = setupViewSpacePos(texcoord, translucent_depth);
+    // transViewSpacePos = refract(transViewSpacePos, frx_normalModelMatrix * translucentNormal, 1.333);
+    // vec3 transCoord = viewSpaceToScreenSpace(transViewSpacePos);
+    vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
+
+    vec2 coord = texcoord;
+    // if(translucentData.b > 0.5) {
+    //     float noise = (fbmHash(0.5 * frx_renderSeconds + translucentNormal.xz * 5.0 * vec2(5.0, 2.0), 3) * 2.0 - 1.0);// * smoothstep(0.95, 0.9, translucent_depth);
+    //     coord += 0.05 * noise * noise;
+    // }
+
+    vec4  main_color = texture(u_main_color, coord);
     float main_depth = texture(u_main_depth, texcoord).r;
     vec4 solidData = texture(u_solid_data, texcoord);
     vec3 solidNormal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
     vec3 solidf0 = solidData.ggg;
     
-    vec4  translucent_color = texture(u_translucent_color, texcoord);
-    translucent_color.a *= 0.75;
-    float translucent_depth = texture(u_translucent_depth, texcoord).r;
-    vec4 translucentData = texture(u_translucent_data, texcoord);
-    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 translucentf0 = translucentData.ggg;
+
 
     vec4  entity_color = texture(u_entity_color, texcoord);
     float entity_depth = texture(u_entity_depth, texcoord).r;
@@ -130,12 +141,12 @@ void main() {
 
     float waterFogDist = abs(distance(maxViewSpacePos, minViewSpacePos));
     if(max_depth != 1.0 && translucentData.b > 0.5) {
-        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.2), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
+        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
     }
 
-    // if(translucentData.b > 0.5) {
-    //     translucentf0 = mix(translucentf0, vec3(1.0), 1.0 - step(0.5, clamp01(dot(normalize(maxViewSpacePos), -translucentNormal))));
-    // }
+    if(translucentData.b > 0.5 && dot(translucentNormal, vec3(0.0, 1.0, 0.0)) < 0.0 && frx_cameraInWater == 1) {
+        translucentf0 = mix(translucentf0, vec3(1.0), 1.0 - step(0.35, clamp01(dot(normalize(maxViewSpacePos), -translucentNormal))));
+    }
 
 
     if(floor(max_depth) > 0.5) {

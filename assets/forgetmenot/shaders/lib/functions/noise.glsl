@@ -27,6 +27,7 @@ float waterHeightNoise(in vec2 uv) {
     // waterHeight += fbm2D(coord * vec2(4.4, 1.1) + 10.0 - vec2(1.2, 0.3) * time);
 
     return pow(waterHeight, 1.0) * 0.15;
+    //return fbmHash(coord * vec2(4.0, 1.5) + time, 6);
 }
 
 float iceHeightNoise(in vec2 uv) {

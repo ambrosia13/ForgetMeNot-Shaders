@@ -19,7 +19,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         //daytimeSky += mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
         // daytimeSky += SUN_COLOR * max(0.1, 1.0 / clamp01(dot(viewSpacePos, getSunVector()))) * 0.01;
         daytimeSky *= 1.1;
-        daytimeSky.rg *= vec2(1.0, 1.0);
+        daytimeSky.rg *= vec2(1.0, 1.);
         daytimeSky = mix(vec3(frx_luminance(daytimeSky)), daytimeSky, 0.9);
         // contrast(daytimeSky, 1.5);
 
@@ -175,14 +175,16 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                 #endif
             #endif
 
+            float cirrus = 0.0;
+
             #ifdef CIRRUS_CLOUDS
-                clouds += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
+                cirrus += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
                 #ifndef STRATUS_CLOUDS
-                    clouds *= 2.0;
+                    cirrus *= 2.0;
                 #else 
                 #endif
             #endif
-            return vec2(clouds, (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);
+            return vec2(mix(cirrus, clouds, clouds), (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);
         } else {
             return vec2(0.0);
         }
@@ -284,7 +286,7 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
 }
 vec3 sampleFogColor(in vec3 viewSpacePos) {
     vec3 color = mix(calculateSkyColor(normalize(viewSpacePos)), vec3(0.0), frx_effectBlindness);
-    color = mix(color, vec3(0.1, 0.5, 0.7) * mix(0.5, 1.0, getTimeOfDayFactors().x) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
+    color = mix(color, vec3(0.1, 0.5, 0.7) * mix(0.5, 1.0, clamp01(frx_smoothedEyeBrightness.y * getTimeOfDayFactors().x)) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
     color = mix(color, vec3(1.9, 0.5, 0.1) * max(0.75, sqrt(frx_smoothedEyeBrightness.y)), frx_cameraInLava);
     return color;
 }

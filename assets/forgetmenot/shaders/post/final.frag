@@ -8,10 +8,12 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    //vec3 color = fxaa(u_color, texcoord);
-    vec3 color = texture(u_color, texcoord).rgb;
+    vec3 color = fxaa(u_color, texcoord);
+    //vec3 color = texture(u_color, texcoord).rgb;
 
     vec3 finalColor = color.rgb;
+    //finalColor = pow(finalColor, vec3(1.2));
+
 
     finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), frx_effectWither);
     finalColor = mix(finalColor, finalColor * vec3(0.7, 1.0, 0.7), frx_effectPoison);
