@@ -224,4 +224,9 @@ vec4 fastDownsample(sampler2D image, vec2 uv) {
     return col;
 }
 
+vec3 nightEyeAdjust(in vec3 color) {
+    float amt = getTimeOfDayFactors().y * 0.5;
+    return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
+}
+
 #include forgetmenot:shaders/lib/functions/noise.glsl 

@@ -43,6 +43,8 @@ void frx_pipelineFragment() {
         vec3 glint = texture(u_glint, (frx_normalizeMappedUV(frx_texcoord)) + frx_renderSeconds / 15.0).rgb;
     #endif
 
+    //if(frx_matCutout == 1) frx_fragNormal = vec3(0.0, 1.0, 0.0);
+
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {

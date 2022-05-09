@@ -12,7 +12,7 @@ void main() {
     //vec3 color = texture(u_color, texcoord).rgb;
 
     vec3 finalColor = color.rgb;
-    //finalColor = pow(finalColor, vec3(1.2));
+    finalColor = pow(finalColor, vec3(1.0));
 
 
     finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), frx_effectWither);
@@ -39,6 +39,7 @@ void main() {
 
     #ifdef FAKE_EYE_ADJUST
         finalColor = pow(finalColor, mix(vec3(1.0 / 2.2), vec3(1.0), max(max(getTimeOfDayFactors().y * 0.5, frx_smoothedEyeBrightness.y), frx_smoothedEyeBrightness.x * 0.5)));
+        //finalColor = nightEyeAdjust(finalColor);
     #endif
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + rand3D(texcoord * 2000.0) / 255.0, 1.0));
