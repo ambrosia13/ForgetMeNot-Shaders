@@ -15,6 +15,7 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
 
+// https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
 // Helper function
 vec3 shadowDist(int cascade)
 {
@@ -135,7 +136,7 @@ void frx_pipelineFragment() {
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
-                lightmap *= mix(vec3(1.0), shadowMap * directLightColorDay * 0.5 + 0.5, tdata.x);
+                lightmap *= mix(vec3(1.0), shadowMap * (SUN_COLOR * 0.1) * 0.5 + 0.5, tdata.x);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];
@@ -143,7 +144,7 @@ void frx_pipelineFragment() {
 
                 lightmap *= mix(vec3(1.0), ambientLightColorNight, tdata.y * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
-                lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * directLightColorNight * 0.5 + 0.5, tdata.y);
+                lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * (MOON_COLOR * 0.1) * 0.5 + 0.5, tdata.y);
 
                 if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
 
