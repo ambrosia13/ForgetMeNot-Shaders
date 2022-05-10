@@ -15,34 +15,6 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
 
-// https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
-// Helper function
-vec3 shadowDist(int cascade)
-{
-  vec4 c = frx_shadowCenter(cascade);
-  return abs((c.xyz - shadowViewSpacePos.xyz) / c.w);
-}
-
-// Function for obtaining the cascade level
-int selectShadowCascade()
-{
-  vec3 d3 = shadowDist(3);
-  vec3 d2 = shadowDist(2);
-  vec3 d1 = shadowDist(1);
-
-  int cascade = 0;
-
-  if (d3.x < 1.0 && d3.y < 1.0 && d3.z < 1.0) {
-    cascade = 3;
-  } else if (d2.x < 1.0 && d2.y < 1.0 && d2.z < 1.0) {
-    cascade = 2;
-  } else if (d1.x < 1.0 && d1.y < 1.0 && d1.z < 1.0) {
-    cascade = 1;
-  }
-
-  return cascade;
-}
-
 void frx_pipelineFragment() {
     vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
     // vec2 uv = frx_faceUv(frx_vertex.xyz, frx_vertexNormal.xyz);
@@ -77,11 +49,11 @@ void frx_pipelineFragment() {
 
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
-            int cascade = selectShadowCascade();
+            int cascade = selectShadowCascade(shadowViewSpacePos);
             vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
-            vec3 shadowScreenPos = shadowSpacePos.xyz * 0.5 + 0.5;
+            vec3 shadowScreenPos = (shadowSpacePos.xyz) * 0.5 + 0.5;
             //shadowScreenPos.xy = floor(shadowScreenPos.xy * 1024.0) / 1024.0;
-            // shadowScreenPos.xy += rand2D(shadowScreenPos.xy * 20000.0) * 0.01;
+            //shadowScreenPos.xy += rand2D(shadowScreenPos.xy * 20000.0) * 0.001; 
             // float shadowMap;
             // for(int i = -2; i < 2; i++) {
             //     for(int j = -2; j < 2; j++) {
@@ -102,18 +74,21 @@ void frx_pipelineFragment() {
 
             // float amt = 10.0;
 
-            int blurAmount = 2;
+            int blurAmount = 3;
 
-            #ifndef SHADOW_FILTER
+            #ifdef SHADOW_FILTER
                 float shadowMap = 0.0;
                 for(int i = -blurAmount; i < blurAmount; i++) {
                     for(int j = -blurAmount; j < blurAmount; j++) {
-                        shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 800.0, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
+                        shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 1024.0, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
                     }
                 }
+                // shadowMap = shadowFilter(frxs_shadowMap, shadowScreenPos, cascade, 4.0);
+                // float shadowMap = sampleShadowPCF(shadowScreenPos.xyz, cascade);
             #else
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
             #endif
+
             if(frx_isHand) shadowMap = 0.0;
             //color.rgb = shadowSpacePos.xyz;
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
@@ -135,7 +110,8 @@ void frx_pipelineFragment() {
                 if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0) * tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                //if(frx_matDisableDiffuse == 0) lightmap += (shadowMap) * tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
                 lightmap *= mix(vec3(1.0), shadowMap * (SUN_COLOR * 0.1) * 0.5 + 0.5, tdata.x);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
@@ -143,7 +119,7 @@ void frx_pipelineFragment() {
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getMoonVector()) * directLightColorSunset[1];
 
                 lightmap *= mix(vec3(1.0), ambientLightColorNight, tdata.y * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
+                if(frx_matDisableDiffuse == 0) lightmap += 1.0 * tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
                 lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * (MOON_COLOR * 0.1) * 0.5 + 0.5, tdata.y);
 
                 if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));

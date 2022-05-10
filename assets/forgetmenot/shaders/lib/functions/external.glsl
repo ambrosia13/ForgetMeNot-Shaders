@@ -103,6 +103,29 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
 	}
   return col / max(0.01, weight);
 }
+// float shadowFilter(sampler2DArrayShadow shadowMap, vec3 shadowPos, int cascade, float radius) {
+// 	vec2 texel = 1.0 / vec2(1024.0);
+
+//   float weight = 0.0;
+//   float shadowResult = 0.0;
+
+//   float d = 1.0;
+//   vec2 samp = vec2(radius) / 10.0;
+
+// 	mat2 ang = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
+
+// 	for(int i = 0;i<10*10;i++) {
+//     d += 1.0 / d;
+//     samp *= ang;
+
+//     float w = 1.0 / (d - 1.0);
+//     vec2 shadowUv = shadowPos.xy + samp * (d - 1.0) * texel;
+
+// 		shadowResult += texture(shadowMap, vec4(shadowUv, cascade, shadowPos.z)) * w;
+//     weight += w;
+// 	}
+//   return shadowResult / weight;//+hash1(c-r)/128.;
+// }
 // --------------------------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------------------------
@@ -272,3 +295,33 @@ vec4 hash44(vec4 p4)
     return fract((p4.xxyz+p4.yzzw)*p4.zywx);
 }
 // --------------------------------------------------------------------------------------------------------
+
+#ifndef VERTEX_SHADER
+// https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
+// Helper function
+vec3 shadowDist(int cascade, vec4 pos)
+{
+  vec4 c = frx_shadowCenter(cascade);
+  return abs((c.xyz - pos.xyz) / c.w);
+}
+
+// Function for obtaining the cascade level
+int selectShadowCascade(vec4 shadowViewSpacePos)
+{
+  vec3 d3 = shadowDist(3, shadowViewSpacePos);
+  vec3 d2 = shadowDist(2, shadowViewSpacePos);
+  vec3 d1 = shadowDist(1, shadowViewSpacePos);
+
+  int cascade = 0;
+
+  if (d3.x < 1.0 && d3.y < 1.0 && d3.z < 1.0) {
+    cascade = 3;
+  } else if (d2.x < 1.0 && d2.y < 1.0 && d2.z < 1.0) {
+    cascade = 2;
+  } else if (d1.x < 1.0 && d1.y < 1.0 && d1.z < 1.0) {
+    cascade = 1;
+  }
+
+  return cascade;
+}
+#endif

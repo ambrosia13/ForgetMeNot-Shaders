@@ -254,7 +254,8 @@
                 "u_translucent_normal",
                 "u_solid_data"
                 "u_solid_normal",
-                "u_global_illumination"
+                "u_global_illumination",
+                "u_shadow_map"
             ]
         },
         {
@@ -331,7 +332,8 @@
                     "translucent_normal",
                     "main_data",
                     "main_normal",
-                    "global_illumination"
+                    "global_illumination",
+                    "shadow_map"
                 ]
             },
             {

@@ -29,10 +29,10 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         nighttimeSky = mix(nighttimeSky, vec3(0.344,0.376,0.500) * 2.5, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         nighttimeSky = mix(nighttimeSky, vec3(0.291,0.327,0.460) * 2.2, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         nighttimeSky *= 0.1;
-        nighttimeSky.b *= 1.8;
+        nighttimeSky.b *= 2.8;
         nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 11.0)));
         //nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.885) * 2.0, clamp01(pow(dot(viewSpacePos, getMoonVector()), 15.0) * 0.55));
-        nighttimeSky = mix(nighttimeSky, vec3(frx_luminance(nighttimeSky)) * 1.5, 0.25);
+        //nighttimeSky = mix(nighttimeSky, vec3(frx_luminance(nighttimeSky)) * 1.5, 0.25);
 
         vec3 sunsetSky = vec3(0.605,0.382,0.361) * 1.0; // red 
         sunsetSky = mix(sunsetSky, vec3(0.605,0.482,0.461) * 0.9, smoothstep(-0.3, 0.0, viewSpacePos.y)); // green-ish

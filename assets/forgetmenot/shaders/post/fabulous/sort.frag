@@ -18,6 +18,7 @@ uniform sampler2D u_translucent_normal;
 uniform sampler2D u_solid_normal;
 uniform sampler2D u_solid_data;
 uniform sampler2D u_global_illumination;
+uniform sampler2DArrayShadow u_shadow_map;
 
 in vec2 texcoord;
 
@@ -60,6 +61,8 @@ void try_insert(vec4 color, float depth) {
 vec3 blend( vec3 dst, vec4 src ) {
     return ( dst * ( 1.0 - src.a ) ) + src.rgb;
 }
+
+uniform int frxu_cascade;
 
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -207,6 +210,7 @@ void main() {
             //#define GI_RANGE 0.5
             vec3 rayView = minViewSpacePos;
             vec3 rayDirection = (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
+            rayDirection = (reflect(-frx_skyLightVector, solidNormal) * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
             //rayDirection = frx_skyLightVector / 10.0 + rand3D(texcoord + mod(frx_renderFrames, 100)) / (10.0 * STEPS);
             //rayDirection = reflect(solidNormal, normalize(rayView)) * (1.0 - clamp01(dot(solidNormal, normalize(rayView)))) / STEPS + (rand3D(texcoord + mod(frx_renderFrames, 100))) * (0.001 * STEPS);
 
@@ -261,6 +265,20 @@ void main() {
     //if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
     compositeFresnel.r *= 20.0;
 
+    vec3 viewPosCopy = minViewSpacePos;
+
+    // for(int i = 0; i < 40; i++) {
+    //     viewPosCopy += frx_skyLightVector * 1.0;
+    //     vec4 temp = (frx_shadowViewMatrix * vec4(viewPosCopy.xyz, 1.0));
+    //     vec3 shadowPos = temp.xyz / temp.w;
+    //     int cascade = selectShadowCascade(frx_shadowViewMatrix * vec4(minViewSpacePos, 1.0));
+    //     vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
+    //     vec3 shadowClipPos = temp1.xyz / temp1.w;
+    //     vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
+    //     composite += texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
+    //     //composite += floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPosCopy).xy).r) / 40.0; 
+    //     //composite.rgb = shadowScreenPos;
+    // }
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
     // #ifdef DANGER_SIGHT
