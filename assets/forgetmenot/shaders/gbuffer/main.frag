@@ -1,4 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
+#define SHADOW_MAP_SIZE 1024
+#define SHADOW_FILTER_SIZE PCF_SIZE_LARGE
+#include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_glint;
 
@@ -52,39 +55,26 @@ void frx_pipelineFragment() {
             int cascade = selectShadowCascade(shadowViewSpacePos);
             vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
             vec3 shadowScreenPos = (shadowSpacePos.xyz) * 0.5 + 0.5;
-            //shadowScreenPos.xy = floor(shadowScreenPos.xy * 1024.0) / 1024.0;
-            //shadowScreenPos.xy += rand2D(shadowScreenPos.xy * 20000.0) * 0.001; 
-            // float shadowMap;
-            // for(int i = -2; i < 2; i++) {
-            //     for(int j = -2; j < 2; j++) {
-            //         shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 1024.0, cascade, shadowScreenPos.z)) / 16.0;
-            //     }
-            // }
-            // float shadowProbe = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy, cascade)).r;
-            // float up = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy + vec2(0.0, 1.0 / 1024.0), cascade)).r;
-            // float down = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy - vec2(0.0, 1.0 / 1024.0), cascade)).r;
-            // float left = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy + vec2(1.0 / 1024.0, 0.0), cascade)).r;
-            // float right = texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy - vec2(1.0 / 1024.0, 0.0), cascade)).r;
-            // float variance = max(max(abs(shadowProbe - up), abs(shadowProbe - down)), max(abs(shadowProbe - left), abs(shadowProbe - right))) * 50.0;
-            // variance = abs(shadowProbe - up) + abs(shadowProbe - down) + abs(shadowProbe - left) + abs(shadowProbe - right);
-            // variance *= 500.0;
 
-            // if(shadowProbe < shadowScreenPos.z) color.rgb *= 0.2;
-            //variance *= 250.0;
+            int blurAmount = 2;
 
-            // float amt = 10.0;
-
-            int blurAmount = 3;
-
-            #ifdef SHADOW_FILTER
+            #ifndef SHADOW_FILTER
+                vec2 uv = shadowScreenPos.xy * 1024.0;
+                vec2 baseUv = floor(uv + 0.5) - vec2(0.5);
+                vec2 st = uv + 0.5 - baseUv;
+                baseUv /= 1024.0;
+                vec2 depthBias = vec2(0.05);//computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
+            	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / 1024.0, abs(depthBias));
+	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
                 float shadowMap = 0.0;
                 for(int i = -blurAmount; i < blurAmount; i++) {
                     for(int j = -blurAmount; j < blurAmount; j++) {
-                        shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / 1024.0, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
+                        shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
+                        //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + (vec2(i, j) / 1024.0) * shadowVariance, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
                     }
                 }
                 // shadowMap = shadowFilter(frxs_shadowMap, shadowScreenPos, cascade, 4.0);
-                // float shadowMap = sampleShadowPCF(shadowScreenPos.xyz, cascade);
+                //float shadowMap = sampleShadowPCF(shadowScreenPos.xyz, cascade);
             #else
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
             #endif
