@@ -210,7 +210,7 @@ void main() {
             //#define GI_RANGE 0.5
             vec3 rayView = minViewSpacePos;
             vec3 rayDirection = (solidNormal * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
-            rayDirection = (reflect(-frx_skyLightVector, solidNormal) * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
+            vec3 sunLightDirection = (reflect(-frx_skyLightVector, solidNormal) * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
             //rayDirection = frx_skyLightVector / 10.0 + rand3D(texcoord + mod(frx_renderFrames, 100)) / (10.0 * STEPS);
             //rayDirection = reflect(solidNormal, normalize(rayView)) * (1.0 - clamp01(dot(solidNormal, normalize(rayView)))) / STEPS + (rand3D(texcoord + mod(frx_renderFrames, 100))) * (0.001 * STEPS);
 
@@ -231,13 +231,41 @@ void main() {
                         lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                         //lighting *= 0.25;
                     #else
-                        lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 2.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 1.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
                     break;
                 }
                 #ifndef APPLY_MC_LIGHTMAP
                 else {
-                    lighting += normalize(sampleSkyReflection(rayDirection)) * 2.0 / STEPS * frx_smoothedEyeBrightness.y;
+                    lighting += normalize(sampleFogColor(rayDirection)) * 2.0 / STEPS * frx_smoothedEyeBrightness.y;
+                }
+                #endif
+            }
+            
+            for(int i = 0; i < STEPS; i++) {
+                rayView += sunLightDirection;
+                blurAmount += 0.5;
+                //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
+                vec3 rayScreen = viewSpaceToScreenSpace(rayView);
+
+                if(clamp01(rayScreen.xy) != rayScreen.xy) break;
+
+                float depthQuery = max(texture(u_translucent_depth, rayScreen.xy).r, texture(u_particles_depth, rayScreen.xy).r);
+                vec3 color = texture(u_main_color, rayScreen.xy).rgb;
+                
+                // color *= 1.0 - i / STEPS.0;
+                if(rayScreen.z > depthQuery && abs(length(rayView) - length(setupViewSpacePos(rayScreen.xy, texture(u_translucent_depth, rayScreen.xy).x))) < 0.1) {
+                    #ifdef APPLY_MC_LIGHTMAP
+                        lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        //lighting *= 0.25;
+                    #else
+                        lighting += color * frx_smootherstep(0.0, 0.5, frx_luminance(color)) * 2.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                    #endif
+                    break;
+                }
+                #ifndef APPLY_MC_LIGHTMAP
+                else {
+                    //lighting += normalize(sampleSkyReflection(rayDirection)) * 2.0 / STEPS * frx_smoothedEyeBrightness.y;
                 }
                 #endif
             }
@@ -245,7 +273,12 @@ void main() {
         lighting = mix(lighting, vec3(1.0), clamp01(fogFactor));
         // lighting = mix(lighting, vec3(1.0), clamp01(frx_luminance(composite)));
 
-        globalIllumination = vec4(mix(lastFrameSample.rgb, lighting, 0.051 + 0.95 * floor(min_depth)), blurAmount);
+        float mixFactor = 0.05;
+        #ifndef APPLY_MC_LIGHTMAP
+            mixFactor = 0.0125;
+        #endif
+
+        globalIllumination = vec4(mix(lastFrameSample.rgb, lighting, mixFactor + 0.95 * floor(min_depth)), blurAmount);
     #else
         globalIllumination = vec4(0.0);
     #endif
