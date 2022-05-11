@@ -63,18 +63,19 @@ void frx_pipelineFragment() {
                 vec2 baseUv = floor(uv + 0.5) - vec2(0.5);
                 vec2 st = uv + 0.5 - baseUv;
                 baseUv /= 1024.0;
-                vec2 depthBias = vec2(0.05);//computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
-            	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / 1024.0, abs(depthBias));
+                
+                // shadow bias things from canvas dev
+                //vec2 depthBias = computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
+                vec2 depthBias = vec2(0.05);
+            	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / 1024.0, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
 	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
+
                 float shadowMap = 0.0;
                 for(int i = -blurAmount; i < blurAmount; i++) {
                     for(int j = -blurAmount; j < blurAmount; j++) {
                         shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
-                        //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + (vec2(i, j) / 1024.0) * shadowVariance, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
                     }
                 }
-                // shadowMap = shadowFilter(frxs_shadowMap, shadowScreenPos, cascade, 4.0);
-                //float shadowMap = sampleShadowPCF(shadowScreenPos.xyz, cascade);
             #else
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
             #endif
