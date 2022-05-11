@@ -265,22 +265,23 @@ void main() {
     //if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
     compositeFresnel.r *= 20.0;
 
-    vec3 viewPosCopy = minViewSpacePos;
+    // vec3 viewPos = minViewSpacePos;
 
     // for(int i = 0; i < 40; i++) {
-    //     viewPosCopy += frx_skyLightVector * 0.003;
-    //     vec3 screenPos = viewSpaceToScreenSpace(viewPosCopy);
-    //     // vec4 temp = (frx_shadowViewMatrix * vec4(viewPosCopy.xyz, 1.0));
-    //     // vec3 shadowPos = temp.xyz / temp.w;
-    //     // int cascade = selectShadowCascade(frx_shadowViewMatrix * vec4(minViewSpacePos, 1.0));
-    //     // vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
-    //     // vec3 shadowClipPos = temp1.xyz / temp1.w;
-    //     // vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
-    //     //composite *= texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
-    //     //composite += floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPosCopy).xy).r) / 40.0; 
-    //     //composite.rgb = shadowScreenPos;
-    //     float depthQuery = texture(u_particles_depth, screenPos.xy).r;
-    //     if(screenPos.z > depthQuery) composite *= 0.97;
+    //     viewPos += frx_skyLightVector * 1.0;
+
+    //     vec4 temp = (frx_shadowViewMatrix * vec4(viewPos.xyz, 1.0));
+    //     vec3 shadowPos = temp.xyz / temp.w;
+    //     int cascade = selectShadowCascade(frx_shadowViewMatrix * vec4(minViewSpacePos, 1.0));
+    //     vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
+    //     vec3 shadowClipPos = temp1.xyz / temp1.w;
+    //     vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
+        
+    //     // sample shadow map
+    //     //composite += normalize(SUN_COLOR) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
+
+    //     // screen space method
+    //     composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 
     // }
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);

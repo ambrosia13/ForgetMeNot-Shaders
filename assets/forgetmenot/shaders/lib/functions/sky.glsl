@@ -68,7 +68,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
     } else skyColor = frx_fogColor.rgb * 2.0;
 
     #ifdef DEPRESSING_MODE
-        //skyColor = skyColor * 0.5 + 0.5;
+        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 1.3, 0.5);
     #endif
 
     return skyColor;// + frx_noise2d(viewSpacePos.xz) / 150.0;
@@ -201,7 +201,11 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     vec3 tdata = getTimeOfDayFactors();
 
     skyResult = calculateSkyColor(viewSpacePos) + rand3D(viewSpacePos.xz * 2000.0) / 200.0;
-    skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    #ifndef DEPRESSING_MODE
+        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    #else
+        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
+    #endif
     skyResult += frx_worldIsOverworld * tdata.y * mix(skyResult, (MOON_COLOR * 0.5 + 0.5) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getMoonVector()) + 0.04)) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
 
@@ -248,7 +252,11 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
 
     if(frx_cameraInWater == 0) {
         skyResult = calculateSkyColor(viewSpacePos);
+    #ifndef DEPRESSING_MODE
         skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+    #else
+        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
+    #endif
         skyResult += frx_worldIsOverworld * tdata.y * mix(skyResult, (MOON_COLOR * 0.5 + 0.5) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getMoonVector()) + 0.04)) * 0.1, 1.5));
         skyResult += calculateSun(viewSpacePos);
 

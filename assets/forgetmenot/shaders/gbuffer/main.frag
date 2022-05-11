@@ -93,11 +93,20 @@ void frx_pipelineFragment() {
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0) * 1.;
+                #ifndef DEPRESSING_MODE
+                vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0) * 1.0;
                 vec3 directLightColorNight = vec3(0.9, 1.0, 1.1) * 1.5;
+                #else
+                vec3 ambientLightColorNight = vec3(0.8, 0.9, 1.0) * 1.0;
+                vec3 directLightColorNight = vec3(1.1, 1.0, 0.9) * 1.5;
+                #endif
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+
+                // support moody brightness etc
+                //frx_fragLight *= mix(1.0, 0.5, (1.0 - frx_viewBrightness) * 0.5);
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x);
+                //lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y));
                 if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
@@ -114,7 +123,7 @@ void frx_pipelineFragment() {
                 lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * (MOON_COLOR * 0.1) * 0.5 + 0.5, tdata.y * frx_fragLight.y);
                 //lightmap *= mix(1.0, 2.0, 1.0 - frx_fragLight.y);
 
-                if(frx_matDisableDiffuse == 0) lightmap += 0.1 + (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
 
                 // if(!frx_isGui || frx_isHand) {
                 //     lightmap +
