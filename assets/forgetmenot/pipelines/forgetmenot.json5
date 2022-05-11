@@ -205,7 +205,7 @@
                     descriptionKey: "config.forgetmenot.desc.clouds"
                 },
                 stratus_clouds: {
-                    default: false,
+                    default: true,
                     nameKey: "config.forgetmenot.name.stratus_clouds",
                     descriptionKey: "config.forgetmenot.desc.stratus_clouds"
                 },
