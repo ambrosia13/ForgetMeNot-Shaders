@@ -56,7 +56,8 @@ void frx_pipelineFragment() {
             vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
             vec3 shadowScreenPos = (shadowSpacePos.xyz) * 0.5 + 0.5;
 
-            int blurAmount = 2;
+            // blur less depending on cascade, since far away shadows are already low res and hardware filtered
+            int blurAmount = max(0, cascade - 1);
 
             #ifndef SHADOW_FILTER
                 vec2 uv = shadowScreenPos.xy * 1024.0;
@@ -71,10 +72,14 @@ void frx_pipelineFragment() {
 	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
 
                 float shadowMap = 0.0;
-                for(int i = -blurAmount; i < blurAmount; i++) {
-                    for(int j = -blurAmount; j < blurAmount; j++) {
-                        shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
+                if(blurAmount != 0) {
+                    for(int i = -blurAmount; i < blurAmount; i++) {
+                        for(int j = -blurAmount; j < blurAmount; j++) {
+                            shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
+                        }
                     }
+                } else {
+                    shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
                 }
             #else
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
@@ -101,6 +106,8 @@ void frx_pipelineFragment() {
                     vec3 ambientLightColorNight = vec3(0.8, 0.9, 1.0) * 1.0;
                     vec3 directLightColorNight = vec3(1.1, 1.0, 0.9) * 1.5;
                 #endif
+
+                frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
 

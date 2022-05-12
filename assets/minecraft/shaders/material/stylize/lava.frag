@@ -48,7 +48,7 @@ void frx_materialFragment() {
         // lavaCol = mix(lavaCol, vec3(0.0), frx_luminance(lavaCol));
         // lavaCol *= lavaCol * frx_luminance(lavaCol);
 
-        frx_fragColor.rgb = max(lava, vec3(0.0));
+        frx_fragColor.rgb = max(lava * 0.75, vec3(0.0));
         // frx_fragColor.rgb *= 3.0 * frx_luminance(frx_fragColor.rgb);
     #endif 
 

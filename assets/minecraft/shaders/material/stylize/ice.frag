@@ -21,9 +21,14 @@ void frx_materialFragment() {
         frx_fragNormal = normalize(frx_fragNormal);
 
         frx_fragReflectance = 0.06;
+        frx_fragRoughness = 0.00;
+        //frx_fragEnableDiffuse = false;
     #endif
 
+    frx_fragColor.rgb *= 0.5;
+
     #if LUMI_PBR_API >= 8
+        frx_fragColor.rgb *= 2.0; // I only want to darken ice in forget-me-not shaders
         pbr_f0 = 1.0;
         pbr_roughness = 0.05;
         pbr_isWater = false;
