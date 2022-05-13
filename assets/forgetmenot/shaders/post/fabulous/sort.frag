@@ -301,7 +301,7 @@ void main() {
     // vec3 viewPos = minViewSpacePos;
 
     // for(int i = 0; i < 40; i++) {
-    //     viewPos += (viewPos / 40.0) * 1.0;
+    //     viewPos += (-viewPos / 40.0) * 1.0;
 
     //     vec4 temp = (frx_shadowViewMatrix * vec4(viewPos.xyz, 1.0));
     //     vec3 shadowPos = temp.xyz / temp.w;
@@ -311,7 +311,7 @@ void main() {
     //     vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
         
     //     // sample shadow map
-    //     composite += normalize(SUN_COLOR) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
+    //     composite += ((exp(-float(i))) * 0.5 + 0.5) * (sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y)) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
 
     //     // screen space method
     //     //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 

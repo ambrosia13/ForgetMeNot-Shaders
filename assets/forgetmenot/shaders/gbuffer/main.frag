@@ -99,17 +99,21 @@ void frx_pipelineFragment() {
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                #ifndef DEPRESSING_MODE
+                // #ifndef DEPRESSING_MODE
                     vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0) * 1.0;
                     vec3 directLightColorNight = vec3(0.9, 1.0, 1.1) * 1.5;
-                #else
-                    vec3 ambientLightColorNight = vec3(0.8, 0.9, 1.0) * 1.0;
-                    vec3 directLightColorNight = vec3(1.1, 1.0, 0.9) * 1.5;
-                #endif
+                // #else
+                //     vec3 ambientLightColorNight = vec3(0.9, 0.9, 1.0) * 1.3;
+                //     vec3 directLightColorNight = vec3(1.1, 1.0, 1.0) * 1.5;
+                // #endif
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+
+                #ifdef DEPRESSING_MODE
+                    lightmap = lightmap * 0.75 + 0.25;
+                #endif
 
                 // support moody brightness etc
                 //frx_fragLight *= mix(1.0, 0.5, (1.0 - frx_viewBrightness) * 0.5);
@@ -131,7 +135,7 @@ void frx_pipelineFragment() {
                 lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * (MOON_COLOR * 0.1) * 0.5 + 0.5, tdata.y * frx_fragLight.y);
                 //lightmap *= mix(1.0, 2.0, 1.0 - frx_fragLight.y);
 
-                if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.2 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.1 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
 
                 // if(!frx_isGui || frx_isHand) {
                 //     lightmap +
@@ -142,6 +146,10 @@ void frx_pipelineFragment() {
                 if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
                 heldLightFactor = clamp01(heldLightFactor);
                 lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.5, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
+
+                #ifdef DEPRESSING_MODE
+                    lightmap = mix(lightmap, vec3(frx_luminance(lightmap)) * 1.4, 0.5);
+                #endif
 
                 color.rgb *= max(vec3(0.05), lightmap);
             }

@@ -14,7 +14,12 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky = mix(daytimeSky, vec3(0.445,0.647,0.840) * 1.1, frx_smootherstep(-0.5, 0.3, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805) * 0.9, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
-        daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
+        #ifdef DEPRESSING_MODE
+            daytimeSky = daytimeSky * 0.5 + 0.5;
+            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(2.5, 2.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0)));
+        #else
+            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
+        #endif
         //daytimeSky = mix(daytimeSky, mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5), (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 2.0)) * 1.0);
         //daytimeSky += mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
         // daytimeSky += SUN_COLOR * max(0.1, 1.0 / clamp01(dot(viewSpacePos, getSunVector()))) * 0.01;
@@ -29,8 +34,13 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         nighttimeSky = mix(nighttimeSky, vec3(0.344,0.376,0.500) * 2.5, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         nighttimeSky = mix(nighttimeSky, vec3(0.291,0.327,0.460) * 2.2, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         nighttimeSky *= 0.1;
-        nighttimeSky.b *= 2.8;
-        nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 11.0)));
+        nighttimeSky.b *= 2.3;
+        #ifdef DEPRESSING_MODE
+            //nighttimeSky = nighttimeSky * 0.75 + 0.25;
+            nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.605,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 3.0)));
+        #else
+            nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 11.0)));
+        #endif
         //nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.505,0.885) * 2.0, clamp01(pow(dot(viewSpacePos, getMoonVector()), 15.0) * 0.55));
         //nighttimeSky = mix(nighttimeSky, vec3(frx_luminance(nighttimeSky)) * 1.5, 0.25);
 
@@ -54,8 +64,12 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
 
         skyColor = overworldSkyColor;
 
-        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 0.5, 0.5 * frx_smoothedRainGradient);
-        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * (0.75 + 0.2 * (1.0 - tdata.x)), 0.5 * frx_thunderGradient);
+        #ifndef DEPRESSING_MODE
+            skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 0.5, 0.5 * frx_smoothedRainGradient);
+            skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * (0.75 + 0.2 * (1.0 - tdata.x)), 0.15 * frx_thunderGradient);
+        #else
+            skyColor *= mix(1.0, 0.75, tdata.x);
+        #endif
         // skyColor = mix(skyColor, vec3(frx_luminance(skyColor)), -0.5);
 
         // this saturates the sky but is it really needed?
@@ -115,6 +129,7 @@ vec3 calculateSun(in vec3 viewSpacePos) {
 float getCloudNoise(in vec2 plane, in int octaves) {
     #ifdef RANDOM_CLOUD_DENSITY
         float cloudDensity = 0.5 + smoothHash(vec2(frx_worldTime * 24000.0 + (frx_worldDay - 1.0) * 24000.0) * 0.001) * 0.15;
+        cloudDensity += 0.2 * getTimeOfDayFactors().y;
         float cloudMixFactor = (smoothstep(0.0, 1.0, smoothHash(plane * 0.01 + getWorldTime() * 0.0001 + 1.0) * 0.5 + 0.5));
     #else
         float cloudDensity = 0.5;
@@ -217,15 +232,24 @@ vec3 sampleSky(in vec3 viewSpacePos) {
 
     // clouds
     vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
+    cloudsColor = mix(mix(2.0, 4.0, tdata.y) * calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
     cloudsColor *= 1.5;
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
+    
+    #ifdef DEPRESSING_MODE
+        cloudsDensity.y = cloudsDensity.y * 0.75 + 0.25;
+    #endif
+    
     cloudsColor *= cloudsDensity.y * 0.7;
-    cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
-    cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
+    // cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
+    // cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
-    skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+    #ifdef DEPRESSING_MODE
+        skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * (cloudsDensity.x * 2.0));
+    #else
+        skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+    #endif
 
     // vec3 rayPos = viewSpacePos * l;
     // vec3 rayDir = frx_skyLightVector;
@@ -265,7 +289,7 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
 
         // clouds
         vec3 cloudsColor = vec3(0.0);
-        cloudsColor = mix(calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.02, 1.5)), 0.5);
+        cloudsColor = mix(mix(2.0, 4.0, tdata.y) * calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
         cloudsColor *= 1.5;
 
         #if CLOUD_LIGHTING == LIGHTING_NONE
@@ -277,11 +301,21 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
         #endif
 
         vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, 3, false) * BRIGHTNESS_MODIFIER; // x = clouds, y = shading
+
+        #ifdef DEPRESSING_MODE
+            cloudsDensity.y = cloudsDensity.y * 0.75 + 0.25;
+        #endif
+
         cloudsColor *= cloudsDensity.y * 0.7;
         cloudsDensity.x *= mix(1.0, 0.5, tdata.z);
         cloudsDensity.x *= mix(1.0, 0.75, tdata.y);
 
-        skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+        #ifdef DEPRESSING_MODE
+            skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * (cloudsDensity.x * 2.0));
+        #else
+            skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
+        #endif
+
     } else {
         skyResult = vec3(0.1, 0.5, 0.7);
     }
