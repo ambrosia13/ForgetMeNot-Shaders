@@ -10,8 +10,9 @@ float waterHeightNoise(in vec2 uv) {
         // waterHeight += fbmHash(rotate2D(coord, -PI / 12.0) * vec2(2.5, 1.0) - 10.0 + vec2(1.2, 0.7) * time, 5);
         // waterHeight += fbmHash(rotate2D(coord, PI / 12.0) * vec2(3.1, 1.2) + 10.0 - vec2(0.8, 1.2) * time, 3);
         // waterHeight += smoothHash(rotate2D(coord, PI / 12.0) * vec2(15.0, 3.0) + time) * 0.1;
-        waterHeight += fbmHash(rotate2D(coord, -PI / 12.0) * vec2(4.0, 1.5) + time, 3);
-        waterHeight *= 2.0;
+        waterHeight += fbmHash(rotate2D(coord, -PI / 12.0) * vec2(4.0, 1.5) + time, 3, 0.6);
+        waterHeight += fbmHash(rotate2D(coord, -PI / 12.0) * vec2(3.0, 2.0) - time, 3, 0.6);
+        waterHeight *= 1.4;
     #else
         // waterHeight += snoise(coord * vec2(2.5, 1.0) + vec2(10.7, 1.2) * time) + 1.0;
         // waterHeight += snoise(coord * vec2(3.1, 1.2) + 10.0 + vec2(3.8, 10.2) * time) + 1.0;

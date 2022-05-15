@@ -1,6 +1,6 @@
 {
-    nameKey: "pipeline.forgetmenot.name",
-    descriptionKey: "pipeline.forgetmenot.desc",
+    nameKey: "pipeline.forgetmenot_shadow.name",
+    descriptionKey: "pipeline.forgetmenot_shadow.desc",
 
     glslVersion: 330,
     smoothBrightnessBidirectionaly: true,
@@ -9,8 +9,8 @@
     runVanillaClear: false,
 
     materialProgram: {
-        vertexSource: "forgetmenot:shaders/gbuffer/main.vert",
-        fragmentSource: "forgetmenot:shaders/gbuffer/main.frag",
+        vertexSource: "forgetmenot:shaders/gbuffer/shadow_main.vert",
+        fragmentSource: "forgetmenot:shaders/gbuffer/shadow_main.frag",
         samplers: [
             "u_glint"
         ],
@@ -173,8 +173,9 @@
     },
 
     include: [
+        "forgetmenot:include/shadow_config.json5",
         "forgetmenot:include/config.json5",
-        //"forgetmenot:include/shadow.json5",
+        "forgetmenot:include/shadow.json5",
         "forgetmenot:include/composite/clouds.json5",
         "forgetmenot:include/composite/entity.json5",
         "forgetmenot:include/composite/particles.json5",

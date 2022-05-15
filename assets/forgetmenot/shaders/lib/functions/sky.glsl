@@ -83,6 +83,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
 
     #ifdef DEPRESSING_MODE
         skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 1.3, 0.5);
+        skyColor *= 0.75;
     #endif
 
     return skyColor;// + frx_noise2d(viewSpacePos.xz) / 150.0;
@@ -184,7 +185,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                         vec2 rayPos = plane + rayDir;
                         for(int i = 0; i < 10; i++) {
                             rayPos += rayDir;// * exp2(float(-i));
-                            cloudLighting -= getCloudNoise(rayPos, 3) * 0.1;
+                            cloudLighting -= getCloudNoise(rayPos, 3) * 0.11;
                         }
                     }
                 #endif

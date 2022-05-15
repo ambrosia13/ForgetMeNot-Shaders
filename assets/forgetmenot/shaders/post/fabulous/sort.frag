@@ -1,4 +1,5 @@
 #include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shadows
 
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
@@ -146,6 +147,16 @@ void main() {
     if(max_depth != 1.0 && translucentData.b > 0.5) {
         translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
     }
+    // if(translucentData.b > 0.5) {
+    //     vec3 waterFogPos = minViewSpacePos;
+    //     float fogDensity = 0.0;
+    //     for(int i = 0; i < 10; i++) {
+    //         waterFogPos += normalize(minViewSpacePos);
+    //         fogDensity += distance(maxViewSpacePos, waterFogPos) / (1.0 * frx_viewDistance);
+    //     }
+    //     //float fogDensity = distance(maxViewSpacePos, minViewSpacePos) / (0.1 * frx_viewDistance);
+    //     translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), 1.0 - exp(-fogDensity) * (1.0 - frx_playerEyeInFluid));
+    // }
 
     if(translucentData.b > 0.5 && dot(translucentNormal, vec3(0.0, 1.0, 0.0)) < 0.0 && frx_cameraInWater == 1) {
         translucentf0 = mix(translucentf0, vec3(1.0), 1.0 - step(0.35, clamp01(dot(normalize(maxViewSpacePos), -translucentNormal))));
@@ -188,6 +199,10 @@ void main() {
     fogDensity = mix(fogDensity, 66.0, clamp01(frx_cameraInWater - frx_effectWaterBreathing - frx_effectConduitPower));
     fogDensity = mix(fogDensity, 66.0, clamp01(frx_cameraInLava - frx_effectFireResistance));
 
+    #ifdef VOLUMETRIC_LIGHTING
+        fogDensity *= 0.5;
+    #endif
+
     float fogFactor = 1.0 - exp2((-blockDist / frx_viewDistance) * fogDensity);
 
     fogFactor = mix(fogFactor, 1.0 - exp2(-blockDist / 5.0), float(frx_effectBlindness));
@@ -196,7 +211,36 @@ void main() {
     //fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld + frx_worldIsEnd);
     fogFactor = mix(fogFactor, 1.0, frx_smootherstep(frx_viewDistance * 0.7, frx_viewDistance * 0.9, blockDist));
     vec3 tempColor = mix(composite.rgb, fogColor, clamp01(fogFactor));
+
     composite.rgb = mix(tempColor, composite, floor(min_depth));
+
+    vec3 vl = composite;
+    #ifdef VOLUMETRIC_LIGHTING
+        vec3 viewPos = minViewSpacePos;
+
+        int VL_STEPS = 10;
+        float VL_AMOUNT = 1.0;
+
+        for(int i = 0; i < VL_STEPS; i++) {
+            viewPos += (-viewPos / VL_STEPS) * 1.0 * mix(frx_noise2d(texcoord), 1.0, 0.5);
+
+            vec4 temp = (frx_shadowViewMatrix * vec4(viewPos.xyz, 1.0));
+            vec3 shadowPos = temp.xyz / temp.w;
+            int cascade = selectShadowCascade(frx_shadowViewMatrix * vec4(minViewSpacePos, 1.0));
+            vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
+            vec3 shadowClipPos = temp1.xyz / temp1.w;
+            vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
+            
+            // sample shadow map
+            vl += ((exp(-float(i))) * 0.5 + 0.5) * (sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y)) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (VL_AMOUNT * VL_STEPS);
+
+            // screen space method
+            //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 
+        }
+        composite = mix(composite, vl, 0.75 + 0.25 * frx_cameraInWater);
+    #endif
+
+
 
     #ifdef GLOBAL_ILLUMINATION
         #ifdef APPLY_MC_LIGHTMAP
@@ -297,25 +341,6 @@ void main() {
     if(any(lessThan(abs(compositeFresnel.rgb - 0.04), vec3(0.001)))) compositeFresnel.r = 0.0;
     //if(translucentData.b > 0.5) compositeFresnel.r = 0.05;
     compositeFresnel.r *= 20.0;
-
-    // vec3 viewPos = minViewSpacePos;
-
-    // for(int i = 0; i < 40; i++) {
-    //     viewPos += (-viewPos / 40.0) * 1.0;
-
-    //     vec4 temp = (frx_shadowViewMatrix * vec4(viewPos.xyz, 1.0));
-    //     vec3 shadowPos = temp.xyz / temp.w;
-    //     int cascade = selectShadowCascade(frx_shadowViewMatrix * vec4(minViewSpacePos, 1.0));
-    //     vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
-    //     vec3 shadowClipPos = temp1.xyz / temp1.w;
-    //     vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
-        
-    //     // sample shadow map
-    //     composite += ((exp(-float(i))) * 0.5 + 0.5) * (sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y)) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 40.0;
-
-    //     // screen space method
-    //     //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 
-    // }
     
     // if(all(lessThan(compositeFresnel.rgb - 0.04, vec3(0.001)))) compositeFresnel.rgb = vec3(0.0);
     // #ifdef DANGER_SIGHT

@@ -145,6 +145,20 @@ float fbmOctaves(vec2 uv, int octaves) {
 
 	return noise;
 }
+float fbmOctaves(vec3 uv, int octaves) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+    mat2 rotationMatrix = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (snoise(uv) * 0.5 + 0.51);
+		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		amp *= 0.5;
+	}
+
+	return noise;
+}
 
 #include forgetmenot:shaders/lib/functions/external.glsl 
 
@@ -194,6 +208,7 @@ float smoothHash(in vec2 st) {
 
     return noise;
 }
+
 float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;
 	float amp = 0.5;
@@ -203,6 +218,20 @@ float fbmHash(vec2 uv, int octaves) {
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
 		uv = rotationMatrix * uv * 2.0 + mod(frx_renderSeconds / 10.0, 1000.0);
+		amp *= 0.5;
+	}
+
+    return noise;
+}
+float fbmHash(vec2 uv, int octaves, float t) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
+		uv = rotationMatrix * uv * 2.0 + mod(frx_renderSeconds * t, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -227,6 +256,18 @@ vec4 fastDownsample(sampler2D image, vec2 uv) {
 vec3 nightEyeAdjust(in vec3 color) {
     float amt = getTimeOfDayFactors().y * 0.5;
     return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
+}
+
+float CubicHermite (float A, float B, float C, float D, float t)
+{
+	float t2 = t*t;
+    float t3 = t*t*t;
+    float a = -A/2.0 + (3.0*B)/2.0 - (3.0*C)/2.0 + D/2.0;
+    float b = A - (5.0*B)/2.0 + 2.0*C - D / 2.0;
+    float c = -A/2.0 + C/2.0;
+   	float d = B;
+    
+    return a*t3 + b*t2 + c*t + d;
 }
 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

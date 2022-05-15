@@ -1,0 +1,32 @@
+{
+    options: [
+        {
+            includeToken: "forgetmenot:shadows",
+            categoryKey: "config.forgetmenot.category.shadows",
+            elements: {
+                shadow_filter: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.shadow_filter",
+                    descriptionKey: "config.forgetmenot.desc.shadow_filter"
+                },
+                cascade_adjust: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cascade_adjust",
+                    descriptionKey: "config.forgetmenot.desc.cascade_adjust"
+                },
+                shadow_filter_taps: {
+                    default: 0,
+                    min: 0,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.shadow_filter_taps",
+                    descriptionKey: "config.forgetmenot.desc.shadow_filter_taps"
+                },
+                volumetric_lighting: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.volumetric_lighting",
+                    descriptionKey: "config.forgetmenot.desc.volumetric_lighting"
+                },
+            }
+        }
+    ]
+}

@@ -1,15 +1,19 @@
 {
     "pipeline.forgetmenot.name": "Forget-Me-Not Shaders",
     "pipeline.forgetmenot.desc": "",
+    "pipeline.forgetmenot_shadow.name": "Forget-Me-Not Shaders (Sky Shadows)",
+    "pipeline.forgetmenot_shadow.desc": "Forget-Me-Not with shadows enabled",
 
-    "config.forgetmenot.category.performance": "Performance Options",
+    "config.forgetmenot.category.shadows": "Shadows",
 
-    "config.forgetmenot.name.sky_resolution": "Sky Resolution",
-    "config.forgetmenot.desc.sky_resolution": "Resolution at which the sky is computed.",
-    "config.forgetmenot.name.sky_upsample_filter": "Sky Upsample Filter",
-    "config.forgetmenot.desc.sky_upsample_filter": "Uses an upsampling filter on the sky.",
-    "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
-    "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
+    "config.forgetmenot.name.shadow_filter": "Shadow Filter",
+    "config.forgetmenot.desc.shadow_filter": "Filters the shadows to soften jagged edges. Performance cost.",
+    "config.forgetmenot.name.cascade_adjust": "Cascade Adjust",
+    "config.forgetmenot.desc.cascade_adjust": "Adjusts the shadow filter size based on cascade, to minimize shadow acne. ;If this option is enabled, shadow filter taps option is ignored.",
+    "config.forgetmenot.name.shadow_filter_taps": "Shadow Filter Taps",
+    "config.forgetmenot.desc.shadow_filter_taps": "Shadow samples equals this number squared. High performance cost. ;Ignored if cascade adjust option is enabled.",
+    "config.forgetmenot.name.volumetric_lighting": "[EXPERIMENTAL] Volumetric Light Rays",
+    "config.forgetmenot.desc.volumetric_lighting": "Adds fog that is illuminated by sunlight. Very experimental and bad. Works well with depressing mode. High performance cost.",
 
     "config.forgetmenot.category.clouds": "Cloud Options",
 
@@ -35,7 +39,7 @@
     "config.forgetmenot.name.ssr_steps": "SSR Steps",
     "config.forgetmenot.desc.ssr_steps": "Number of raymarching steps for raymarched reflections. Increase for a mild performance decrease but better quality reflections. Doesn't seem to impact performance much.",
     "config.forgetmenot.name.simple_water": "Fast Water",
-    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch.",
+    "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch. ;Also use this if the water reflections look warped and stretched.",
     "config.forgetmenot.name.simple_sky_reflection": "Simple Sky Reflection",
     "config.forgetmenot.desc.simple_sky_reflection": "If enabled, will skip calculating clouds & stars when calculating sky in reflections. May improve performance, will look weird.",
     "config.forgetmenot.name.illegal_ssr": "Illegal SSR",
@@ -53,10 +57,11 @@
     "config.forgetmenot.desc.pixel_locked_glint": "Locks the enchantment glint to the pixels of the texture. Similar to Bedrock edition glint.",
     "config.forgetmenot.name.fake_eye_adjust": "Fake Eye Adjust",
     "config.forgetmenot.desc.fake_eye_adjust": "Uses current lightmap value at the player position to adjust brightness when the player is in a dark area.",
-    "config.forgetmenot.name.danger_sight": "Danger Sight",
-    "config.forgetmenot.desc.danger_sight": "Turns blocks more red when it is dark enough for mobs to spawn.",
     "config.forgetmenot.name.contrast": "Contrast",
     "config.forgetmenot.desc.contrast": "Adjusts contrast. 10 means no adjustment to contrast.",
+    "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
+    "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
+
 
     "config.forgetmenot.category.experimental": "Experimental Stuff",
 
