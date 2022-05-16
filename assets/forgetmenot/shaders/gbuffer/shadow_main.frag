@@ -90,6 +90,8 @@ void frx_pipelineFragment() {
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
             #endif
 
+            if(frx_matDisableDiffuse == 0) shadowMap *= step(0.0, dot(frx_fragNormal, frx_skyLightVector));
+
             if(frx_isHand) shadowMap = 0.0;
             //color.rgb = shadowSpacePos.xyz;
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {

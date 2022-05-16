@@ -37,6 +37,10 @@ void main() {
         #define u_previous_frame u_color
     #endif
 
+    bool isMetal = f0.r / 20.0 > 0.95;
+
+    if(isMetal) f0 *= sceneColor;
+
     #ifdef RAYTRACE_SSR
         // #define SSR_STEPS 400
         if(depth != 1.0 && f0.r > 0.0) {
