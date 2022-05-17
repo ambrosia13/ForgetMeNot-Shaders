@@ -46,6 +46,7 @@ float iceHeightNoise(in vec2 uv) {
     return pow(waterHeight, 4.0) * 0.15;
 }
 
+// unfinished
 float rainHeightNoise(in vec2 uv) {
     float size = 0.2;
     float noise = smoothstep(0.5, 0.7, 1.0 - cellular2x2(uv * 10.0).x);

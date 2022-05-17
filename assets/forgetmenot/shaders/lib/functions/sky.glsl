@@ -34,7 +34,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         nighttimeSky = mix(nighttimeSky, vec3(0.344,0.376,0.500) * 2.5, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         nighttimeSky = mix(nighttimeSky, vec3(0.291,0.327,0.460) * 2.2, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         nighttimeSky *= 0.1;
-        nighttimeSky.b *= 2.3;
+        nighttimeSky.rgb *= vec3(1.3, 1.3, 1.9);
         #ifdef DEPRESSING_MODE
             //nighttimeSky = nighttimeSky * 0.75 + 0.25;
             nighttimeSky = mix(nighttimeSky, nighttimeSky * 0.5 + vec3(0.475,0.605,0.685) * 0.8, clamp01(pow(dot(viewSpacePos, getMoonVector()), 3.0)));
@@ -115,7 +115,7 @@ vec3 calculateSun(in vec3 viewSpacePos) {
     vec3 sunCol = sun * SUN_COLOR;
     vec3 moonCol = moon * MOON_COLOR;
 
-    float factor = mix(1.0, 0.5, frx_smoothedRainGradient);
+    float factor = mix(1.0, 0.0, frx_smoothedRainGradient);
     factor = mix(factor, 0.0, frx_thunderGradient);
 
     return (sunCol.rgb + moonCol.rgb) * frx_smootherstep(0.0, 0.2, viewSpacePos.y) * factor * frx_worldIsOverworld;
@@ -233,7 +233,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
 
     // clouds
     vec3 cloudsColor = vec3(0.0);
-    cloudsColor = mix(mix(2.0, 4.0, tdata.y) * calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
+    cloudsColor = mix(mix(2.0, 2.0, tdata.y) * calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
     cloudsColor *= 1.5;
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
@@ -276,17 +276,21 @@ vec3 sampleSkyReflection(in vec3 viewSpacePos) {
     vec3 tdata = getTimeOfDayFactors();
 
     if(frx_cameraInWater == 0) {
-        skyResult = calculateSkyColor(viewSpacePos);
-    #ifndef DEPRESSING_MODE
-        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
-    #else
-        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
-    #endif
+        skyResult = calculateSkyColor(viewSpacePos) + rand3D(viewSpacePos.xz * 2000.0) / 200.0;
+        #ifndef DEPRESSING_MODE
+            skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
+        #else
+            skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
+        #endif
         skyResult += frx_worldIsOverworld * tdata.y * mix(skyResult, (MOON_COLOR * 0.5 + 0.5) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getMoonVector()) + 0.04)) * 0.1, 1.5));
         skyResult += calculateSun(viewSpacePos);
 
         vec2 starCoord = viewSpacePos.xz / (viewSpacePos.y + length(viewSpacePos.xz));
-        skyResult += step(0.98, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x);
+        vec3 starColor = vec3(smoothHash(starCoord * 40.0) * 0.5 + 0.5, smoothHash(starCoord * 40.0 + 10.0) * 0.5 + 0.5, smoothHash(starCoord * 40.0 + 20.0) * 0.5 + 0.5);
+        skyResult += (step(0.98 + smoothHash(starCoord * 40.0) * 0.01, 1.0 - cellular2x2(starCoord * 18.0).x) * (1.0 - tdata.x)) * mix(starColor, vec3(1.0), 0.5);
+        // skyResult += 50.0 * normalize(vec3(smoothHash(starCoord * 40.0) * 0.5 + 0.5,smoothHash(starCoord * 40.0 + 1.0) * 0.5 + 0.5,smoothHash(starCoord * 40.0 + 20.0) * 0.5 + 0.5)) * 
+        //                 (smoothstep(0.95, 0.99, 1.0 - cellular2x2(starCoord * 1.0).x) * (1.0 - tdata.x));
+
 
         // clouds
         vec3 cloudsColor = vec3(0.0);

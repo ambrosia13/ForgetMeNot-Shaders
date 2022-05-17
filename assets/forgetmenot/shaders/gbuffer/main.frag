@@ -52,24 +52,20 @@ void frx_pipelineFragment() {
                 vec3 tdata = getTimeOfDayFactors();
 
                 vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.25;
-                vec3 directLightColorDay = vec3(1.1, 1.0, 0.9) * 1.5;
+                vec3 directLightColorDay = vec3(1.3, 1.2, 0.9) * 1.5;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                // #ifndef DEPRESSING_MODE
-                    vec3 ambientLightColorNight = vec3(0.7, 0.8, 1.0) * 1.0;
-                    vec3 directLightColorNight = vec3(0.9, 1.0, 1.1) * 1.5;
-                // #else
-                //     vec3 ambientLightColorNight = vec3(0.9, 0.9, 1.0) * 1.3;
-                //     vec3 directLightColorNight = vec3(1.1, 1.0, 1.0) * 1.5;
-                // #endif
+                vec3 ambientLightColorNight = vec3(1.0, 1.2, 1.7) * 0.5;
+                vec3 directLightColorNight = vec3(1.1, 1.0, 1.0) * 1.0;
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+
 
                 #ifdef DEPRESSING_MODE
                     lightmap = lightmap * 0.75 + 0.25;
