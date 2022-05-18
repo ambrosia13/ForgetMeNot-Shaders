@@ -65,22 +65,22 @@ void frx_pipelineFragment() {
             #endif
 
             #ifdef SHADOW_FILTER
-                vec2 uv = shadowScreenPos.xy * 1024.0;
+                vec2 uv = shadowScreenPos.xy * SHADOW_MAP_SIZE;
                 vec2 baseUv = floor(uv + 0.5) - vec2(0.5);
                 vec2 st = uv + 0.5 - baseUv;
-                baseUv /= 1024.0;
+                baseUv /= SHADOW_MAP_SIZE;
                 
                 // shadow bias things from canvas dev
                 //vec2 depthBias = computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
                 vec2 depthBias = vec2(0.05);
-            	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / 1024.0, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
+            	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
 	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
 
                 float shadowMap = 0.0;
                 if(blurAmount != 0) {
                     for(int i = -blurAmount; i < blurAmount; i++) {
                         for(int j = -blurAmount; j < blurAmount; j++) {
-                            shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
+                            shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
                         }
                     }
                 } else {
@@ -90,59 +90,59 @@ void frx_pipelineFragment() {
                 float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
             #endif
 
-            if(frx_matDisableDiffuse == 0) shadowMap *= step(0.0, dot(frx_fragNormal, frx_skyLightVector));
+            if(frx_matDisableDiffuse == 0) shadowMap *= step(0.01, dot(frx_fragNormal, frx_skyLightVector));
 
             if(frx_isHand) shadowMap = 0.0;
+
+            float shadowMapInverse = 1.0 - shadowMap;
             //color.rgb = shadowSpacePos.xyz;
             if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
-                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.25;
-                vec3 directLightColorDay = vec3(1.3, 1.2, 0.9) * 1.5;
+                vec3 ambientLightColorDay = vec3(1.0, 1.2, 1.3) * 1.25;
+                vec3 directLightColorDay = normalize(SUN_COLOR) * 3.5;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                vec3 ambientLightColorNight = vec3(1.0, 1.2, 1.7) * 0.5;
-                vec3 directLightColorNight = vec3(1.1, 1.0, 1.0) * 1.0;
+                vec3 ambientLightColorNight = vec3(1.3, 1.5, 1.7) * 0.5;
+                vec3 directLightColorNight = normalize(MOON_COLOR) * 2.5;
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
 
-
                 #ifdef DEPRESSING_MODE
                     lightmap = lightmap * 0.75 + 0.25;
                 #endif
 
-                // support moody brightness etc
-                //frx_fragLight *= mix(1.0, 0.5, (1.0 - frx_viewBrightness) * 0.5);
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x);
-                //lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y));
                 if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
-                lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += (1.0) * tdata.x * frx_fragLight.y * mix(0.1, 0.3, shadowMap) * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                // ambient lighting - for surfaces in shadow
+                lightmap *= mix(vec3(1.0), ambientLightColorDay, shadowMapInverse * tdata.x * frx_fragLight.y);
+                // direct lighting - for surfaces not in shadow
+                if(frx_matDisableDiffuse == 0) lightmap += (shadowMap) * tdata.x * frx_fragLight.y * mix(0.1, 0.3, shadowMap) * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
                 lightmap *= mix(vec3(1.0), shadowMap * (directLightColorDay) * 0.5 + 0.5, tdata.x * frx_fragLight.y);
 
+                // ambient lighting - applied to everything
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
+                // direct lighting - using normal dot product method
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getMoonVector()) * directLightColorSunset[1];
 
+                // ambient lighting - for surfaces in shadow
                 lightmap *= mix(vec3(1.0), ambientLightColorNight, tdata.y * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += 1.0 * tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
+                // direct lighting - for surfaces not in shadow
+                if(frx_matDisableDiffuse == 0) lightmap += (shadowMap) * tdata.y * frx_fragLight.y * 0.1 * dot(frx_fragNormal, getMoonVector()) * directLightColorNight;
                 lightmap *= mix(vec3(1.0), (shadowMap * 0.5 + 0.5) * (directLightColorNight) * 0.5 + 0.5, tdata.y * frx_fragLight.y);
-                //lightmap *= mix(1.0, 2.0, 1.0 - frx_fragLight.y);
 
                 if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.1 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
 
-                // if(!frx_isGui || frx_isHand) {
-                //     lightmap +
-                // }
-
+                // handheld light
                 float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
                 heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
@@ -195,18 +195,18 @@ void frx_pipelineFragment() {
         int blurAmount = 2;
 
         #ifndef SHADOW_FILTER
-            vec2 uv = shadowScreenPos.xy * 1024.0;
+            vec2 uv = shadowScreenPos.xy * SHADOW_MAP_SIZE;
             vec2 baseUv = floor(uv + 0.5) - vec2(0.5);
             vec2 st = uv + 0.5 - baseUv;
-            baseUv /= 1024.0;
+            baseUv /= SHADOW_MAP_SIZE;
             vec2 depthBias = vec2(0.05);//computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
-            float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / 1024.0, abs(depthBias));
+            float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));
             shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
             float shadowMap = 0.0;
             for(int i = -blurAmount; i < blurAmount; i++) {
                 for(int j = -blurAmount; j < blurAmount; j++) {
-                    shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / 1024.0), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
-                    //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + (vec2(i, j) / 1024.0) * shadowVariance, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
+                    shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
+                    //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + (vec2(i, j) / SHADOW_MAP_SIZE) * shadowVariance, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
                 }
             }
             // shadowMap = shadowFilter(frxs_shadowMap, shadowScreenPos, cascade, 4.0);

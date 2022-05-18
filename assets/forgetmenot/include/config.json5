@@ -56,7 +56,7 @@
                     descriptionKey: "config.forgetmenot.desc.cirrus_clouds_sharpness"
                 },
                 random_cloud_density: {
-                    default: true,
+                    default: false,
                     nameKey: "config.forgetmenot.name.random_cloud_density",
                     descriptionKey: "config.forgetmenot.desc.random_cloud_density"
                 },
@@ -95,7 +95,7 @@
                     descriptionKey: "config.forgetmenot.desc.simple_water"
                 },
                 simple_sky_reflection: {
-                    default: false,
+                    default: true,
                     nameKey: "config.forgetmenot.name.simple_sky_reflection",
                     descriptionKey: "config.forgetmenot.desc.simple_sky_reflection"
                 },

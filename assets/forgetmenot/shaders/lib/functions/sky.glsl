@@ -139,7 +139,7 @@ float getCloudNoise(in vec2 plane, in int octaves) {
 
     cloudMixFactor = pow(cloudMixFactor, 1.5);
 
-    float lowerBound = mix(0.0, cloudDensity - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudMixFactor);
+    float lowerBound = mix(0.0, cloudDensity - 0.1 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudMixFactor);
     float upperBound = mix(1.0, cloudDensity + 0.2, cloudMixFactor);
 
     #ifdef STRATUS_CLOUDS

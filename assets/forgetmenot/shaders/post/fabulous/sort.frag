@@ -190,7 +190,7 @@ void main() {
     float fogStartMin = mix(10.0, 1.0, clamp01(frx_cameraInLava + frx_cameraInWater + frx_effectBlindness));
     blockDist = max(0.0, blockDist - fogStartMin);
 
-    float fogDensity = mix(1.0, 0.1, tdata.x);
+    float fogDensity = mix(1.0, 0.6, tdata.x);
     fogDensity = mix(fogDensity, 5.5, tdata.y);
     fogDensity = mix(fogDensity, 4.0, tdata.z);
     fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);

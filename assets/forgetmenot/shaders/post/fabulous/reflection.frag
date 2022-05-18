@@ -68,7 +68,7 @@ void main() {
 
                 if(clamp01(screenPos.xy) != screenPos.xy) {
                     break;
-                } else if(screenPos.z > depthQuery && abs(screenPos.z - depthQuery) < .01) {
+                } else if(screenPos.z > depthQuery && abs(screenPos.z - depthQuery) < .01 && depthQuery != 1.0) {
                     // if(numRefinements < maxRefinements) {
                     //     screenPos -= rayScreenDir * stepLength;
                     //     stepLength *= 0.5;

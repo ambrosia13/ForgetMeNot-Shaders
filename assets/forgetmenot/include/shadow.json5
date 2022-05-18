@@ -37,6 +37,6 @@
 		fragmentSource: "forgetmenot:shaders/gbuffer/shadow.frag",
         offsetSlopeFactor: 1.1,
         offsetBiasUnits: 4.0,
-        cascadeRadius: [32, 16, 8]
+        cascadeRadius: [48, 16, 8]
     }
 }

@@ -41,7 +41,7 @@
     "config.forgetmenot.name.simple_water": "Fast Water",
     "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch. ;Also use this if the water reflections look warped and stretched.",
     "config.forgetmenot.name.simple_sky_reflection": "Simple Sky Reflection",
-    "config.forgetmenot.desc.simple_sky_reflection": "If enabled, will skip calculating clouds & stars when calculating sky in reflections. May improve performance, will look weird.",
+    "config.forgetmenot.desc.simple_sky_reflection": "If enabled, skips cloud and star rendering when calculating reflections. May improve performance a bit.",
     "config.forgetmenot.name.illegal_ssr": "Illegal SSR",
     "config.forgetmenot.desc.illegal_ssr": "Uses cursed and highly illegal method to have easy mutli-bounce reflections. Usually doesn't cause issues. May decrease performance.",
 
