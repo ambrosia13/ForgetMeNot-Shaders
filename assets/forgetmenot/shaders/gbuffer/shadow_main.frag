@@ -101,7 +101,7 @@ void frx_pipelineFragment() {
                 vec3 tdata = getTimeOfDayFactors();
 
                 vec3 ambientLightColorDay = vec3(1.0, 1.2, 1.3) * 1.25;
-                vec3 directLightColorDay = normalize(SUN_COLOR) * 3.5;
+                vec3 directLightColorDay = normalize(vec3(1.2, 1.1, 0.9)) * 3.5;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
@@ -109,7 +109,7 @@ void frx_pipelineFragment() {
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
                 vec3 ambientLightColorNight = vec3(1.3, 1.5, 1.7) * 0.5;
-                vec3 directLightColorNight = normalize(MOON_COLOR) * 2.5;
+                vec3 directLightColorNight = normalize(vec3(0.9, 1.1, 1.2)) * 2.5;
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
@@ -119,7 +119,7 @@ void frx_pipelineFragment() {
                     lightmap = lightmap * 0.75 + 0.25;
                 #endif
 
-                lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x);
+                lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x * frx_fragLight.x);
                 if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 // ambient lighting - for surfaces in shadow
