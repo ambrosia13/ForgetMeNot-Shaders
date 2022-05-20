@@ -14,6 +14,7 @@ void main() {
         #ifdef GI_FILTER
             float blurAmount = texture(u_global_illumination, texcoord).a;
             rays = normalAwareBlur(u_global_illumination, texcoord, 1.0, GI_FILTER_QUALITY, u_solid_normal);
+            //rays = normalLockedBlur(u_global_illumination, texcoord, frxu_size, vec2(0.0, 1.0), u_solid_normal);
         #else
             rays = texture(u_global_illumination, texcoord);
         #endif

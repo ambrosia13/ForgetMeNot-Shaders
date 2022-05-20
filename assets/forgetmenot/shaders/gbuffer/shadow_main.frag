@@ -114,13 +114,16 @@ void frx_pipelineFragment() {
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+                lightmap *= mix(vec3(1.0), vec3(1.5, 1.4, 1.2), clamp01((pow(frx_fragLight.x * 1.5, 3.0)) - 1.0) * clamp01(shadowMapInverse + (1.0 - tdata.x)));
 
                 #ifdef DEPRESSING_MODE
                     lightmap = lightmap * 0.75 + 0.25;
                 #endif
 
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x * frx_fragLight.x);
-                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
+                #ifdef VANILLA_AO
+                        if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
+                #endif
 
                 // ambient lighting - for surfaces in shadow
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, shadowMapInverse * tdata.x * frx_fragLight.y);
@@ -144,10 +147,12 @@ void frx_pipelineFragment() {
 
                 // handheld light
                 float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
+                float blockLightColorFactor = frx_smootherstep(frx_heldLight.a * 16.0, frx_heldLight.a * 0.0, frx_distance);
                 heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
                 heldLightFactor = clamp01(heldLightFactor);
                 lightmap = mix(lightmap, (max(frx_heldLight.rgb * 1.5, lightmap) * (frx_fragLight.z * 0.75 + 0.25)), heldLightFactor);
+                //lightmap *= mix(vec3(1.0), frx_heldLight.rgb * 1.5, frx_fragLight.x * blockLightColorFactor);
 
                 #ifdef DEPRESSING_MODE
                     lightmap = mix(lightmap, vec3(frx_luminance(lightmap)) * 1.4, 0.5);
@@ -214,8 +219,9 @@ void frx_pipelineFragment() {
         #else
             float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
         #endif
-        color.rgb += color.rgb * shadowMap * tdata.x * sampleSkyReflection(frx_skyLightVector) * 0.1;
-        color.rgb += color.rgb * shadowMap * tdata.y * sampleSkyReflection(frx_skyLightVector) * 0.1;
+        shadowMap *= step(0.01, dot(frx_vertexNormal, frx_skyLightVector));
+        color.rgb += color.rgb * shadowMap * tdata.x;// * sampleSkyReflection(frx_skyLightVector) * 0.1;
+        color.rgb += color.rgb * shadowMap * tdata.y;// * sampleSkyReflection(frx_skyLightVector) * 0.1;
     #endif
 
 

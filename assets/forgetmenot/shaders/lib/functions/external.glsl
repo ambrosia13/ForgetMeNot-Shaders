@@ -38,34 +38,35 @@ vec4 blur9(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 }
 
 // Following function adapted from previous normalAwareBlur function, kind of like edge-aware normalAwareBlur
-// vec4 normalLockedBlur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction, sampler2D imageNormal) {
-//   vec4 color = vec4(0.0);
-//   vec2 off1 = vec2(1.411764705882353) * direction;
-//   vec2 off2 = vec2(3.2941176470588234) * direction;
-//   vec2 off3 = vec2(5.176470588235294) * direction;
-//   vec4 centerColor = textureLod(image, uv, frxu_lod);
-//   vec3 centerNormal = texture(imageNormal, uv).rgb;
-//   color += centerColor * 0.1964825501511404;
-//   if(all(equal(texture(imageNormal, uv + (off1 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv + (off1 / resolution), frxu_lod) * 0.2969069646728344;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
-//   if(all(equal(texture(imageNormal, uv - (off1 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv - (off1 / resolution), frxu_lod) * 0.2969069646728344;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
-//   if(all(equal(texture(imageNormal, uv + (off2 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv + (off2 / resolution), frxu_lod) * 0.09447039785044732;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
-//   if(all(equal(texture(imageNormal, uv - (off2 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv - (off2 / resolution), frxu_lod) * 0.09447039785044732;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 2.0 * 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
-//   if(all(equal(texture(imageNormal, uv + (off3 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv + (off3 / resolution), frxu_lod) * 0.010381362401148057;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 2.0 * 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
-//   if(all(equal(texture(imageNormal, uv - (off3 / resolution)).rgb, centerNormal))) {
-//     color += textureLod(image, uv - (off3 / resolution), frxu_lod) * 0.010381362401148057;
-//   } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
-//   return color;
-// }
+vec4 normalLockedBlur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction, sampler2D imageNormal) {
+  vec4 centerColor = textureLod(image, uv, frxu_lod);
+  vec3 centerNormal = texture(imageNormal, uv).rgb;
+
+  vec4 color = vec4(0.0);
+  vec2 off1 = vec2(1.411764705882353) * direction;
+  vec2 off2 = vec2(3.2941176470588234) * direction;
+  vec2 off3 = vec2(5.176470588235294) * direction;
+  color += centerColor * 0.1964825501511404;
+  if(all(equal(texture(imageNormal, uv + (off1 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv + (off1 / resolution), frxu_lod) * 0.2969069646728344;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
+  if(all(equal(texture(imageNormal, uv - (off1 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv - (off1 / resolution), frxu_lod) * 0.2969069646728344;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
+  if(all(equal(texture(imageNormal, uv + (off2 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv + (off2 / resolution), frxu_lod) * 0.09447039785044732;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
+  if(all(equal(texture(imageNormal, uv - (off2 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv - (off2 / resolution), frxu_lod) * 0.09447039785044732;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 2.0 * 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
+  if(all(equal(texture(imageNormal, uv + (off3 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv + (off3 / resolution), frxu_lod) * 0.010381362401148057;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 2.0 * 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
+  if(all(equal(texture(imageNormal, uv - (off3 / resolution)).rgb, centerNormal))) {
+    color += textureLod(image, uv - (off3 / resolution), frxu_lod) * 0.010381362401148057;
+  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
+  return color;
+}
 // --------------------------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------------------------
