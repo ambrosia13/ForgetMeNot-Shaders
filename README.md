@@ -2,12 +2,20 @@
 
 Immersive and atmospheric shaderpack for Canvas. 
 
+Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
+
+## how to use
+1. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
+2. Get Canvas Renderer mod through either [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds) or [Curseforge](https://www.curseforge.com/minecraft/mc-mods/canvas-renderer) (stable builds). Keep in mind that Canvas is not compatible with Sodium, Iris, or Optifabric.
+3. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
+4. Activate your preferred pipeline shaderpack in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
+
 ## cool features
-- bloom, tone mapping, and HDR pipeline effects
+- bloom, tone mapping, and HDR shader effects
 - overhauled sky & fog visuals
 - custom 2D clouds with proper shading
 - water waves & terrain reflections
-- shadows (wip)
+- shadows (wip) & volumetric light rays (very wip)
 - screen space global illumination (disabled by default)
 
 ## credits
