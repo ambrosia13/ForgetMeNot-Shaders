@@ -55,7 +55,7 @@ void main() {
 
             // sky reflection
             #ifdef SIMPLE_SKY_REFLECTION
-                reflectColor = mix(vec3(0.2), sampleFogColor(reflectionView), frx_smoothedEyeBrightness.y) + calculateSun(reflectionView);
+                reflectColor = mix(vec3(0.2), sampleFogColor(reflectionView), frx_smoothedEyeBrightness.y) + calculateSun(reflectionView) * frx_smoothedEyeBrightness.y;
             #else
                 reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectionView), frx_smoothedEyeBrightness.y);
             #endif
@@ -95,8 +95,14 @@ void main() {
             vec3 reflectedViewDir = reflect(viewDir, normal);
             vec3 cleanReflectedViewDir = reflect(cleanViewDir, normal);
 
-            vec3 reflectedScreenDir = viewSpaceToScreenSpace(reflectedViewDir);
+            // vec3 reflectedScreenDir = viewSpaceToScreenSpace(reflectedViewDir);
             vec3 cleanReflectedScreenDir = cleanViewSpaceToScreenSpace(cleanReflectedViewDir);
+
+            #ifdef SIMPLE_SKY_REFLECTION
+                reflectColor = mix(vec3(0.2), sampleFogColor(reflectedViewDir) + calculateSun(reflectedViewDir), frx_smoothedEyeBrightness.y);
+            #else
+                reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectedViewDir), frx_smoothedEyeBrightness.y);
+            #endif
 
             // bool isMetal = false;
             // if(f0.r == 20.0) {
@@ -106,12 +112,7 @@ void main() {
             if(clamp01(cleanReflectedScreenDir.xy) != cleanReflectedScreenDir.xy) {
                 cleanReflectedScreenDir.xy = clamp01(cleanReflectedScreenDir.xy);
                 // sky reflection
-                #ifdef SIMPLE_SKY_REFLECTION
-                    reflectColor = mix(vec3(0.2), sampleFogColor(reflectedViewDir), frx_smoothedEyeBrightness.y);
-                #else
-                    reflectColor = mix(vec3(0.2), sampleSkyReflection(reflectedViewDir), frx_smoothedEyeBrightness.y);
-                #endif
-            } else {
+            } else if (texture(u_depth, cleanReflectedScreenDir.xy).r < 1.0) {
                 reflectColor = texture(u_previous_frame, cleanReflectedScreenDir.xy).rgb;
             }
 

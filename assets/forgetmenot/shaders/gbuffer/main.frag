@@ -75,10 +75,10 @@ void frx_pipelineFragment() {
                 //frx_fragLight *= mix(1.0, 0.5, (1.0 - frx_viewBrightness) * 0.5);
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x);
                 //lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y));
-                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
+                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.75 + 0.25, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0 || true) lightmap += (1.0) * tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0) * tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];

@@ -230,9 +230,14 @@ void main() {
             vec4 temp1 = (frx_shadowProjectionMatrix(cascade) * vec4(shadowPos, 1.0));
             vec3 shadowClipPos = temp1.xyz / temp1.w;
             vec3 shadowScreenPos = shadowClipPos * 0.5 + 0.5;
+
+            vec3 fogColor = mix(normalize(vec3(1.2, 1.1, 0.9)), normalize(vec3(0.9, 1.1, 1.2)), frx_worldIsMoonlit) * (1.0 - getTimeOfDayFactors().z);
+            #ifdef DEPRESSING_MODE
+                fogColor = sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y);
+            #endif
             
             // sample shadow map
-            vl += ((exp(-float(i))) * 0.5 + 0.5) * (sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y)) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (VL_AMOUNT * VL_STEPS);
+            vl += ((exp(-float(i))) * 0.5 + 0.5) * (fogColor) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (VL_AMOUNT * VL_STEPS);
 
             // screen space method
             //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 

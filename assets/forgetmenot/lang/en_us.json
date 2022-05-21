@@ -1,13 +1,13 @@
 {
     "pipeline.forgetmenot.name": "Forget-Me-Not Shaders",
-    "pipeline.forgetmenot.desc": "",
-    "pipeline.forgetmenot_shadow.name": "Forget-Me-Not Shaders (Sky Shadows)",
+    "pipeline.forgetmenot.desc": "Forget-Me-Not without any shadows",
+    "pipeline.forgetmenot_shadow.name": "Forget-Me-Not Shaders [Sky Shadows]",
     "pipeline.forgetmenot_shadow.desc": "Forget-Me-Not with shadows enabled",
 
-    "config.forgetmenot.category.shadows": "Shadows",
+    "config.forgetmenot.category.shadows": "Shadow Options",
 
     "config.forgetmenot.name.shadow_filter": "Shadow Filter",
-    "config.forgetmenot.desc.shadow_filter": "Filters the shadows to soften jagged edges. Performance cost.",
+    "config.forgetmenot.desc.shadow_filter": "Filters shadows to soften jagged edges. Performance cost.",
     "config.forgetmenot.name.cascade_adjust": "Cascade Adjust",
     "config.forgetmenot.desc.cascade_adjust": "Adjusts the shadow filter size based on cascade, to minimize shadow acne. ;If this option is enabled, shadow filter taps option is ignored.",
     "config.forgetmenot.name.shadow_filter_taps": "Shadow Filter Taps",
