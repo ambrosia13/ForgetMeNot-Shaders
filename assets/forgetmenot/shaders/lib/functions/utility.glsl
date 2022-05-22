@@ -258,16 +258,5 @@ vec3 nightEyeAdjust(in vec3 color) {
     return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
 }
 
-float CubicHermite (float A, float B, float C, float D, float t)
-{
-	float t2 = t*t;
-    float t3 = t*t*t;
-    float a = -A/2.0 + (3.0*B)/2.0 - (3.0*C)/2.0 + D/2.0;
-    float b = A - (5.0*B)/2.0 + 2.0*C - D / 2.0;
-    float c = -A/2.0 + C/2.0;
-   	float d = B;
-    
-    return a*t3 + b*t2 + c*t + d;
-}
 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

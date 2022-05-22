@@ -15,10 +15,10 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky = mix(daytimeSky, vec3(0.305,0.528,0.805) * 0.9, frx_smootherstep(0.1, 0.6, viewSpacePos.y));
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         #ifdef DEPRESSING_MODE
-            daytimeSky = daytimeSky * 0.5 + 0.5;
-            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(2.5, 2.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0)));
+            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(2.5, 2.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0) * 0.1));
+            daytimeSky = daytimeSky * vec3(0.5, 0.6, 0.5) + vec3(0.5, 0.4, 0.5);
         #else
-            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
+            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.3, 1.1) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
         #endif
         //daytimeSky = mix(daytimeSky, mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5), (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 2.0)) * 1.0);
         //daytimeSky += mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
@@ -148,7 +148,19 @@ float getCloudNoise(in vec2 plane, in int octaves) {
         return 0.0;
     #endif
 }
+// Thanks SixthSurge#3922 for helping me with curl noise which makes cirrus clouds much nicer
+vec2 curlNoise(in vec2 plane) {
+    float offset = 1e-3;
+    float dx = smoothHash(plane + vec2(offset, 0.0));
+    dx -= smoothHash(plane - vec2(offset, 0.0));
+    dx /= 2.0 * offset;
 
+    float dy = smoothHash(plane + vec2(0.0, offset));
+    dy -= smoothHash(plane - vec2(0.0, offset));
+    dy /= 2.0 * offset;
+
+    return vec2(-dy, dx);
+}
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLighting) {
     #ifdef CLOUDS
         if(frx_worldIsOverworld == 1) {
@@ -194,7 +206,12 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             float cirrus = 0.0;
 
             #ifdef CIRRUS_CLOUDS
-                cirrus += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
+                #ifdef FAST_CIRRUS_CLOUDS
+                    cirrus += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
+                #else
+                    float cirrusNoise = fbmHash(plane * vec2(15.0, 3.0) + curlNoise(plane * vec2(2.0, 1.0) * 1.0), CIRRUS_CLOUDS_SHARPNESS);
+                    cirrus += smoothstep(0.3, 1.0, fbmHash(plane, max(3, CIRRUS_CLOUDS_SHARPNESS / 2))) * cirrusNoise;
+                #endif
                 #ifndef STRATUS_CLOUDS
                     cirrus *= 2.0;
                 #else 
@@ -220,7 +237,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     #ifndef DEPRESSING_MODE
         skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
     #else
-        skyResult += frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
+        skyResult += 0.5 * frx_worldIsOverworld * tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getSunVector()))) * 0.1, 0.9));
     #endif
     skyResult += frx_worldIsOverworld * tdata.y * mix(skyResult, (MOON_COLOR * 0.5 + 0.5) * 0.1, 0.5) * (pow((1.0 / max(0.01, distance(viewSpacePos, getMoonVector()) + 0.04)) * 0.1, 1.5));
     skyResult += calculateSun(viewSpacePos);
@@ -234,7 +251,9 @@ vec3 sampleSky(in vec3 viewSpacePos) {
     // clouds
     vec3 cloudsColor = vec3(0.0);
     cloudsColor = mix(mix(2.0, 2.0, tdata.y) * calculateSkyColor(vec3(0.0, -1.0, 0.0)), calculateSkyColor(viewSpacePos) + tdata.x * mix(skyResult, (SUN_COLOR) * 0.1, 0.5) * (pow((5.0 / max(0.01, distance(viewSpacePos, getSunVector()) + 0.03)) * 0.02, 1.5)), 0.5);
-    cloudsColor *= 1.5;
+    #ifndef DEPRESSING_MODE
+        cloudsColor *= 1.5;
+    #endif
 
     vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
     

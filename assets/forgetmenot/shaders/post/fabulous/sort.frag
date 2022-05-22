@@ -145,7 +145,11 @@ void main() {
 
     float waterFogDist = abs(distance(maxViewSpacePos, minViewSpacePos));
     if(max_depth != 1.0 && translucentData.b > 0.5) {
-        translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
+        #ifndef DEPRESSING_MODE
+            translucent_color = mix(translucent_color, vec4(mix(vec3(0.0, 0.05, 0.1), vec3(0.0, 0.1, 0.2), tdata.x), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
+        #else
+            translucent_color = mix(translucent_color, vec4(vec3(0.0, 0.05, 0.1), 0.9), (1.0 - exp(-waterFogDist / 5.0)) * (1.0 - frx_playerEyeInFluid));
+        #endif
     }
     // if(translucentData.b > 0.5) {
     //     vec3 waterFogPos = minViewSpacePos;
@@ -209,7 +213,7 @@ void main() {
 
     vec3 fogColor = sampleFogColor(viewDir);
     //fogColor = mix(frx_fogColor.rgb, fogColor, frx_worldIsOverworld + frx_worldIsEnd);
-    fogFactor = mix(fogFactor, 1.0, frx_smootherstep(frx_viewDistance * 0.7, frx_viewDistance * 0.9, blockDist));
+    fogFactor = mix(fogFactor, 1.0, frx_smootherstep(frx_viewDistance - 32.0, frx_viewDistance - 16.0, blockDist));
     vec3 tempColor = mix(composite.rgb, fogColor, clamp01(fogFactor));
 
     composite.rgb = mix(tempColor, composite, floor(min_depth));
@@ -220,6 +224,8 @@ void main() {
 
         int VL_STEPS = 10;
         float VL_AMOUNT = 1.0;
+
+        float fogAmount;
 
         for(int i = 0; i < VL_STEPS; i++) {
             viewPos += (-viewPos / VL_STEPS) * 1.0 * mix(frx_noise2d(texcoord), 1.0, 0.5);
@@ -233,11 +239,13 @@ void main() {
 
             vec3 fogColor = mix(normalize(vec3(1.2, 1.1, 0.9)), normalize(vec3(0.9, 1.1, 1.2)), frx_worldIsMoonlit) * (1.0 - getTimeOfDayFactors().z);
             #ifdef DEPRESSING_MODE
-                fogColor = sampleFogColor(viewPos) * mix(1.0, 3.0, tdata.y);
+                fogColor = sampleFogColor(vec3(viewPos.x, 0.0, viewPos.z)) * mix(1.0, 3.0, tdata.y);
             #endif
             
             // sample shadow map
-            vl += ((exp(-float(i))) * 0.5 + 0.5) * (fogColor) * texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (VL_AMOUNT * VL_STEPS);
+            vl += ((exp(-float(i))) * 0.5 + 0.5) * (fogColor) * fbmOctaves((viewPos + frx_cameraPos) * 0.05, 6) / (0.5 * VL_STEPS);
+            
+            vl *= ((exp(-float(i))) * 0.5 + 0.5) * (texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (1.0 * VL_STEPS)) + 1.0;
 
             // screen space method
             //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 

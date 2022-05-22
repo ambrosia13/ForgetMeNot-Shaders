@@ -19,6 +19,25 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
 
+const vec2 vogel_disk_16[16] = vec2[](
+   vec2(0.18993645671348536, 0.02708711407659152),
+   vec2(-0.21261242652069953, 0.2339129324694907),
+   vec2(0.04771781344140756, -0.3666840644525993),
+   vec2(0.297730981239584, 0.398259878229082),
+   vec2(-0.509063425827436, -0.06528681462854097),
+   vec2(0.507855152944665, -0.2875976005206389),
+   vec2(-0.15230616564632418, 0.6426121151781916),
+   vec2(-0.30240170651828074, -0.5805072900736001),
+   vec2(0.6978019230005561, 0.2771173334141519),
+   vec2(-0.6990963248129052, 0.3210960724922725),
+   vec2(0.3565142601623699, -0.7066415061851589),
+   vec2(0.266890002328106, 0.8360191043249159),
+   vec2(-0.7515861305520581, -0.4160987619581504),
+   vec2(0.9102937449894895, -0.17014527555321657),
+   vec2(-0.5343471434373126, 0.8058593459499529),
+   vec2(-0.1133270115046468, -0.9490025827627441)
+);
+
 void frx_pipelineFragment() {
     vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
     // vec2 uv = frx_faceUv(frx_vertex.xyz, frx_vertexNormal.xyz);
@@ -83,6 +102,11 @@ void frx_pipelineFragment() {
                             shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
                         }
                     }
+                    // for(int i = 0; i < 16; i++) {
+                    //     // for(int j = -blurAmount; j < blurAmount; j++) {
+                    //         shadowMap += pcfSample(baseUv, st.x + vogel_disk_16[i].x * 2.0, st.y + vogel_disk_16[i].y * 2.0, vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / 16.0;
+                    //     // }
+                    // }
                 } else {
                     shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
                 }
@@ -92,11 +116,15 @@ void frx_pipelineFragment() {
 
             if(frx_matDisableDiffuse == 0) shadowMap *= step(0.01, dot(frx_fragNormal, frx_skyLightVector));
 
-            if(frx_isHand) shadowMap = 0.0;
+            #ifdef DEPRESSING_MODE
+                if(frx_isHand) shadowMap = 1.0;
+            #else
+                if(frx_isHand) shadowMap = 0.0;
+            #endif
 
             float shadowMapInverse = 1.0 - shadowMap;
             //color.rgb = shadowSpacePos.xyz;
-            if(!frx_isGui || frx_isHand && frx_fragReflectance < 1.0) {
+            if(!frx_isGui || frx_isHand) {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
@@ -112,12 +140,15 @@ void frx_pipelineFragment() {
                 vec3 directLightColorNight = normalize(vec3(0.9, 1.1, 1.2)) * 2.5;
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
+                #ifdef DEPRESSING_MODE
+                    frx_fragLight.y *= 0.5;
+                #endif
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
                 lightmap *= mix(vec3(1.0), vec3(1.5, 1.4, 1.2), clamp01((pow(frx_fragLight.x * 1.5, 3.0)) - 1.0) * clamp01(shadowMapInverse + (1.0 - tdata.x)));
 
                 #ifdef DEPRESSING_MODE
-                    lightmap = lightmap * 0.75 + 0.25;
+                    lightmap = lightmap * 0.2;
                 #endif
 
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x * frx_fragLight.x);
@@ -158,7 +189,7 @@ void frx_pipelineFragment() {
                     lightmap = mix(lightmap, vec3(frx_luminance(lightmap)) * 1.4, 0.5);
                 #endif
 
-                color.rgb *= max(vec3(0.05), lightmap);
+                if(frx_fragReflectance < 1.0) color.rgb *= max(vec3(0.05), lightmap);
             }
         #endif
         if(frx_isGui && !frx_isHand) color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7; // directional shading in inventory

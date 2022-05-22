@@ -39,7 +39,7 @@ void main() {
 
     bool isMetal = f0.r / 20.0 > 0.95;
 
-    if(isMetal) f0 *= sceneColor;
+    if(isMetal) f0 = (sceneColor) * 20.0;
 
     #ifdef RAYTRACE_SSR
         // #define SSR_STEPS 400
@@ -49,7 +49,7 @@ void main() {
             vec3 screenPos = vec3(texcoord, depth);
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
-            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 2.0, 0.25);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos);
 
             float stepLength = 0.5 / SSR_STEPS;
 
@@ -62,7 +62,7 @@ void main() {
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 //vec3 currentScreenPos = (screenPos + rayScreenDir * float(i / 1) * stepLength);
-                screenPos += rayScreenDir * stepLength;
+                screenPos += rayScreenDir * stepLength * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 0.15);
 
                 float depthQuery = texelFetch(u_depth, ivec2(frxu_size * screenPos.xy), 0).r;
 

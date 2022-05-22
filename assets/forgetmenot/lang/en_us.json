@@ -27,6 +27,8 @@
     "config.forgetmenot.desc.stratus_clouds_sharpness": "Controls sharpness of the stratus cloud shape, ;lower for blurry-ish but faster clouds, higher for sharper but slower clouds.",
     "config.forgetmenot.name.cirrus_clouds_sharpness": "Cirrus Clouds Sharpness",
     "config.forgetmenot.desc.cirrus_clouds_sharpness": "Controls sharpness of the cirrus cloud shape, ;lower for blurry-ish but faster clouds, higher for sharper but slower clouds.",
+    "config.forgetmenot.name.fast_cirrus_clouds": "Fast Cirrus Clouds",
+    "config.forgetmenot.desc.fast_cirrus_clouds": "Uses a simple noise offset for cirrus clouds. ;If disabled, uses more expensive curl noise to have wispy cirrus clouds.",
     "config.forgetmenot.name.random_cloud_density": "Variable Cloud Density",
     "config.forgetmenot.desc.random_cloud_density": "Pseudo-random cloud density based on world time and world day. Performance impact.",
     "config.forgetmenot.name.cloud_lighting": "Cloud Lighting Mode",

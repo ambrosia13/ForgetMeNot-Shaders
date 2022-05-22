@@ -25,7 +25,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help
 
 ## discord
-https://discord.gg/Zzn4jJapRH
+
 
 ## screenshots
 ![a](https://media.discordapp.net/attachments/286649185468678144/974029571299098724/unknown.png?width=1276&height=676)
