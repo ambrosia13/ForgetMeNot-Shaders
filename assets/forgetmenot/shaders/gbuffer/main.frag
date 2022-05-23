@@ -51,7 +51,7 @@ void frx_pipelineFragment() {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
-                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.25;
+                vec3 ambientLightColorDay = vec3(1.0, 1.0, 1.1) * 1.15;
                 vec3 directLightColorDay = vec3(1.3, 1.2, 0.9) * 1.5;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
@@ -75,10 +75,10 @@ void frx_pipelineFragment() {
                 //frx_fragLight *= mix(1.0, 0.5, (1.0 - frx_viewBrightness) * 0.5);
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x);
                 //lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y));
-                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.75 + 0.25, frx_fragLight.y);
+                if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += (1.0) * tdata.x * frx_fragLight.y * 0.3 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
+                if(frx_matDisableDiffuse == 0) lightmap += max(-0.3 * directLightColorDay, (1.0) * tdata.x * frx_fragLight.y * 0.4 * dot(frx_fragNormal, getSunVector()) * directLightColorDay);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];
@@ -104,7 +104,7 @@ void frx_pipelineFragment() {
                     lightmap = mix(lightmap, vec3(frx_luminance(lightmap)) * 1.4, 0.5);
                 #endif
 
-                color.rgb *= max(vec3(0.05), lightmap);
+                if(frx_fragReflectance < 1.0) color.rgb *= max(vec3(0.05), lightmap);
             }
         #endif
         if(frx_isGui && !frx_isHand) color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7; // directional shading in inventory

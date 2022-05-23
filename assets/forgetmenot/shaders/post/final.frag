@@ -41,6 +41,7 @@ void main() {
         finalColor = pow(finalColor, mix(vec3(1.0 / 2.2), vec3(1.0), max(max(getTimeOfDayFactors().y * 0.5, frx_smoothedEyeBrightness.y), frx_smoothedEyeBrightness.x * 0.5)));
         //finalColor = nightEyeAdjust(finalColor);
     #endif
+    
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(finalColor.rgb + rand3D(texcoord * 2000.0) / 255.0, 1.0));
 }

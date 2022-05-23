@@ -55,10 +55,10 @@
                     nameKey: "config.forgetmenot.name.cirrus_clouds_sharpness",
                     descriptionKey: "config.forgetmenot.desc.cirrus_clouds_sharpness"
                 },
-                fast_cirrus_clouds: {
+                fast_cloud_noise: {
                     default: false,
-                    nameKey: "config.forgetmenot.name.fast_cirrus_clouds",
-                    descriptionKey: "config.forgetmenot.desc.fast_cirrus_clouds"
+                    nameKey: "config.forgetmenot.name.fast_cloud_noise",
+                    descriptionKey: "config.forgetmenot.desc.fast_cloud_noise"
                 },
                 random_cloud_density: {
                     default: false,

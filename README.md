@@ -10,6 +10,11 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 3. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
 4. Activate your preferred pipeline shaderpack in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
 
+## before you ask...
+- Experiencing shadow flickering? It's being worked on. In the meantime, try to turn your render distance down to 8. Lower render distance has less chance of shadow flickering/disappearance.
+- Water broken on AMD/Intel? I'm working on fixing this, but you can try turning on fast water to hopefully fix it.
+- Want your normal enchantment glint back? Turn off 
+
 ## cool features
 - bloom, tone mapping, and HDR shader effects
 - overhauled sky & fog visuals
@@ -25,7 +30,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help
 
 ## discord
-
+https://discord.gg/Zzn4jJapRH
 
 ## screenshots
 ![a](https://media.discordapp.net/attachments/286649185468678144/974029571299098724/unknown.png?width=1276&height=676)

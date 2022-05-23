@@ -127,7 +127,23 @@ vec3 calculateSun(in vec3 viewSpacePos) {
     #define STRATUS_CLOUDS_SHARPNESS 3
 #endif
 
+// Thanks SixthSurge#3922 for helping me with curl noise which makes cirrus clouds much nicer
+vec2 curlNoise(in vec2 plane) {
+    float offset = 1e-3;
+    float dx = smoothHash(plane + vec2(offset, 0.0));
+    dx -= smoothHash(plane - vec2(offset, 0.0));
+    dx /= 2.0 * offset;
+
+    float dy = smoothHash(plane + vec2(0.0, offset));
+    dy -= smoothHash(plane - vec2(0.0, offset));
+    dy /= 2.0 * offset;
+
+    return vec2(-dy, dx);
+}
 float getCloudNoise(in vec2 plane, in int octaves) {
+    #ifndef FAST_CLOUD_NOISE
+        // plane += curlNoise(plane * 2.0) * 0.05;
+    #endif
     #ifdef RANDOM_CLOUD_DENSITY
         float cloudDensity = 0.5 + smoothHash(vec2(frx_worldTime * 24000.0 + (frx_worldDay - 1.0) * 24000.0) * 0.001) * 0.15;
         cloudDensity += 0.2 * getTimeOfDayFactors().y;
@@ -143,23 +159,10 @@ float getCloudNoise(in vec2 plane, in int octaves) {
     float upperBound = mix(1.0, cloudDensity + 0.2, cloudMixFactor);
 
     #ifdef STRATUS_CLOUDS
-        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves));
+        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves, 0.05));
     #else 
         return 0.0;
     #endif
-}
-// Thanks SixthSurge#3922 for helping me with curl noise which makes cirrus clouds much nicer
-vec2 curlNoise(in vec2 plane) {
-    float offset = 1e-3;
-    float dx = smoothHash(plane + vec2(offset, 0.0));
-    dx -= smoothHash(plane - vec2(offset, 0.0));
-    dx /= 2.0 * offset;
-
-    float dy = smoothHash(plane + vec2(0.0, offset));
-    dy -= smoothHash(plane - vec2(0.0, offset));
-    dy /= 2.0 * offset;
-
-    return vec2(-dy, dx);
 }
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLighting) {
     #ifdef CLOUDS
@@ -167,10 +170,16 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y + pow(length(viewSpacePos.xz), 2.0) * 0.18);
             plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
             plane += frx_renderSeconds / 35.0;
+
+            vec2 stratusPlane = plane;
+
+            #ifndef FAST_CLOUD_NOISE
+                stratusPlane += curlNoise(plane * 2.0) * 0.05;
+            #endif
             
             float clouds;
 
-            clouds = getCloudNoise(plane, octaves);
+            clouds = getCloudNoise(stratusPlane, octaves);
 
             float cloudLighting = 1.0;
 
@@ -178,10 +187,10 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                 #if CLOUD_LIGHTING == LIGHTING_NORMALS
                     if(doLighting) {
                         float offset = 0.2;
-                        float height1 = getCloudNoise(plane + vec2(offset, 0.0), 2);
-                        float height2 = getCloudNoise(plane + vec2(0.0, offset), 2);
-                        float height3 = getCloudNoise(plane - vec2(offset, 0.0), 2);
-                        float height4 = getCloudNoise(plane - vec2(0.0, offset), 2);
+                        float height1 = getCloudNoise(stratusPlane + vec2(offset, 0.0), 2);
+                        float height2 = getCloudNoise(stratusPlane + vec2(0.0, offset), 2);
+                        float height3 = getCloudNoise(stratusPlane - vec2(offset, 0.0), 2);
+                        float height4 = getCloudNoise(stratusPlane - vec2(0.0, offset), 2);
 
                         float deltaX = height3 - height1;
                         float deltaY = height4 - height2;
@@ -194,7 +203,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                     if(doLighting) { // cloud self shadow
                         cloudLighting = 1.6;
                         vec2 rayDir = frx_skyLightVector.xz / 15.0;
-                        vec2 rayPos = plane + rayDir;
+                        vec2 rayPos = stratusPlane + rayDir;
                         for(int i = 0; i < 10; i++) {
                             rayPos += rayDir;// * exp2(float(-i));
                             cloudLighting -= getCloudNoise(rayPos, 3) * 0.11;
@@ -206,7 +215,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             float cirrus = 0.0;
 
             #ifdef CIRRUS_CLOUDS
-                #ifdef FAST_CIRRUS_CLOUDS
+                #ifdef FAST_CLOUD_NOISE
                     cirrus += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
                 #else
                     float cirrusNoise = fbmHash(plane * vec2(15.0, 3.0) + curlNoise(plane * vec2(2.0, 1.0) * 1.0), CIRRUS_CLOUDS_SHARPNESS);

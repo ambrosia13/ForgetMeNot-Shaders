@@ -62,7 +62,7 @@ void main() {
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 //vec3 currentScreenPos = (screenPos + rayScreenDir * float(i / 1) * stepLength);
-                screenPos += rayScreenDir * stepLength * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 0.15);
+                screenPos += rayScreenDir * stepLength * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 0.25);
 
                 float depthQuery = texelFetch(u_depth, ivec2(frxu_size * screenPos.xy), 0).r;
 
