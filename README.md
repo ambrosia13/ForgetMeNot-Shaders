@@ -13,7 +13,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 ## before you ask...
 - Experiencing shadow flickering? It's being worked on. In the meantime, try to turn your render distance down to 8. Lower render distance has less chance of shadow flickering/disappearance.
 - Water broken on AMD/Intel? I'm working on fixing this, but you can try turning on fast water to hopefully fix it.
-- Want your normal enchantment glint back? Turn off 
+- Want your normal enchantment glint back? Turn off `Pixel Locked Enchantment Glint` option in settings.
 
 ## cool features
 - bloom, tone mapping, and HDR shader effects
