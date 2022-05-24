@@ -40,6 +40,8 @@
     "config.forgetmenot.desc.raytrace_ssr": "Uses raymarching to give accurate reflections. Else will just flip the screen for reflections, which is inaccurate but a bit faster.",
     "config.forgetmenot.name.ssr_steps": "SSR Steps",
     "config.forgetmenot.desc.ssr_steps": "Number of raymarching steps for raymarched reflections. Increase for a mild performance decrease but better quality reflections. Doesn't seem to impact performance much.",
+    "config.forgetmenot.name.waves_quality": "Water Waves Quality",
+    "config.forgetmenot.desc.waves_quality": "Number of noise octaves to use for water noise. High performance cost.",
     "config.forgetmenot.name.simple_water": "Fast Water",
     "config.forgetmenot.desc.simple_water": "Uses simpler water normals. Enable this if looking at water makes your performance drop a bunch. ;Also use this if the water reflections look warped and stretched.",
     "config.forgetmenot.name.simple_sky_reflection": "Simple Sky Reflection",

@@ -3,13 +3,23 @@
 
 int fmn_isWater = 0;
 
+
+// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+vec2 parallaxMapping(in vec2 texcoord, in float height) {
+    vec3 viewDir = normalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
+    vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
+    return texcoord - p;
+}
+
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
-    vec2 uv = uv0 * 0.6;
+    vec2 uv = uv0 * 0.8;
     // vec2(
     //     uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
     //     uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
     // ) * 0.3;
+
+    uv = parallaxMapping(uv, waterHeightNoise(uv) * 2.0);
 
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
@@ -24,6 +34,7 @@ void frx_materialFragment() {
             float deltaY = (height4 - height3);
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+            //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
             frx_fragNormal = normalize(frx_fragNormal);
         #else
             float height = waterHeightNoise(uv);

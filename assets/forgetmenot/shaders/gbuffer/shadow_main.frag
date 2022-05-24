@@ -148,7 +148,7 @@ void frx_pipelineFragment() {
                 lightmap *= mix(vec3(1.0), vec3(1.5, 1.4, 1.2), clamp01((pow(frx_fragLight.x * 1.5, 3.0)) - 1.0) * clamp01(shadowMapInverse + (1.0 - tdata.x)));
 
                 #ifdef DEPRESSING_MODE
-                    lightmap = lightmap * 0.2;
+                    //lightmap = lightmap * 0.2;
                 #endif
 
                 lightmap *= mix(1.0, 1.5, (1.0 - frx_fragLight.y) * frx_fragLight.x * frx_fragLight.x);

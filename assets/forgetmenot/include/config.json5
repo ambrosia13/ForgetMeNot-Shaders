@@ -94,6 +94,13 @@
                     nameKey: "config.forgetmenot.name.ssr_steps",
                     descriptionKey: "config.forgetmenot.desc.ssr_steps"
                 },
+                waves_quality: {
+                    default: 3,
+                    min: 3,
+                    max: 6,
+                    nameKey: "config.forgetmenot.name.waves_quality",
+                    descriptionKey: "config.forgetmenot.desc.waves_quality"
+                },
                 simple_water: {
                     default: false,
                     nameKey: "config.forgetmenot.name.simple_water",

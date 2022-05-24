@@ -3,6 +3,6 @@
 - add config for sunlight strength, ambient light, etc
 - fix VL on non-depressing mode (filter, etc)
 - fix global illumination
-- add "alternate" GI raytracer that is just raytraced ambient occlusion with extra steps
+- add "alternate" GI raytracer that is just raytraced ambient occlusion with extra steps (uh, not actual steps. RTAO with increased intervals)
 - config for blocklight tinting
 - move changed sky stuff to sky reflection calculation too

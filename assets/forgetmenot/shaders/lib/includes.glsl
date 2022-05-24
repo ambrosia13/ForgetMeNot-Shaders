@@ -15,7 +15,8 @@ uniform int frxu_lod;
 #ifdef DEPRESSING_MODE
     #define frx_thunderGradient 1.0
 #endif
-// #define frx_renderSeconds 1.0
+//#define frx_renderSeconds float(frx_renderFrames)*0.3
+//#define frx_renderSeconds 1.0
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl
 #include forgetmenot:shaders/lib/functions/sky.glsl

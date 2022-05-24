@@ -16,7 +16,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky = mix(daytimeSky, vec3(0.208,0.444,0.760) * 0.8, frx_smootherstep(0.4, 0.9, viewSpacePos.y));
         #ifdef DEPRESSING_MODE
             daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(2.5, 2.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0) * 0.1));
-            daytimeSky = daytimeSky * vec3(0.5, 0.6, 0.5) + vec3(0.5, 0.4, 0.5);
+            daytimeSky = daytimeSky * vec3(0.5, 0.6, 0.5) + 1.5 * vec3(0.5, 0.4, 0.5);
         #else
             daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.3, 1.1) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
         #endif
@@ -186,7 +186,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             #ifdef STRATUS_CLOUDS
                 #if CLOUD_LIGHTING == LIGHTING_NORMALS
                     if(doLighting) {
-                        float offset = 0.2;
+                        float offset = 0.3;
                         float height1 = getCloudNoise(stratusPlane + vec2(offset, 0.0), 2);
                         float height2 = getCloudNoise(stratusPlane + vec2(0.0, offset), 2);
                         float height3 = getCloudNoise(stratusPlane - vec2(offset, 0.0), 2);
@@ -197,7 +197,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
 
                         vec3 cloudNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
                         cloudNormal = normalize(cloudNormal);
-                        cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.5 + 1.1);
+                        cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.5 + 1.0);
                     }
                 #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
                     if(doLighting) { // cloud self shadow
