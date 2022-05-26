@@ -277,7 +277,7 @@ void frx_pipelineFragment() {
     // if(frx_cameraInFluid == 1 && !frx_isGui) color.rgb = mix(color.rgb, frx_fogColor.rgb, fogFactor);
 
     fragColor = color;
-    fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
+    fragNormal = vec4(frx_fragNormal, 1.0);
     fragData = vec4(frx_fragRoughness, frx_fragReflectance, float(fmn_isWater), 1.0);
 
     gl_FragDepth = gl_FragCoord.z;

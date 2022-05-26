@@ -70,7 +70,7 @@ void main() {
     //translucent_color.a *= 0.75;
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
     vec4 translucentData = texture(u_translucent_data, texcoord);
-    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb;
     vec3 translucentf0 = translucentData.ggg;
     vec3 transViewSpacePos = setupViewSpacePos(texcoord, translucent_depth);
     // transViewSpacePos = refract(transViewSpacePos, frx_normalModelMatrix * translucentNormal, 1.333);
@@ -86,7 +86,7 @@ void main() {
     vec4  main_color = texture(u_main_color, coord);
     float main_depth = texture(u_main_depth, texcoord).r;
     vec4 solidData = texture(u_solid_data, texcoord);
-    vec3 solidNormal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 solidNormal = texture(u_solid_normal, texcoord).rgb;
     vec3 solidf0 = solidData.ggg;
     
 
@@ -341,8 +341,8 @@ void main() {
     #endif
 
     // this data goes to different shader
-    compositeNormal.rgb = solidNormal * 0.5 + 0.5;
-    if(translucent_depth != max_depth) compositeNormal.rgb = translucentNormal * 0.5 + 0.5;
+    compositeNormal.rgb = solidNormal;
+    if(translucent_depth != max_depth) compositeNormal.rgb = translucentNormal;
 
     if(translucent_depth != max_depth) {
         compositeFresnel.r = translucentf0.r;

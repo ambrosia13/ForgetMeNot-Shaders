@@ -79,7 +79,7 @@
             lod: 0,
             internalFormat: "RGBA16F",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "FLOAT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
@@ -91,9 +91,9 @@
         {
             name: "main_normal",
             lod: 0,
-            internalFormat: "RGB8",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            internalFormat: "RGB16_SNORM",
+            pixelFormat: "RGB",
+            pixelDataType: "SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
@@ -107,7 +107,7 @@
             lod: 0,
             internalFormat: "RGBA16",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "UNSIGNED_SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},

@@ -14,7 +14,6 @@ void main() {
     vec3 finalColor = color.rgb;
     finalColor = pow(finalColor, vec3(1.0));
 
-
     finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), frx_effectWither);
     finalColor = mix(finalColor, finalColor * vec3(0.7, 1.0, 0.7), frx_effectPoison);
 

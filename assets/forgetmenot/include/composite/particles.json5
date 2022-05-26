@@ -17,9 +17,9 @@
         {
             name: "particles_normal",
             lod: 0,
-            internalFormat: "RGBA8",
+            internalFormat: "RGBA16_SNORM",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},

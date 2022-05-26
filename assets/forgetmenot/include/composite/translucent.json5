@@ -17,9 +17,9 @@
         {
             name: "translucent_normal",
             lod: 0,
-            internalFormat: "RGB16",
+            internalFormat: "RGB16_SNORM",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
@@ -33,7 +33,7 @@
             lod: 0,
             internalFormat: "RGBA16",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "UNSIGNED_SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},

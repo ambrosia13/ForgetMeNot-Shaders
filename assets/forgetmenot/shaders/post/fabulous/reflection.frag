@@ -12,7 +12,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 normal = texture(u_normal, texcoord).xyz;
     float depth = texture(u_depth, texcoord).r;
     float particlesDepth = texture(u_particles_depth, texcoord).r;
     vec3 sample = texture(u_data, texcoord).rgb;

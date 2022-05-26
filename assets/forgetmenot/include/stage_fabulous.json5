@@ -91,9 +91,9 @@
         {
             name: "composite_normal",
             lod: 0,
-            internalFormat: "RGB16",
+            internalFormat: "RGB16_SNORM",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "SHORT",
             target: "TEXTURE_2D",
             texParams: [
                 {
@@ -137,7 +137,7 @@
             lod: 0,
             internalFormat: "RGBA16F",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelDataType: "FLOAT",
             target: "TEXTURE_2D",
             texParams: [
                 {
