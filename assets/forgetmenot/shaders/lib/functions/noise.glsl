@@ -1,3 +1,7 @@
+#ifndef WAVES_QUALITY
+    #define WAVES_QUALITY 3
+#endif
+
 float waterHeightNoise(in vec2 uv) {
     float waterHeight;
     float waves;

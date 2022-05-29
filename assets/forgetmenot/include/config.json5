@@ -42,7 +42,7 @@
                     descriptionKey: "config.forgetmenot.desc.cirrus_clouds"
                 },
                 stratus_clouds_sharpness: {
-                    default: 5,
+                    default: 7,
                     min: 3,
                     max: 10,
                     nameKey: "config.forgetmenot.name.stratus_clouds_sharpness",
@@ -67,7 +67,7 @@
                 },
                 cloud_lighting: {
                     define: "CLOUD_LIGHTING",
-                    default: "normals",
+                    default: "raymarched",
                     choices: [
                         "none", "normals", "raymarched"
                     ],
@@ -88,14 +88,14 @@
                     descriptionKey: "config.forgetmenot.desc.raytrace_ssr"
                 },
                 ssr_steps: {
-                    default: 20,
+                    default: 30,
                     min: 10,
                     max: 60,
                     nameKey: "config.forgetmenot.name.ssr_steps",
                     descriptionKey: "config.forgetmenot.desc.ssr_steps"
                 },
                 waves_quality: {
-                    default: 3,
+                    default: 4,
                     min: 3,
                     max: 6,
                     nameKey: "config.forgetmenot.name.waves_quality",

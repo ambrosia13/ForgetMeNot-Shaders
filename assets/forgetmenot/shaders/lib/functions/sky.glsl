@@ -26,6 +26,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
         daytimeSky *= 1.1;
         daytimeSky.rg *= vec2(1.0, 1.);
         daytimeSky = mix(vec3(frx_luminance(daytimeSky)), daytimeSky, 0.9);
+        daytimeSky *= mix(0.9, 1.1, clamp01(dot(viewSpacePos, getSunVector())));
         // contrast(daytimeSky, 1.5);
 
 
@@ -82,7 +83,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
     } else skyColor = frx_fogColor.rgb * 2.0;
 
     #ifdef DEPRESSING_MODE
-        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 1.3, 0.5);
+        skyColor = mix(skyColor, vec3(frx_luminance(skyColor)) * 1.3 * vec3(1.2, 1.2, 1.0), 0.5);
         skyColor *= 0.75;
     #endif
 
@@ -149,7 +150,7 @@ float getCloudNoise(in vec2 plane, in int octaves) {
         cloudDensity += 0.2 * getTimeOfDayFactors().y;
         float cloudMixFactor = (smoothstep(0.0, 1.0, smoothHash(plane * 0.01 + getWorldTime() * 0.0001 + 1.0) * 0.5 + 0.5));
     #else
-        float cloudDensity = 0.5;
+        float cloudDensity = 0.6;
         float cloudMixFactor = 1.0;
     #endif
 
@@ -159,7 +160,7 @@ float getCloudNoise(in vec2 plane, in int octaves) {
     float upperBound = mix(1.0, cloudDensity + 0.2, cloudMixFactor);
 
     #ifdef STRATUS_CLOUDS
-        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves, 0.05));
+        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves, 0.05) * ((octaves + 1.0) / octaves));
     #else 
         return 0.0;
     #endif
@@ -186,7 +187,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
             #ifdef STRATUS_CLOUDS
                 #if CLOUD_LIGHTING == LIGHTING_NORMALS
                     if(doLighting) {
-                        float offset = 0.3;
+                        float offset = 0.1;
                         float height1 = getCloudNoise(stratusPlane + vec2(offset, 0.0), 2);
                         float height2 = getCloudNoise(stratusPlane + vec2(0.0, offset), 2);
                         float height3 = getCloudNoise(stratusPlane - vec2(offset, 0.0), 2);
@@ -195,6 +196,9 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                         float deltaX = height3 - height1;
                         float deltaY = height4 - height2;
 
+                        // deltaX *= 15.0;
+                        // deltaY *= 15.0;
+
                         vec3 cloudNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
                         cloudNormal = normalize(cloudNormal);
                         cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.5 + 1.0);
@@ -202,16 +206,23 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
                 #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
                     if(doLighting) { // cloud self shadow
                         cloudLighting = 1.6;
-                        vec2 rayDir = frx_skyLightVector.xz / 15.0;
-                        vec2 rayPos = stratusPlane + rayDir;
-                        for(int i = 0; i < 10; i++) {
-                            rayPos += rayDir;// * exp2(float(-i));
-                            cloudLighting -= getCloudNoise(rayPos, 3) * 0.11;
+                        float stepLength = 0.04;
+                        vec2 rayDir = frx_skyLightVector.xz * 1.0;
+                        vec2 rayPos = plane + rayDir * stepLength;
+                        for(int i = 0; i < 15; i++) {
+                            rayPos += rayDir * stepLength;// * exp2(float(-i));
+                            cloudLighting -= getCloudNoise(rayPos, 2) * (0.0775);
+                            //stepLength *= 0.9;
                         }
+                        // float lightOpticalDepth;
+                        // float cloudOpticalDepth;
                     }
                 #endif
             #endif
 
+            plane -= frx_cameraPos.xz / 75.0; // reverse this thing to give the illusion of perspective
+            //plane *= 2.0;
+            
             float cirrus = 0.0;
 
             #ifdef CIRRUS_CLOUDS
@@ -365,7 +376,61 @@ vec3 sampleFogColor(in vec3 viewSpacePos) {
     vec3 color = mix(calculateSkyColor(normalize(viewSpacePos)), vec3(0.0), frx_effectBlindness);
     color = mix(color, vec3(0.1, 0.5, 0.7) * mix(0.5, 1.0, clamp01(frx_smoothedEyeBrightness.y * getTimeOfDayFactors().x)) * max(0.75, min(1.5, inversesqrt(1.0 - frx_smoothedEyeBrightness.y))), frx_cameraInWater);
     color = mix(color, vec3(1.9, 0.5, 0.1) * max(0.75, sqrt(frx_smoothedEyeBrightness.y)), frx_cameraInLava);
+    color = mix(color, vec3(0.2), clamp01((1.0 - frx_smoothedEyeBrightness.y) * frx_smootherstep(40.0, 30.0, frx_cameraPos.y) - 0.5 * frx_cameraInWater));
     return color;
+}
+// Some inspiration for a simple but nice fog model from Inigo Quilez
+// https://iquilezles.org/articles/fog/
+vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
+    vec3 tdata = getTimeOfDayFactors();
+    vec3 viewDir = normalize(viewSpacePos);
+
+    float blockDist = length(viewSpacePos);
+    if(frx_cameraInFluid == 0) blockDist = max(0.0, blockDist - 7.0);
+    blockDist /= 256.0;
+
+    float fogDensity = 1.0;
+    fogDensity = mix(fogDensity, 0.6, tdata.x);
+    fogDensity = mix(fogDensity, 2.5, tdata.y);
+    fogDensity = mix(fogDensity, 2.0, tdata.z);
+    fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);
+    fogDensity = mix(fogDensity, 5.5, frx_smoothedRainGradient);
+    fogDensity = mix(fogDensity, 5.5, frx_thunderGradient);
+    fogDensity = mix(fogDensity, 36.0, clamp01(frx_cameraInWater - frx_effectWaterBreathing - frx_effectConduitPower));
+    fogDensity = mix(fogDensity, 66.0, clamp01(frx_cameraInLava - frx_effectFireResistance));
+
+    vec3 worldPos = viewSpacePos + frx_cameraPos;
+    fogDensity += 1.0 * smoothstep(90.0, 40.0, worldPos.y) * mix(1.0, 0.5, tdata.x) * frx_smoothedEyeBrightness.y;
+
+    #ifdef DEPRESSING_MODE
+        fogDensity *= 0.1;
+    #endif
+
+    float fogAmount = 1.0 - exp(-blockDist * fogDensity);
+
+
+    vec3 horizonColor = sampleFogColor(vec3(viewDir.x, 0.0, viewDir.z));
+    vec3 skyColor = sampleFogColor(viewDir);
+    vec3 fogColor = mix(horizonColor, skyColor, 0.5);
+
+    float saturationAmount = 1.0;
+    saturationAmount = mix(saturationAmount, 2.5, tdata.x * frx_worldIsOverworld);
+    saturationAmount = mix(saturationAmount, 1.5, tdata.y * frx_worldIsOverworld);
+    saturationAmount = mix(saturationAmount, 1.0, tdata.z * frx_worldIsOverworld);
+
+    #ifdef DEPRESSING_MODE
+        saturationAmount = mix(saturationAmount, 1.0, 0.25);
+    #endif
+
+    // saturate fog color to avoid "washed out" look
+    fogColor = mix(vec3(frx_luminance(fogColor)), fogColor * vec3(1.05, 1.05, 1.0), saturationAmount);
+
+    float vanillaFogAmount = 0.0;
+    if(frx_worldIsOverworld == 1) vanillaFogAmount = smoothstep(frx_fogStart, frx_fogEnd, blockDist * 256.0);
+    else vanillaFogAmount = smoothstep(frx_viewDistance - 32.0, frx_viewDistance - 16.0, blockDist * 256.0);
+    
+
+    return mix(color * (1.0 - fogAmount) + fogColor * fogAmount, skyColor, vanillaFogAmount);
 }
 
 // -----------------------------------------------------------------------------------------------------------------------

@@ -1,66 +1,26 @@
 #include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shadows
+
+// Borrowing some canvas stuff for shadow sampling & depth bias
 #define SHADOW_MAP_SIZE 1024
 #define SHADOW_FILTER_SIZE PCF_SIZE_LARGE
 #include canvas:shaders/pipeline/shadow.glsl
-#include forgetmenot:shadows
 
 uniform sampler2D u_glint;
-
-#ifdef VANILLA_LIGHTING
-    //in vec3 directionalLight;
-#endif
 
 in vec4 shadowViewSpacePos;
 
 layout(location = 0) out vec4 fragColor;
-// layout(location = 1) out vec4 fragNormal;
-// layout(location = 2) out vec4 fragData;
-// layout(location = 3) out vec4 fragLight;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
 
-const vec2 vogel_disk_16[16] = vec2[](
-   vec2(0.18993645671348536, 0.02708711407659152),
-   vec2(-0.21261242652069953, 0.2339129324694907),
-   vec2(0.04771781344140756, -0.3666840644525993),
-   vec2(0.297730981239584, 0.398259878229082),
-   vec2(-0.509063425827436, -0.06528681462854097),
-   vec2(0.507855152944665, -0.2875976005206389),
-   vec2(-0.15230616564632418, 0.6426121151781916),
-   vec2(-0.30240170651828074, -0.5805072900736001),
-   vec2(0.6978019230005561, 0.2771173334141519),
-   vec2(-0.6990963248129052, 0.3210960724922725),
-   vec2(0.3565142601623699, -0.7066415061851589),
-   vec2(0.266890002328106, 0.8360191043249159),
-   vec2(-0.7515861305520581, -0.4160987619581504),
-   vec2(0.9102937449894895, -0.17014527555321657),
-   vec2(-0.5343471434373126, 0.8058593459499529),
-   vec2(-0.1133270115046468, -0.9490025827627441)
-);
-
 void frx_pipelineFragment() {
-    vec4 color = pow(frx_fragColor, vec4(vec3(1.0), 1.0));
-    // vec2 uv = frx_faceUv(frx_vertex.xyz, frx_vertexNormal.xyz);
-    // float offset = 0.1;
-    // float height1 = fbmHash(uv + vec2(offset, 0.0), 6);
-    // float height2 = fbmHash(uv - vec2(offset, 0.0), 6);
-    // float height3 = fbmHash(uv + vec2(0.0, offset), 6);
-    // float height4 = fbmHash(uv - vec2(0.0, offset), 6);
-    // float deltaX = (height2 - height1) * 2.0;
-    // float deltaY = (height4 - height3) * 2.0;
-
-    // frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
-    //if(any(greaterThan(abs(texture(frxs_baseColor, frx_texcoord + 0.00004) - frx_sampleColor), vec4(0.001))) && !frx_isGui) color *= 0.5;
+    vec4 color = frx_fragColor;
     vec4 unshadedColor = color;
 
-    mat3 tbn = mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
-
-    #ifdef PBR_ENABLED
-        frx_fragNormal = tbn * frx_fragNormal;
-    #else
-        #define frx_fragNormal frx_vertexNormal
-    #endif
-
+    // sample enchantment glint texture
+    // For anyone wondering why I attempt to put space between when I read textures and when I actually use those, it's a micro-optimization
+    // https://developer.nvidia.com/blog/the-peak-performance-analysis-method-for-optimizing-any-gpu-workload/#appendix2
     float pixelScale = frx_isGui ? 16.0 : 32.0; 
     #ifdef PIXEL_LOCKED_GLINT
         vec3 glint = texture(u_glint, (floor(frx_normalizeMappedUV(frx_texcoord) * pixelScale) / pixelScale) + frx_renderSeconds / 15.0).rgb;
@@ -68,7 +28,17 @@ void frx_pipelineFragment() {
         vec3 glint = texture(u_glint, (frx_normalizeMappedUV(frx_texcoord)) + frx_renderSeconds / 15.0).rgb;
     #endif
 
-    //if(frx_matCutout == 1) frx_fragNormal = vec3(0.0, 1.0, 0.0);
+    mat3 tbn = mat3(
+        frx_vertexTangent.xyz, 
+        cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
+        frx_vertexNormal.xyz
+    );
+
+    #ifdef PBR_ENABLED
+        frx_fragNormal = tbn * frx_fragNormal;
+    #else
+        #define frx_fragNormal frx_vertexNormal
+    #endif
 
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
@@ -78,6 +48,7 @@ void frx_pipelineFragment() {
 
             #ifdef CASCADE_ADJUST
                 // blur less depending on cascade, since far away shadows are already low res and hardware filtered
+                // Not a good solution though
                 int blurAmount = max(0, cascade - 1);
             #else
                 int blurAmount = SHADOW_FILTER_TAPS;
@@ -89,9 +60,18 @@ void frx_pipelineFragment() {
                 vec2 st = uv + 0.5 - baseUv;
                 baseUv /= SHADOW_MAP_SIZE;
                 
-                // shadow bias things from canvas dev
-                //vec2 depthBias = computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
-                vec2 depthBias = vec2(0.05);
+                // Not going to use half-res derivatives, introduces too many artifacts without TAA
+                vec3 shadowPosDX = dFdx(shadowScreenPos);
+                vec3 shadowPosDY = dFdy(shadowScreenPos);
+
+                vec2 depthBias;
+                if(frx_matCutout == 0) {
+                    depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
+                } else {
+                    depthBias = vec2(0.05);
+                }
+                //vec2 depthBias = vec2(0.05);
+                // Copied straight from canvas dev shadow bias
             	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
 	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
 
@@ -102,11 +82,6 @@ void frx_pipelineFragment() {
                             shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
                         }
                     }
-                    // for(int i = 0; i < 16; i++) {
-                    //     // for(int j = -blurAmount; j < blurAmount; j++) {
-                    //         shadowMap += pcfSample(baseUv, st.x + vogel_disk_16[i].x * 2.0, st.y + vogel_disk_16[i].y * 2.0, vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / 16.0;
-                    //     // }
-                    // }
                 } else {
                     shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
                 }
@@ -123,11 +98,12 @@ void frx_pipelineFragment() {
             #endif
 
             float shadowMapInverse = 1.0 - shadowMap;
-            //color.rgb = shadowSpacePos.xyz;
+
             if(!frx_isGui || frx_isHand) {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
+                // TODO: move these magic numbers to a common area, maybe make configurable
                 vec3 ambientLightColorDay = vec3(1.0, 1.2, 1.3) * 1.25;
                 vec3 directLightColorDay = normalize(vec3(1.2, 1.1, 0.9)) * 3.5;
 
@@ -186,7 +162,7 @@ void frx_pipelineFragment() {
                 //lightmap *= mix(vec3(1.0), frx_heldLight.rgb * 1.5, frx_fragLight.x * blockLightColorFactor);
 
                 #ifdef DEPRESSING_MODE
-                    lightmap = mix(lightmap, vec3(frx_luminance(lightmap)) * 1.4, 0.5);
+                    lightmap = mix(lightmap * 0.5, vec3(frx_luminance(lightmap)) * 0.3, 0.5);
                 #endif
 
                 if(frx_fragReflectance < 1.0) color.rgb *= max(vec3(0.05), lightmap);
@@ -268,7 +244,7 @@ void frx_pipelineFragment() {
     color.rgb = mix(color.rgb, unshadedColor.rgb, frx_fragEmissive * float(!frx_renderTargetParticles));
     //if(frx_fragEmissive > 0.0) color.a = 0.5;
 
-    if(color.a <= 0.01) discard;
+    if(color.a <= 0.25 && frx_renderTargetSolid) discard;
 
     if(!frx_isGui || frx_isHand && !frx_renderTargetParticles) color.rgb += color.rgb * frx_fragEmissive * mix(EMISSIVE_BOOST.0, 1.0, frx_smoothedRainGradient * 0.5 + frx_thunderGradient * 0.5);
 

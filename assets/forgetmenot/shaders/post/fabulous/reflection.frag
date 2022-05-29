@@ -37,7 +37,7 @@ void main() {
         #define u_previous_frame u_color
     #endif
 
-    bool isMetal = f0.r / 20.0 > 0.95;
+    bool isMetal = f0.r / 20.0 > 0.95 && frx_cameraInWater == 0;
 
     if(isMetal) f0 = (sceneColor) * 20.0;
 
@@ -49,9 +49,9 @@ void main() {
             vec3 screenPos = vec3(texcoord, depth);
             vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
-            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 10.0 / SSR_STEPS);
 
-            float stepLength = 0.5 / SSR_STEPS;
+            float stepLength = 1.0 / SSR_STEPS;
 
             // sky reflection
             #ifdef SIMPLE_SKY_REFLECTION
@@ -62,7 +62,7 @@ void main() {
 
             for(int i = 0; i < SSR_STEPS; i++) {
                 //vec3 currentScreenPos = (screenPos + rayScreenDir * float(i / 1) * stepLength);
-                screenPos += rayScreenDir * stepLength * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 0.25);
+                screenPos += rayScreenDir * stepLength;// * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 0.25);
 
                 float depthQuery = texelFetch(u_depth, ivec2(frxu_size * screenPos.xy), 0).r;
 
@@ -121,7 +121,7 @@ void main() {
         }
     #endif
 
-    if(frx_luminance(reflectColor) > 7.0) reflectance = vec3(0.5); // test for sun
+    if(frx_luminance(reflectColor) > 10.0) reflectance = vec3(0.5); // test for sun
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 

@@ -104,29 +104,29 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
 	}
   return col / max(0.01, weight);
 }
-// float shadowFilter(sampler2DArrayShadow shadowMap, vec3 shadowPos, int cascade, float radius) {
-// 	vec2 texel = 1.0 / vec2(1024.0);
+float shadowFilter(sampler2DArrayShadow shadowMap, vec3 shadowPos, int cascade, float radius, int samples) {
+	vec2 texel = 1.0 / vec2(1024.0);
 
-//   float weight = 0.0;
-//   float shadowResult = 0.0;
+  float weight = 0.0;
+  float shadowResult = 0.0;
 
-//   float d = 1.0;
-//   vec2 samp = vec2(radius) / 10.0;
+  float d = 1.0;
+  vec2 samp = vec2(radius) / samples;
 
-// 	mat2 ang = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
+	mat2 ang = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
 
-// 	for(int i = 0;i<10*10;i++) {
-//     d += 1.0 / d;
-//     samp *= ang;
+	for(int i = 0;i<samples*samples;i++) {
+    d += 1.0 / d;
+    samp *= ang;
 
-//     float w = 1.0 / (d - 1.0);
-//     vec2 shadowUv = shadowPos.xy + samp * (d - 1.0) * texel;
+    float w = 1.0 / (d - 1.0);
+    vec2 shadowUv = shadowPos.xy + samp * (d - 1.0) * texel;
 
-// 		shadowResult += texture(shadowMap, vec4(shadowUv, cascade, shadowPos.z)) * w;
-//     weight += w;
-// 	}
-//   return shadowResult / weight;//+hash1(c-r)/128.;
-// }
+		shadowResult += texture(shadowMap, vec4(shadowUv, cascade, shadowPos.z)) * w;
+    weight += w;
+	}
+  return shadowResult / weight;//+hash1(c-r)/128.;
+}
 // --------------------------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------------------------

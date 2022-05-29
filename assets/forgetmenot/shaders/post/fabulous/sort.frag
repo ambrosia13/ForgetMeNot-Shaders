@@ -217,6 +217,7 @@ void main() {
     vec3 tempColor = mix(composite.rgb, fogColor, clamp01(fogFactor));
 
     //composite.rgb = mix(tempColor, composite, floor(min_depth));
+    if(min_depth < 1.0) composite.rgb = simpleFog(composite.rgb, minViewSpacePos);
 
     vec3 vl = composite;
     #ifdef VOLUMETRIC_LIGHTING
@@ -228,7 +229,8 @@ void main() {
         float fogAmount;
 
         for(int i = 0; i < VL_STEPS; i++) {
-            viewPos += (-viewPos / VL_STEPS) * 1.0 * mix(frx_noise2d(texcoord), 1.0, 0.5);
+            viewPos += (-viewPos / VL_STEPS) * 1.0 * mix(rand1D((texcoord + i) * 20000.0) * 0.5 + 0.5, 1.0, 0.75);
+            float totalDistanceTraveled = length(i * (-viewPos / VL_STEPS) * 1.0 * mix(frx_noise2d(texcoord), 1.0, 0.75));
 
             vec4 temp = (frx_shadowViewMatrix * vec4(viewPos.xyz, 1.0));
             vec3 shadowPos = temp.xyz / temp.w;
@@ -243,13 +245,14 @@ void main() {
             #endif
             
             // sample shadow map
-            fogAmount += ((exp(-float(i))) * 0.3 + 0.7) * (1.0) * pow(fbmOctaves((viewPos + frx_cameraPos) * 0.025, 3) * 1.333, 1.0) / (0.5 * VL_STEPS);
-            fogAmount *= ((exp(-float(i))) * 0.3 + 0.7) * (texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / (1.0 * VL_STEPS)) + 0.9;
+            fogAmount += (totalDistanceTraveled / (80.0)) * (1.0 + float(translucent_depth < 1.0)) * pow(fbmOctaves((viewPos + frx_cameraPos) * 0.025, 3) * 1.333, 1.0) / (0.5 * VL_STEPS);
+            fogAmount *= mix(1.0 - 1.4 / VL_STEPS, 1.0 + 2.0 / VL_STEPS, texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)));
 
             // screen space method
             //composite += normalize(SUN_COLOR) * floor(texture(u_translucent_depth, viewSpaceToScreenSpace(viewPos).xy).r) / 40.0; 
         }
-        composite = mix(composite, sampleFogColor(vec3(viewPos.x, 0.0, viewPos.z)) * mix(1.0, 3.0, tdata.y), clamp01(fogAmount));
+        //composite = mix(composite, sampleFogColor(vec3(viewPos.x, 0.0, viewPos.z)) * mix(1.0, 3.0, tdata.y) + fogAmount / 4.0, clamp01(fogAmount));
+        composite += sampleFogColor(vec3(viewPos.x, 0.0, viewPos.z)) * mix(1.0, 3.0, tdata.y) * (tanh(fogAmount) * 1.);
     #endif
 
 

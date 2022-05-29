@@ -10,12 +10,12 @@
                     descriptionKey: "config.forgetmenot.desc.shadow_filter"
                 },
                 cascade_adjust: {
-                    default: true,
+                    default: false,
                     nameKey: "config.forgetmenot.name.cascade_adjust",
                     descriptionKey: "config.forgetmenot.desc.cascade_adjust"
                 },
                 shadow_filter_taps: {
-                    default: 0,
+                    default: 3,
                     min: 0,
                     max: 10,
                     nameKey: "config.forgetmenot.name.shadow_filter_taps",
