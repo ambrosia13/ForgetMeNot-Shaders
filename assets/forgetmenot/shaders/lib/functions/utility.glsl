@@ -190,10 +190,10 @@ float smoothHash(in vec2 st) {
 		
 	float n = p.x + p.y*57.0;
 
-	float a = rand1D(vec2(n + 0.0));
-	float b = rand1D(vec2(n + 1.0));
-	float c = rand1D(vec2(n + 57.0));
-	float d = rand1D(vec2(n + 58.0));
+	float a =  hash11((n + 0.0)) * 2.0 - 1.0;
+	float b =  hash11((n + 1.0)) * 2.0 - 1.0;
+	float c = hash11((n + 57.0)) * 2.0 - 1.0;
+	float d = hash11((n + 58.0)) * 2.0 - 1.0;
 	
 	vec2 f2 = f * f;
 	vec2 f3 = f2 * f;

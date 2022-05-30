@@ -80,6 +80,9 @@ void main() {
                 } else {
                 }
             }
+
+            // if(clamp01(screenPos.xy) == screenPos.xy) reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
+
             reflectance = getReflectance(f0 / 20.0, clamp01(dot(normal, -normalize(viewSpacePos))));
             // if(f0.r / 20.0 > 0.99) reflectance *= 0.5 * sceneColor * sceneColor;
             //reflectance = vec3(0.5);
@@ -121,7 +124,7 @@ void main() {
         }
     #endif
 
-    if(frx_luminance(reflectColor) > 10.0) reflectance = vec3(0.5); // test for sun
+    if(frx_luminance(reflectColor) > 7.0) reflectance = vec3(0.5); // test for sun
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
 

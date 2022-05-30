@@ -31,50 +31,62 @@
                     nameKey: "config.forgetmenot.name.clouds",
                     descriptionKey: "config.forgetmenot.desc.clouds"
                 },
+                cloud_noise_octaves: {
+                    default: 10,
+                    min: 3,
+                    max: 10,
+                    nameKey: "config.forgetmenot.name.cloud_noise_octaves",
+                    descriptionKey: "config.forgetmenot.desc.cloud_noise_octaves"
+                },
                 stratus_clouds: {
                     default: true,
                     nameKey: "config.forgetmenot.name.stratus_clouds",
                     descriptionKey: "config.forgetmenot.desc.stratus_clouds"
+                },
+                cumulus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cumulus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.cumulus_clouds"
+                },
+                stratocumulus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.stratocumulus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.stratocumulus_clouds"
+                },
+                nimbostratus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.nimbostratus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.nimbostratus_clouds"
+                },
+                altostratus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.altostratus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.altostratus_clouds"
+                },
+                altocumulus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.altocumulus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.altocumulus_clouds"
+                },
+                cirrostratus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cirrostratus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.cirrostratus_clouds"
+                },
+                cirrocumulus_clouds: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cirrocumulus_clouds",
+                    descriptionKey: "config.forgetmenot.desc.cirrocumulus_clouds"
                 },
                 cirrus_clouds: {
                     default: true,
                     nameKey: "config.forgetmenot.name.cirrus_clouds",
                     descriptionKey: "config.forgetmenot.desc.cirrus_clouds"
                 },
-                stratus_clouds_sharpness: {
-                    default: 7,
-                    min: 3,
-                    max: 10,
-                    nameKey: "config.forgetmenot.name.stratus_clouds_sharpness",
-                    descriptionKey: "config.forgetmenot.desc.stratus_clouds_sharpness"
-                },
-                cirrus_clouds_sharpness: {
-                    default: 5,
-                    min: 3,
-                    max: 10,
-                    nameKey: "config.forgetmenot.name.cirrus_clouds_sharpness",
-                    descriptionKey: "config.forgetmenot.desc.cirrus_clouds_sharpness"
-                },
-                fast_cloud_noise: {
+                clouds_constant_weight: {
                     default: false,
-                    nameKey: "config.forgetmenot.name.fast_cloud_noise",
-                    descriptionKey: "config.forgetmenot.desc.fast_cloud_noise"
-                },
-                random_cloud_density: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.random_cloud_density",
-                    descriptionKey: "config.forgetmenot.desc.random_cloud_density"
-                },
-                cloud_lighting: {
-                    define: "CLOUD_LIGHTING",
-                    default: "raymarched",
-                    choices: [
-                        "none", "normals", "raymarched"
-                    ],
-                    enum: true, 
-                    prefix: "LIGHTING_",
-                    nameKey: "config.forgetmenot.name.cloud_lighting",
-                    descriptionKey: "config.forgetmenot.desc.cloud_lighting"
+                    nameKey: "config.forgetmenot.name.clouds_constant_weight",
+                    descriptionKey: "config.forgetmenot.desc.clouds_constant_weight"
                 },
             }
         },
@@ -128,14 +140,14 @@
                     descriptionKey: "config.forgetmenot.desc.depressing_mode"
                 },
                 emissive_boost: {
-                    default: 7,
+                    default: 4,
                     min: 0,
                     max: 10,
                     nameKey: "config.forgetmenot.name.emissive_boost",
                     descriptionKey: "config.forgetmenot.desc.emissive_boost"
                 },
                 bloom_mix_factor: {
-                    default: 1,
+                    default: 3,
                     min: 0,
                     max: 10,
                     nameKey: "config.forgetmenot.name.bloom_mix_factor",

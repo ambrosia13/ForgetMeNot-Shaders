@@ -105,7 +105,7 @@ void frx_pipelineFragment() {
 
                 // TODO: move these magic numbers to a common area, maybe make configurable
                 vec3 ambientLightColorDay = vec3(1.0, 1.2, 1.3) * 1.25;
-                vec3 directLightColorDay = normalize(vec3(1.2, 1.1, 0.9)) * 3.5;
+                vec3 directLightColorDay = normalize(vec3(1.2, 1.1, 0.9)) * 3.0;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
@@ -117,7 +117,8 @@ void frx_pipelineFragment() {
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
                 #ifdef DEPRESSING_MODE
-                    frx_fragLight.y *= 0.5;
+                    frx_fragLight.y *= 1.0;
+                    directLightColorNight *= 3.0;
                 #endif
 
                 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
@@ -162,7 +163,7 @@ void frx_pipelineFragment() {
                 //lightmap *= mix(vec3(1.0), frx_heldLight.rgb * 1.5, frx_fragLight.x * blockLightColorFactor);
 
                 #ifdef DEPRESSING_MODE
-                    lightmap = mix(lightmap * 0.5, vec3(frx_luminance(lightmap)) * 0.3, 0.5);
+                    lightmap = mix(lightmap * 0.5, vec3(frx_luminance(lightmap)) * 0.5, 0.5);
                 #endif
 
                 if(frx_fragReflectance < 1.0) color.rgb *= max(vec3(0.05), lightmap);

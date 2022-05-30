@@ -141,112 +141,258 @@ vec2 curlNoise(in vec2 plane) {
 
     return vec2(-dy, dx);
 }
-float getCloudNoise(in vec2 plane, in int octaves) {
-    #ifndef FAST_CLOUD_NOISE
-        // plane += curlNoise(plane * 2.0) * 0.05;
-    #endif
-    #ifdef RANDOM_CLOUD_DENSITY
-        float cloudDensity = 0.5 + smoothHash(vec2(frx_worldTime * 24000.0 + (frx_worldDay - 1.0) * 24000.0) * 0.001) * 0.15;
-        cloudDensity += 0.2 * getTimeOfDayFactors().y;
-        float cloudMixFactor = (smoothstep(0.0, 1.0, smoothHash(plane * 0.01 + getWorldTime() * 0.0001 + 1.0) * 0.5 + 0.5));
-    #else
-        float cloudDensity = 0.6;
-        float cloudMixFactor = 1.0;
-    #endif
 
-    cloudMixFactor = pow(cloudMixFactor, 1.5);
+float worldOffset(in float offset) {
+    // return smoothstep(
+    //     -0.2 - 0.8 * (smoothHash(vec2(getWorldTime() * 0.001 + 4500.0)) * 0.5 + 0.5), 0.2 + 0.8 * (smoothHash(vec2(getWorldTime() * 0.001 + 1000.0)) * 0.5 + 0.5), 
+    //     smoothHash(vec2(getWorldTime() * 0.001 + offset))
+    // );
+    return 1.0;
+}
+float cloudMovement(in float time) {
+    time = mod(time, 1000.0);
+    return time;
+}
 
-    float lowerBound = mix(0.0, cloudDensity - 0.1 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient, cloudMixFactor);
-    float upperBound = mix(1.0, cloudDensity + 0.2, cloudMixFactor);
+const float cloudSpeed = 0.05;
+vec2 stratusClouds(in vec2 plane) {
+    plane += cloudMovement(frx_renderSeconds) * cloudSpeed;
+    return vec2(smoothstep(0.0, 1.0, fbmHash(plane * vec2(1.0, 1.0), 5)) * fbmHash(plane * vec2(1.0, 1.0), 2) * worldOffset(0.0), 1.0);
+}
+vec2 cumulusClouds(in vec2 plane, in int octaves) {
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.01);
+    float cloudsThickness = 0.1;
 
-    #ifdef STRATUS_CLOUDS
-        return smoothstep(lowerBound, upperBound, fbmHash(plane + 10.0, octaves, 0.05) * ((octaves + 1.0) / octaves));
-    #else 
-        return 0.0;
-    #endif
+    float cloudsDensity = 0.6 / (0.5 * cloudsThickness / length(plane) + (1.0 - 0.5 * cloudsThickness));
+
+    return vec2(smoothstep(cloudsDensity, 0.85, fbmHash(plane, octaves, 0.01) * ((octaves + 1.0) / octaves)) * worldOffset(10.0), 1.0);
+}
+vec2 stratoCumulusClouds(in vec2 plane, in int octaves) {
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.04);
+    plane *= 1.3;
+    float cloudsThickness = 0.01;
+
+    float cloudsDensity = 0.5 / (0.5 * cloudsThickness / length(plane) + (1.0 - 0.5 * cloudsThickness));
+
+    return vec2(smoothstep(cloudsDensity, 0.85, fbmHash(plane * vec2(0.6, 0.3), octaves, 0.01) * ((octaves + 1.0) / octaves)) * worldOffset(50.0), 1.0);
+}
+vec2 nimboStratusClouds(in vec2 plane, in int octaves) {
+    plane *= 0.7;
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.03);
+    float cloudsThickness = 0.1;
+
+    float cloudsDensity = 0.0 / (0.5 * cloudsThickness / length(plane) + (1.0 - 0.5 * cloudsThickness));
+
+    return vec2(0.75 * smoothstep(0.3, 0.6, fbmHash(plane, octaves, 0.01) * ((octaves + 1.0) / octaves)) * worldOffset(100.0), 1.0);
+}
+vec2 altoStratusClouds(in vec2 plane, in int octaves) {
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.04);
+    return vec2(smoothstep(0.3, 1.0, fbmHash(plane * vec2(2.0, 0.75), octaves)) * fbmHash(plane * vec2(1.0, 1.0), octaves) * worldOffset(150.0), 1.0);
+}
+vec2 altoCumulusClouds(in vec2 plane, in int octaves) {
+    plane *= 1.7;
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.05);
+    float cloudsThickness = 0.1;
+
+    float cloudsDensity = 0.0 / (0.5 * cloudsThickness / length(plane) + (1.0 - 0.5 * cloudsThickness));
+
+    return vec2((smoothstep(0.0, 0.8, fbmHash(plane * 2.0 + 10.0, octaves, 0.01))) * worldOffset(200.0), 1.0);
+}
+vec2 cirroStratusClouds(in vec2 plane, in int octaves) {
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.06);
+    return vec2(0.65 * smoothstep(0.1, 0.4, fbmHash(plane * vec2(3.0, 1.5) + 10.0, octaves) * fbmHash(plane * vec2(2.0, 1.0), octaves)) * worldOffset(250.0), 1.0);
+}
+vec2 cirroCumulusClouds(in vec2 plane, in int octaves) {
+    plane *= 3.5;
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.07);
+    float cloudsThickness = 0.1;
+
+    float cloudsDensity = 0.0 / (0.5 * cloudsThickness / length(plane) + (1.0 - 0.5 * cloudsThickness));
+
+    return vec2(smoothstep(0.0, 1.0, sqrt(fbmHash(plane, octaves, 0.01))) * (smoothHash(plane * 0.4 + 10.0) * 0.3 + 0.7) * worldOffset(300.0), 1.0);
+}
+vec2 cirrusClouds(in vec2 plane, in int octaves) {
+    plane += cloudMovement(frx_renderSeconds) * (cloudSpeed - 0.08);
+    return vec2(fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.2, 0.9, fbmHash(plane, octaves)), 1.0);
+}
+
+
+float cloudSort(in float a, in float b) {
+    return mix(a, b, b);
+}
+float cloudSort(in float a, in vec2 b) {
+    return mix(a, b.y, b.x);
 }
 vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLighting) {
-    #ifdef CLOUDS
-        if(frx_worldIsOverworld == 1) {
-            vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y == 0.0 ? 0.1 : viewSpacePos.y + pow(length(viewSpacePos.xz), 2.0) * 0.18);
-            plane += frx_cameraPos.xz / 75.0; // makes it feel a bit more natural instead of being centered around the player
-            plane += frx_renderSeconds / 35.0;
-
-            vec2 stratusPlane = plane;
-
-            #ifndef FAST_CLOUD_NOISE
-                stratusPlane += curlNoise(plane * 2.0) * 0.05;
-            #endif
-            
-            float clouds;
-
-            clouds = getCloudNoise(stratusPlane, octaves);
-
-            float cloudLighting = 1.0;
-
-            #ifdef STRATUS_CLOUDS
-                #if CLOUD_LIGHTING == LIGHTING_NORMALS
-                    if(doLighting) {
-                        float offset = 0.1;
-                        float height1 = getCloudNoise(stratusPlane + vec2(offset, 0.0), 2);
-                        float height2 = getCloudNoise(stratusPlane + vec2(0.0, offset), 2);
-                        float height3 = getCloudNoise(stratusPlane - vec2(offset, 0.0), 2);
-                        float height4 = getCloudNoise(stratusPlane - vec2(0.0, offset), 2);
-
-                        float deltaX = height3 - height1;
-                        float deltaY = height4 - height2;
-
-                        // deltaX *= 15.0;
-                        // deltaY *= 15.0;
-
-                        vec3 cloudNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
-                        cloudNormal = normalize(cloudNormal);
-                        cloudLighting = (dot(cloudNormal, frx_skyLightVector) * 0.5 + 1.0);
-                    }
-                #elif CLOUD_LIGHTING == LIGHTING_RAYMARCHED
-                    if(doLighting) { // cloud self shadow
-                        cloudLighting = 1.6;
-                        float stepLength = 0.04;
-                        vec2 rayDir = frx_skyLightVector.xz * 1.0;
-                        vec2 rayPos = plane + rayDir * stepLength;
-                        for(int i = 0; i < 15; i++) {
-                            rayPos += rayDir * stepLength;// * exp2(float(-i));
-                            cloudLighting -= getCloudNoise(rayPos, 2) * (0.0775);
-                            //stepLength *= 0.9;
-                        }
-                        // float lightOpticalDepth;
-                        // float cloudOpticalDepth;
-                    }
-                #endif
-            #endif
-
-            plane -= frx_cameraPos.xz / 75.0; // reverse this thing to give the illusion of perspective
-            //plane *= 2.0;
-            
-            float cirrus = 0.0;
-
-            #ifdef CIRRUS_CLOUDS
-                #ifdef FAST_CLOUD_NOISE
-                    cirrus += fbmHash(plane * vec2(15.0, 3.0) + vec2(smoothHash(plane.yy * 0.5) * 4.0, 0.0), CIRRUS_CLOUDS_SHARPNESS) * smoothstep(0.4 - 0.2 * frx_smoothedRainGradient - 0.1 * frx_thunderGradient, 0.9, fbmHash(plane * vec2(2.0, 1.0), 3)) * 1.0;
-                #else
-                    float cirrusNoise = fbmHash(plane * vec2(15.0, 3.0) + curlNoise(plane * vec2(2.0, 1.0) * 1.0), CIRRUS_CLOUDS_SHARPNESS);
-                    cirrus += smoothstep(0.3, 1.0, fbmHash(plane, max(3, CIRRUS_CLOUDS_SHARPNESS / 2))) * cirrusNoise;
-                #endif
-                #ifndef STRATUS_CLOUDS
-                    cirrus *= 2.0;
-                #else 
-                #endif
-            #endif
-            return vec2(mix(cirrus, clouds, clouds), (1.0 - 0.25 * frx_smoothedRainGradient - 0.25 * frx_thunderGradient) * cloudLighting);
-        } else {
-            return vec2(0.0);
-        }
-    #else
+    #ifndef CLOUDS
         return vec2(0.0);
     #endif
+    vec2 plane = (viewSpacePos.xz * 2.0) / (viewSpacePos.y + 0.15 * length(viewSpacePos.xz));
+    plane += frx_cameraPos.xz / 75.0;
+
+    plane += curlNoise(plane * 2.0) * 0.05;
+
+    #ifdef CLOUDS_CONSTANT_WEIGHT
+        float weightStratus       = 1.0;
+        float weightCumulus       = 1.0;
+        float weightStratoCumulus = 1.0;
+        float weightNimboStratus  = 1.0;
+        float weightAltoStratus   = 1.0;
+        float weightAltoCumulus   = 1.0;
+        float weightCirroStratus  = 1.0;
+        float weightCirroCumulus  = 1.0;
+        float weightCirrus        = 1.0;
+    #else
+        float weightStratus       = smoothstep(0.2, 0.9, frx_noise2d(vec2(frx_worldDay - 110.0)));
+        float weightCumulus       = smoothstep(0.2, 0.4, frx_noise2d(vec2(frx_worldDay + 110.0)));
+        float weightStratoCumulus = smoothstep(0.2, 0.4, frx_noise2d(vec2(frx_worldDay + 210.0)));
+        float weightNimboStratus  = smoothstep(0.99 - 0.99 * frx_smoothedRainGradient, 1.0 - 0.99 * frx_smoothedRainGradient, frx_noise2d(vec2(frx_worldDay + 310.0)));
+        float weightAltoStratus   = smoothstep(0.7, 0.9, frx_noise2d(vec2(frx_worldDay + 410.0)));
+        float weightAltoCumulus   = smoothstep(0.7, 0.8, frx_noise2d(vec2(frx_worldDay + 510.0)));
+        float weightCirroStratus  = smoothstep(0.7, 0.8, frx_noise2d(vec2(frx_worldDay + 610.0)));
+        float weightCirroCumulus  = smoothstep(0.7, 0.8, frx_noise2d(vec2(frx_worldDay + 710.0)));
+        float weightCirrus        = smoothstep(0.0, 0.1, frx_noise2d(vec2(frx_worldDay + 810.0)));
+    #endif
+
+    #ifndef STRATUS_CLOUDS
+        weightStratus = 0.0;
+    #endif
+    #ifndef CUMULUS_CLOUDS
+        weightCumulus = 0.0;
+    #endif
+    #ifndef STRATOCUMULUS_CLOUDS
+        weightStratoCumulus = 0.0;
+    #endif
+    #ifndef NIMBOSTRATUS_CLOUDS
+        weightNimboStratus = 0.0;
+    #endif
+    #ifndef ALTOSTRATUS_CLOUDS
+        weightAltoStratus = 0.0;
+    #endif
+    #ifndef ALTOCUMULUS_CLOUDS
+        weightAltoCumulus = 0.0;
+    #endif
+    #ifndef CIRROSTRATUS_CLOUDS
+        weightCirroStratus = 0.0;
+    #endif
+    #ifndef CIRROCUMULUS_CLOUDS
+        weightCirroCumulus = 0.0;
+    #endif
+    #ifndef CIRRUS_CLOUDS
+        weightCirrus = 0.0;
+    #endif
+    
+    vec2 stratusNoise;
+    vec2 cumulusNoise;
+    vec2 stratoCumulusNoise;
+    vec2 nimboStratusNoise;
+    vec2 altoStratusNoise;
+    vec2 altoCumulusNoise;
+    vec2 cirroStratusNoise;
+    vec2 cirroCumulusNoise;
+    vec2 cirrusNoise;
+
+    if(weightStratus > 0.0)       stratusNoise       = stratusClouds(plane);
+    if(weightCumulus > 0.0)       cumulusNoise       = cumulusClouds(plane, octaves);
+    if(weightStratoCumulus > 0.0) stratoCumulusNoise = stratoCumulusClouds(plane, octaves);
+    if(weightNimboStratus > 0.0)  nimboStratusNoise  = nimboStratusClouds(plane, octaves);
+    if(weightAltoStratus > 0.0)   altoStratusNoise   = altoStratusClouds(plane, octaves);
+    if(weightAltoCumulus > 0.0)   altoCumulusNoise   = altoCumulusClouds(plane, octaves);
+    if(weightCirroStratus > 0.0)  cirroStratusNoise  = cirroStratusClouds(plane, octaves);
+    if(weightCirroCumulus > 0.0)  cirroCumulusNoise  = cirroCumulusClouds(plane, octaves);
+    if(weightCirrus > 0.0)        cirrusNoise        = cirrusClouds(plane, octaves);
+
+    vec2 rayDirection = frx_skyLightVector.xz;
+
+    if(doLighting) { // cloud self shadow
+        vec2 rayDir = frx_skyLightVector.xz;
+
+        if(weightCumulus > 0.0) {
+            float cumulusThickness = 30.0;
+            vec2 cumulusPlane = plane + rayDir / cumulusThickness;
+            for(int i = 0; i < 15; i++) {
+                cumulusPlane += rayDir / cumulusThickness;// * exp2(float(-i));
+                cumulusNoise.y -= cumulusClouds(cumulusPlane, 5).x / 25.0;
+            }
+        }
+
+        if(weightStratoCumulus > 0.0) {
+            float stratoCumulusThickness = 30.0;
+            vec2 stratoCumulusPlane = plane + rayDir / stratoCumulusThickness;
+            for(int i = 0; i < 15; i++) {
+                stratoCumulusPlane += rayDir / stratoCumulusThickness;// * exp2(float(-i));
+                stratoCumulusNoise.y -= stratoCumulusClouds(stratoCumulusPlane, 2).x / stratoCumulusThickness;
+            }
+        }
+
+        if(weightNimboStratus > 0.0) {
+            float nimboStratusThickness = 10.0;
+            vec2 nimboStratusPlane = plane + rayDir / nimboStratusThickness;
+            for(int i = 0; i < 7; i++) {
+                nimboStratusPlane += rayDir / nimboStratusThickness;// * exp2(float(-i));
+                // nimboStratusNoise.y += 0.6;
+                nimboStratusNoise.y -= nimboStratusNoise.x * nimboStratusClouds(nimboStratusPlane, 2).x / nimboStratusThickness;
+            }
+        }
+
+        if(weightAltoCumulus > 0.0) {
+            float altoCumulusThickness = 80.0;
+            vec2 altoCumulusPlane = plane + rayDir / altoCumulusThickness;
+            for(int i = 0; i < 7; i++) {
+                altoCumulusPlane += rayDir / altoCumulusThickness;// * exp2(float(-i));
+                altoCumulusNoise.y -= altoCumulusNoise.x * altoCumulusClouds(altoCumulusPlane, 2).x / 12.0;
+            }
+        }
+
+        if(weightCirroCumulus > 0.0) {
+            float cirroCumulusThickness = 40.0;
+            vec2 cirroCumulusPlane = plane + rayDir / cirroCumulusThickness;
+            for(int i = 0; i < 7; i++) {
+                cirroCumulusPlane += rayDir / cirroCumulusThickness;// * exp2(float(-i));
+                cirroCumulusNoise.y += 0.15 * cirroCumulusNoise.x;
+                cirroCumulusNoise.y -= cirroCumulusNoise.x * cirroCumulusClouds(cirroCumulusPlane, 3).x / 4.0;
+            }
+        }
+    }
+
+    stratusNoise       *= vec2(weightStratus      , 1.0);
+    cumulusNoise       *= vec2(weightCumulus      , 1.0);
+    stratoCumulusNoise *= vec2(weightStratoCumulus, 1.0);
+    nimboStratusNoise  *= vec2(weightNimboStratus , 1.0);
+    altoStratusNoise   *= vec2(weightAltoStratus  , 1.0);
+    altoCumulusNoise   *= vec2(weightAltoCumulus  , 1.0);
+    cirroStratusNoise  *= vec2(weightCirroStratus , 1.0);
+    cirroCumulusNoise  *= vec2(weightCirroCumulus , 1.0);
+    cirrusNoise        *= vec2(weightCirrus       , 1.0);
+
+    float finalCloudShape, finalCloudShading = 1.6;
+
+    finalCloudShape = cloudSort(finalCloudShape, cirrusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, cirroCumulusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, cirroStratusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, altoCumulusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, altoStratusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, nimboStratusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, stratoCumulusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, cumulusNoise.x);
+    finalCloudShape = cloudSort(finalCloudShape, stratusNoise.x);
+
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * cirrusNoise.y)        + cirrusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * cirroCumulusNoise.y)  + cirroCumulusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * cirroStratusNoise.y)  + cirroStratusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * altoCumulusNoise.y)   + altoCumulusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * altoStratusNoise.y)   + altoStratusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * nimboStratusNoise.y)  + nimboStratusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * stratoCumulusNoise.y) + stratoCumulusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * cumulusNoise.y)       + cumulusNoise);
+    finalCloudShading = cloudSort(finalCloudShading, vec2(0.0, 0.5 * stratusNoise.y)       + stratusNoise);
+
+    return vec2(finalCloudShape, finalCloudShading);
 }
 // -----------------------------------------------------------------------------------------------------------------------
-
+#ifndef CLOUD_NOISE_OCTAVES
+    #define CLOUD_NOISE_OCTAVES 1
+#endif
 vec3 sampleSky(in vec3 viewSpacePos) {
     float l = length(viewSpacePos);
     viewSpacePos = normalize(viewSpacePos);
@@ -275,7 +421,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
         cloudsColor *= 1.5;
     #endif
 
-    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, STRATUS_CLOUDS_SHARPNESS, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
+    vec2 cloudsDensity = calculateBasicCloudsOctaves(viewSpacePos, CLOUD_NOISE_OCTAVES, true) * vec2(1.0, 1.0) + rand2D(viewSpacePos.xz * 2000.0) / 200.0; // x = clouds, y = shading
     
     #ifdef DEPRESSING_MODE
         cloudsDensity.y = cloudsDensity.y * 0.75 + 0.25;
@@ -289,17 +435,7 @@ vec3 sampleSky(in vec3 viewSpacePos) {
         skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * (cloudsDensity.x * 2.0));
     #else
         skyResult = mix(skyResult, mix(skyResult, cloudsColor, 0.75), frx_smootherstep(-0.1, 0.1, viewSpacePos.y) * cloudsDensity.x);
-    #endif
-
-    // vec3 rayPos = viewSpacePos * l;
-    // vec3 rayDir = frx_skyLightVector;
-    // vec3 rays;
-    // for(int i = 0; i < 10; i++) {
-    //     rayPos += rayDir / 100.0;
-    //     rays += length(rayPos * 0.5) * (SUN_COLOR * 0.1) * (1.0 - getCloudNoise((rayPos.xz * 2.0) / (rayPos.y == 0.0 ? 0.1 : rayPos.y + pow(length(rayPos.xz), 2.0) * 0.15) + frx_cameraPos.xz / 75.0 + frx_renderSeconds / 35.0, 10)) / 25.0;
-    // }
-    // skyResult += rays * frx_luminance(rays) * 2.0;
-    
+    #endif    
 
     if(frx_worldIsEnd == 1) {
         skyResult -= mix(0.0, 0.5, (pow(clamp01(viewSpacePos.y), 0.7)));
@@ -418,6 +554,8 @@ vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
     saturationAmount = mix(saturationAmount, 1.5, tdata.y * frx_worldIsOverworld);
     saturationAmount = mix(saturationAmount, 1.0, tdata.z * frx_worldIsOverworld);
 
+    saturationAmount = mix(saturationAmount, 1.0, frx_rainGradient);
+
     #ifdef DEPRESSING_MODE
         saturationAmount = mix(saturationAmount, 1.0, 0.25);
     #endif
@@ -433,36 +571,4 @@ vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
     return mix(color * (1.0 - fogAmount) + fogColor * fogAmount, skyColor, vanillaFogAmount);
 }
 
-// -----------------------------------------------------------------------------------------------------------------------
-float getOverworldFogDensity(in vec3 timeFactors, in float blockDist) {
-    float fogStartMin = 10.0;
-    float fogFactor = 1.0 - exp2(-blockDist / frx_viewDistance);
-
-    fogFactor = mix(fogFactor, fogFactor * 1.5, timeFactors.z);
-    fogFactor = mix(fogFactor, fogFactor * 1.2, timeFactors.y);
-    fogFactor = mix(fogFactor, fogFactor * 0.8, timeFactors.x);
-
-    return fogFactor;
-}
-float getNetherFogDensity(in float blockDist, in bool reverse) {
-    float fogFactor = 1.0 - exp2(-blockDist / frx_viewDistance);
-    if(reverse) fogFactor = 1.0 - fogFactor;
-    fogFactor *= 3.0;
-    
-    return fogFactor;
-}
-float getFogDensity(in vec3 timeFactors, in float blockDist) {
-    float fogFactor = frx_smootherstep(frx_fogStart, frx_fogEnd, blockDist); // vanilla fog unless specified otherwise
-
-    float overworldOutOfWater = clamp(float(frx_worldIsOverworld) + float(frx_playerEyeInFluid), 0.0, 1.0);
-    fogFactor = mix(fogFactor, getOverworldFogDensity(timeFactors, blockDist), overworldOutOfWater);
-
-    float netherOrEnd = clamp(float(frx_worldIsNether + frx_worldIsEnd), 0.0, 1.0);
-    fogFactor = mix(fogFactor, getNetherFogDensity(blockDist, false), netherOrEnd);
-
-    // float fluidFog = frx_smootherstep(frx_fogStart, frx_fogEnd, blockDist);
-    // fogFactor = mix(fogFactor, fogFactor, float(frx_playerEyeInFluid));
-    
-    return fogFactor;
-}
 // -----------------------------------------------------------------------------------------------------------------------
