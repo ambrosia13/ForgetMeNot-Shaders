@@ -9,6 +9,7 @@ uniform int frxu_lod;
 #include forgetmenot:clouds
 #include forgetmenot:water_reflections
 #include forgetmenot:general_config
+#include forgetmenot:lighting
 #include forgetmenot:experimental
 
 #include forgetmenot:shaders/lib/api_includes.glsl 

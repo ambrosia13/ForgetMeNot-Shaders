@@ -50,6 +50,8 @@ void frx_materialFragment() {
 
         frx_fragColor.rgb = max(lava * 0.75, vec3(0.0));
         // frx_fragColor.rgb *= 3.0 * frx_luminance(frx_fragColor.rgb);
+    #else
+        frx_fragColor.rgb *= 1.5;
     #endif 
 
     frx_fragEmissive = frx_luminance(frx_fragColor.rgb) * 0.5;

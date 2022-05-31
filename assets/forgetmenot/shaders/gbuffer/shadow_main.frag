@@ -68,7 +68,7 @@ void frx_pipelineFragment() {
                 if(frx_matCutout == 0) {
                     depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
                 } else {
-                    depthBias = vec2(0.05);
+                    depthBias = vec2(0.01);
                 }
                 //vec2 depthBias = vec2(0.05);
                 // Copied straight from canvas dev shadow bias
@@ -104,16 +104,16 @@ void frx_pipelineFragment() {
                 vec3 tdata = getTimeOfDayFactors();
 
                 // TODO: move these magic numbers to a common area, maybe make configurable
-                vec3 ambientLightColorDay = vec3(1.0, 1.2, 1.3) * 1.25;
-                vec3 directLightColorDay = normalize(vec3(1.2, 1.1, 0.9)) * 3.0;
+                vec3 ambientLightColorDay = vec3(1.0, 1.3, 1.4) * AMBIENT_LIGHT_INTENSITY_DAY;
+                vec3 directLightColorDay = normalize(vec3(1.3, 1.2, 0.9)) * DIRECT_LIGHT_INTENSITY_DAY;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 1.0);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(0.9, 1.0, 1.0);
 
-                vec3 ambientLightColorNight = vec3(1.3, 1.5, 1.7) * 0.5;
-                vec3 directLightColorNight = normalize(vec3(0.9, 1.1, 1.2)) * 2.5;
+                vec3 ambientLightColorNight = vec3(1.3, 1.5, 1.7) * AMBIENT_LIGHT_INTENSITY_NIGHT;
+                vec3 directLightColorNight = normalize(vec3(0.9, 1.1, 1.2)) * DIRECT_LIGHT_INTENSITY_NIGHT;
 
                 frx_fragLight.y *= mix(1.0, 0.7, (frx_smoothedRainGradient + frx_thunderGradient) / 2.0);
                 #ifdef DEPRESSING_MODE
@@ -154,8 +154,8 @@ void frx_pipelineFragment() {
                 if(frx_matDisableDiffuse == 0) lightmap += (1.0 - frx_fragLight.y) * 0.1 * dot(frx_fragNormal, vec3(0.2, 0.3, 0.4));
 
                 // handheld light
-                float heldLightFactor = frx_smootherstep(frx_heldLight.a * 9.0, frx_heldLight.a * 0.0, frx_distance);
-                float blockLightColorFactor = frx_smootherstep(frx_heldLight.a * 16.0, frx_heldLight.a * 0.0, frx_distance);
+                float heldLightFactor = frx_smootherstep(frx_heldLight.a * HELD_LIGHT_RADIUS, frx_heldLight.a * 0.0, frx_distance);
+                float blockLightColorFactor = frx_smootherstep(frx_heldLight.a * (HELD_LIGHT_RADIUS + 7.0), frx_heldLight.a * 0.0, frx_distance);
                 heldLightFactor *= dot(-frx_fragNormal, normalize(frx_vertex.xyz)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 if(frx_isHand && !any(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
                 heldLightFactor = clamp01(heldLightFactor);

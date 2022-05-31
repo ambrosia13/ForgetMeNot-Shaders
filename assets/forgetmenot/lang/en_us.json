@@ -4,6 +4,7 @@
     "pipeline.forgetmenot_shadow.name": "Forget-Me-Not Shaders [Sky Shadows]",
     "pipeline.forgetmenot_shadow.desc": "Forget-Me-Not with shadows enabled",
 
+
     "config.forgetmenot.category.shadows": "Shadow Options",
 
     "config.forgetmenot.name.shadow_filter": "Shadow Filter",
@@ -14,6 +15,7 @@
     "config.forgetmenot.desc.shadow_filter_taps": "Shadow samples equals this number squared. High performance cost. ;Ignored if cascade adjust option is enabled.",
     "config.forgetmenot.name.volumetric_lighting": "[EXPERIMENTAL] Volumetric Light Rays",
     "config.forgetmenot.desc.volumetric_lighting": "Adds fog that is illuminated by sunlight. Very experimental and bad. Works well with depressing mode. High performance cost.",
+
 
     "config.forgetmenot.category.clouds": "Cloud Options",
 
@@ -42,6 +44,7 @@
     "config.forgetmenot.name.clouds_constant_weight": "Constant Cloud Weight",
     "config.forgetmenot.desc.clouds_constant_weight": "If enabled, density of clouds will not be dependent on world time. ;This means that every single cloud type that is enabled will show up in the sky, all the time.",
 
+
     "config.forgetmenot.category.water_reflections": "Water & Reflections",
 
     "config.forgetmenot.name.raytrace_ssr": "Raymarch Reflections",
@@ -56,6 +59,7 @@
     "config.forgetmenot.desc.simple_sky_reflection": "If enabled, skips cloud and star rendering when calculating reflections. May improve performance a bit.",
     "config.forgetmenot.name.illegal_ssr": "Illegal SSR",
     "config.forgetmenot.desc.illegal_ssr": "Uses cursed and highly illegal method to have easy mutli-bounce reflections. Usually doesn't cause issues. May decrease performance.",
+
 
     "config.forgetmenot.category.general": "General Options",
 
@@ -74,6 +78,19 @@
     "config.forgetmenot.name.vanilla_lava": "Vanilla Lava",
     "config.forgetmenot.desc.vanilla_lava": "Enable for vanilla lava texture. Custom lava texture may have a minor performance impact.",
 
+
+    "config.forgetmenot.category.lighting": "Lighting Options",
+
+    "config.forgetmenot.name.direct_light_intensity_day": "Direct Light Intensity [Day]",
+    "config.forgetmenot.desc.direct_light_intensity_day": "Brightness of direct light during daytime.",
+    "config.forgetmenot.name.ambient_light_intensity_day": "Ambient Light Intensity [Day]",
+    "config.forgetmenot.desc.ambient_light_intensity_day": "Brightness of shadows during daytime.",
+    "config.forgetmenot.name.direct_light_intensity_night": "Direct Light Intensity [Night]",
+    "config.forgetmenot.desc.direct_light_intensity_night": "Brightness of direct light during nighttime.",
+    "config.forgetmenot.name.ambient_light_intensity_night": "Ambient Light Intensity [Night]",
+    "config.forgetmenot.desc.ambient_light_intensity_night": "Brightness of shadows during nighttime.",
+    "config.forgetmenot.name.held_light_radius": "Held Light Radius",
+    "config.forgetmenot.desc.held_light_radius": "Radius in blocks of held light.",
 
     "config.forgetmenot.category.experimental": "Experimental Stuff",
 

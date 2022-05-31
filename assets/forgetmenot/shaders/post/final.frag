@@ -24,6 +24,8 @@ void main() {
     // Credit to Zombye#7365 for making the tone map
     #ifndef DEPRESSING_MODE
         //finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
+        //finalColor = frx_toneMap(finalColor * 1.4);
+        //finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 1.2);
         finalColor = tanh(finalColor);
         //finalColor = 1.0 - exp(-finalColor);
     #else

@@ -18,7 +18,7 @@ vec3 calculateSkyColor(in vec3 viewSpacePos) {
             daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(2.5, 2.2, 0.4) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 3.0) * 0.1));
             daytimeSky = daytimeSky * vec3(0.5, 0.6, 0.5) + 1.5 * vec3(0.5, 0.4, 0.5);
         #else
-            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.3, 1.1) * 0.8, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
+            daytimeSky = mix(daytimeSky, daytimeSky * 0.5 + vec3(1.5, 1.3, 1.1) * 0.5, clamp01(pow(dot(viewSpacePos, getSunVector()), 5.0) * 0.55));
         #endif
         //daytimeSky = mix(daytimeSky, mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5), (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 2.0)) * 1.0);
         //daytimeSky += mix(daytimeSky, (SUN_COLOR) * 0.1, 0.5) * (pow((1.0 / max(0.05, distance(viewSpacePos, getSunVector()))) * 0.1, 1.5));
@@ -246,7 +246,7 @@ vec2 calculateBasicCloudsOctaves(in vec3 viewSpacePos, int octaves, bool doLight
         float weightStratus       = smoothstep(0.2, 0.9, frx_noise2d(vec2(frx_worldDay - 110.0)));
         float weightCumulus       = smoothstep(0.2, 0.4, frx_noise2d(vec2(frx_worldDay + 110.0)));
         float weightStratoCumulus = smoothstep(0.2, 0.4, frx_noise2d(vec2(frx_worldDay + 210.0)));
-        float weightNimboStratus  = smoothstep(0.99 - 0.99 * frx_smoothedRainGradient, 1.0 - 0.99 * frx_smoothedRainGradient, frx_noise2d(vec2(frx_worldDay + 310.0)));
+        float weightNimboStratus  = clamp01(frx_rainGradient + smoothstep(0.99, 1.0, frx_noise2d(vec2(frx_worldDay + 310.0))));
         float weightAltoStratus   = smoothstep(0.7, 0.9, frx_noise2d(vec2(frx_worldDay + 410.0)));
         float weightAltoCumulus   = smoothstep(0.7, 0.8, frx_noise2d(vec2(frx_worldDay + 510.0)));
         float weightCirroStratus  = smoothstep(0.7, 0.8, frx_noise2d(vec2(frx_worldDay + 610.0)));
@@ -526,7 +526,7 @@ vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
     blockDist /= 256.0;
 
     float fogDensity = 1.0;
-    fogDensity = mix(fogDensity, 0.6, tdata.x);
+    fogDensity = mix(fogDensity, 0.1, tdata.x);
     fogDensity = mix(fogDensity, 2.5, tdata.y);
     fogDensity = mix(fogDensity, 2.0, tdata.z);
     fogDensity = mix(fogDensity, 4.0, frx_worldIsNether + frx_worldIsEnd);

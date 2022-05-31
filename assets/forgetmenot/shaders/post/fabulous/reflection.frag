@@ -51,7 +51,7 @@ void main() {
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
             vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 10.0 / SSR_STEPS);
 
-            float stepLength = 1.0 / SSR_STEPS;
+            float stepLength = 0.1 / SSR_STEPS;
 
             // sky reflection
             #ifdef SIMPLE_SKY_REFLECTION
@@ -79,6 +79,7 @@ void main() {
                     break;
                 } else {
                 }
+                stepLength *= 1.4;
             }
 
             // if(clamp01(screenPos.xy) == screenPos.xy) reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
