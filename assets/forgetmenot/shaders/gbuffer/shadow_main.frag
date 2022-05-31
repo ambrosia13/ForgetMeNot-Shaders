@@ -61,15 +61,22 @@ void frx_pipelineFragment() {
                 baseUv /= SHADOW_MAP_SIZE;
                 
                 // Not going to use half-res derivatives, introduces too many artifacts without TAA
-                vec3 shadowPosDX = dFdx(shadowScreenPos);
-                vec3 shadowPosDY = dFdy(shadowScreenPos);
+                // vec3 shadowPosDX = dFdx(shadowScreenPos);
+                // vec3 shadowPosDY = dFdy(shadowScreenPos);
+                // shadowPosDX.xy = vec2(0.0);
+                // shadowPosDY.xy = vec2(0.0);
 
                 vec2 depthBias;
-                if(frx_matCutout == 0) {
-                    depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
-                } else {
-                    depthBias = vec2(0.01);
-                }
+
+                // Derivative of shadowScreenPos.xy is just 1, since they are linear
+                // Tried and failed to calculate partial derivative of shadowScreenPos.z
+                // float near = 0.005;
+                // float far = frx_viewDistance;
+                // float shadowPosDZ = (-1.0) * ((near * far) / ((shadowScreenPos.z * shadowScreenPos.z) * (near - far)));
+
+                depthBias = computeReceiverPlaneDepthBias(vec3(0.0), vec3(0.0)) + 0.1 * (4 - cascade) + 1.0 * float(cascade == 0);
+                // depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY) + 0.1;
+
                 //vec2 depthBias = vec2(0.05);
                 // Copied straight from canvas dev shadow bias
             	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
