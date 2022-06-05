@@ -43,7 +43,7 @@ void frx_pipelineFragment() {
     #ifdef VANILLA_LIGHTING
         #ifdef APPLY_MC_LIGHTMAP
             int cascade = selectShadowCascade(shadowViewSpacePos);
-            vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
+            vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * (shadowViewSpacePos);
             vec3 shadowScreenPos = (shadowSpacePos.xyz) * 0.5 + 0.5;
 
             #ifdef CASCADE_ADJUST
@@ -61,8 +61,8 @@ void frx_pipelineFragment() {
                 baseUv /= SHADOW_MAP_SIZE;
                 
                 // Not going to use half-res derivatives, introduces too many artifacts without TAA
-                // vec3 shadowPosDX = dFdx(shadowScreenPos);
-                // vec3 shadowPosDY = dFdy(shadowScreenPos);
+                vec3 shadowPosDX = dFdx(shadowScreenPos);
+                vec3 shadowPosDY = dFdy(shadowScreenPos);
                 // shadowPosDX.xy = vec2(0.0);
                 // shadowPosDY.xy = vec2(0.0);
 
@@ -74,8 +74,13 @@ void frx_pipelineFragment() {
                 // float far = frx_viewDistance;
                 // float shadowPosDZ = (-1.0) * ((near * far) / ((shadowScreenPos.z * shadowScreenPos.z) * (near - far)));
 
-                depthBias = computeReceiverPlaneDepthBias(vec3(0.0), vec3(0.0)) + 0.1 * (4 - cascade) + 1.0 * float(cascade == 0);
-                // depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY) + 0.1;
+                if(frx_matCutout == 0) {
+                //     depthBias = computeReceiverPlaneDepthBias(vec3(0.0), vec3(0.0)) + 0.1 * (4 - cascade) + 1.0 * float(cascade == 0);
+                // } else {
+                    depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
+                } else {
+                    depthBias += computeReceiverPlaneDepthBias(vec3(1.0), vec3(1.0)) + 0.1 * (3 - cascade != 0 ? 2 * (3 - cascade) : 1) * (1.0 - clamp01(dot(frx_vertexNormal, frx_skyLightVector)));
+                }
 
                 //vec2 depthBias = vec2(0.05);
                 // Copied straight from canvas dev shadow bias
@@ -128,7 +133,7 @@ void frx_pipelineFragment() {
                     directLightColorNight *= 3.0;
                 #endif
 
-                lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+                lightmap = texture(frxs_lightmap, clamp01(frx_fragLight.xy)).rgb;
                 lightmap *= mix(vec3(1.0), vec3(1.5, 1.4, 1.2), clamp01((pow(frx_fragLight.x * 1.5, 3.0)) - 1.0) * clamp01(shadowMapInverse + (1.0 - tdata.x)));
 
                 #ifdef DEPRESSING_MODE

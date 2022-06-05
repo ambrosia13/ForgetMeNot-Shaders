@@ -36,8 +36,10 @@ void main() {
 
     // if(any(greaterThan(finalColor, vec3(1.0)))) finalColor = vec3(0.0);
 
-    //vibrance(finalColor, 1.2);
-    // finalColor = mix(finalColor, vec3(frx_luminance(finalColor)), 0.1);
+    #ifdef ACES_TONEMAP
+        vibrance(finalColor, 1.1);
+        finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 1.1);
+    #endif
 
     #ifdef FAKE_EYE_ADJUST
         finalColor = pow(finalColor, mix(vec3(1.0 / 2.2), vec3(1.0), max(max(getTimeOfDayFactors().y * 0.5, frx_smoothedEyeBrightness.y), frx_smoothedEyeBrightness.x * 0.5)));

@@ -41,15 +41,16 @@ void main() {
 
     if(isMetal) f0 = (sceneColor) * 20.0;
 
+    vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
+
     #ifdef RAYTRACE_SSR
         // #define SSR_STEPS 400
         if(depth != 1.0 && f0.r > 0.0) {
             int numRefinements = 0;
             int maxRefinements = 10;
             vec3 screenPos = vec3(texcoord, depth);
-            vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 reflectionView = reflect(normalize(viewSpacePos), normal);
-            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, frx_noise2d(texcoord + mod(frx_renderSeconds, 100.0)) * 1.0, 10.0 / SSR_STEPS);
+            vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(viewSpacePos + reflectionView) - screenPos) * mix(1.0, hash12((texcoord + mod(frx_renderSeconds, 100.0)) * 2000.0) * 1.0, 10.0 / SSR_STEPS);
 
             float stepLength = 0.1 / SSR_STEPS;
 
@@ -90,7 +91,6 @@ void main() {
         }
     #else
         if(depth != 1.0 && f0.r > 0.0) {
-            vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
             vec3 cleanViewSpacePos = setupCleanViewSpacePos(texcoord, depth);
 
             vec3 viewDir = normalize(viewSpacePos);
@@ -128,6 +128,8 @@ void main() {
     if(frx_luminance(reflectColor) > 7.0) reflectance = vec3(0.5); // test for sun
 
     sceneColor = mix(sceneColor, reflectColor, clamp01(reflectance));
+
+    if(depth != 1.0) sceneColor = mix(sceneColor, calculateSkyColor(viewSpacePos), frx_smootherstep(frx_viewDistance - 48.0, frx_viewDistance - 16.0, length(viewSpacePos)));
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(sceneColor, 1.0));
 }

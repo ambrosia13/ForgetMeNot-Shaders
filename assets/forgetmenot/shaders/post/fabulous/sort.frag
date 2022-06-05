@@ -257,8 +257,9 @@ void main() {
         //composite = mix(composite, sampleFogColor(vec3(viewPos.x, 0.0, viewPos.z)) * mix(1.0, 3.0, tdata.y) + fogAmount / 4.0, clamp01(fogAmount));
         float fogAmt = (fogAmount);
         fogColor = mix(sampleFogColor(frx_skyLightVector), sampleFogColor(minViewSpacePos), 0.5);
+        fogColor = mix(vec3(frx_luminance(fogColor)), fogColor, 1.8);
         composite = mix(composite, mix(fogColor, vec3(0.4), 0.5 * tdata.y) * mix(1.0, 1., tdata.y), fogAmt);
-        composite = mix(composite, mix(fogColor, vec3(0.4), 0.5 * tdata.y) * mix(1.0, 1., tdata.y), smoothstep(frx_fogStart - 32.0, frx_fogEnd - 16.0, float(translucent_depth < 1.0) * length(minViewSpacePos)));
+        //composite = mix(composite, mix(fogColor, vec3(0.4), 0.5 * tdata.y) * mix(1.0, 1., tdata.y), smoothstep(frx_fogStart - 32.0, frx_fogEnd - 16.0, float(translucent_depth < 1.0) * length(minViewSpacePos)));
     #endif
 
 
@@ -272,15 +273,16 @@ void main() {
         float blurAmount = 0.5;
         
         if(min_depth < 1.0) {
-            //#define GI_RANGE 0.5
             vec3 rayView = minViewSpacePos;
-            vec3 rayDirection = (solidNormal * GI_RANGE / STEPS) + (rand3D(mod(texcoord * 2000.0 + frx_renderFrames, 4000.0))) * GI_RANGE / (STEPS);
+            float stepLength = (GI_RANGE / 3.0) / STEPS;
+            vec3 rayDirection = (solidNormal) + (rand3D(mod(texcoord * 2000.0 + frx_renderFrames, 4000.0)));
+            //rayDirection = mix(rayDirection, frx_skyLightVector, 0.5);
             vec3 sunLightDirection = (reflect(-frx_skyLightVector, solidNormal) * GI_RANGE / STEPS) + (rand3D(texcoord * 2000.0 + mod(frx_renderFrames, 100))) * GI_RANGE / (STEPS);
             //rayDirection = frx_skyLightVector / 10.0 + rand3D(texcoord + mod(frx_renderFrames, 100)) / (10.0 * STEPS);
             //rayDirection = reflect(solidNormal, normalize(rayView)) * (1.0 - clamp01(dot(solidNormal, normalize(rayView)))) / STEPS + (rand3D(texcoord + mod(frx_renderFrames, 100))) * (0.001 * STEPS);
 
-            for(int i = 0; i < STEPS; i++) {
-                rayView += rayDirection * mix(rand1D(mod(texcoord + frx_renderFrames, 10.0)) * 0.5 + 0.5, 1.0, 0.5);
+            for(int i = 1; i < STEPS; i++) {
+                rayView += rayDirection * stepLength * mix(rand1D(i * 2000.0 * mod(texcoord + frx_renderFrames, 10.0)) * 0.5 + 0.5, 1.0, 0.0);
                 blurAmount += 0.5;
                 //rayView += (rand3D(texcoord + mod(frx_renderSeconds, 100.0))) * GI_RANGE / STEPS;
                 vec3 rayScreen = viewSpaceToScreenSpace(rayView);
@@ -293,8 +295,9 @@ void main() {
                 // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery && abs(length(rayView) - length(setupViewSpacePos(rayScreen.xy, texture(u_translucent_depth, rayScreen.xy).x))) < 0.1) {
                     #ifdef APPLY_MC_LIGHTMAP
-                        lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
-                        //lighting *= 0.15;
+                        //lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        //lighting *= frx_luminance(tanh(color));
+                        lighting *= 0.15;
                     #else
                         lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 1.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
@@ -305,6 +308,7 @@ void main() {
                     lighting += normalize(sampleFogColor(rayDirection)) * 2.0 / STEPS * frx_smoothedEyeBrightness.y;
                 }
                 #endif
+                stepLength *= 1.7;
             }
             #ifndef APPLY_MC_LIGHTMAP
                 // for(int i = 0; i < STEPS; i++) {

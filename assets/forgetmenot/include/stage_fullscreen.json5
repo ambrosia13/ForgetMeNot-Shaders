@@ -669,9 +669,10 @@
         {
             name: "pre_bloom_copy",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/copy_color.frag",
+            fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
             samplers: [
-                "u_color"
+                "u_color",
+                "u_previous_frame"
             ]
         },
         {
@@ -736,7 +737,8 @@
                 program: "pre_bloom_copy",
                 framebuffer: "pre_bloom_copy",
                 samplerImages: [
-                    "main_color"
+                    "main_color",
+                    "final"
                 ]
             },
             {
