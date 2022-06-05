@@ -1,3 +1,6 @@
+// Portions taken from robobo1221, https://www.shadertoy.com/view/MstBWs
+
+
 #define d0(x) (abs(x) + 1e-8)
 #define d02(x) (abs(x) + 1e-3)
 const vec3 rayleighCoeff ((vec3(0.27, 0.5, 0.7)) * 1e-5);

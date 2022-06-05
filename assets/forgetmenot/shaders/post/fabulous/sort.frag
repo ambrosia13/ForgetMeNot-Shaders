@@ -295,9 +295,9 @@ void main() {
                 // color *= 1.0 - i / STEPS.0;
                 if(rayScreen.z > depthQuery && abs(length(rayView) - length(setupViewSpacePos(rayScreen.xy, texture(u_translucent_depth, rayScreen.xy).x))) < 0.1) {
                     #ifdef APPLY_MC_LIGHTMAP
-                        //lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
-                        //lighting *= frx_luminance(tanh(color));
-                        lighting *= 0.15;
+                        lighting *= color * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
+                        // lighting *= frx_luminance(tanh(color));
+                        // lighting *= 0.15;
                     #else
                         lighting += color * frx_smootherstep(0.9, 1.1, frx_luminance(color)) * 1.0 * mix(1.0, 1.0, (1.0 - solidData.b) * frx_luminance(color));
                     #endif
