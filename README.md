@@ -1,6 +1,6 @@
 # Forget-Me-Not Shaders
 
-Immersive and atmospheric shaderpack for Canvas. 
+Immersive and atmospheric shaderpack for Canvas. Early in development, visual style is not finalized and things will change a lot.
 
 Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
 

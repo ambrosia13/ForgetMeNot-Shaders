@@ -20,7 +20,7 @@ void frx_materialFragment() {
     // ) * 0.3;
     
     float centerNoise = waterHeightNoise(uv);
-    uv = parallaxMapping(uv, centerNoise * 2.0);
+    uv = parallaxMapping(uv, centerNoise * 1.0);
 
     centerNoise = waterHeightNoise(uv);
 
