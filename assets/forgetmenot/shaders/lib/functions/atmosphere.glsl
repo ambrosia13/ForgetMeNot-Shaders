@@ -150,7 +150,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 rlhDayScatter = scatter(rayleigh, opticalDepth) * rayleighPhase(sunDotV);
     vec3 mieDayScatter = scatter(mie, opticalDepth) * miePhase(sunDotV, opticalDepth);
 
-    vec3 scatterSun = rlhDayScatter + mieDayScatter;
+    vec3 scatterSun = rlhDayScatter + mieDayScatter * 0.5;
 
     // -------
 

@@ -74,7 +74,7 @@
             categoryKey: "config.forgetmenot.category.lighting",
             elements: {
                 direct_light_intensity_day: {
-                    default: 3.5,
+                    default: 3.0,
                     min: 1.0,
                     max: 5.0,
                     nameKey: "config.forgetmenot.name.direct_light_intensity_day",
