@@ -111,6 +111,8 @@ void main() {
         atmosphere.rgb = atmosphericScattering(viewDir, getSunVector(), 1.0 - getTimeOfDayFactors().y, 2.0);
         atmosphere.rgb += atmosphericScattering(viewDir, getMoonVector(), getTimeOfDayFactors().y, 2.0) * vec3(0.1, 0.13, 0.2); // Moonlight scattering
 
+        atmosphere.rgb += rand3D(texcoord * 20000.0) / 200.0;
+
         main_color.rgb = atmosphere.rgb;
 
         float starFactor = dot(getSunVector(), vec3(0.0, 1.0, 0.0));

@@ -188,7 +188,10 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
     float upDot = dot(vec3(0.0, 1.0, 0.0), viewDir);
     upDot = pow(upDot, 1.0);
 	//opticalDepth = particleThicknessConst(1.0);
-    opticalDepth *= mix(500.0, 5000.0, 1.0 - clamp01(sunDotU));
+    //opticalDepth *= mix(500.0, 5000.0, 1.0 - clamp01(sunDotU));
+    float sunsetFactor = pow(1.0 - sunDotU, 2.0);
+    opticalDepth *= 2.0;
+    opticalDepth = pow(opticalDepth, max(2.0, mix(0.0, 4.0, sunsetFactor)));
     opticalDepth = mix(opticalDepth, 30000.0, float(frx_cameraInWater));
 
     sunDotU = smoothstep(0.0, 1.0, sunDotU);

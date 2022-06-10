@@ -326,3 +326,55 @@ int selectShadowCascade(vec4 shadowViewSpacePos)
   return cascade;
 }
 #endif
+
+// --------------------------------------------------------------------------------------------------------
+// 3D Noise from Bálint#1673, slightly modified
+// --------------------------------------------------------------------------------------------------------
+float noise(vec3 p) {
+    vec3 f = fract(p);
+    p = floor(p);
+    return mix(
+        mix(
+            mix(
+                hash13(p + vec3(0, 0, 0)),
+                hash13(p + vec3(0, 0, 1)),
+                f.z
+            ),
+            mix(
+                hash13(p + vec3(0, 1, 0)),
+                hash13(p + vec3(0, 1, 1)),
+                f.z
+            ),
+            f.y
+        ),
+        mix(
+            mix(
+                hash13(p + vec3(1, 0, 0)),
+                hash13(p + vec3(1, 0, 1)),
+                f.z
+            ),
+            mix(
+                hash13(p + vec3(1, 1, 0)),
+                hash13(p + vec3(1, 1, 1)),
+                f.z
+            ),
+            f.y
+        ),
+        f.x
+    );
+}
+
+float fbm(vec3 pos) {
+    float val = 0.0;
+    float weight = 0.5;
+    float totalWeight = 0.0;
+    float frequency = 0.1;
+    for (int i = 0; i < 8; i++) {
+        val += noise(pos * frequency) * weight;
+        totalWeight += weight;
+        weight /= 2.0;
+        frequency *= 2.0;
+    }
+    return val / totalWeight;
+}
+// --------------------------------------------------------------------------------------------------------
