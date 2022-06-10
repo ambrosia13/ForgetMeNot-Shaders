@@ -21,12 +21,18 @@ void main() {
     //contrast(finalColor, mix(0.8, CONTRAST / 10.0, frx_smoothedEyeBrightness.y));
     contrast(finalColor, CONTRAST / 10.0);
 
+    //#define ACES_TONEMAP
+
     // Credit to Zombye#7365 for making the tone map
     #ifndef DEPRESSING_MODE
         //finalColor *= inversesqrt(pow(finalColor, vec3(2.0)) + 1.0);
-        //finalColor = frx_toneMap(finalColor * 1.4);
+        #ifdef ACES_TONEMAP
+            finalColor = frx_toneMap(finalColor * 1.2);
+        #else
+            finalColor = tanh(finalColor);
+        #endif
         //finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 1.2);
-        finalColor = tanh(finalColor);
+        //finalColor = tanh(finalColor);
         //finalColor = 1.0 - exp(-finalColor);
     #else
         finalColor = frx_toneMap(finalColor * 1.0); // aces

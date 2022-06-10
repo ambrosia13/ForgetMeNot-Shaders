@@ -2,10 +2,6 @@
 
 uniform sampler2D u_glint;
 
-#ifdef VANILLA_LIGHTING
-    //in vec3 directionalLight;
-#endif
-
 layout(location = 0) out vec4 fragColor;
 // layout(location = 1) out vec4 fragNormal;
 // layout(location = 2) out vec4 fragData;
@@ -78,7 +74,7 @@ void frx_pipelineFragment() {
                 if(frx_matDisableAo == 0) lightmap *= mix(frx_fragLight.z, frx_fragLight.z * 0.5 + 0.5, frx_fragLight.y);
 
                 lightmap *= mix(vec3(1.0), ambientLightColorDay, tdata.x * frx_fragLight.y);
-                if(frx_matDisableDiffuse == 0) lightmap += max(-0.3 * directLightColorDay, (1.0) * tdata.x * frx_fragLight.y * 0.4 * dot(frx_fragNormal, getSunVector()) * directLightColorDay);
+                if(frx_matDisableDiffuse == 0) lightmap += (1.0) * tdata.x * frx_fragLight.y * 0.4 * dot(frx_fragNormal, getSunVector()) * directLightColorDay;
 
                 lightmap *= mix(vec3(1.0), ambientLightColorSunset, tdata.z * frx_fragLight.y);
                 if(frx_matDisableDiffuse == 0) lightmap += tdata.z * frx_fragLight.y * 0.2 * dot(frx_fragNormal, getSunVector()) * directLightColorSunset[0];

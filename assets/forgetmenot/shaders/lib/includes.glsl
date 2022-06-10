@@ -20,5 +20,7 @@ uniform int frxu_lod;
 //#define frx_renderSeconds 1.0
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl
-#include forgetmenot:shaders/lib/functions/sky.glsl
+// #include forgetmenot:shaders/lib/functions/sky.glsl
+#include forgetmenot:shaders/lib/functions/atmosphere.glsl
+#include forgetmenot:shaders/lib/functions/fog.glsl
 #include forgetmenot:shaders/lib/functions/fxaa.glsl
