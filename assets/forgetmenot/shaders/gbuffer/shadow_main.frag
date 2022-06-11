@@ -78,7 +78,7 @@ void frx_pipelineFragment() {
                 // float far = frx_viewDistance;
                 // float shadowPosDZ = (-1.0) * ((near * far) / ((shadowScreenPos.z * shadowScreenPos.z) * (near - far)));
 
-                if(frx_matCutout == 0) {
+                if(frx_matCutout == 0 || true) {
                 //     depthBias = computeReceiverPlaneDepthBias(vec3(0.0), vec3(0.0)) + 0.1 * (4 - cascade) + 1.0 * float(cascade == 0);
                 // } else {
                     depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
