@@ -104,6 +104,8 @@ void main() {
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
     vec3 viewDir = normalize(maxViewSpacePos);
 
+    vec3 tdata = getTimeOfDayFactors();
+
     vec3 atmosphere;
     if(max_depth == 1.0) {
         //viewDir += rand3D(texcoord * 20000.0) * 0.001;
@@ -138,6 +140,20 @@ void main() {
 
         main_color.rgb = mix(main_color.rgb, sun, sunFactor);
         main_color.rgb = mix(main_color.rgb, moon, moonFactor);
+    } else if(translucentData.b > 0.5) {
+        float sunDotU = dot(getSunVector(), vec3(0.0, 1.0, 0.0));
+        float opticalDepth = particleThicknessConst(1.0);
+
+        float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos);
+
+        vec3 waterFogColor = vec3(0.0, 0.1, 0.3);
+        //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
+        waterFogColor *= clamp01(sunDotU) * 0.5 + 0.5;
+        
+        float fogDensity = tanh(waterFogDistance / 10.0);
+
+        translucent_color.rgb = mix(translucent_color.rgb, waterFogColor, fogDensity);
+        translucent_color.a = mix(translucent_color.a, 0.9, fogDensity);
     }
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending part here
@@ -157,7 +173,7 @@ void main() {
     }
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    if(max_depth < 1.0) {
+    if(min_depth < 1.0) {
         composite = simpleFog(composite, minViewSpacePos);
     }
 

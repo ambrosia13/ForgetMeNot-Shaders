@@ -155,7 +155,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     // -------
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
-    totalScatter += mix(20.0, 400.0, getTimeOfDayFactors().y) * scatter(mie, opticalDepth) * miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth);
+    if(frx_worldTime * 24000.0 > 23000.0 || frx_worldTime * 24000.0 < 12500.0) totalScatter += mix(20.0, 400.0, getTimeOfDayFactors().y) * scatter(mie, opticalDepth) * miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth);
     vec3 totalAbsorb = absorbSun * factor;
 
     vec3 gammaCorrectedAtmosphere = pow(totalScatter * totalAbsorb, vec3(1.0 / 2.2));
@@ -192,6 +192,7 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
     float sunsetFactor = pow(1.0 - sunDotU, 2.0);
     opticalDepth *= 2.0;
     opticalDepth = pow(opticalDepth, max(2.0, mix(0.0, 4.0, sunsetFactor)));
+    opticalDepth = mix(opticalDepth, particleThicknessConst(0.05), smoothstep(0.1, 0.0, sunDotU));
     opticalDepth = mix(opticalDepth, 30000.0, float(frx_cameraInWater));
 
     sunDotU = smoothstep(0.0, 1.0, sunDotU);
