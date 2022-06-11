@@ -5,3 +5,4 @@
 - move changed sky stuff to sky reflection calculation too
 - physically based atmosphere for sky and clouds shading, adjust terrain lighting
 - add in specular highlight
+- dFdx/y works fine on AMD, not on NVidia...?
