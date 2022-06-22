@@ -81,7 +81,7 @@
                     descriptionKey: "config.forgetmenot.desc.direct_light_intensity_day"
                 },
                 ambient_light_intensity_day: {
-                    default: 1.0,
+                    default: 0.75,
                     min: 0.0,
                     max: 3.0,
                     nameKey: "config.forgetmenot.name.ambient_light_intensity_day",

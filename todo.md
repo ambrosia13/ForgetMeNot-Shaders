@@ -6,3 +6,5 @@
 - physically based atmosphere for sky and clouds shading, adjust terrain lighting
 - add in specular highlight
 - dFdx/y works fine on AMD, not on NVidia...?
+- Am going to be exclusively working on shadow pipeline now, transfer all changes to no-shadow
+- Add back shadows without MC lightmap

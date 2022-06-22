@@ -25,8 +25,6 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 globalIllumination;
-layout(location = 2) out vec4 compositeNormal;
-layout(location = 3) out vec4 compositeFresnel;
 
 // vanilla fabulous blending
 
@@ -67,12 +65,12 @@ vec3 blend( vec3 dst, vec4 src ) {
 
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
     vec4 translucentData = texture(u_translucent_data, texcoord);
     vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 translucentf0 = translucentData.ggg;
+
     vec3 transViewSpacePos = setupViewSpacePos(texcoord, translucent_depth);
-    vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
 
 
     vec4  main_color = texture(u_main_color, texcoord);
@@ -130,27 +128,28 @@ void main() {
             starColor = starColor * 0.5 + 0.5;
             vec3 stars = starColor * starBrightness;
 
-            main_color.rgb = mix(main_color.rgb, stars, smoothstep(0.0125, 0.00625, cellular2x2(starPlane).x) * starFactor);
+            main_color.rgb = mix(main_color.rgb, stars, smoothstep(0.001, 0.0005, hash12(floor(starPlane * 30.0))) * starFactor);
         }
 
-        float sunFactor;
-        float moonFactor;
-        vec3 sun = sunDisk(viewDir, sunFactor);
-        vec3 moon = sunDisk(viewDir, moonFactor);
+        // float sunFactor;
+        // float moonFactor;
+        // vec3 sun = sunDisk(viewDir, sunFactor);
+        // vec3 moon = sunDisk(viewDir, moonFactor);
 
-        main_color.rgb = mix(main_color.rgb, sun, sunFactor);
-        main_color.rgb = mix(main_color.rgb, moon, moonFactor);
+        // main_color.rgb = mix(main_color.rgb, sun, sunFactor);
+        // main_color.rgb = mix(main_color.rgb, moon, moonFactor);
     } else if(translucentData.b > 0.5) {
+        translucent_color.rgb *= vec3(1.0, 1.3, 0.7);
         float sunDotU = dot(getSunVector(), vec3(0.0, 1.0, 0.0));
         float opticalDepth = particleThicknessConst(1.0);
 
         float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos);
 
-        vec3 waterFogColor = vec3(0.0, 0.1, 0.3);
+        vec3 waterFogColor = vec3(0.0, 0.4, 0.3)  * max(0.5, sunDotU);
         //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
         waterFogColor *= clamp01(sunDotU) * 0.5 + 0.5;
         
-        float fogDensity = tanh(waterFogDistance / 10.0);
+        float fogDensity = tanh(waterFogDistance / 5.0);
 
         translucent_color.rgb = mix(translucent_color.rgb, waterFogColor, fogDensity);
         translucent_color.a = mix(translucent_color.a, 0.9, fogDensity);

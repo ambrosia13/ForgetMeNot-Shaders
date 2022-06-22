@@ -69,9 +69,9 @@ float rayleighPhase(float x){
     //return henyeyGreenstein(x, 0.0);
 	//return (3.0 / (16.0 * PI)) * (1.0 + x * x);
 }
-float miePhase(float x, float depth)
+float miePhase(float x, float mieAmount)
 {
-    return kleinNishina(pow(x, 1.0 / mix(10.0, 40.0, frx_smoothedRainGradient)), mix(5000.0, 1000.0, frx_smoothedRainGradient));
+    return kleinNishina(pow(x, 1.0 / mieAmount), mix(5000.0, 1000.0, frx_smoothedRainGradient));
  	//return henyeyGreenstein(x, 0.99);
 }
 float particleThickness(float depth){
@@ -91,7 +91,7 @@ float particleThicknessConst(const float depth){
 
 #define d0(x) (abs(x) + 1e-8)
 #define d02(x) (abs(x) + 1e-3)
-const vec3 rlhDay = (vec3(0.2, 0.5, 1.0) * 1e-5);
+const vec3 rlhDay = (vec3(0.2, 0.5, 1.2) * 0.6e-5);
 const vec3 mieDay = vec3(0.5e-6);
 const vec3 totalDayCoeff = rlhDay + mieDay;
 
@@ -125,7 +125,6 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     //sunDotV += frx_smootherstep(0.9995, 0.9997, sunDotV);
     sunDotV = clamp01(sunDotV);
     // sunDotV = pow(sunDotV, 14.0);
-
     // -------
 
     vec3 rayleigh = rlhDay;
@@ -148,14 +147,21 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 absorbSun = abs(dayAbsorbLight - dayAbsorbView) / d0((dayScatterLight - dayScatterView) * ln2);
 
     vec3 rlhDayScatter = scatter(rayleigh, opticalDepth) * rayleighPhase(sunDotV);
-    vec3 mieDayScatter = scatter(mie, opticalDepth) * miePhase(sunDotV, opticalDepth);
+    vec3 mieDayScatter = scatter(mie, opticalDepth) * miePhase(sunDotV, 10.0);
 
-    vec3 scatterSun = rlhDayScatter + mieDayScatter * 0.5;
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
 
     // -------
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
-    if(frx_worldTime * 24000.0 > 23000.0 || frx_worldTime * 24000.0 < 12500.0) totalScatter += mix(20.0, 400.0, getTimeOfDayFactors().y) * scatter(mie, opticalDepth) * miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth);
+    if((frx_worldTime * 24000.0 > 23000.0 || frx_worldTime * 24000.0 < 22500.0) || 
+       (frx_worldTime * 24000.0 < 12500.0 || frx_worldTime * 24000.0 > 13000.0)) {
+        totalScatter += mix(1.0, 1.0, (sunDotU * sunDotU)) *
+        mix(20.0, 400.0, getTimeOfDayFactors().y) * scatter(mie, opticalDepth) * 
+        miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth) * 
+        smoothstep(0.05, 0.1, unmodifiedViewDir.y) *
+        frx_smootherstep(0.999, 0.9995, dot(viewDir, sunVector));
+    }
     vec3 totalAbsorb = absorbSun * factor;
 
     vec3 gammaCorrectedAtmosphere = pow(totalScatter * totalAbsorb, vec3(1.0 / 2.2));
@@ -187,13 +193,14 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
 
     float upDot = dot(vec3(0.0, 1.0, 0.0), viewDir);
     upDot = pow(upDot, 1.0);
-	//opticalDepth = particleThicknessConst(1.0);
-    //opticalDepth *= mix(500.0, 5000.0, 1.0 - clamp01(sunDotU));
-    float sunsetFactor = pow(1.0 - sunDotU, 2.0);
-    opticalDepth *= 2.0;
-    opticalDepth = pow(opticalDepth, max(2.0, mix(0.0, 4.0, sunsetFactor)));
-    opticalDepth = mix(opticalDepth, particleThicknessConst(0.05), smoothstep(0.1, 0.0, sunDotU));
-    opticalDepth = mix(opticalDepth, 30000.0, float(frx_cameraInWater));
+	opticalDepth = particleThicknessConst(1.0);
+    opticalDepth *= mix(1.0, 25.0, 1.0 - clamp01(sunDotU));
+    // float sunsetFactor = pow(1.0 - sunDotU, 2.0);
+    // opticalDepth *= 2.0;
+    // opticalDepth = pow(opticalDepth, max(2.0, mix(0.0, 4.0, sunsetFactor)));
+    // opticalDepth = mix(opticalDepth, particleThicknessConst(0.05), smoothstep(0.1, 0.0, sunDotU));
+    // opticalDepth = particleThicknessConst(pow(sunDotU, 2.0));
+    // opticalDepth = mix(opticalDepth, 30000.0, float(frx_cameraInWater));
 
     sunDotU = smoothstep(0.0, 1.0, sunDotU);
     // sunDotU = pow(sunDotU, 4.0);
@@ -208,7 +215,7 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
 
     // what even is atmosphere?
     rayleigh = mix(rayleigh, vec3(0.1, 0.3, 1.0) * 1e-5, clamp01(upDot + sunDotU));
-    rayleigh = mix(rayleigh, (vec3(frx_fogColor) * vec3(0.0, 0.5, 1.4) + vec3(0.0, 0.5, 0.0)) * 1e-5, clamp01(frx_cameraInWater));
+    rayleigh = mix(rayleigh, vec3(0.0, 0.1, 0.2) * 1e-5, clamp01(frx_cameraInWater));
 
     // -------
 
@@ -224,7 +231,7 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
     vec3 absorbSun = abs(dayAbsorbLight - dayAbsorbView) / d0((dayScatterLight - dayScatterView) * ln2);
 
     vec3 rlhDayScatter = scatter(rayleigh, opticalDepth) * rayleighPhase(sunDotV);
-    vec3 mieDayScatter = scatter(mie, opticalDepth) * miePhase(sunDotV, opticalDepth);
+    vec3 mieDayScatter = scatter(mie, opticalDepth) * miePhase(sunDotV, 20.0);
 
     vec3 scatterSun = rlhDayScatter + mieDayScatter;
 
@@ -238,3 +245,7 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
 
     return gammaCorrectedAtmosphere;
 }
+
+// vec3 waterFog(in vec3 color, in vec3 viewSpacePos) {
+
+// }

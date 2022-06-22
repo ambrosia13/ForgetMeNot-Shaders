@@ -32,8 +32,8 @@ vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
     sunFactorInverse = sunFactorInverse * 0.25 + 0.75;
     sunFactor = sunFactor * 0.25 + 0.75;
 
-    vec3 fogColor = atmosphericScatteringTop(viewDir, getSunVector(), 1.0 - tdata.y, 2.0, length(viewSpacePos) * sunFactorInverse) +
-                    atmosphericScatteringTop(viewDir, getMoonVector(), tdata.y, 2.0, length(viewSpacePos) * sunFactorInverse) * vec3(0.1, 0.13, 0.2);
+    vec3 fogColor = atmosphericScatteringTop(viewDir, getSunVector(), 1.0 - tdata.y, 2.0, length(viewSpacePos / 256.0) * sunFactorInverse) +
+                    atmosphericScatteringTop(viewDir, getMoonVector(), tdata.y, 2.0, length(viewSpacePos / 256.0) * sunFactorInverse) * vec3(0.1, 0.13, 0.2);
     if(frx_cameraInWater == 1) {
         //fogColor *= mix(vec3(1.0), vec3(10.0, 7.692308))
 

@@ -2,7 +2,7 @@
 #include forgetmenot:shadows
 
 // Borrowing some canvas stuff for shadow sampling & depth bias
-#define SHADOW_MAP_SIZE 1536
+#define SHADOW_MAP_SIZE 2048
 #define SHADOW_FILTER_SIZE PCF_SIZE_LARGE
 #include canvas:shaders/pipeline/shadow.glsl
 
@@ -13,6 +13,8 @@ in vec4 shadowViewSpacePos;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 fragData;
+layout(location = 3) out vec4 fragPbrData;
+layout(location = 4) out vec4 fragCompositeNormal;
 
 void frx_pipelineFragment() {
     vec4 color = frx_fragColor;
@@ -83,13 +85,16 @@ void frx_pipelineFragment() {
                 // } else {
                     depthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
                 } else {
-                    depthBias += computeReceiverPlaneDepthBias(vec3(1.0), vec3(1.0)) + 0.1 * (3 - cascade != 0 ? 2 * (3 - cascade) : 1) * (1.0 - clamp01(dot(frx_vertexNormal, frx_skyLightVector)));
+                    depthBias += mix(0.1, 0.05, abs(frx_skyLightVector.y));
                 }
 
                 //vec2 depthBias = vec2(0.05);
                 // Copied straight from canvas dev shadow bias
             	float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));// + 0.1 * max(0, 2 - cascade);
 	            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
+
+                // from lumi lights
+                //shadowScreenPos.z -= mix(0.1, 0.05, abs(frx_skyLightVector.y)) / SHADOW_MAP_SIZE;
 
                 float shadowMap = 0.0;
                 if(blurAmount != 0) {
@@ -111,7 +116,7 @@ void frx_pipelineFragment() {
                 if(frx_isHand) shadowMap = 1.0;
             #else
                 if(frx_isHand) {
-                    shadowMap = 0.0;
+                    shadowMap *= 0.5;
                     //shadowMap *= smoothstep(-0.01, 0.01, dot(frx_fragNormal.xyz, frx_skyLightVector));
                 }
             #endif
@@ -122,17 +127,19 @@ void frx_pipelineFragment() {
                 vec3 lightmap = vec3(1.0);
                 vec3 tdata = getTimeOfDayFactors();
 
+                vec3 atmosphereColorSkylight = atmosphericScattering(frx_skyLightVector, frx_skyLightVector, 1.0, 2.0);
+
                 // TODO: move these magic numbers to a common area, maybe make configurable
                 vec3 ambientLightColorDay = vec3(1.0, 1.3, 1.4) * AMBIENT_LIGHT_INTENSITY_DAY;
-                vec3 directLightColorDay = normalize(vec3(1.3, 1.2, 0.9)) * DIRECT_LIGHT_INTENSITY_DAY;
+                vec3 directLightColorDay = normalize(atmosphereColorSkylight) * DIRECT_LIGHT_INTENSITY_DAY;
 
                 vec3 ambientLightColorSunset = vec3(0.9, 0.8, 0.8);
                 vec3 directLightColorSunset[2];//vec3(1.1, 1.0, 0.9), vec3(0.9, 1.0, 1.0);
                 directLightColorSunset[0] = vec3(1.1, 1.0, 0.9);
                 directLightColorSunset[1] = vec3(1.0, 1.0, 1.05);
 
-                vec3 ambientLightColorNight = vec3(1.3, 1.5, 1.7) * AMBIENT_LIGHT_INTENSITY_NIGHT;
-                vec3 directLightColorNight = normalize(vec3(0.9, 1.1, 1.2)) * DIRECT_LIGHT_INTENSITY_NIGHT;
+                vec3 ambientLightColorNight = normalize(vec3(1.3, 1.5, 1.7)) * AMBIENT_LIGHT_INTENSITY_NIGHT;
+                vec3 directLightColorNight = normalize(atmosphereColorSkylight * vec3(0.1, 0.13, 0.2)) * DIRECT_LIGHT_INTENSITY_NIGHT;
 
                 // vec3 ambientLightColorDay = atmosphericScatteringTop(vec3(0.0, 1.0, 0.0), getSunVector(), 1.0 - tdata.y, 3.0 * AMBIENT_LIGHT_INTENSITY_DAY, 50.0);
                 // vec3 directLightColorDay = normalize(vec3(1.3, 1.2, 0.8)) * DIRECT_LIGHT_INTENSITY_DAY;
@@ -201,41 +208,6 @@ void frx_pipelineFragment() {
         #endif
         if(frx_isGui && !frx_isHand) color.rgb *= dot(frx_vertexNormal, vec3(0.3, 1.0, 0.6)) * 0.3 + 0.7; // directional shading in inventory
     #endif
-    
-    // shadows when no lightmap
-    #ifndef APPLY_MC_LIGHTMAP
-        vec3 tdata = getTimeOfDayFactors();
-        int cascade = selectShadowCascade(shadowViewSpacePos);
-        vec4 shadowSpacePos = frx_shadowProjectionMatrix(cascade) * shadowViewSpacePos;
-        vec3 shadowScreenPos = (shadowSpacePos.xyz) * 0.5 + 0.5;
-
-        int blurAmount = 2;
-
-        #ifndef SHADOW_FILTER
-            vec2 uv = shadowScreenPos.xy * SHADOW_MAP_SIZE;
-            vec2 baseUv = floor(uv + 0.5) - vec2(0.5);
-            vec2 st = uv + 0.5 - baseUv;
-            baseUv /= SHADOW_MAP_SIZE;
-            vec2 depthBias = vec2(0.05);//computeReceiverPlaneDepthBias(dFdx(shadowScreenPos), dFdy(shadowScreenPos));
-            float fractionalSamplingError = 2.0 * dot(vec2(1.0, 1.0) / SHADOW_MAP_SIZE, abs(depthBias));
-            shadowScreenPos.z -= min(fractionalSamplingError, 0.01);
-            float shadowMap = 0.0;
-            for(int i = -blurAmount; i < blurAmount; i++) {
-                for(int j = -blurAmount; j < blurAmount; j++) {
-                    shadowMap += pcfSample(baseUv, st.x + float(i), st.y + float(j), vec2(1.0 / SHADOW_MAP_SIZE), cascade, shadowScreenPos.z, depthBias) / (blurAmount * blurAmount * 4.0);
-                    //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + (vec2(i, j) / SHADOW_MAP_SIZE) * shadowVariance, cascade, shadowScreenPos.z)) / (blurAmount * blurAmount * 4.0);
-                }
-            }
-            // shadowMap = shadowFilter(frxs_shadowMap, shadowScreenPos, cascade, 4.0);
-            //float shadowMap = sampleShadowPCF(shadowScreenPos.xyz, cascade);
-        #else
-            float shadowMap = texture(frxs_shadowMap, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
-        #endif
-        shadowMap *= step(0.01, dot(frx_vertexNormal, frx_skyLightVector));
-        color.rgb += color.rgb * shadowMap * tdata.x;// * sampleSkyReflection(frx_skyLightVector) * 0.1;
-        color.rgb += color.rgb * shadowMap * tdata.y;// * sampleSkyReflection(frx_skyLightVector) * 0.1;
-    #endif
-
 
     if(frx_matGlint == 1) {
         glint = pow(glint, vec3(4.0));
@@ -260,6 +232,8 @@ void frx_pipelineFragment() {
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
     fragData = vec4(frx_fragRoughness, frx_fragReflectance, float(fmn_isWater), 1.0);
+    fragPbrData = vec4(frx_fragReflectance, frx_fragRoughness, 0.0, 1.0);
+    fragCompositeNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
 
     gl_FragDepth = gl_FragCoord.z;
 }

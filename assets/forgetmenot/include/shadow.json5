@@ -3,7 +3,7 @@
     images: [
         {
             name: "shadow_map",
-            size: 1536,
+            size: 2048,
             internalFormat: "DEPTH_COMPONENT32",
             pixelFormat: "DEPTH_COMPONENT",
             pixelDataType: "FLOAT",
