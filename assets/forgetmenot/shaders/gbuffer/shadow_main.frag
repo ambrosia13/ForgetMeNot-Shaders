@@ -17,7 +17,12 @@ layout(location = 3) out vec4 fragPbrData;
 layout(location = 4) out vec4 fragCompositeNormal;
 
 void frx_pipelineFragment() {
+    frx_fragColor.rgb = pow(frx_fragColor.rgb, vec3(2.2));
     vec4 color = frx_fragColor;
+    vec3 lightmap = texture(frxs_lightmap, frx_fragLight.xy).rgb;
+    color.rgb *= pow(lightmap, vec3(2.2)) * frx_fragLight.z;
+
+
     vec4 unshadedColor = color;
     mat3 tbn = mat3(
         frx_vertexTangent.xyz, 

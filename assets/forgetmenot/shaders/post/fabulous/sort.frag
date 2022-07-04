@@ -87,8 +87,8 @@ void main() {
     vec4  weather_color = texture(u_weather_color, texcoord);
     float weather_depth = texture(u_weather_depth, texcoord).r;
 
-    // vec4  clouds_color = texture(u_clouds_color, texcoord);
-    // float clouds_depth = texture(u_clouds_depth, texcoord).r;
+    vec4  clouds_color = texture(u_clouds_color, texcoord);
+    float clouds_depth = texture(u_clouds_depth, texcoord).r;
 
     vec4  particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
@@ -97,6 +97,10 @@ void main() {
     // common things
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
+
+    if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
+        main_color.rgb = pow(main_color.rgb, vec3(2.2));
+    }
 
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
@@ -119,8 +123,8 @@ void main() {
     try_insert(translucent_color, translucent_depth);
     try_insert(entity_color, entity_depth);
     try_insert(weather_color, weather_depth);
-    // try_insert(clouds_color, clouds_depth);
     try_insert(particles_color, particles_depth);
+    if(clouds_depth < max_depth) color_layers[0].rgb = mix(color_layers[0].rgb, clouds_color.rgb, clouds_color.a);
 
     vec3 composite = color_layers[0].rgb;
     for (int ii = 1; ii < active_layers; ++ii) {

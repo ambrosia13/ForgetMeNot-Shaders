@@ -6,7 +6,7 @@
     smoothBrightnessBidirectionaly: true,
     rainSmoothingFrames: 100,
     enablePBR: true,
-    runVanillaClear: false,
+    runVanillaClear: true,
 
     materialProgram: {
         vertexSource: "forgetmenot:shaders/gbuffer/shadow_main.vert",
