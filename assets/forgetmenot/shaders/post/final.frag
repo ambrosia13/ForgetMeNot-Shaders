@@ -34,8 +34,8 @@ void main() {
         finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 0.5 + 0.5 * smoothstep(0.0, 0.5, frx_luminance(finalColor)));
     #else
         finalColor = tanh(finalColor);
-        vibrance(finalColor, 0.75);
-        finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 0.5 + 0.5 * smoothstep(0.0, 0.5, frx_luminance(finalColor)));
+        // vibrance(finalColor, 0.75);
+        // finalColor = mix(vec3(frx_luminance(finalColor)), finalColor, 0.5 + 0.5 * smoothstep(0.0, 0.5, frx_luminance(finalColor)));
         // finalColor.r = pow(finalColor.r, 1.3);
         // finalColor.g = pow(finalColor.g, 1.1);
         //finalColor.b = pow(finalColor.b, 1.1);

@@ -1,28 +1,6 @@
 {
     images: [
         {
-            name: "sky",
-            lod: 0,
-            internalFormat: "RGB8",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
             name: "sort",
             lod: 0,
             internalFormat: "R11F_G11F_B10F",
@@ -44,175 +22,14 @@
                 }
             ]
         },
-        {
-            name: "global_illumination",
-            lod: 0,
-            internalFormat: "RGBA32F",
-            pixelFormat: "RGB",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "gi_blur",
-            lod: 0,
-            internalFormat: "RGBA32F",
-            pixelFormat: "RGB",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        /*
-        {
-            name: "composite_normal",
-            lod: 0,
-            internalFormat: "RGB16",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        */
-        {
-            name: "composite_fresnel",
-            lod: 0,
-            internalFormat: "RGB16F",
-            pixelFormat: "RGB",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "reflection",
-            lod: 0,
-            internalFormat: "RGBA16F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        }
     ],
 
     framebuffers: [
-        {
-            name: "sky",
-            colorAttachments: [
-                {
-                    image: "sky", clearColor: 0x00000000
-                }
-            ]
-        },
         {
             name: "sort",
             colorAttachments: [
                 {
                     image: "sort", clearColor: 0x00000000
-                },
-                {
-                    image: "global_illumination"
-                },
-                {
-                    image: "composite_normal", clearColor: 0x00000000
-                },
-                {
-                    image: "composite_fresnel", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "reflection",
-            colorAttachments: [
-                {
-                    image: "reflection", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "reflection_merge",
-            colorAttachments: [
-                {
-                    image: "sort", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "gi_blur1",
-            colorAttachments: [
-                {
-                    image: "gi_blur"
-                }
-            ]
-        },
-        {
-            name: "gi_blur2",
-            colorAttachments: [
-                {
-                    image: "global_illumination"
                 }
             ]
         },
@@ -227,13 +44,6 @@
     ],
 
     programs: [
-        {
-            name: "sky",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/sky.frag",
-            samplers: [
-            ]
-        },
         {
             name: "sort",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
@@ -251,44 +61,10 @@
                 "u_clouds_depth",
                 "u_particles_color",
                 "u_particles_depth",
-                "u_sky",
                 "u_translucent_data",
                 "u_translucent_normal",
                 "u_solid_data"
                 "u_solid_normal",
-                "u_global_illumination",
-                "u_shadow_map"
-            ]
-        },
-        {
-            name: "reflection",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection.frag",
-            samplers: [
-                "u_normal",
-                "u_data"
-                "u_color",
-                "u_depth"
-                "u_particles_depth"
-                "u_previous_frame"
-            ]
-        },
-        {
-            name: "gi_blur",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/gi_blur.frag",
-            samplers: [
-                "u_global_illumination",
-                "u_normal"
-            ]
-        },
-        {
-            name: "reflection_merge",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_merge.frag",
-            samplers: [
-                "u_color",
-                "u_reflection"
             ]
         },
         {
@@ -297,21 +73,12 @@
             fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
             samplers: [
                 "u_composite",
-                "u_global_illumination",
-                "u_solid_normal"
             ]
         }
     ],
 
     fabulous: {
         passes: [
-            // {
-            //     name: "sky",
-            //     program: "sky",
-            //     framebuffer: "sky",
-            //     samplerImages: [
-            //     ]
-            // },
             {
                 name: "sort",
                 program: "sort",
@@ -329,56 +96,10 @@
                     "clouds_depth",
                     "particles_color",
                     "particles_depth",
-                    "sky",
                     "translucent_data",
                     "translucent_normal",
                     "main_data",
                     "main_normal",
-                    "global_illumination",
-                    "shadow_map"
-                ]
-            },
-            {
-                name: "gi_blur1",
-                program: "gi_blur",
-                framebuffer: "gi_blur1",
-                samplerImages: [
-                    "global_illumination",
-                    "main_normal",
-                ],
-                toggleConfig: "global_illumination"
-            },
-            {
-                name: "gi_blur2",
-                program: "gi_blur",
-                framebuffer: "gi_blur2",
-                samplerImages: [
-                    "gi_blur",
-                    "main_normal",
-                ],
-                toggleConfig: "global_illumination"
-            },
-            {
-                name: "reflection",
-                program: "reflection",
-                framebuffer: "reflection",
-                samplerImages: [
-                    "composite_normal",
-                    "composite_fresnel",
-                    "sort",
-                    "translucent_depth",
-                    "particles_depth",
-                    "reflection"
-                ]
-            }
-            {
-                name: "reflection_merge",
-                program: "reflection_merge",
-                framebuffer: "reflection_merge",
-                samplerImages: [
-                    "sort",
-                    "reflection",
-                    "translucent_depth"
                 ]
             },
             {
@@ -387,8 +108,6 @@
                 framebuffer: "copy_to_main",
                 samplerImages: [
                     "sort"
-                    "global_illumination",
-                    "main_normal"
                 ]
             }
         ]

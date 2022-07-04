@@ -106,53 +106,9 @@ void main() {
 
     vec3 atmosphere;
     if(max_depth == 1.0) {
-        //viewDir += rand3D(texcoord * 20000.0) * 0.001;
 
-        atmosphere.rgb = atmosphericScattering(viewDir, getSunVector(), 1.0 - getTimeOfDayFactors().y, 2.0);
-        atmosphere.rgb += atmosphericScattering(viewDir, getMoonVector(), getTimeOfDayFactors().y, 2.0) * vec3(0.1, 0.13, 0.2); // Moonlight scattering
-
-        atmosphere.rgb += rand3D(texcoord * 20000.0) / 200.0;
-
-        main_color.rgb = atmosphere.rgb;
-
-        float starFactor = dot(getSunVector(), vec3(0.0, 1.0, 0.0));
-        starFactor = smoothstep(0.2, 0.1, starFactor);
-        if(starFactor > 0.0) {
-            const float starBrightness = 3.5;
-
-            maxViewSpacePos.y = abs(maxViewSpacePos.y);
-
-            vec2 starPlane = maxViewSpacePos.xz / (maxViewSpacePos.y + length(maxViewSpacePos.xz));
-            starPlane *= 10.0;
-            vec3 starColor = normalize(vec3(smoothHash(starPlane + 10.0), smoothHash(starPlane - 10.0), smoothHash(starPlane + 20.0)) * 0.5 + 0.6);
-            starColor = starColor * 0.5 + 0.5;
-            vec3 stars = starColor * starBrightness;
-
-            main_color.rgb = mix(main_color.rgb, stars, smoothstep(0.001, 0.0005, hash12(floor(starPlane * 30.0))) * starFactor);
-        }
-
-        // float sunFactor;
-        // float moonFactor;
-        // vec3 sun = sunDisk(viewDir, sunFactor);
-        // vec3 moon = sunDisk(viewDir, moonFactor);
-
-        // main_color.rgb = mix(main_color.rgb, sun, sunFactor);
-        // main_color.rgb = mix(main_color.rgb, moon, moonFactor);
     } else if(translucentData.b > 0.5) {
-        translucent_color.rgb *= vec3(1.0, 1.3, 0.7);
-        float sunDotU = dot(getSunVector(), vec3(0.0, 1.0, 0.0));
-        float opticalDepth = particleThicknessConst(1.0);
 
-        float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos);
-
-        vec3 waterFogColor = vec3(0.0, 0.4, 0.3)  * max(0.5, sunDotU);
-        //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
-        waterFogColor *= clamp01(sunDotU) * 0.5 + 0.5;
-        
-        float fogDensity = tanh(waterFogDistance / 5.0);
-
-        translucent_color.rgb = mix(translucent_color.rgb, waterFogColor, fogDensity);
-        translucent_color.a = mix(translucent_color.a, 0.9, fogDensity);
     }
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending part here
@@ -173,7 +129,7 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     if(min_depth < 1.0) {
-        composite = simpleFog(composite, minViewSpacePos);
+
     }
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));

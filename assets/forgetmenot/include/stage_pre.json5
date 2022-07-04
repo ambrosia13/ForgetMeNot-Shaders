@@ -1,0 +1,63 @@
+{
+    images: [
+        {
+            name: "pre_bloom_copy",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        }
+    ],
+
+    framebuffers: [
+        {
+            name: "pre_bloom_copy",
+            colorAttachments: [
+                {
+                    image: "pre_bloom_copy"
+                }
+            ]
+        }
+    ],
+
+    programs: [
+        {
+            name: "pre_bloom_copy",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
+            samplers: [
+                "u_color",
+                "u_previous_frame"
+            ]
+        },
+    ],
+
+    afterRenderHand: {
+        passes: [
+            {
+                name: "pre_bloom_copy",
+                program: "pre_bloom_copy",
+                framebuffer: "pre_bloom_copy",
+                samplerImages: [
+                    "main_color",
+                    "final"
+                ]
+            }
+        ]
+    }
+}
