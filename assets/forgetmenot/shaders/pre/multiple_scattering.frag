@@ -1,6 +1,9 @@
 #include forgetmenot:assets/shaders/pre/atmos_common.glsl 
 
+uniform ivec2 frxu_size;
 uniform sampler2D u_tLut;
+
+layout(location = 0) out vec4 fragColor;
 
 // Buffer B is the multiple-scattering LUT. Each pixel coordinate corresponds to a height and sun zenith angle, and
 // the value is the multiple scattering approximation (Psi_ms from the paper, Eq. 10).
@@ -63,7 +66,7 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
                 
                 // This is slightly different from the paper, but I think the paper has a mistake?
                 // In equation (6), I think S(x,w_s) should be S(x-tv,w_s).
-                vec3 sunTransmittance = getValFromTLUT(iChannel0, iChannelResolution[0].xy, newPos, sunDir);
+                vec3 sunTransmittance = getValFromTLUT(u_tLut, frxu_size, newPos, sunDir);
 
                 vec3 rayleighInScattering = rayleighScattering*rayleighPhaseValue;
                 float mieInScattering = mieScattering*miePhaseValue;
@@ -80,7 +83,7 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
                 vec3 hitPos = pos + groundDist*rayDir;
                 if (dot(pos, sunDir) > 0.0) {
                     hitPos = normalize(hitPos)*groundRadiusMM;
-                    lum += transmittance*groundAlbedo*getValFromTLUT(iChannel0, iChannelResolution[0].xy, hitPos, sunDir);
+                    lum += transmittance*groundAlbedo*getValFromTLUT(u_tLut, frxu_size, hitPos, sunDir);
                 }
             }
             
@@ -90,13 +93,12 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
     }
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    if (fragCoord.x >= (msLUTRes.x+1.5) || fragCoord.y >= (msLUTRes.y+1.5)) {
-        return;
+void main() {
+    if (gl_FragCoord.x >= (msLUTRes.x+1.5) || gl_FragCoord.y >= (msLUTRes.y+1.5)) {
+        discard;
     }
-    float u = clamp(fragCoord.x, 0.0, msLUTRes.x-1.0)/msLUTRes.x;
-    float v = clamp(fragCoord.y, 0.0, msLUTRes.y-1.0)/msLUTRes.y;
+    float u = clamp(gl_FragCoord.x, 0.0, msLUTRes.x-1.0)/msLUTRes.x;
+    float v = clamp(gl_FragCoord.y, 0.0, msLUTRes.y-1.0)/msLUTRes.y;
     
     float sunCosTheta = 2.0*u - 1.0;
     float sunTheta = safeacos(sunCosTheta);

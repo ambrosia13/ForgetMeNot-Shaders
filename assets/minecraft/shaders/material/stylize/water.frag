@@ -26,15 +26,15 @@ void frx_materialFragment() {
 
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
-            float offset = 0.2;
+            float offset = 1e-3;
 
             float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
             // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
             float height3 = waterHeightNoise(uv + vec2(0.0, offset));
             // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-            float deltaX = (centerNoise - height1) * 2.0;
-            float deltaY = (centerNoise - height3) * 2.0;
+            float deltaX = (centerNoise - height1) * 400.0;
+            float deltaY = (centerNoise - height3) * 400.0;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));

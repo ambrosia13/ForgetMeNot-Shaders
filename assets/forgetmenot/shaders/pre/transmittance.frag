@@ -1,5 +1,7 @@
 #include forgetmenot:assets/shaders/pre/atmos_common.glsl 
 
+layout(location = 0) out vec4 fragColor;
+
 // Buffer A generates the Transmittance LUT. Each pixel coordinate corresponds to a height and sun zenith angle, and
 // the value is the transmittance from that point to sun, through the atmosphere.
 const float sunTransmittanceSteps = 40.0;
@@ -31,7 +33,7 @@ vec3 getSunTransmittance(vec3 pos, vec3 sunDir) {
 
 void main() {
     if (gl_FragCoord.x >= (tLUTRes.x+1.5) || gl_FragCoord.y >= (tLUTRes.y+1.5)) {
-        return;
+        discard;
     }
     float u = clamp(gl_FragCoord.x, 0.0, tLUTRes.x-1.0)/tLUTRes.x;
     float v = clamp(gl_FragCoord.y, 0.0, tLUTRes.y-1.0)/tLUTRes.y;

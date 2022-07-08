@@ -5,12 +5,14 @@
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
-#include forgetmenot:performance_config
-#include forgetmenot:clouds
-#include forgetmenot:water_reflections
-#include forgetmenot:general_config
+#include forgetmenot:sky
 #include forgetmenot:lighting
-#include forgetmenot:experimental
+#ifndef SKY_GROUND_FOG
+    #define SKY_GROUND_FOG 1.5
+    #define MIE_AMOUNT 10.0
+
+    #define BLOCKLIGHT_NEUTRALITY 0.25
+#endif
 
 #include forgetmenot:shaders/lib/api_includes.glsl 
 #ifdef DEPRESSING_MODE
@@ -22,5 +24,5 @@ uniform int frxu_lod;
 #include forgetmenot:shaders/lib/functions/utility.glsl
 // #include forgetmenot:shaders/lib/functions/sky.glsl
 #include forgetmenot:shaders/lib/functions/atmosphere.glsl
-#include forgetmenot:shaders/lib/functions/fog.glsl
+//#include forgetmenot:shaders/lib/functions/fog.glsl
 #include forgetmenot:shaders/lib/functions/fxaa.glsl

@@ -258,5 +258,56 @@ vec3 nightEyeAdjust(in vec3 color) {
     return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
 }
 
+// https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
+vec3 temperatureToRGB(in float k) {
+    k /= 100.0;
+
+    float red;
+    float green;
+    float blue;
+
+    if(k <= 66) {
+        red = 1.0;
+
+        green = k;
+        green = 99.4708025861 * log(green) - 161.1195681661;
+        green = clamp01(green);
+
+        if(k <= 19.0) {
+            blue = 0.0;
+        } else {
+            blue = k - 10.0;
+            blue = 138.5177312231 * log(blue) - 305.0447927307;
+            blue = clamp01(blue);
+        }
+    } else {
+        red = k - 60.0;
+        red = 329.698727446 * pow(red, -0.1332047592);
+        red = clamp01(red);
+
+        green = k - 60.0;
+        green = 288.1221695283 * pow(green, -0.0755148492);
+        green = clamp01(green);
+
+        blue = 1.0;
+    }
+
+    return vec3(red, green, blue);
+    
+}
+
+// Thanks SixthSurge#3922 for helping me with curl noise which makes cirrus clouds much nicer
+vec2 curlNoise(in vec2 plane) {
+    float offset = 1e-3;
+    float dx = snoise(plane + vec2(offset, 0.0));
+    dx -= snoise(plane - vec2(offset, 0.0));
+    dx /= 2.0 * offset;
+
+    float dy = snoise(plane + vec2(0.0, offset));
+    dy -= snoise(plane - vec2(0.0, offset));
+    dy /= 2.0 * offset;
+
+    return vec2(-dy, dx);
+}
 
 #include forgetmenot:shaders/lib/functions/noise.glsl 

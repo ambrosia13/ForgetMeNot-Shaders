@@ -1,6 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl
 
 void frx_materialFragment() {
+    #define VANILLA_LAVA
     #ifndef VANILLA_LAVA
         vec2 normalizedUV = floor(frx_var0.xy * 16.0) / 8.0;
 

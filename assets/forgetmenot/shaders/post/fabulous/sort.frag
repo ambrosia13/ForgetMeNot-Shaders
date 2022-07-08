@@ -13,13 +13,6 @@ uniform sampler2D u_clouds_color;
 uniform sampler2D u_clouds_depth;
 uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
-uniform sampler2D u_sky;
-uniform sampler2D u_translucent_data;
-uniform sampler2D u_translucent_normal;
-uniform sampler2D u_solid_normal;
-uniform sampler2D u_solid_data;
-uniform sampler2D u_global_illumination;
-uniform sampler2DArrayShadow u_shadow_map;
 
 in vec2 texcoord;
 
@@ -61,46 +54,50 @@ vec3 blend( vec3 dst, vec4 src ) {
     return ( dst * ( 1.0 - src.a ) ) + src.rgb;
 }
 
-//uniform int frxu_cascade;
+float sampleCumulusCloud(in vec2 plane, in int octaves) {
+    float n = mix(snoise(plane * 0.3 + frx_renderSeconds / 40.0), snoise(plane * 0.6 + frx_renderSeconds / 60.0), 0.5);
+    float d = (smoothstep(0.5 + 0.2 * n, 0.7 + 0.2 * n, fbmHash(plane, octaves, 0.001)));
+
+    return d;
+}
+float sampleCirrusCloud(in vec2 plane, in int octaves) {
+    plane *= 2.0;
+    float d = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.4, 1.5, fbmHash(plane * 0.3, octaves, 0.01));
+    return d;
+}
 
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // sample things
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
-    vec4 translucentData = texture(u_translucent_data, texcoord);
-    vec3 translucentNormal = texture(u_translucent_normal, texcoord).rgb * 2.0 - 1.0;
-
-    vec3 transViewSpacePos = setupViewSpacePos(texcoord, translucent_depth);
-
 
     vec4  main_color = texture(u_main_color, texcoord);
     float main_depth = texture(u_main_depth, texcoord).r;
-    vec4 solidData = texture(u_solid_data, texcoord);
-    vec3 solidNormal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 solidf0 = solidData.ggg;
     
-
-
     vec4  entity_color = texture(u_entity_color, texcoord);
     float entity_depth = texture(u_entity_depth, texcoord).r;
 
     vec4  weather_color = texture(u_weather_color, texcoord);
+    weather_color.rgb = pow(weather_color.rgb, vec3(2.2));
     float weather_depth = texture(u_weather_depth, texcoord).r;
 
     vec4  clouds_color = texture(u_clouds_color, texcoord);
+    clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
     float clouds_depth = texture(u_clouds_depth, texcoord).r;
 
     vec4  particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // common things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    // common things
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
-    if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
-        main_color.rgb = pow(main_color.rgb, vec3(2.2));
-    }
 
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
@@ -108,14 +105,111 @@ void main() {
 
     vec3 tdata = getTimeOfDayFactors();
 
-    vec3 atmosphere;
-    if(max_depth == 1.0) {
+    vec3 sunVector = getSunVector();
+    vec3 moonVector = getMoonVector();
 
-    } else if(translucentData.b > 0.5) {
-
-    }
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // fabulous blending part here
+    // pre fabulous blending
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // sky to linear
+    if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
+        main_color.rgb = getSkyColor(viewDir);
+
+        vec3 ambientLightColor = vec3(0.0);
+        for(int i = 0; i < 2; i++) {
+            for(int j = 0; j < 2; j++) {
+                float totalSamples = 4.0;
+                vec3 skySample = getSkyColor(normalize(rand3D(vec2(i, j))));
+
+                ambientLightColor += skySample / totalSamples;
+            }
+        }
+        float skyIlluminance = frx_luminance(ambientLightColor * 8.0);
+
+        vec3 viewPos = maxViewSpacePos;
+
+
+        if(viewDir.y > 0.0) {
+            viewPos.y = abs(viewPos.y);
+            vec2 starPlane = viewPos.xz / (viewPos.y + 0.5 * length(viewPos.xz));
+            starPlane *= 200.0;
+            viewPos.y = maxViewSpacePos.y;
+
+
+            vec3 stars = vec3(step(1.0 - 1e-2, rand1D(floor(starPlane)))) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
+            stars = (stars) * normalize(rand3D(floor(starPlane)) * 0.4 + 0.6);
+
+            main_color.rgb = mix(main_color.rgb + stars, main_color.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
+
+            vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
+            plane += frx_renderSeconds / 100.0;
+            vec2 cirrusPlane = plane;
+            plane += 0.0025 * curlNoise(plane * 4.0);
+            //plane *= 0.5;
+            //plane *= vec2(1.3, 1.0);
+            //plane *= 2.0;
+
+            vec3 skyLightColor = mix(normalize(getSkyColor(frx_skyLightVector)), normalize(vec3(5.0, 1.75, 0.5)), 1.0 - frx_skyLightTransitionFactor) * (skyIlluminance / 1.5);
+
+            float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
+            float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
+            vec3 mie = max(1.0, miePhase(LdotV, 10.0) + miePhase(nLdotV, 10.0)) * skyLightColor;
+
+            float cirrusClouds = sampleCirrusCloud(cirrusPlane + 10.0 + 0.3 * vec2(smoothHash(cirrusPlane), 0.0), 3) * (4.0 / 3.0);
+            float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
+            vec3 scatteringCirrus = (1.0 - transmittanceCirrus) * mie;
+
+            main_color.rgb = mix(main_color.rgb, main_color.rgb * transmittanceCirrus + scatteringCirrus, smoothstep(0.0, 0.1, viewDir.y));
+
+            vec3 clouds;
+            float cloudDensity;
+            float cloudCoverage;
+
+            cloudCoverage = sampleCumulusCloud(plane, CLOUD_DETAIL);
+
+            vec2 planeMarch = plane;
+            float stepLength = 1.0 / 8.0;
+
+            vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), 1.0 - frx_skyLightTransitionFactor);
+
+            vec2 rayDirection = normalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y) / 3.0;
+            rayDirection = mix(rayDirection, -rayDirection, 1.0 - frx_skyLightTransitionFactor);
+            float opticalDepth;
+            float lightOpticalDepth;
+
+            float transmittance = 1.0;
+            //vec3 scattering;
+            for(int i = 0; i < 4; i++) {
+                planeMarch += rayDirection * stepLength;
+
+                float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_SHADING_DETAIL);
+                if(currentDensity == 0.0) break;
+
+                lightOpticalDepth += currentDensity / 8.0;
+
+                //if(currentDensity < 0.00001) break;
+
+                stepLength *= 1.1;
+            }
+
+            //lightOpticalDepth = mix(lightOpticalDepth, 0.25, 1.0 - frx_skyLightTransitionFactor);
+
+
+            opticalDepth = cloudCoverage;
+
+            transmittance = exp2(-opticalDepth * 4.0);
+            vec3 scattering = vec3(exp2(-lightOpticalDepth * 6.0) * (1.0 - transmittance)) * mie;
+            main_color.rgb = mix(main_color.rgb, main_color.rgb * transmittance + scattering, smoothstep(0.0, 0.1, viewDir.y));
+
+            main_color.rgb += rand1D(texcoord * 2000.0) / 555.0;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // fabulous blending same as mojang (mostly)
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    
     color_layers[0] = main_color;
     depth_layers[0] = main_depth;
     active_layers = 1;
@@ -130,6 +224,9 @@ void main() {
     for (int ii = 1; ii < active_layers; ++ii) {
         composite = blend(composite, color_layers[ii]);
     }
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     if(min_depth < 1.0) {
