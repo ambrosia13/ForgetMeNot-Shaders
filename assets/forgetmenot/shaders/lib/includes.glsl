@@ -5,11 +5,12 @@
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
-#include forgetmenot:sky
+#include forgetmenot:atmospherics
 #include forgetmenot:lighting
 #ifndef SKY_GROUND_FOG
     #define SKY_GROUND_FOG 1.5
     #define MIE_AMOUNT 10.0
+    #define SUN_ENERGY 3000.0
 
     #define BLOCKLIGHT_NEUTRALITY 0.25
 #endif

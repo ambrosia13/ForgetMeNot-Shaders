@@ -1,8 +1,8 @@
 {
     options: [
         {
-            includeToken: "forgetmenot:sky",
-            categoryKey: "config.forgetmenot.category.sky",
+            includeToken: "forgetmenot:atmospherics",
+            categoryKey: "config.forgetmenot.category.atmospherics",
             elements: {
                 sky_ground_fog: {
                     default: 1.5,
@@ -38,7 +38,22 @@
                     max: 15,
                     nameKey: "config.forgetmenot.name.cloud_shading_detail",
                     descriptionKey: "config.forgetmenot.desc.cloud_shading_detail"
-                }
+                },
+                curl_noise: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.curl_noise",
+                    descriptionKey: "config.forgetmenot.desc.curl_noise"
+                },
+                atmospheric_fog: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.atmospheric_fog",
+                    descriptionKey: "config.forgetmenot.desc.atmospheric_fog"
+                },
+                border_fog: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.border_fog",
+                    descriptionKey: "config.forgetmenot.desc.border_fog"
+                },
             }
         },
         {

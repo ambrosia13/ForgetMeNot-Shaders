@@ -7,17 +7,19 @@ void frx_materialFragment() {
     //frx_fragNormal += cellular(uv).x * 0.1;
 
     #if defined PBR_ENABLED
-        float offset = 0.01;
+        float offset = 1e-2;
 
+        float centerNoise = iceHeightNoise(uv);
         float height1 = iceHeightNoise(uv + vec2(offset, 0.0));
-        float height2 = iceHeightNoise(uv - vec2(offset, 0.0));
+        // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
         float height3 = iceHeightNoise(uv + vec2(0.0, offset));
-        float height4 = iceHeightNoise(uv - vec2(0.0, offset));
+        // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-        float deltaX = (height2 - height1);
-        float deltaY = (height4 - height3);
+        float deltaX = (centerNoise - height1) * 2.0;
+        float deltaY = (centerNoise - height3) * 2.0;
 
         frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+        //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
         frx_fragNormal = normalize(frx_fragNormal);
 
         frx_fragReflectance = 0.06;

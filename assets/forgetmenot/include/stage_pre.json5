@@ -1,7 +1,7 @@
 {
     images: [
         {
-            name: "pre_bloom_copy",
+            name: "reflection_previous",
             lod: 0,
             internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
@@ -26,10 +26,10 @@
 
     framebuffers: [
         {
-            name: "pre_bloom_copy",
+            name: "reflection_previous",
             colorAttachments: [
                 {
-                    image: "pre_bloom_copy"
+                    image: "reflection_previous"
                 }
             ]
         }
@@ -37,25 +37,23 @@
 
     programs: [
         {
-            name: "pre_bloom_copy",
+            name: "reflection_previous",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
+            fragmentSource: "forgetmenot:shaders/post/bloom/reflection_previous.frag",
             samplers: [
-                "u_color",
-                "u_previous_frame"
+                "u_reflection",
             ]
         },
     ],
 
-    afterRenderHand: {
+    beforeWorldRender: {
         passes: [
             {
-                name: "pre_bloom_copy",
-                program: "pre_bloom_copy",
-                framebuffer: "pre_bloom_copy",
+                name: "reflection_previous",
+                program: "reflection_previous",
+                framebuffer: "reflection_previous",
                 samplerImages: [
-                    "main_color",
-                    "final"
+                    "reflection_result"
                 ]
             }
         ]

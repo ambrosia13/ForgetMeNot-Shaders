@@ -72,19 +72,11 @@
                     clearColor: 0x00000000
                 },
                 {
-                    image: "translucent_normal",
-                    clearColor: 0x00000000
-                }
-                {
-                    image: "translucent_data",
+                    image: "composite_normal",
                     clearColor: 0x00000000
                 },
                 {
                     image: "pbr_data",
-                    clearColor: 0x00000000
-                },
-                {
-                    image: "composite_normal",
                     clearColor: 0x00000000
                 }
             ]

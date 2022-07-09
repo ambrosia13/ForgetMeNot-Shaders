@@ -16,5 +16,7 @@ void main() {
 
     finalColor = pow(finalColor, vec3(1.0 / 2.2));
 
+    vibrance(finalColor, 1.0);
+
     fragColor = vec4(finalColor + step(0.5, frx_noise2d(texcoord)) / 255.0, 1.0);
 }

@@ -3,6 +3,23 @@
 
 int fmn_isWater = 0;
 
+#ifndef WAVES_QUALITY
+    #define WAVES_QUALITY 3
+#endif
+
+float waterHeightNoise(in vec2 uv) {
+    float waterHeight;
+    float waves;
+    float w;
+    float time = frx_renderSeconds / 700.0;
+
+    vec2 coord = uv * vec2(1.0, 0.7);
+
+    float noise = fbmHash(coord, 3, 1.0) * (4.0 / 3.0);
+    noise += (fbmHash(coord * vec2(4.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.05;
+
+    return pow(noise * 0.7, 1.5) * (0.15);
+}
 
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 vec2 parallaxMapping(in vec2 texcoord, in float height) {
@@ -18,23 +35,25 @@ void frx_materialFragment() {
     //     uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
     //     uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
     // ) * 0.3;
+
+    //uv = floor(uv * 16.0) / 16.0;
     
     float centerNoise = waterHeightNoise(uv);
-    uv = parallaxMapping(uv, centerNoise * 1.0);
+    uv = parallaxMapping(uv, centerNoise * 4.0);
 
     centerNoise = waterHeightNoise(uv);
 
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
-            float offset = 1e-3;
+            float offset = 1e-2;
 
             float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
             // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
             float height3 = waterHeightNoise(uv + vec2(0.0, offset));
             // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-            float deltaX = (centerNoise - height1) * 400.0;
-            float deltaY = (centerNoise - height3) * 400.0;
+            float deltaX = (centerNoise - height1) * 50.0;
+            float deltaY = (centerNoise - height3) * 50.0;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));

@@ -102,14 +102,24 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 viewDir = normalize(viewSpacePos);
     vec3 unmodifiedViewDir = viewDir;
 
+    vec3 rayleigh = rlhDay;
+    vec3 mie = mieDay;
+
+    if(frx_worldIsEnd == 1) {
+        viewDir.y = abs(viewDir.y);
+        rayleigh = vec3(0.8, 0.3, 1.0) * 1e-5;
+        sunVector = normalize(vec3(1.0, 0.1, 0.2));
+    }
+
     //viewDir.y = mix(viewDir.y, viewDir.y, smoothstep(0.01, -0.0, viewDir.y));
+    //viewDir.y = clamp01(viewDir.y + 0.5);
 
     // -------
     // Don't question my methods
     // -------
 
     float upDot = (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);
-    upDot = pow(upDot, 1.0);
+    upDot = pow(upDot, 1.0) * (frx_worldIsEnd == 1 ? 100.0 : 1.0);
 	float opticalDepth = particleThickness(upDot + 0.0615 + 0.05 * pow(1.0 - viewDir.y, 3.0));
     //if(viewDir.y < 0.0) opticalDepth = mix(opticalDepth, 500000.0 * pow(abs(viewDir.y + 1.0), 4.0), 0.2 * smoothstep(0.1, -0.1, viewDir.y));
 
@@ -122,8 +132,6 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     // -------
 
-    vec3 rayleigh = rlhDay;
-    vec3 mie = mieDay;
 
     // -------
 
@@ -146,16 +154,73 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
 
-    totalScatter += mix(1.0, 1.0, (sunDotU * sunDotU)) *
-    20.0 * scatter(mie, opticalDepth) * 
-    miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth) * 
-    smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
-    frx_smootherstep(0.999, 0.9995, dot(viewDir, sunVector));
-    
+    if(frx_worldIsOverworld == 1) {
+        totalScatter += mix(1.0, 1.0, (sunDotU * sunDotU)) *
+        20.0 * scatter(mie, opticalDepth) * 
+        miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth) * 
+        smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
+        frx_smootherstep(0.999, 0.9995, dot(viewDir, sunVector));
+    }
+
     vec3 totalAbsorb = absorbSun * factor;
 
     return totalScatter * totalAbsorb;
 }
+
+vec3 getFogScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in float sunBrightness, in float opticalDepth) {
+    const float ln2 = log(2.0);
+
+    vec3 rayleigh = rlhDay;
+    vec3 mie = mieDay;
+
+    if(frx_worldIsEnd == 1) {
+        viewDir.y = abs(viewDir.y);
+        rayleigh = vec3(0.8, 0.3, 1.0) * 1e-5;
+        sunVector = normalize(vec3(1.0, 0.1, 0.2));
+    }
+
+    float sunDotU = sunVector.y;
+    float sunDotV = clamp01(dot(sunVector, viewDir));
+    float upDot = viewDir.y;
+
+    float sunOpticalDepth = particleThickness(sunDotU);
+
+    vec3 dayScatterView = scatter(totalDayCoeff, opticalDepth);
+    vec3 dayAbsorbView = absorb(totalDayCoeff, opticalDepth);
+
+    vec3 dayScatterLight = scatter(totalDayCoeff, sunOpticalDepth);
+    vec3 dayAbsorbLight = absorb(totalDayCoeff, sunOpticalDepth);
+
+    vec3 absorbSun = abs(dayAbsorbLight - dayAbsorbView) / d0((dayScatterLight - dayScatterView) * ln2);
+
+    vec3 rlhDayScatter = scatter(rayleigh, opticalDepth) * 1.5 * rayleighPhase(sunDotV * 0.0);
+    vec3 mieDayScatter = scatter(mie, particleThickness(pow(upDot, 2.0))) * miePhase(sunDotV, MIE_AMOUNT);
+
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+
+    // -------
+
+    vec3 totalScatter = scatterSun * sunBrightness * factor;    
+    vec3 totalAbsorb = absorbSun * factor;
+
+    return totalScatter * totalAbsorb;
+}
+vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
+    vec3 fogScattering;
+    vec3 tdata = getTimeOfDayFactors();
+
+    if(1.0 - tdata.y > 0.0) {
+        vec3 sunVector = getSunVector();
+        fogScattering += getFogScattering(viewDir, sunVector, 1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0), opticalDepth) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+    }
+    if(1.0 - tdata.x > 0.0) {
+        vec3 moonVector = getMoonVector();
+        fogScattering += getFogScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0), opticalDepth) * vec3(0.5, 0.7, 1.5) * 0.25;
+    }
+
+    return fogScattering;
+}
+
 vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
     const float ln2 = log(2.0);
 
@@ -220,7 +285,7 @@ vec3 getSkyColor(in vec3 viewDir) {
 
     if(1.0 - tdata.y > 0.0) {
         vec3 sunVector = getSunVector();
-        atmosphere += atmosphericScattering(viewDir, sunVector, 1.0 - tdata.y, 1.0 + 0.5 * pow(1.0 - sunVector.y, 5.0)) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+        atmosphere += atmosphericScattering(viewDir, sunVector, 1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0)) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();

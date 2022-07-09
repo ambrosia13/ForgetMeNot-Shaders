@@ -133,7 +133,7 @@
         {
             name: "composite_normal",
             lod: 0,
-            internalFormat: "RGBA8",
+            internalFormat: "RGBA16",
             pixelFormat: "RGB",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -174,19 +174,11 @@
                     clearColor: 0x00000000
                 },
                 {
-                    image: "main_normal",
-                    clearColor: 0x00000000
-                },
-                {
-                    image: "main_data",
+                    image: "composite_normal",
                     clearColor: 0x00000000
                 },
                 {
                     image: "pbr_data",
-                    clearColor: 0x00000000
-                },
-                {
-                    image: "composite_normal",
                     clearColor: 0x00000000
                 }
             ]
