@@ -73,6 +73,13 @@ float sampleCirrusCloud(in vec2 plane, in int octaves) {
     return d;
 }
 
+vec2 Jitter(vec2 fragCoord, int frame)
+{
+    int num = 8;
+    return (vec2(fragCoord + 0.25 * normalize(rand2D(vec2(frame)))));
+
+}
+
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // sample things
@@ -121,22 +128,58 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
-    if(frx_worldIsEnd == 1) viewDir.xy = rotate2D(viewDir.xy, -0.1);
-    if(frx_worldIsEnd == 1) maxViewSpacePos.xy = rotate2D(maxViewSpacePos.xy, -0.1);
+    // vec3 secondViewDir = viewDir;
+    // if(frx_worldIsEnd == 1) {
+    //     viewDir.y = -viewDir.y;
+    //     maxViewSpacePos.y = -maxViewSpacePos.y;
+    //     viewDir.xy = rotate2D(viewDir.xy, -0.1);
+    //     maxViewSpacePos.xy = rotate2D(maxViewSpacePos.xy, -0.1);
+
+    //     viewDir.y += 0.2;
+    //     viewDir = normalize(viewDir);
+
+    //     secondViewDir.yz = rotate2D(secondViewDir.yz, 0.7);
+    //     secondViewDir.xy = rotate2D(secondViewDir.xy, -0.74);
+    //     secondViewDir.y += 0.95;
+    //     secondViewDir = normalize(secondViewDir);
+    // }
+
     vec3 skyColor = getSkyColor(viewDir);
+    // skyColor += endSecondAtmosphere(secondViewDir, normalize(vec3(1.0, 0.1, 0.2)), 1.0, 1.0);
+    // if(secondViewDir.y < 0.0) {
+    //     skyColor += vec3(0.09, 0.12, 0.03) * smoothstep(-0.1, 0.8, dot(normalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
+    // }
 
-    //maxViewSpacePos.y -= 120.0;
-    vec2 endPlane = maxViewSpacePos.xz / (maxViewSpacePos.y + 0.0 * length(maxViewSpacePos.xz));
-    //endPlane += frx_renderSeconds * 0.01;
-    //endPlane += curlNoise(endPlane);
-    float endIslands = fbmHash(floor(endPlane * 64.0) / 64.0, 4, 0.0);
-    if(frx_worldIsEnd == 1 && viewDir.y < 0.0) skyColor += vec3(0.01, 0.0, 0.01) + 1.3 * mix(vec3(0.06, 0.07, 0.02), skyColor, tanh(length(endPlane) * 0.25)) * step(0.7, endIslands);
+    // //maxViewSpacePos.y -= 120.0;
+    // vec2 endPlane = maxViewSpacePos.xz / (maxViewSpacePos.y + 0.1 * length(maxViewSpacePos.xz));
+    // //endPlane += frx_renderSeconds / 40.0;
+    // //endPlane *= 1.2;
+    // //endPlane += frx_renderSeconds * 0.01;
+    // //endPlane += curlNoise(endPlane);
+    // float endIslands = fbmHash(floor(endPlane * 64.0) / 64.0, 4, 0.0);
+    // float offset = 0.1;
+    // float height1 = fbmHash((floor(endPlane * 64.0) / 64.0) + vec2(offset, 0.0), 4, 0.0);
+    // float height2 = fbmHash((floor(endPlane * 64.0) / 64.0) + vec2(0.0, offset), 4, 0.0);
+    
+    // float deltaX = (endIslands - height1) * 12.0;
+    // float deltaY = (endIslands - height2) * 12.0;
 
-    // sky to linear
+    // vec3 endIslandNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+    // endIslandNormal = normalize(endIslandNormal);
+    // endIslandNormal.y = -endIslandNormal.y;
+    
+    // float endSkyShading = dot(-endIslandNormal, normalize(vec3(1.0, 0.1, 0.2))) * 0.5 + 1.0;
+
+    // //endPlane -= frx_renderSeconds / 40.0;
+
+    // if(frx_worldIsEnd == 1 && viewDir.y < 0.0) {
+    //     skyColor += vec3(0.01, 0.0, 0.01);
+    //     skyColor += (1.0 - tanh(length(endPlane) * 0.25)) * 1.3 * mix(vec3(0.06, 0.07, 0.02) * endSkyShading, skyColor, tanh(length(endPlane) * 0.25)) * (2.0 * step(0.7, endIslands) + 0.0* step(0.71, endIslands));
+    // };
+
     if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
 
-        main_color.rgb = skyColor;
+        main_color.rgb = getSkyColorDetailed(viewDir, minViewSpacePos);
 
         vec3 ambientLightColor = vec3(0.0);
         ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
@@ -155,16 +198,16 @@ void main() {
 
 
         if(viewDir.y > 0.0) {
-            viewPos.y = abs(viewPos.y);
-            vec2 starPlane = viewPos.xz / (viewPos.y + 0.5 * length(viewPos.xz));
-            starPlane *= 200.0;
-            viewPos.y = maxViewSpacePos.y;
+            // viewPos.y = abs(viewPos.y);
+            // vec2 starPlane = viewPos.xz / (viewPos.y + 0.5 * length(viewPos.xz));
+            // starPlane *= 200.0;
+            // viewPos.y = maxViewSpacePos.y;
 
 
-            vec3 stars = vec3(step(1.0 - 1e-2, rand1D(floor(starPlane)))) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
-            stars = (stars) * normalize(rand3D(floor(starPlane)) * 0.3 + 0.7);
+            // vec3 stars = vec3(step(1.0 - 1e-2, rand1D(floor(starPlane)))) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
+            // stars = (stars) * normalize(rand3D(floor(starPlane)) * 0.3 + 0.7);
 
-            main_color.rgb = mix(main_color.rgb + stars, main_color.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
+            // main_color.rgb = mix(main_color.rgb + stars, main_color.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
 
 
             if(frx_worldIsOverworld == 1) {
@@ -239,7 +282,7 @@ void main() {
 
         vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
         //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
-        waterFogColor *= (clamp01(sunDotU) * 0.75 + 0.25) * (frx_smoothedEyeBrightness.y * 0.95 + 0.05);
+        waterFogColor *= (clamp01(sunDotU) * 0.9  + 0.1) * (frx_smoothedEyeBrightness.y * 0.95 + 0.05);
         
         float fogDensity = 1.0 - exp2(-waterFogDistance * 2.0);
 
@@ -270,34 +313,54 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    vec2 jitterCoord = (Jitter(gl_FragCoord.xy, int(frx_renderFrames))) / frxu_size;
+
+
+    #ifdef RTAO 
+        const float RTAO_BLEND_FACTOR = 0.05;
+        vec3 rtao = vec3(1.0);
+
+        vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
+        vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+        vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
+        vec4 lastFrameSample = texture(u_previous_frame, lastScreenPos.xy);
+        vec3 lastFrameRtao = lastFrameSample.aaa;
+    #endif
+
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
-            #define SSR_STEPS 30
+            #define SSR_STEPS 60
             vec3 screenPos = vec3(texcoord, min_depth);
 
             vec3 viewSpaceReflectionDir = reflect(viewDir, normal);
             vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
-            screenSpaceReflectionDir *= mix(1.0, frx_noise2d(texcoord), 10.0 / SSR_STEPS);
 
             float stepLength = 0.5 / SSR_STEPS;
 
-            vec3 reflectColor = max(vec3(0.005), getSkyColor(viewSpaceReflectionDir) * frx_smoothedEyeBrightness.y);
+            vec3 reflectColor = max(vec3(0.005), getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, normal)) * clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y));
             
             vec3 reflectance = vec3(0.0);
-            if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
 
-            for(int i = 0; i < SSR_STEPS; i++) {
-                screenPos += screenSpaceReflectionDir * stepLength;
+            if(frx_worldIsEnd != 1) {
+                if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
 
-                float depthQuery = texture(u_particles_depth, screenPos.xy).r;
+                for(int i = 0; i < SSR_STEPS; i++) {
+                    screenPos += screenSpaceReflectionDir * stepLength
+                    * mix(1.0, rand1D(mod(texcoord + i, 40.0) * 2000.0), max(0.3, 1.0 - SSR_STEPS / 60.0));
 
-                if(clamp01(screenPos.xy) != screenPos.xy) {
-                    break;
-                } else if(screenPos.z > depthQuery && depthQuery != 1.0) {
-                    reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
-                    break;
+
+                    if(clamp01(screenPos.xy) != screenPos.xy) {
+                        break;
+                    } else {
+                        float depthQuery = texture(u_particles_depth, screenPos.xy).r;
+
+                        if(screenPos.z > depthQuery && depthQuery != 1.0) {
+                            reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
+                            break;
+                        }
+                    }
+                    stepLength *= 1.06;
                 }
-                stepLength *= 1.06;
             }
 
             if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
@@ -306,33 +369,76 @@ void main() {
             //composite = normal;
         }
 
+        #ifdef RTAO
+            const int RTAO_RAYS = 1;
+            const int RTAO_STEPS = 10;
+
+            vec3 rayView = jitterPos;
+            vec3 rayDir = normalize(normal);
+            float stepLength = 0.5 / RTAO_STEPS;
+
+            for(int rays = 0; rays < RTAO_RAYS; rays++) {
+                for(int i = 0; i < 10; i++) {
+                    rayView += normalize(rayDir + rand3D(mod(jitterCoord * 2000.0 + frx_renderFrames + 20.0 * rays + i, 4000.0))) * stepLength
+                    * (rand1D(jitterCoord * 2000.0 + frx_renderFrames + rays + i) * 0.5 + 0.5);
+
+                    vec3 rayScreen = viewSpaceToScreenSpace(rayView);
+
+                    if(clamp01(rayScreen) != rayScreen) {
+                        break;
+                    } else {
+                        float depthQuery = texture(u_translucent_depth, rayScreen.xy).r;
+
+                        if(rayScreen.z > depthQuery && distance(rayView, setupViewSpacePos(rayScreen.xy, depthQuery)) < 1.0) {
+                            rtao *= 0.25 / RTAO_RAYS;
+                            break;
+                        }
+                    }
+
+                    stepLength *= 1.3;
+                }
+            }
+            composite *= mix(lastFrameRtao, rtao, RTAO_BLEND_FACTOR);
+        #endif
 
         float blockDist = length(minViewSpacePos);
         float sunDotU = getSunVector().y;
 
         #ifdef ATMOSPHERIC_FOG
-            float fogDist = blockDist;
-            if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
-            fogDist /= 256.0;
+            if(frx_worldIsOverworld == 1) {
+                float fogDist = blockDist;
+                if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
+                fogDist /= 256.0;
 
-            float fogOpticalDepth = 500000.0;
+                float fogOpticalDepth = 500000.0;
 
-            float fogTransmittance = exp(-fogDist * (0.1 + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
-            vec3 fogScattering = getFogScattering(viewDir, fogOpticalDepth);
-            fogScattering = mix(fogScattering, mix(vec3(0.05, 0.1, 0.2), vec3(0.2, 0.0, 0.0), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
-            fogScattering = mix(fogScattering, vec3(0.3, 0.0, 0.3), frx_worldIsEnd);
-            fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
+                float fogTransmittance = exp(-fogDist * (0.15 + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
 
-            fogScattering *= (1.0 - fogTransmittance);
+                vec3 fogScattering = getFogScattering(viewDir, fogOpticalDepth);
+                fogScattering = mix(fogScattering, mix(vec3(0.05, 0.1, 0.2), vec3(0.2, 0.0, 0.0), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+                fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
 
-            composite = composite * fogTransmittance + fogScattering;
+                fogScattering *= (1.0 - fogTransmittance);
+
+                composite = composite * fogTransmittance + fogScattering;
+            }
         #endif
 
         #ifdef BORDER_FOG
             composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
         #endif
+
+        composite = mix(composite, vec3(0.0), (smoothstep(0.0, 60.0 * frx_darknessEffectFactor, blockDist)) * frx_effectDarkness);
     }
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
-    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));
+
+    #ifdef RTAO
+        float alpha = frx_luminance(mix(lastFrameRtao, rtao, RTAO_BLEND_FACTOR));
+    #else
+        float alpha = 1.0;
+    #endif
+
+
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, alpha));
 }

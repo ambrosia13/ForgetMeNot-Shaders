@@ -18,7 +18,7 @@ float waterHeightNoise(in vec2 uv) {
     float noise = fbmHash(coord, 3, 1.0) * (4.0 / 3.0);
     noise += (fbmHash(coord * vec2(4.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.05;
 
-    return pow(noise * 0.7, 1.5) * (0.15);
+    return pow(noise * 0.5, 1.5) * (0.15);
 }
 
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping

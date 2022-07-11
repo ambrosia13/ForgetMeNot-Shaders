@@ -3,7 +3,7 @@
         {
             name: "sort",
             lod: 0,
-            internalFormat: "R11F_G11F_B10F",
+            internalFormat: "RGBA16F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

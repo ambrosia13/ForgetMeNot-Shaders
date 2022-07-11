@@ -1,5 +1,5 @@
 #include forgetmenot:shaders/lib/includes.glsl 
-#define SHADOW_MAP_SIZE 1024
+#define SHADOW_MAP_SIZE 2048
 #define SHADOW_FILTER_SIZE PCF_SIZE_LARGE
 #include canvas:shaders/pipeline/shadow.glsl
 
@@ -15,6 +15,10 @@ layout(location = 2) out vec4 pbrData;
 void frx_pipelineFragment() {
     bool isInventory = frx_isGui && !frx_isHand;
     vec3 gamma = vec3(isInventory ? 1.0 : 2.2);
+
+    #ifdef WHITE_WORLD
+        frx_fragColor.rgb = vec3(1.0);
+    #endif
 
     mat3 tbn = mat3(
         frx_vertexTangent.xyz, 
@@ -90,12 +94,12 @@ void frx_pipelineFragment() {
         vec3 blockLightColor = mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
 
         float blocklight = smoothstep(0.0, 1.0, frx_fragLight.x);
-        blocklight = pow(blocklight, 2.0);
+        blocklight = pow(blocklight, 1.0);
 
         vec3 undergroundLighting;
         undergroundLighting = max(vec3(0.005), undergroundLighting);
         //undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
-        undergroundLighting += blockLightColor * blockLightColor * blocklight * blocklight;
+        undergroundLighting += blockLightColor * blockLightColor * blocklight;
 
         lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
 
@@ -117,7 +121,7 @@ void frx_pipelineFragment() {
         //         ambientLightColor += skySample / totalSamples;
         //     }
         // }
-        float skyIlluminance = frx_luminance(ambientLightColor * 3.0);
+        float skyIlluminance = frx_luminance(ambientLightColor * (4.0 / max(1.0, frx_luminance(frx_fragColor.rgb) + 0.5)));
 
         ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
         skyLightColor = normalize(skyLightColor) * 6.5;
