@@ -82,19 +82,23 @@ void frx_pipelineFragment() {
 
     if(!isInventory) {
         vec3 tdata = getTimeOfDayFactors();
+        frx_fragLight.y = mix(frx_fragLight.y, 1.0, frx_worldIsEnd);
+
         shadowMap = mix(shadowMap, 0.0, tdata.z);
         shadowMapInverse = mix(shadowMapInverse, 1.0, tdata.z);
+
         float NdotL = dot(frx_fragNormal, frx_skyLightVector) * 0.25 + 0.75;
         NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
+
         frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
 
-        // not much reason to still use vanilla lightmap lut, but this way we can benefit from things like true darkness mod
-        vec3 lightmap = vec3(0.0);//texture(frxs_lightmap, frx_fragLight.xy).rgb;
 
         vec3 blockLightColor = mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
 
         float blocklight = smoothstep(0.0, 1.0, frx_fragLight.x);
         blocklight = pow(blocklight, 1.0);
+
+        vec3 lightmap = vec3(0.0);
 
         vec3 undergroundLighting;
         undergroundLighting = max(vec3(0.005), undergroundLighting);
@@ -106,21 +110,13 @@ void frx_pipelineFragment() {
         vec3 aboveGroundLighting;
 
         vec3 skyLightColor = getSkyColor(frx_skyLightVector);
+        vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0));
+        if(frx_worldIsEnd == 1) {
+            float NdotPlanet = dot(frx_fragNormal, normalize(vec3(0.8, 0.3, -0.5)));
+            ambientLightColor = mix(ambientLightColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+            ambientLightColor = mix(ambientLightColor, vec3(0.3, 0.05, 0.25), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+        }
 
-        vec3 ambientLightColor = vec3(0.0);
-        ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0));
-        // for(int i = 0; i < 2; i++) {
-        //     for(int j = 0; j < 2; j++) {
-        //         float totalSamples = 4.0;
-        //         vec3 skySample = getSkyColor(normalize(rand3D(vec2(i, j))));
-
-        //         if(frx_luminance(pow(skySample, vec3(1.0 / 2.2))) > 1.0) {
-        //             //totalSamples -= 1.0;
-        //             //skySample = vec3(0.0);
-        //         }
-        //         ambientLightColor += skySample / totalSamples;
-        //     }
-        // }
         float skyIlluminance = frx_luminance(ambientLightColor * (4.0 / max(1.0, frx_luminance(frx_fragColor.rgb) + 0.5)));
 
         ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
