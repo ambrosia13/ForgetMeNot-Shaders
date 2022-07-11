@@ -1,3 +1,8 @@
+float endStoneNoise(in vec2 uv) {
+    if(frx_luminance(frx_fragColor.rgb) < 0.5) return 2.0 * max(fbmHash(uv * 0.75, 4, 0.0) * 4.0, fbmHash(uv * 0.5 + 10.0, 4, 0.0) * 4.0);
+    return (cellular2x2(uv).x) * 4.0;
+}
+
 void frx_materialFragment() {
     #ifdef PBR_ENABLED
         frx_fragReflectance = 0.05;
@@ -5,11 +10,11 @@ void frx_materialFragment() {
         uv = floor(uv * 16.0) / 16.0;
         float offset = 1e-2;
 
-        float centerNoise = cellular2x2(uv).x;
+        float centerNoise = endStoneNoise(uv);
 
-        float height1 = cellular2x2(uv + vec2(offset, 0.0)).x;
+        float height1 = endStoneNoise(uv + vec2(offset, 0.0));
         // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
-        float height3 = cellular2x2(uv + vec2(0.0, offset)).x;
+        float height3 = endStoneNoise(uv + vec2(0.0, offset));
         // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
         float deltaX = (centerNoise - height1) * 0.5;

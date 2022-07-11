@@ -149,7 +149,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 absorbSun = abs(dayAbsorbLight - dayAbsorbView) / d0((dayScatterLight - dayScatterView) * ln2);
 
     vec3 rlhDayScatter = scatter(rayleigh, opticalDepth * mix(1.0, 1.0, pow((1.0 - clamp01(viewDir.y)), 6.0))) * 1.5 * rayleighPhase(sunDotV * 0.0);
-    vec3 mieDayScatter = scatter(mie, particleThickness(pow(upDot, 2.0))) * miePhase(sunDotV, MIE_AMOUNT);
+    vec3 mieDayScatter = scatter(mie, particleThickness(pow(upDot, 2.0))) * miePhase(sunDotV, 20.0);
 
     vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
 
@@ -394,7 +394,9 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     }
 
     if(frx_worldIsEnd == 1) {
-        viewDir.y = -viewDir.y;
+        viewDir.zy = rotate2D(viewDir.zy, 2.8);
+
+        //viewDir.y = -viewDir.y;
 
         secondViewDir = viewDir;
         
@@ -415,7 +417,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
         
         atmosphere += endSecondAtmosphere(secondViewDir, normalize(vec3(1.0, 0.1, 0.2)), 1.0, 1.0);
         if(secondViewDir.y < 0.0) {
-            atmosphere += vec3(0.09, 0.12, 0.03) * smoothstep(-0.1, 0.8, dot(normalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
+            atmosphere += vec3(0.09, 0.12, 0.03) * smoothstep(-0.0, 1.0, dot(normalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
         } else if(viewDir.y < 0.0) {
             atmosphere += vec3(0.01, 0.0, 0.01);
         }
