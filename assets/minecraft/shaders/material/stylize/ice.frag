@@ -1,5 +1,21 @@
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/materials.glsl
 #include lumi:shaders/api/pbr_ext.glsl
+
+float iceHeightNoise(in vec2 uv) {
+    float waterHeight;
+    float waves;
+    float w;
+    float time = 1.0;
+
+    vec2 coord = uv * 1.5;
+
+    waterHeight += fmn_fbm2D(coord, 2, 0.0) * (3.0 / 2.0) * 0.5 + 0.5;
+
+    waterHeight *= 2.0;
+    waterHeight += 0.3;
+
+    return pow(waterHeight, 4.0) * 0.15;
+}
 
 void frx_materialFragment() {
     vec2 uv = floor(frx_var0.xy * 16.0) / 16.0;

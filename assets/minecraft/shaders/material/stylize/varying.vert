@@ -1,4 +1,4 @@
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/materials.glsl
 
 void frx_materialVertex() {
     frx_vertex += frx_modelToWorld;

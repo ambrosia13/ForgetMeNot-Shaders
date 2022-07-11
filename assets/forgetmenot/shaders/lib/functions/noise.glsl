@@ -1,19 +1,3 @@
-float iceHeightNoise(in vec2 uv) {
-    float waterHeight;
-    float waves;
-    float w;
-    float time = 1.0;
-
-    vec2 coord = uv * 1.5;
-
-    waterHeight += fbmHash(coord, 2, 0.0) * (3.0 / 2.0) * 0.5 + 0.5;
-
-    waterHeight *= 2.0;
-    waterHeight += 0.3;
-
-    return pow(waterHeight, 4.0) * 0.15;
-}
-
 // unfinished
 float rainHeightNoise(in vec2 uv) {
     float size = 0.2;

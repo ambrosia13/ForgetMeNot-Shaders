@@ -1,5 +1,7 @@
+#include forgetmenot:shaders/lib/materials.glsl
+
 float endStoneNoise(in vec2 uv) {
-    if(frx_luminance(frx_fragColor.rgb) < 0.5) return 2.0 * max(fbmHash(uv * 0.75, 4, 0.0) * 4.0, fbmHash(uv * 0.5 + 10.0, 4, 0.0) * 4.0);
+    if(frx_luminance(frx_fragColor.rgb) < 0.5) return 2.0 * max(fmn_fbm2D(uv * 0.75, 4, 0.0) * 4.0, fmn_fbm2D(uv * 0.5 + 10.0, 4, 0.0) * 4.0);
     return (cellular2x2(uv).x) * 4.0;
 }
 
@@ -24,5 +26,10 @@ void frx_materialFragment() {
         //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
         frx_fragNormal = normalize(frx_fragNormal);
 
+        if(frx_luminance(frx_fragColor.rgb) < 0.5) {
+            frx_fragRoughness = 0.0;
+        } else {
+            frx_fragRoughness = 0.3;
+        }
     #endif
 }

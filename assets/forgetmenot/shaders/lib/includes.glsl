@@ -2,9 +2,6 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 */
 
-uniform ivec2 frxu_size;
-uniform int frxu_lod;
-
 #include forgetmenot:atmospherics
 #include forgetmenot:lighting
 #include forgetmenot:debug

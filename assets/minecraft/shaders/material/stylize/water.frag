@@ -1,8 +1,6 @@
 #include forgetmenot:shaders/lib/materials.glsl
 #include lumi:shaders/api/pbr_ext.glsl
 
-int fmn_isWater = 0;
-
 #ifndef WAVES_QUALITY
     #define WAVES_QUALITY 3
 #endif
@@ -15,17 +13,10 @@ float waterHeightNoise(in vec2 uv) {
 
     vec2 coord = uv * vec2(1.0, 0.7);
 
-    float noise = fbmHash(coord, 3, 1.0) * (4.0 / 3.0);
-    noise += (fbmHash(coord * vec2(4.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.05;
+    float noise = fmn_fbm2D(coord, 3, 1.0) * (4.0 / 3.0);
+    noise += (fmn_fbm2D(coord * vec2(4.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.05;
 
     return pow(noise * 0.5, 1.5) * (0.15);
-}
-
-// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-vec2 parallaxMapping(in vec2 texcoord, in float height) {
-    vec3 viewDir = normalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
-    vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
-    return texcoord - p;
 }
 
 void frx_materialFragment() {
@@ -39,7 +30,7 @@ void frx_materialFragment() {
     //uv = floor(uv * 16.0) / 16.0;
     
     float centerNoise = waterHeightNoise(uv);
-    uv = parallaxMapping(uv, centerNoise * 4.0);
+    uv = fmn_parallaxMapping(uv, centerNoise * 4.0);
 
     centerNoise = waterHeightNoise(uv);
 
