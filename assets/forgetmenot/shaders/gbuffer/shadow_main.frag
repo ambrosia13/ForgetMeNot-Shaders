@@ -42,43 +42,32 @@ void frx_pipelineFragment() {
     vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
-    // shadowScreenPos.z -= 0.0001;
-
-    // float biasHigh = 4.0;
-    // float biasLow = 2.0;
-
-    // if (d3.x < 1.0 && d3.y < 1.0 && d3.z < 1.0) {
-    //     cascade = 3;
-    //     biasHigh = 0.1;
-    //     biasLow = 0.05;
-    // } else if (d2.x < 1.0 && d2.y < 1.0 && d2.z < 1.0) {
-    //     cascade = 2;
-    //     biasHigh = 0.25;
-    //     biasLow = 0.1;
-    // } else if (d1.x < 1.0 && d1.y < 1.0 && d1.z < 1.0) {
-    //     cascade = 1;
-    //     // these can't go any higher
-    //     biasHigh = 1.0;
-    //     biasLow = 0.5;
-    // }
-
-    // shadowCoords.z -= mix(biasHigh, biasLow, max(dot(vertexNormal, frx_skyLightVector), 0.0)) / SHADOW_MAP_SIZE;
-
     float shadowMap;
     //shadowMap += texture(frxs_shadowMap, vec4((shadowScreenPos.xy), cascade, shadowScreenPos.z));
-    for(int i = -3; i < 3; i++) {
-        for(int j = -3; j < 3; j++) {
-            shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / SHADOW_MAP_SIZE, cascade, shadowScreenPos.z)) / 16.0;
+    //if(frx_matCutout == 1) fmn_sssAmount = 1.0;
+    if(fmn_sssAmount == 0.0) {
+        for(int i = -3; i < 3; i++) {
+            for(int j = -3; j < 3; j++) {
+                shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / SHADOW_MAP_SIZE, cascade, shadowScreenPos.z)) / 16.0;
+            }
         }
+        shadowMap = smoothstep(0.0, 0.9, shadowMap);
+        shadowMap = clamp01(shadowMap);
+        shadowMap *= smoothstep(-0.3, 0.3, dot(frx_vertexNormal, frx_skyLightVector));
+    } else {
+        for(int i = -4; i < 4; i++) {
+            for(int j = -4; j < 4; j++) {
+                shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + 5.0 * (cascade + fmn_sssAmount) * vec2(i, j) / SHADOW_MAP_SIZE, cascade, shadowScreenPos.z)) / 64.0;
+            }
+        }
+        shadowMap = smoothstep(0.0, 0.7, shadowMap);
+        shadowMap = clamp01(shadowMap);
     }
-    shadowMap = clamp01(shadowMap);
 
     shadowMap = mix(0.0, shadowMap, frx_fragLight.y);
 
     if(frx_isHand) shadowMap = 0.5;
     float shadowMapInverse = 1.0 - shadowMap;
-
-    //shadowMap *= smoothstep(0.1, 0.2, frx_smoothedEyeBrightness.y * frx_fragLight.y);
 
     if(!isInventory) {
         vec3 tdata = getTimeOfDayFactors();
@@ -114,7 +103,7 @@ void frx_pipelineFragment() {
         if(frx_worldIsEnd == 1) {
             float NdotPlanet = dot(frx_fragNormal, normalize(vec3(0.8, 0.3, -0.5)));
             ambientLightColor = mix(ambientLightColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
-            ambientLightColor = mix(ambientLightColor, vec3(0.3, 0.05, 0.25), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+            ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
         }
 
         float skyIlluminance = frx_luminance(ambientLightColor * (4.0 / max(1.0, frx_luminance(frx_fragColor.rgb) + 0.5)));
@@ -128,6 +117,13 @@ void frx_pipelineFragment() {
         aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), pow(frx_fragLight.x, 2.0));
 
         lightmap = mix(lightmap, aboveGroundLighting, frx_fragLight.y);
+
+        if(frx_worldIsNether == 1) {
+            lightmap = vec3(0.0);
+            //lightmap += vec3(0.1, 0.05, 0.0);
+
+            lightmap += vec3(1.0, 0.25, 0.0) * (smoothstep(-0.5, 0.5, dot(frx_fragNormal, vec3(0.0, -1.0, 0.0))) + 2.0 * pow(frx_fragLight.x, 2.0) + 0.3);
+        }
 
         // handheld light
         float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, frx_distance);

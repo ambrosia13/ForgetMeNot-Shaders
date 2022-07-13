@@ -97,6 +97,8 @@ const vec3 mieDay = vec3(0.5e-6);
 const vec3 totalDayCoeff = rlhDay + mieDay;
 
 vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
+    if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
+
     const float ln2 = log(2.0);
 
     vec3 viewDir = normalize(viewSpacePos);
@@ -376,6 +378,8 @@ vec3 getSkyColor(in vec3 viewDir) {
 }
 
 vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
+    if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
+
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
