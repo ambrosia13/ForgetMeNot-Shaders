@@ -53,14 +53,14 @@ void frx_pipelineFragment() {
         }
         shadowMap = smoothstep(0.0, 0.9, shadowMap);
         shadowMap = clamp01(shadowMap);
-        shadowMap *= smoothstep(-0.3, 0.3, dot(frx_vertexNormal, frx_skyLightVector));
+        shadowMap *= smoothstep(-0.0, 0.1, dot(frx_vertexNormal, frx_skyLightVector));
     } else {
         for(int i = -4; i < 4; i++) {
             for(int j = -4; j < 4; j++) {
                 shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + 5.0 * (cascade + fmn_sssAmount) * vec2(i, j) / SHADOW_MAP_SIZE, cascade, shadowScreenPos.z)) / 64.0;
             }
         }
-        shadowMap = smoothstep(0.0, 0.7, shadowMap);
+        shadowMap = smoothstep(0.0, 0.5, shadowMap);
         shadowMap = clamp01(shadowMap);
     }
 
@@ -87,9 +87,10 @@ void frx_pipelineFragment() {
             NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
 
             frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
+            frx_fragLight.x = pow(frx_fragLight.x, 1.0);
 
 
-            vec3 blockLightColor = 1.3 * mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
+            vec3 blockLightColor = 1.0 * mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
 
             float blocklight = smoothstep(0.0, 1.0, frx_fragLight.x);
             blocklight = pow(blocklight, 1.0);
@@ -97,7 +98,7 @@ void frx_pipelineFragment() {
             lightmap = vec3(0.0);
 
             vec3 undergroundLighting;
-            undergroundLighting = max(vec3(0.025), undergroundLighting);
+            undergroundLighting = max(vec3(0.0025), undergroundLighting);
             //undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
             undergroundLighting += blockLightColor * blockLightColor * blocklight;
 
@@ -113,8 +114,9 @@ void frx_pipelineFragment() {
                 ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
             }
 
-            float skyIlluminance = frx_luminance(ambientLightColor * (4.0));
-            skyIlluminance = max(skyIlluminance, 0.1);
+            float skyIlluminance = frx_luminance(ambientLightColor * (2.5));
+            skyIlluminance *= 1.33;
+            skyIlluminance = max(skyIlluminance, 0.005);
             skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
 
             ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;

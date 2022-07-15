@@ -389,11 +389,12 @@ void main() {
         #endif
 
         #ifdef BORDER_FOG
-            if(min_depth < 1.0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
+            if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
         #endif
 
-        composite = mix(composite, vec3(0.0), (smoothstep(0.0, 60.0 * frx_darknessEffectFactor, blockDist)) * frx_effectDarkness);
-
+        #ifdef frx_darknessEffectFactor
+            composite = mix(composite, vec3(0.0), (smoothstep(-2.0, 60.0 * frx_darknessEffectFactor, max(0.0, blockDist - 2.0))) * frx_effectDarkness);
+        #endif
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 

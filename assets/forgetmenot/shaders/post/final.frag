@@ -7,13 +7,28 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
+// using reinhard simple as a base
+vec3 ambrosiaTonemap(in vec3 color) {
+    float l = frx_luminance(color);
+    //float a = l / (exp2())
+
+    vec3 r = color / (exp2(-frx_luminance(color * 1.0)) + color);
+    
+    //r *= inversesqrt(r);
+
+    return r;
+}
+
 void main() {
     vec3 color = texture(u_color, texcoord).rgb;
     vec3 finalColor = color.rgb;
 
+    //finalColor *= vec3(1.1, 1.1, 0.9);
+
     //finalColor = tanh(finalColor);
-    finalColor = frx_toneMap(finalColor * 1.2);
-    //finalColor = 1.0 - exp(-finalColor);
+    //finalColor = frx_toneMap(finalColor * 1.2);
+    finalColor = 1.0 - exp(-finalColor);
+    //finalColor = ambrosiaTonemap(finalColor);
     //finalColor *= inversesqrt(finalColor * finalColor + 1.0);
 
     finalColor = max(finalColor, vec3(0.0));
