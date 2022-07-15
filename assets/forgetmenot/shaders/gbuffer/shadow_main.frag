@@ -122,7 +122,7 @@ void frx_pipelineFragment() {
             ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
             skyLightColor = normalize(skyLightColor) * 6.5;
 
-            aboveGroundLighting += skyIlluminance * ambientLightColor * shadowMapInverse;
+            aboveGroundLighting += max(0.075, skyIlluminance) * ambientLightColor * shadowMapInverse;
             aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * (NdotL * NdotL));
 
             aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), pow(frx_fragLight.x, 2.0));
