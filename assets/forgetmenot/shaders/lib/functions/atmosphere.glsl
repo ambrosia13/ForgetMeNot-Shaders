@@ -363,11 +363,11 @@ vec3 getSkyColor(in vec3 viewDir) {
 
     if(1.0 - tdata.y > 0.0) {
         vec3 sunVector = getSunVector();
-        atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0)) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+        atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();
-        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0)) * vec3(0.5, 0.7, 1.5) * 0.25;
+        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS) * vec3(0.5, 0.7, 1.5) * 0.25;
     }
 
     if(frx_worldIsEnd == 1) {
@@ -389,11 +389,11 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     if(frx_worldIsOverworld == 1) {
         if(1.0 - tdata.y > 0.0) {
             vec3 sunVector = getSunVector();
-            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0)) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
         }
         if(1.0 - tdata.x > 0.0) {
             vec3 moonVector = getMoonVector();
-            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0)) * vec3(0.5, 0.7, 1.5) * 0.25;
+            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS) * vec3(0.5, 0.7, 1.5) * 0.25;
         }
     }
 

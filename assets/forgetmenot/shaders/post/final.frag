@@ -11,9 +11,12 @@ void main() {
     vec3 color = texture(u_color, texcoord).rgb;
     vec3 finalColor = color.rgb;
 
-    finalColor = tanh(finalColor);
+    //finalColor = tanh(finalColor);
+    finalColor = frx_toneMap(finalColor * 1.2);
     //finalColor = 1.0 - exp(-finalColor);
+    //finalColor *= inversesqrt(finalColor * finalColor + 1.0);
 
+    finalColor = max(finalColor, vec3(0.0));
     finalColor = pow(finalColor, vec3(1.0 / 2.2));
 
     vibrance(finalColor, 1.0);

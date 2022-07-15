@@ -62,10 +62,19 @@ vec3 blend( vec3 dst, vec4 src ) {
 }
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
-    float n = mix(snoise(plane * 0.3 + frx_renderSeconds / 40.0), snoise(plane * 0.6 + frx_renderSeconds / 60.0), 0.5);
+    float n = mix(smoothHash(plane * 1.3 + frx_renderSeconds / 40.0), smoothHash(plane * 1.6 + frx_renderSeconds / 60.0), 0.5);
     float d = (smoothstep(0.5 + 0.2 * n, 0.7 + 0.2 * n, fbmHash(plane, octaves, 0.001)));
 
     return d * ((octaves + 1.0) / octaves);
+
+    // float n = fbmHash(plane * 2.0, octaves, 0.001);
+    // float n2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
+
+    // float a = smoothstep(0.7, 0.8, n) * ((octaves + 1.0) / octaves);
+    // float b = smoothstep(0.5, 0.7, n2) * ((octaves + 1.0) / octaves);
+    // float x = smoothHash(plane) * 0.5 + 0.5;
+
+    // return mix(a, b, x);
 }
 float sampleCirrusCloud(in vec2 plane, in int octaves) {
     plane *= 2.0;
@@ -128,54 +137,8 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // vec3 secondViewDir = viewDir;
-    // if(frx_worldIsEnd == 1) {
-    //     viewDir.y = -viewDir.y;
-    //     maxViewSpacePos.y = -maxViewSpacePos.y;
-    //     viewDir.xy = rotate2D(viewDir.xy, -0.1);
-    //     maxViewSpacePos.xy = rotate2D(maxViewSpacePos.xy, -0.1);
-
-    //     viewDir.y += 0.2;
-    //     viewDir = normalize(viewDir);
-
-    //     secondViewDir.yz = rotate2D(secondViewDir.yz, 0.7);
-    //     secondViewDir.xy = rotate2D(secondViewDir.xy, -0.74);
-    //     secondViewDir.y += 0.95;
-    //     secondViewDir = normalize(secondViewDir);
-    // }
-
+    
     vec3 skyColor = getSkyColor(viewDir);
-    // skyColor += endSecondAtmosphere(secondViewDir, normalize(vec3(1.0, 0.1, 0.2)), 1.0, 1.0);
-    // if(secondViewDir.y < 0.0) {
-    //     skyColor += vec3(0.09, 0.12, 0.03) * smoothstep(-0.1, 0.8, dot(normalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
-    // }
-
-    // //maxViewSpacePos.y -= 120.0;
-    // vec2 endPlane = maxViewSpacePos.xz / (maxViewSpacePos.y + 0.1 * length(maxViewSpacePos.xz));
-    // //endPlane += frx_renderSeconds / 40.0;
-    // //endPlane *= 1.2;
-    // //endPlane += frx_renderSeconds * 0.01;
-    // //endPlane += curlNoise(endPlane);
-    // float endIslands = fbmHash(floor(endPlane * 64.0) / 64.0, 4, 0.0);
-    // float offset = 0.1;
-    // float height1 = fbmHash((floor(endPlane * 64.0) / 64.0) + vec2(offset, 0.0), 4, 0.0);
-    // float height2 = fbmHash((floor(endPlane * 64.0) / 64.0) + vec2(0.0, offset), 4, 0.0);
-    
-    // float deltaX = (endIslands - height1) * 12.0;
-    // float deltaY = (endIslands - height2) * 12.0;
-
-    // vec3 endIslandNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
-    // endIslandNormal = normalize(endIslandNormal);
-    // endIslandNormal.y = -endIslandNormal.y;
-    
-    // float endSkyShading = dot(-endIslandNormal, normalize(vec3(1.0, 0.1, 0.2))) * 0.5 + 1.0;
-
-    // //endPlane -= frx_renderSeconds / 40.0;
-
-    // if(frx_worldIsEnd == 1 && viewDir.y < 0.0) {
-    //     skyColor += vec3(0.01, 0.0, 0.01);
-    //     skyColor += (1.0 - tanh(length(endPlane) * 0.25)) * 1.3 * mix(vec3(0.06, 0.07, 0.02) * endSkyShading, skyColor, tanh(length(endPlane) * 0.25)) * (2.0 * step(0.7, endIslands) + 0.0* step(0.71, endIslands));
-    // };
 
     if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
 
@@ -197,7 +160,8 @@ void main() {
                 vec2 cirrusPlane = plane;
 
                 #ifdef CURL_NOISE
-                    plane += 0.0045 * curlNoise(plane * 4.0 + frx_renderSeconds / 20.0);
+                    plane += 0.0045 * curlNoise(plane * 3.0 + frx_renderSeconds / 20.0);
+                    //plane += 0.0045 * fbmCurl(plane * 6.0 + frx_renderSeconds / 20.0, 10);
                 #endif
 
 
@@ -236,7 +200,7 @@ void main() {
 
                     lightOpticalDepth += currentDensity / 8.0;
 
-                    //if(currentDensity < 0.00001) break;
+                    //if(currentDensity == 0.0) break;
 
                     stepLength *= 1.5;
                 }
@@ -337,8 +301,9 @@ void main() {
                         break;
                     } else {
                         float depthQuery = texture(u_particles_depth, screenPos.xy).r;
+                        if(depthQuery == 1.0) break;
 
-                        if(screenPos.z > depthQuery && depthQuery != 1.0) {
+                        if(screenPos.z > depthQuery) {
                             reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
                             break;
                         }
@@ -362,8 +327,9 @@ void main() {
             float stepLength = 0.5 / RTAO_STEPS;
 
             for(int rays = 0; rays < RTAO_RAYS; rays++) {
-                for(int i = 0; i < 10; i++) {
-                    rayView += normalize(rayDir + rand3D(mod(jitterCoord * 2000.0 + frx_renderFrames + 20.0 * rays + i, 4000.0))) * stepLength
+                jitterCoord += rays;
+                for(int i = 0; i < RTAO_STEPS; i++) {
+                    rayView += normalize(rayDir + rand3D(mod(jitterCoord * 2000.0 + frx_renderFrames + rays + i, 4000.0))) * stepLength
                     * (rand1D(jitterCoord * 2000.0 + frx_renderFrames + rays + i) * 0.5 + 0.5);
 
                     vec3 rayScreen = viewSpaceToScreenSpace(rayView);
@@ -374,16 +340,18 @@ void main() {
                         float depthQuery = texture(u_translucent_depth, rayScreen.xy).r;
 
                         if(rayScreen.z > depthQuery && distance(rayView, setupViewSpacePos(rayScreen.xy, depthQuery)) < 1.0) {
-                            rtao *= 0.25 / RTAO_RAYS;
+                            rtao *= 1.0 - 0.75 / RTAO_RAYS;
                             break;
                         }
                     }
 
-                    stepLength *= 1.3;
+                    stepLength *= 1.5;
                 }
             }
             composite *= mix(lastFrameRtao, rtao, RTAO_BLEND_FACTOR);
         #endif
+
+    }
 
         float blockDist = length(minViewSpacePos);
         float sunDotU = getSunVector().y;
@@ -398,8 +366,11 @@ void main() {
 
                 float fogTransmittance = exp(-fogDist * (0.15 + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
 
+                if(min_depth == 1.0) fogTransmittance = 1.0;
+                if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
+
                 vec3 fogScattering = getFogScattering(viewDir, fogOpticalDepth);
-                fogScattering = mix(fogScattering, mix(vec3(0.05, 0.1, 0.2), vec3(0.2, 0.0, 0.0), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+                fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.4, 0.0, 0.0), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
                 fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
 
                 fogScattering *= (1.0 - fogTransmittance);
@@ -418,11 +389,11 @@ void main() {
         #endif
 
         #ifdef BORDER_FOG
-            composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
+            if(min_depth < 1.0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
         #endif
 
         composite = mix(composite, vec3(0.0), (smoothstep(0.0, 60.0 * frx_darknessEffectFactor, blockDist)) * frx_effectDarkness);
-    }
+
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 

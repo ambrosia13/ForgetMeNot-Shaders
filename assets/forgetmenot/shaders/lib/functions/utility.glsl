@@ -310,4 +310,19 @@ vec2 curlNoise(in vec2 plane) {
     return vec2(-dy, dx);
 }
 
+vec2 fbmCurl(in vec2 plane, in int octaves) {
+    vec2 noise = vec2(0.01);
+    float amp = 0.5;
+
+    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
+
+    for(int i = 0; i < octaves; i++) {
+        noise += amp * curlNoise(plane);
+        plane = rotationMatrix * plane;
+        amp *= 0.5;
+    }
+
+    return noise * ((octaves + 1.0) / octaves);
+}
+
 #include forgetmenot:shaders/lib/functions/noise.glsl 

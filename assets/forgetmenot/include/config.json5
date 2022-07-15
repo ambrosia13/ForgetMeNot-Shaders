@@ -60,12 +60,31 @@
             includeToken: "forgetmenot:lighting",
             categoryKey: "config.forgetmenot.category.lighting",
             elements: {
-                blocklight_neutrality: {
+                day_brightness: {
+                    default: 1.0,
+                    min: 0.0,
+                    max: 4.0,
+                    nameKey: "config.forgetmenot.name.day_brightness",
+                    descriptionKey: "config.forgetmenot.desc.day_brightness"
+                },
+                night_brightness: {
                     default: 0.25,
+                    min: 0.0,
+                    max: 4.0,
+                    nameKey: "config.forgetmenot.name.night_brightness",
+                    descriptionKey: "config.forgetmenot.desc.night_brightness"
+                },
+                blocklight_neutrality: {
+                    default: 1.0,
                     min: 0.0,
                     max: 1.0,
                     nameKey: "config.forgetmenot.name.blocklight_neutrality",
                     descriptionKey: "config.forgetmenot.desc.blocklight_neutrality"
+                },
+                vanilla_ao: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.vanilla_ao",
+                    descriptionKey: "config.forgetmenot.desc.vanilla_ao"
                 },
                 rtao: {
                     default: false,
