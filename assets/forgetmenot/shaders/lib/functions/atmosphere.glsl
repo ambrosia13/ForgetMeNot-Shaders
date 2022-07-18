@@ -161,7 +161,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     if(frx_worldIsOverworld == 1) {
         totalScatter += 40.0 * scatter(mie, opticalDepth) * 
-        miePhase(frx_smootherstep(0.9995, 0.9997, sunDotV), opticalDepth) * 
+        miePhase(frx_smootherstep(0.9996, 0.9998, sunDotV), opticalDepth) * 
         smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
         frx_smootherstep(0.9985 , 0.9995, dot(viewDir, sunVector));// * vec3(1.1, 1.1, 0.9);
     }

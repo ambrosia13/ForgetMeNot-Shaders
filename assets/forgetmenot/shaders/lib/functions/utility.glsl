@@ -30,17 +30,17 @@ vec3 lastFrameViewSpaceToScreenSpace(in vec3 viewSpacePos) {
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
 
-float clamp01(in float angle) {
-    return clamp(angle, 0.0, 1.0);
+float clamp01(in float x) {
+    return clamp(x, 0.0, 1.0);
 }
-vec2 clamp01(in vec2 angle) {
-    return clamp(angle, vec2(0.0), vec2(1.0));
+vec2 clamp01(in vec2 x) {
+    return clamp(x, vec2(0.0), vec2(1.0));
 }
-vec3 clamp01(in vec3 angle) {
-    return clamp(angle, vec3(0.0), vec3(1.0));
+vec3 clamp01(in vec3 x) {
+    return clamp(x, vec3(0.0), vec3(1.0));
 }
-vec4 clamp01(in vec4 angle) {
-    return clamp(angle, vec4(0.0), vec4(1.0));
+vec4 clamp01(in vec4 x) {
+    return clamp(x, vec4(0.0), vec4(1.0));
 }
 
 // More canvas utility stuff
@@ -53,10 +53,6 @@ vec3 getMoonVector() {
     return moon;
 }
 
-float cubic(in float x) {
-	return x * x * (3.0 - 2.0 * x);
-}
-
 // Utility function to get frex time of day factors 
 // vec3(dayFactor, nightFactor, sunsetFactor)
 vec3 getTimeOfDayFactors() {
@@ -65,28 +61,6 @@ vec3 getTimeOfDayFactors() {
     float dayFactor = frx_worldIsMoonlit == 0.0 ? 1.0 : 0.0;
     dayFactor *= frx_skyLightTransitionFactor;
     float sunsetFactor = 1.0 - frx_skyLightTransitionFactor;
-
-    // float sunUp = dot(vec3(0.0, 1.0, 0.0), getSunVector());
-    // float sunDown = dot(vec3(0.0, -1.0, 0.0), getSunVector());
-
-    // dayFactor = 1.0 - pow(1.0 - clamp01(sunUp), 6.0);
-    // sunsetFactor = 1.0 - dayFactor;
-    // nightFactor = cubic(cubic(clamp01(sunDown * 20.0 + 0.4)));
-    // nightFactor = 1.0 - pow(1.0 - nightFactor, 2.0);
-    // sunsetFactor *= 1.0 - nightFactor;
-    // dayFactor *= 1.0 - nightFactor;
-
-    // float dayFactor, nightFactor, sunsetFactor;
-
-    // float ticks = frx_worldTime * 24000.0;
-
-    // dayFactor = frx_smootherstep(0.0, 1500.0, ticks) - frx_smootherstep(11500.0, 13000.0, ticks);
-    // nightFactor = frx_smootherstep(13000.0, 14500.0, ticks) - frx_smootherstep(21500.0, 23000.0, ticks);
-    // // branching doesn't have much impact if condition is universal across the whole screen, so this is not as cursed as it looks
-    // // Okay, maybe it is still pretty cursed
-    // if(ticks < 15000.0 && ticks > 6000.0) sunsetFactor = frx_smootherstep(11500.0, 13000.0, ticks) - frx_smootherstep(13000.0, 14500.0, ticks);
-    // else if(ticks > 20000.0) sunsetFactor = frx_smootherstep(21500.0, 23000.0, ticks);// - frx_smootherstep(23000.0, 25500.0, ticks);
-    // else sunsetFactor = frx_smootherstep(1500.0, 0.0, ticks);
 
     return vec3(dayFactor, nightFactor, sunsetFactor);
 }
@@ -125,7 +99,7 @@ float fbm2D(vec2 uv) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 5.0 * (mod(i, 2) - 2);
+		uv = uv * 2.0 + fmn_time / 5.0 * (mod(i, 2) - 2);
 		amp *= 0.5;
 	}
 
@@ -139,7 +113,7 @@ float fbmOctaves(vec2 uv, int octaves) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = uv * 2.0 + fmn_time / 10.0;
 		amp *= 0.5;
 	}
 
@@ -153,7 +127,7 @@ float fbmOctaves(vec3 uv, int octaves) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (snoise(uv) * 0.5 + 0.51);
-		uv = uv * 2.0 + frx_renderSeconds / 10.0;
+		uv = uv * 2.0 + fmn_time / 10.0;
 		amp *= 0.5;
 	}
 
@@ -217,7 +191,7 @@ float fbmHash(vec2 uv, int octaves) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + mod(frx_renderSeconds / 10.0, 1000.0);
+		uv = rotationMatrix * uv * 2.0 + mod(fmn_time / 10.0, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -231,7 +205,7 @@ float fbmHash(vec2 uv, int octaves, float t) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + mod(frx_renderSeconds * t, 1000.0);
+		uv = rotationMatrix * uv * 2.0 + mod(fmn_time * t, 1000.0);
 		amp *= 0.5;
 	}
 

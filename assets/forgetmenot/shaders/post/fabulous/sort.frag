@@ -81,11 +81,11 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
     float density = 1.0;
 
     #ifdef DYNAMIC_WEATHER
-        coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + frx_renderSeconds / 60.0) * 0.2;
-        mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) * 0.15 + 0.15;
-        //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) + 1.0;
-        //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) + 1.0;
-        density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) * 0.25 - 0.25;
+        coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + fmn_time / 60.0) * 0.2;
+        mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.15 + 0.15;
+        //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
+        //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
+        density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.25 - 0.25;
     #endif
 
     float lowerBound = coverageBias;
@@ -93,7 +93,7 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
     
     if(windWispyness > 0.0) plane.x += windWispyness * fbmHash(plane.yy * 0.3, 3, 0.01);
 
-    float noiseLocal = mix(smoothHash(plane * irregularity + frx_renderSeconds / 40.0), smoothHash(plane * irregularity + frx_renderSeconds / 60.0 + 10.0), 0.5);
+    float noiseLocal = mix(smoothHash(plane * irregularity + fmn_time / 40.0), smoothHash(plane * irregularity + fmn_time / 60.0 + 10.0), 0.5);
     float clouds = (smoothstep(lowerBound + 0.2 * noiseLocal, upperBound + 0.2 * noiseLocal, fbmHash(plane, octaves, 0.001)));
 
     return clouds * ((octaves + 1.0) / octaves);
@@ -187,12 +187,12 @@ void main() {
         if(viewDir.y > 0.0) {
             if(frx_worldIsOverworld == 1) {
                 vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
-                plane += frx_renderSeconds / 100.0;
+                plane += fmn_time / 100.0;
 
                 vec2 cirrusPlane = plane;
 
                 #ifdef CURL_NOISE
-                    plane += 0.0045 * curlNoise(plane * 3.0 + frx_renderSeconds / 20.0);
+                    plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
                     //plane += 0.0045 * fbmCurl(plane * 6.0 + frx_renderSeconds / 20.0, 10);
                 #endif
 
@@ -356,7 +356,7 @@ void main() {
                         break;
                     } else {
                         float depthQuery = texture(u_particles_depth, screenPos.xy).r;
-                        if(depthQuery == 1.0) break;
+                        if(depthQuery == 1.0) continue;
 
                         if(screenPos.z > depthQuery) {
                             reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
