@@ -18,10 +18,64 @@
                 {name: "TEXTURE_COMPARE_FUNC", val: "LEQUAL"}
             ]
         }
+        {
+            name: "shadow_color",
+            size: 2048,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D_ARRAY",
+            depth: 4,
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "shadow_normal",
+            size: 2048,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D_ARRAY",
+            depth: 4,
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
     ],
     framebuffers: [
         {
             name: "shadow",
+            colorAttachments: [
+                {
+                    image: "shadow_color", clearColor: 0x00000000
+                },
+                {
+                    image: "shadow_normal", clearColor: 0x00000000
+                }
+            ],
             depthAttachment: {
                 image: "shadow_map",
                 clearDepth: 1.0

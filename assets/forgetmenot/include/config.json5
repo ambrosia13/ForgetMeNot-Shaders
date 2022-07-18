@@ -25,6 +25,16 @@
                     nameKey: "config.forgetmenot.name.sun_energy",
                     descriptionKey: "config.forgetmenot.desc.sun_energy"
                 },
+                dynamic_weather: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.dynamic_weather",
+                    descriptionKey: "config.forgetmenot.desc.dynamic_weather"
+                },
+                cloud_light_rays: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.cloud_light_rays",
+                    descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
+                },
                 cloud_detail: {
                     default: 7,
                     min: 3,

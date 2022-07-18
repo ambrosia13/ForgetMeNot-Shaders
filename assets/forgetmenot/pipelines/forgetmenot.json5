@@ -12,10 +12,12 @@
         vertexSource: "forgetmenot:shaders/gbuffer/shadow_main.vert",
         fragmentSource: "forgetmenot:shaders/gbuffer/shadow_main.frag",
         samplers: [
-            "u_glint"
+            "u_glint",
+            "u_shadow_color"
         ],
         samplerImages: [
-            "minecraft:textures/misc/enchanted_item_glint.png"
+            "minecraft:textures/misc/enchanted_item_glint.png",
+            "shadow_color"
         ]
     },
 

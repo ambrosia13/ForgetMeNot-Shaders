@@ -19,6 +19,9 @@ uniform int frxu_lod;
 #include forgetmenot:shaders/lib/api_includes.glsl 
 
 //#define frx_renderSeconds (float(frx_renderFrames))
+//#define frx_renderSeconds 600.0
+
+#define fmn_time (mod(frx_renderSeconds, 100000.0))
 
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl

@@ -3,5 +3,5 @@
 uniform int frxu_cascade;
 
 void frx_pipelineVertex() {
-    gl_Position = frx_shadowViewProjectionMatrix(frxu_cascade) * ((frx_vertex) + frx_modelToCamera) + 0.000;
+    gl_Position = frx_shadowViewProjectionMatrix(frxu_cascade) * (frx_vertex + frx_modelToCamera);
 }

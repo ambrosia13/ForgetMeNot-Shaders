@@ -4,6 +4,7 @@
 #include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_glint;
+uniform sampler2DArray u_shadow_color;
 
 in vec4 shadowViewPos;
 
@@ -43,6 +44,7 @@ void frx_pipelineFragment() {
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
     float shadowMap;
+    vec3 shadowBlurColor;
     //shadowMap += texture(frxs_shadowMap, vec4((shadowScreenPos.xy), cascade, shadowScreenPos.z));
     //if(frx_matCutout == 1) fmn_sssAmount = 1.0;
     if(fmn_sssAmount == 0.0) {
@@ -64,6 +66,24 @@ void frx_pipelineFragment() {
         shadowMap = clamp01(shadowMap);
     }
 
+    vec3 flux;
+    vec4 shadowViewRSM = shadowViewPos;
+
+    vec3 direction = reflect(frx_fragNormal, -frx_skyLightVector);
+    // for(int i = -4; i < 4; i++) {
+    //     for(int j = -4; j < 4; j++) {
+    //         //vec2 offset = vec2(i, j)
+    //         shadowViewRSM.xyz += direction / 64.0;
+
+    //         int cascadeRSM = selectShadowCascade(shadowViewRSM);
+    //         vec4 shadowClipPosRSM = frx_shadowProjectionMatrix(cascadeRSM) * shadowViewRSM;
+    //         vec3 shadowScreenPosRSM = (shadowClipPosRSM.xyz / shadowClipPosRSM.w) * 0.5 + 0.5;
+    //         flux += distance(shadowViewRSM.xyz, shadowViewPos.xyz) * pow(texture(u_shadow_color, vec3(shadowScreenPosRSM.xy + 15.0 * vec2(i, j) / SHADOW_MAP_SIZE, 0)).rgb * 1.5, vec3(2.2)) / 64.0;
+    //     }
+    // }
+    shadowBlurColor = flux * max(0.0, dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5);
+    shadowBlurColor *= 1.0 - shadowMap;
+
     shadowMap = mix(0.0, shadowMap, frx_fragLight.y);
 
     if(frx_isHand) shadowMap = 0.5;
@@ -77,6 +97,8 @@ void frx_pipelineFragment() {
         #endif
 
         if(frx_worldIsEnd + frx_worldIsNether + frx_worldIsOverworld >= 1) {
+            frx_fragLight.xy *= mix((1.0), (frx_darknessEffectFactor * 0.95 + 0.05), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
+
             vec3 tdata = getTimeOfDayFactors();
             frx_fragLight.y = mix(frx_fragLight.y, 1.0, frx_worldIsEnd);
 
@@ -114,7 +136,11 @@ void frx_pipelineFragment() {
                 ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
             }
 
-            float skyIlluminance = frx_luminance(ambientLightColor * (2.5));
+            float worldTime = frx_worldDay + frx_worldTime;
+            worldTime *= 0.1;
+            float dynamicCoverage = 1.0;//smoothHash((frx_skyLightVector.xz / frx_skyLightVector.y) * 0.1 + 20.0 * (worldTime + 4.0) + frx_renderSeconds / 60.0) * 1.75;
+
+            float skyIlluminance = frx_luminance(ambientLightColor * (2.5 + dynamicCoverage));
             skyIlluminance *= 1.33;
             skyIlluminance = max(skyIlluminance, 0.005);
             skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
@@ -127,7 +153,10 @@ void frx_pipelineFragment() {
 
             aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), pow(frx_fragLight.x, 2.0));
 
+            //if(cascade == 3) aboveGroundLighting += frx_skyLightVector.y * (2.0 + NdotL) * shadowBlurColor * shadowMapInverse;
+
             lightmap = mix(lightmap, aboveGroundLighting, frx_fragLight.y);
+
 
             if(frx_worldIsNether == 1) {
                 lightmap = vec3(0.0);
@@ -143,12 +172,13 @@ void frx_pipelineFragment() {
             heldLightFactor = clamp01(heldLightFactor);
             lightmap = mix(lightmap, (max(pow(frx_heldLight.rgb * 1.2, vec3(2.2)), lightmap)), heldLightFactor);
 
-            lightmap = max(vec3(0.0005), lightmap);
             //lightmap = pow(lightmap, vec3(1.0 / (0.5 + frx_viewBrightness)));
 
             lightmap = mix(lightmap, lightmap * 0.75 + 0.25, frx_worldIsEnd);
 
             if(frx_effectNightVision == 1) lightmap = mix(lightmap, lightmap * 0.5 + 0.5, frx_effectModifier);
+
+            lightmap = max(vec3(0.0005), lightmap);
 
             color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
         } else {
@@ -158,7 +188,7 @@ void frx_pipelineFragment() {
         }
 
         // Material info stuff
-        color.rgb = mix(color.rgb, frx_fragColor.rgb, frx_fragEmissive);
+        color.rgb = mix(color.rgb, frx_fragColor.rgb, frx_fragEmissive * mix((1.0), (frx_darknessEffectFactor), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0))));
         color.rgb += color.rgb * mix(20.0, 8.0, float(frx_isHand)) * frx_fragEmissive;
 
         color.rgb = mix(color.rgb, vec3(frx_luminance(lightmap), 0.0, 0.0), 0.5 * frx_matHurt); 
@@ -179,6 +209,8 @@ void frx_pipelineFragment() {
 
     if(color.a < 0.5 && frx_renderTargetSolid && !frx_isGui) discard;
     if(frx_fragReflectance == 0.04) frx_fragReflectance = 0.0;
+
+    //color.rgb = shadowBlurColor;
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
