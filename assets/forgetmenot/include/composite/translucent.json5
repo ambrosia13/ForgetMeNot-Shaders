@@ -15,24 +15,10 @@
             ]
         },
         {
-            name: "translucent_normal",
+            name: "translucent_vertex_normal",
             lod: 0,
-            internalFormat: "RGB16",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
-                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
-                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
-                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
-            ]
-        },
-        {
-            name: "translucent_data",
-            lod: 0,
-            internalFormat: "RGBA16",
-            pixelFormat: "RGBA",
+            internalFormat: "RGB8",
+            pixelFormat: "RGB",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
@@ -77,6 +63,10 @@
                 },
                 {
                     image: "pbr_data",
+                    clearColor: 0x00000000
+                }
+                {
+                    image: "translucent_vertex_normal",
                     clearColor: 0x00000000
                 }
             ]

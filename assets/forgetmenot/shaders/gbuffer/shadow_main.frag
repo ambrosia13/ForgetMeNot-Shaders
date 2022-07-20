@@ -11,53 +11,8 @@ in vec4 shadowViewPos;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 pbrData;
+layout(location = 3) out vec4 vertexNormal;
 
-float sampleCumulusCloud(in vec2 plane, in int octaves) {
-    float worldTime = frx_worldDay + frx_worldTime;
-    worldTime *= 0.1;
-
-    // 0.3 to 0.7
-    float coverageBias = 0.5;
-
-    // 0.2 to 0.35
-    float mistiness = 0.2;
-
-    // 1.3 to 3.3
-    float irregularity = 1.3;
-
-    // 0.0 to 2.0
-    float windWispyness = 0.0;
-
-    // 0.5 to 1.0
-    float density = 1.0;
-
-    #ifdef DYNAMIC_WEATHER
-        coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + frx_renderSeconds / 60.0) * 0.2;
-        mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) * 0.15 + 0.15;
-        //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) + 1.0;
-        //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) + 1.0;
-        density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + frx_renderSeconds / 60.0) * 0.25 - 0.25;
-    #endif
-
-    float lowerBound = coverageBias;
-    float upperBound = coverageBias + mistiness;
-    
-    if(windWispyness > 0.0) plane.x += windWispyness * fbmHash(plane.yy * 0.3, 3, 0.01);
-
-    float noiseLocal = mix(smoothHash(plane * irregularity + frx_renderSeconds / 40.0), smoothHash(plane * irregularity + frx_renderSeconds / 60.0 + 10.0), 0.5);
-    float clouds = (smoothstep(lowerBound + 0.2 * noiseLocal, upperBound + 0.2 * noiseLocal, fbmHash(plane, octaves, 0.001)));
-
-    return clouds * ((octaves + 1.0) / octaves);
-
-    // float noiseLocal = fbmHash(plane * 2.0, octaves, 0.001);
-    // float n2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
-
-    // float a = smoothstep(0.7, 0.8, noiseLocal) * ((octaves + 1.0) / octaves);
-    // float b = smoothstep(0.5, 0.7, n2) * ((octaves + 1.0) / octaves);
-    // float x = smoothHash(plane) * 0.5 + 0.5;
-
-    // return mix(a, b, x);
-}
 
 void frx_pipelineFragment() {
     bool isInventory = frx_isGui && !frx_isHand;
@@ -112,23 +67,23 @@ void frx_pipelineFragment() {
         shadowMap = clamp01(shadowMap);
     }
 
-    vec3 flux;
-    vec4 shadowViewRSM = shadowViewPos;
+    // vec3 flux;
+    // vec4 shadowViewRSM = shadowViewPos;
 
-    vec3 direction = reflect(frx_fragNormal, -frx_skyLightVector);
-    // for(int i = -4; i < 4; i++) {
-    //     for(int j = -4; j < 4; j++) {
-    //         //vec2 offset = vec2(i, j)
-    //         shadowViewRSM.xyz += direction / 64.0;
+    // vec3 direction = reflect(frx_fragNormal, -frx_skyLightVector);
+    // // for(int i = -4; i < 4; i++) {
+    // //     for(int j = -4; j < 4; j++) {
+    // //         //vec2 offset = vec2(i, j)
+    // //         shadowViewRSM.xyz += direction / 64.0;
 
-    //         int cascadeRSM = selectShadowCascade(shadowViewRSM);
-    //         vec4 shadowClipPosRSM = frx_shadowProjectionMatrix(cascadeRSM) * shadowViewRSM;
-    //         vec3 shadowScreenPosRSM = (shadowClipPosRSM.xyz / shadowClipPosRSM.w) * 0.5 + 0.5;
-    //         flux += distance(shadowViewRSM.xyz, shadowViewPos.xyz) * pow(texture(u_shadow_color, vec3(shadowScreenPosRSM.xy + 15.0 * vec2(i, j) / SHADOW_MAP_SIZE, 0)).rgb * 1.5, vec3(2.2)) / 64.0;
-    //     }
-    // }
-    shadowBlurColor = flux * max(0.0, dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5);
-    shadowBlurColor *= 1.0 - shadowMap;
+    // //         int cascadeRSM = selectShadowCascade(shadowViewRSM);
+    // //         vec4 shadowClipPosRSM = frx_shadowProjectionMatrix(cascadeRSM) * shadowViewRSM;
+    // //         vec3 shadowScreenPosRSM = (shadowClipPosRSM.xyz / shadowClipPosRSM.w) * 0.5 + 0.5;
+    // //         flux += distance(shadowViewRSM.xyz, shadowViewPos.xyz) * pow(texture(u_shadow_color, vec3(shadowScreenPosRSM.xy + 15.0 * vec2(i, j) / SHADOW_MAP_SIZE, 0)).rgb * 1.5, vec3(2.2)) / 64.0;
+    // //     }
+    // // }
+    // shadowBlurColor = flux * max(0.0, dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5);
+    // shadowBlurColor *= 1.0 - shadowMap;
 
     shadowMap = mix(0.0, shadowMap, frx_fragLight.y);
 
@@ -159,17 +114,22 @@ void frx_pipelineFragment() {
             frx_fragLight.x = pow(frx_fragLight.x, 1.0);
 
 
-            vec3 blockLightColor = 1.0 * mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
+            vec3 blockLightColor = mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
 
             float blocklight = smoothstep(0.0, 1.0, frx_fragLight.x);
-            blocklight = pow(blocklight, 1.0);
+            blocklight = pow(blocklight * 2.0, 2.0);
+            //blocklight = 1.0 / pow(16.0 - 15.0 * blocklight, 2.0);
+            //blocklight *= smoothstep(0.005, 1e-2, blocklight);
 
             lightmap = vec3(0.0);
 
             vec3 undergroundLighting;
             undergroundLighting = max(vec3(0.0025), undergroundLighting);
-            //undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
-            undergroundLighting += blockLightColor * blockLightColor * blocklight;
+            // undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
+            undergroundLighting += blockLightColor * blockLightColor * blocklight * blocklight * 0.2;
+
+            // float blockLightIntensity = 10.0 / pow((1.0 - (frx_fragLight.x)) * 16.0, 2.0);
+            // undergroundLighting += blockLightColor * blockLightIntensity * 1.0;
 
             lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
 
@@ -183,11 +143,7 @@ void frx_pipelineFragment() {
                 ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
             }
 
-            float worldTime = frx_worldDay + frx_worldTime;
-            worldTime *= 0.1;
-            float fakeCloudShadow = 0.0;//sampleCumulusCloud((frx_renderSeconds / 100.0) * (frx_skyLightVector.xz / frx_skyLightVector.y), 4) * 2.0 - 1.0;
-
-            float skyIlluminance = frx_luminance(ambientLightColor * (3.0 - fakeCloudShadow));
+            float skyIlluminance = frx_luminance(ambientLightColor * 3.5);
             skyIlluminance *= 1.33;
             skyIlluminance = max(skyIlluminance, 0.005);
             skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
@@ -261,6 +217,7 @@ void frx_pipelineFragment() {
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
+    vertexNormal = vec4(frx_vertexNormal * 0.5 + 0.5, 1.0);
     pbrData = vec4(frx_fragReflectance, fmn_isWater, 1.0, 1.0);
 
     gl_FragDepth = gl_FragCoord.z;

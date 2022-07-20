@@ -90,6 +90,7 @@
                 "u_solid_data"
                 
                 "u_normal",
+                "u_translucent_vertex_normal",
                 "u_pbr_data",
                 "u_previous_frame"
             ]
@@ -127,6 +128,7 @@
                     "main_data",
 
                     "composite_normal",
+                    "translucent_vertex_normal",
                     "pbr_data",
                     "pre_bloom_copy"
                 ]

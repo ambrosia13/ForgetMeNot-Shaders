@@ -18,6 +18,7 @@ uniform sampler2D u_translucent_data;
 uniform sampler2D u_solid_data;
 
 uniform sampler2D u_normal;
+uniform sampler2D u_translucent_vertex_normal;
 uniform sampler2D u_pbr_data;
 uniform sampler2D u_previous_frame;
 
@@ -120,13 +121,28 @@ vec2 Jitter(vec2 fragCoord, int frame)
 
 }
 
+bool isSolid(vec3 pos) {
+    vec3 cellPos = floor(pos);
+    return snoise(cellPos.xz) > 0.5;
+}
+
 void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // sample things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
+    vec3 f0 = pbrData.rrr;
+
     vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
+
+    // vec3 translucentVertexNormal = texture(u_translucent_vertex_normal, texcoord.xy).rgb * 2.0 - 1.0;
+    // float normalDifference = distance(translucentVertexNormal, normal);
+    // vec2 refractionCoord = texcoord + 0.1 * (normalDifference - 2.0 * normalDifference);
+
+    // if(all(equal(translucentVertexNormal, vec3(-1.0)))) refractionCoord = texcoord;
 
     vec4  main_color = texture(u_main_color, texcoord);
     float main_depth = texture(u_main_depth, texcoord).r;
@@ -145,9 +161,6 @@ void main() {
     vec4  particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
-    vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
-    vec3 f0 = pbrData.rrr;
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // common things
@@ -168,7 +181,7 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
+
     vec3 skyColor = getSkyColor(viewDir);
 
     if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
@@ -182,7 +195,6 @@ void main() {
         skyLightColor *= mix(vec3(1.0), vec3(0.5, 0.7, 1.5), (1.0 - frx_skyLightTransitionFactor) * smoothstep(0.0, 0.1, dot(viewDir, getMoonVector())));
 
         vec3 viewPos = maxViewSpacePos;
-
 
         if(viewDir.y > 0.0) {
             if(frx_worldIsOverworld == 1) {
@@ -332,6 +344,9 @@ void main() {
 
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
+            vec3 reflectionCoord;
+            bool ssrHit = false;
+
             #define SSR_STEPS 60
             vec3 screenPos = vec3(texcoord, min_depth);
 
@@ -349,23 +364,38 @@ void main() {
 
                 for(int i = 0; i < SSR_STEPS; i++) {
                     screenPos += screenSpaceReflectionDir * stepLength
-                    * mix(1.0, rand1D(mod(texcoord + i, 40.0) * 2000.0), max(0.3, 1.0 - SSR_STEPS / 60.0));
+                    * mix(1.0, rand1D(mod(texcoord + i, 40.0) * 2000.0), max(0.1, 1.0 - SSR_STEPS / 60.0));
 
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
                     } else {
                         float depthQuery = texture(u_particles_depth, screenPos.xy).r;
+
                         if(depthQuery == 1.0) continue;
 
-                        if(screenPos.z > depthQuery) {
-                            reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
+                        float lenience = max(abs(screenSpaceReflectionDir.z) * 3.0, 0.22 / pow(length(minViewSpacePos), 2.0));
+
+                        if(abs(lenience - (screenPos.z - depthQuery)) < lenience) {
+                            //reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
+                            reflectionCoord = screenPos;
+                            ssrHit = true;
+
                             break;
                         }
                     }
                     stepLength *= 1.06;
                 }
+
+                // float binaryStepLength = 0.5 / SSR_STEPS;
+                // for(int i = 0; i < 4; i++) {
+                //     reflectionCoord += sign(texture(u_particles_depth, reflectionCoord.xy).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                //     binaryStepLength *= 0.5;
+                // }
+
             }
+
+            if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
 
             if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
 
@@ -450,7 +480,7 @@ void main() {
         #ifdef frx_darknessEffectFactor
             float sinTime = sin(fmn_time);
             float timeFactor = sinTime * sinTime * sinTime * sinTime * sinTime * sinTime;
-            float darknessFactor = max(0.0, (frx_darknessEffectFactor) * 0.25 + 0.7);
+            float darknessFactor = max(0.0, (frx_darknessEffectFactor) * 0.45 + 0.55);
             composite = mix(composite, vec3(0.0), (smoothstep(0.0, 10.0 * darknessFactor, blockDist)) * frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
         #endif
 

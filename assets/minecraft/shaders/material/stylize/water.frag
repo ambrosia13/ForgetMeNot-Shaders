@@ -17,6 +17,28 @@ float waterHeightNoise(in vec2 uv) {
     noise += (fmn_fbm2D(coord * vec2(8.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.025;
 
     return pow(noise * 0.5, 1.5) * (0.15);
+
+    // float amp = 0.5;
+    // float offset = 1.0;
+    // float noise;
+
+    // mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
+    
+    // for(int i = 0; i < 10; i++) {
+    //     // noise += amp * exp2(sin(uv.x + uv.y) * sin((uv.x + 2.0 * uv.y) * 0.5) - 1.0);
+    //     // uv = 1.0 * (uv) + mod(frx_renderSeconds * 0.1, 1000.0);
+    //     // uv *= 2.0;
+    //     // amp *= 0.5;
+    //     // uv += offset * 0.5 * i;
+    //     float n = sin(dot(uv.xy, fmn_hash2D(float(i)) * 2.0 - 1.0));
+    //     noise += amp * exp(n);
+
+    //     uv = rotationMatrix * uv * 2.0;
+    //     amp *= 0.5;
+    //     uv += offset * i;
+    // }
+
+    // return noise * 0.05;
 }
 
 void frx_materialFragment() {
