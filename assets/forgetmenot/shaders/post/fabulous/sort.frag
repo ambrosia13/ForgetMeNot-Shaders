@@ -296,12 +296,12 @@ void main() {
 
         // if(min_depth == 1.0) {
             translucent_color.rgb = mix(translucent_color.rgb, waterFogColor, fogDensity);
-            translucent_color.a = mix(translucent_color.a, 0.9, fogDensity);
+            translucent_color.a = mix(translucent_color.a, 0.99, fogDensity);
         // }
 
     }
 
-    if(pbrData.g > 0.5 || frx_cameraInWater == 1) {
+    if(frx_cameraInWater == 1) {
         main_color.rgb *= vec3(0.16, 0.81, 1.0);
     }
 
@@ -317,7 +317,7 @@ void main() {
     try_insert(entity_color, entity_depth);
     try_insert(weather_color, weather_depth);
     try_insert(particles_color, particles_depth);
-    if(clouds_depth < max_depth) color_layers[0].rgb = mix(color_layers[0].rgb, clouds_color.rgb, clouds_color.a);
+    //if(clouds_depth < max_depth) color_layers[0].rgb = mix(color_layers[0].rgb, clouds_color.rgb, clouds_color.a);
 
     vec3 composite = color_layers[0].rgb;
     for (int ii = 1; ii < active_layers; ++ii) {

@@ -20,6 +20,13 @@ vec2 fmn_hash2D(float p) {
     return fract((p3.xx+p3.yz)*p3.zy);
 }
 
+vec2 fmn_rotate2D(vec2 uv, float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+	mat2 mat = mat2(c, s, -s, c);
+	return mat * uv;
+}
+
 float fmn_noise2D(in vec2 st) {
 	vec2 p = floor(st);
 	vec2 f = fract(st);
