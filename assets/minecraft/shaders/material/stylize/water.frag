@@ -101,5 +101,5 @@ void frx_materialFragment() {
 
     //frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
     //frx_fragColor = frx_vertexColor * vec4(0.2, 0.9, 1.0, 1.0);
-    frx_fragColor.a *= 0.75;
+    // frx_fragColor.a *= 0.75;
 }
