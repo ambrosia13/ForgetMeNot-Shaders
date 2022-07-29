@@ -12,7 +12,9 @@ void frx_materialFragment() {
 
     // frx_fragColor.rgb = mix(vec3(0.01), 1.0 * vec3(1.75, 0.5, 0.05), smoothstep(0.0, 0.01, pow(abs(noiseA - noiseB), 2.0)));
 
-    frx_fragColor.rgb *= vec3(1.75, 0.4, 0.05) * 1.0;
+    #ifdef RED_LAVA
+        frx_fragColor.rgb *= vec3(1.75, 0.4, 0.05) * 1.0;
+    #endif
     //frx_fragColor.rgb *= 10.0;
     //frx_fragColor.rgb *= 1.0;
 

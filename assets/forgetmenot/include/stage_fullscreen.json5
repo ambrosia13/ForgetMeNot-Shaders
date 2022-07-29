@@ -1,6 +1,28 @@
 {
     images: [
         {
+            name: "taa",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
             name: "pre_bloom_copy",
             lod: 0,
             internalFormat: "RGBA16F",
@@ -466,6 +488,14 @@
 
     framebuffers: [
         {
+            name: "taa",
+            colorAttachments: [
+                {
+                    image: "taa"
+                }
+            ]
+        },
+        {
             name: "pre_bloom_copy",
             colorAttachments: [
                 {
@@ -637,6 +667,17 @@
 
     programs: [
         {
+            name: "taa",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/taa.frag",
+            samplers: [
+                "u_color",
+                "u_previous_frame"
+                "u_depth"
+                "u_hand_depth"
+            ]
+        },
+        {
             name: "pre_bloom_copy",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
@@ -702,11 +743,22 @@
     afterRenderHand: {
         passes: [
             {
+                name: "taa",
+                program: "taa",
+                framebuffer: "taa",
+                samplerImages: [
+                    "main_color",
+                    "pre_bloom_copy",
+                    "translucent_depth",
+                    "main_depth"
+                ]
+            },
+            {
                 name: "pre_bloom_copy",
                 program: "pre_bloom_copy",
                 framebuffer: "pre_bloom_copy",
                 samplerImages: [
-                    "main_color",
+                    "taa",
                     "final"
                 ]
             },

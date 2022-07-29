@@ -95,11 +95,14 @@ void frx_materialFragment() {
 
     #if LUMI_PBR_API >= 8
         pbr_f0 = 0.05;
-        pbr_roughness = 0.05;
+        pbr_roughness = 0.01;
         pbr_isWater = true;
+        //pbr_builtinWater = true;
     #endif
 
-    //frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
+    #ifdef RED_LAVA
+        frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
+    #endif
     //frx_fragColor = frx_vertexColor * vec4(0.2, 0.9, 1.0, 1.0);
     // frx_fragColor.a *= 0.75;
 }

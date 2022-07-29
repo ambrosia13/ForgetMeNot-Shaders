@@ -76,14 +76,15 @@ float miePhase(float x, float mieAmount)
  	//return henyeyGreenstein(x, 0.99);
 }
 float particleThickness(float depth){
-   	
+   	float atmosphericDensity = 1.0;
+
     depth = depth * 2.0;
     depth = max(depth + 0.02, 0.02);
     // depth = abs(depth);
     // if(depth < 0.01) depth = 0.01;
     depth = 1.0 / (depth);
     
-	return 100000.0 * depth;   
+	return 100000.0 * depth * atmosphericDensity;   
 }
 
 float particleThicknessConst(const float depth){
@@ -116,14 +117,19 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
         sunVector = normalize(sunVector);
     }
 
-    //viewDir.y = mix(viewDir.y, viewDir.y, smoothstep(0.01, -0.0, viewDir.y));
+    //viewDir.y = mix(viewDir.y, 0.02, smoothstep(0.01, -0.0, viewDir.y));
     //viewDir.y = clamp01(viewDir.y + 0.5);
 
     // -------
     // Don't question my methods
     // -------
 
-    float upDot = (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);
+    #ifndef HIDE_SKY_GROUND
+        float upDot = (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);
+    #else
+        float upDot = mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y));
+    #endif
+    
     upDot = pow(upDot, 1.0) * (frx_worldIsEnd == 1 ? 50.0 : 1.0);
 	float opticalDepth = particleThickness(upDot + 0.0615 + 0.05 * pow(1.0 - viewDir.y, 3.0));
     //if(viewDir.y < 0.0) opticalDepth = mix(opticalDepth, 500000.0 * pow(abs(viewDir.y + 1.0), 4.0), 0.2 * smoothstep(0.1, -0.1, viewDir.y));
@@ -262,16 +268,16 @@ vec3 getFogScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in fl
 
     float sunOpticalDepth = particleThickness(sunDotU);
 
-    vec3 dayScatterView = scatter(kTotal, opticalDepth);
-    vec3 dayAbsorbView = absorb(kTotal, opticalDepth);
+    vec3 dayScatterView = kTotal * opticalDepth;
+    vec3 dayAbsorbView = exp2(-dayScatterView);
 
-    vec3 dayScatterLight = scatter(kTotal, sunOpticalDepth);
-    vec3 dayAbsorbLight = absorb(kTotal, sunOpticalDepth);
+    vec3 dayScatterLight = kTotal * sunOpticalDepth;
+    vec3 dayAbsorbLight = exp2(-dayScatterLight);
 
     vec3 absorbSun = abs(dayAbsorbLight - dayAbsorbView) / d0((dayScatterLight - dayScatterView) * ln2);
 
-    vec3 rlhDayScatter = scatter(rayleigh, opticalDepth) * 1.5 * rayleighPhase(sunDotV * 0.0);
-    vec3 mieDayScatter = scatter(mie, particleThickness(pow(upDot, 2.0))) * miePhase(sunDotV, MIE_AMOUNT);
+    vec3 rlhDayScatter = rayleigh * opticalDepth * 1.125;
+    vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(sunDotV, MIE_AMOUNT);
 
     vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
 
@@ -292,7 +298,7 @@ vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();
-        fogScattering += getFogScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0), opticalDepth) * vec3(0.5, 0.7, 1.5) * 0.25;
+        fogScattering += getFogScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0), opticalDepth) * vec3(0.125, 0.175, 0.375);
     }
 
     return fogScattering;
@@ -351,10 +357,6 @@ vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float 
 
     return totalScatter * totalAbsorb;
 }
-
-// vec3 waterFog(in vec3 color, in vec3 viewSpacePos) {
-
-// }
 
 vec3 getSkyColor(in vec3 viewDir) {
     vec3 atmosphere;
@@ -431,14 +433,14 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     if(viewDir.y > 0.0 && secondViewDir.y > 0.0) {
         viewPos.xy = rotate2D(viewPos.xy, -frx_skyAngleRadians);
         viewPos.y = abs(viewPos.y);
-        vec2 starPlane = viewPos.xz / (viewPos.y + 0.5 * length(viewPos.xz));
+        vec2 starPlane = viewPos.xz / (viewPos.y + length(viewPos.xz));
         starPlane *= 200.0;
         viewPos.y = viewPosCopy.y;
 
         vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
         float skyIlluminance = frx_luminance(ambientLightColor * 8.0);
 
-        vec3 stars = vec3(step(1.0 - 1e-2, rand1D(floor(starPlane)))) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
+        vec3 stars = vec3(step(0.985 - 0.005 * (smoothHash(starPlane) * 0.5 + 0.5), 1.0 - cellular2x2(starPlane * 0.1).x)) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
         stars = (stars) * normalize(rand3D(floor(starPlane)) * 0.3 + 0.7);
 
         atmosphere.rgb = mix(atmosphere.rgb + stars, atmosphere.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));

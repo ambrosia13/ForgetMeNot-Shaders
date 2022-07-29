@@ -4,6 +4,11 @@
             includeToken: "forgetmenot:atmospherics",
             categoryKey: "config.forgetmenot.category.atmospherics",
             elements: {
+                hide_sky_ground: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.hide_sky_ground",
+                    descriptionKey: "config.forgetmenot.desc.hide_sky_ground"
+                },
                 sky_ground_fog: {
                     default: 1.5,
                     min: 0.5,
@@ -84,6 +89,11 @@
                     nameKey: "config.forgetmenot.name.night_brightness",
                     descriptionKey: "config.forgetmenot.desc.night_brightness"
                 },
+                ambient_light_boost: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.ambient_light_boost",
+                    descriptionKey: "config.forgetmenot.desc.ambient_light_boost"
+                },
                 blocklight_neutrality: {
                     default: 0.75,
                     min: 0.0,
@@ -111,6 +121,11 @@
                     default: false,
                     nameKey: "config.forgetmenot.name.white_world",
                     descriptionKey: "config.forgetmenot.desc.white_world"
+                },
+                red_lava: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.red_lava",
+                    descriptionKey: "config.forgetmenot.desc.red_lava"
                 }
             }
         },

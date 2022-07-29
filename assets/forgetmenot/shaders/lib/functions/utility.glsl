@@ -300,3 +300,10 @@ vec2 fbmCurl(in vec2 plane, in int octaves) {
 }
 
 #include forgetmenot:shaders/lib/functions/noise.glsl 
+
+#define GOLDEN_RATIO 1.618033988749894
+
+// From Belmu#4066
+vec2 uniformAnimatedNoise(in vec2 seed) {
+    return fract(seed + vec2(GOLDEN_RATIO * frx_renderSeconds, (GOLDEN_RATIO + GOLDEN_RATIO) * mod(frx_renderSeconds, 100.0)));
+}

@@ -5,6 +5,8 @@
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
+#define GOLDEN_RATIO 1.618033988749894
+
 #include forgetmenot:atmospherics
 #include forgetmenot:lighting
 #include forgetmenot:debug

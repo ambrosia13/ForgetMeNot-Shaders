@@ -5,7 +5,7 @@ layout(location = 1) out vec4 shadowNormal;
 
 void frx_pipelineFragment() {
     shadowColor = frx_fragColor;
-    shadowNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
+    shadowNormal = vec4(normalize(frx_vertex.xyz / frx_vertex.w), 1.0);
 
     gl_FragDepth = gl_FragCoord.z;
 }
