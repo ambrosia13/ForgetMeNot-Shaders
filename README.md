@@ -1,41 +1,43 @@
 # Forget-Me-Not Shaders
 
-Immersive and atmospheric shaderpack for Canvas. Early in development, visual style is not finalized and things will change a lot.
+Immersive semi-realistic pipeline shader for Canvas. Early in development, visual style is not finalized and things will change a lot.
 
 Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
 
 ## how to use
-1. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
-2. Get Canvas Renderer mod through either [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds) or [Curseforge](https://www.curseforge.com/minecraft/mc-mods/canvas-renderer) (stable builds). Keep in mind that Canvas is not compatible with Sodium, Iris, or Optifabric.
-3. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
-4. Activate your preferred pipeline shaderpack in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
+1. Be sure you're on 1.18.2 or above. I can only offer support for the MC versions that Canvas supports.
+2. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
+3. Get Canvas Renderer mod through either [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds) or [Curseforge](https://www.curseforge.com/minecraft/mc-mods/canvas-renderer) (stable builds). Keep in mind that Canvas is not compatible with Sodium, Iris, or Optifine/Optifabric.
+4. Download Forget-me-not, either via the [releases tab](https://github.com/Poisoned-Honey/ForgetMeNot-Shaders/releases) or the green `Code` button on this GitHub page.
+5. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
+6. Activate your preferred pipeline shaderpack in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
 
-## before you ask...
-- Experiencing shadow flickering? It's being worked on. In the meantime, try to turn your render distance down to 8. Lower render distance has less chance of shadow flickering/disappearance.
-- Water broken on AMD/Intel? I'm working on fixing this, but you can try turning on fast water to hopefully fix it.
-- Want your normal enchantment glint back? Turn off `Pixel Locked Enchantment Glint` option in settings.
+## troubleshooting
+- Experiencing shadow flickering? It's being worked on. In the meantime, set shadow culling mode to `TIERED` in `Options / Video Settings / Canvas / Debug`. Mountains may not cast shadows properly as of now.
+
+- Shaders not compiling, and it's not an issue exclusive to Forget-me-not? First, check if everything works in Canvas Basic. Next, try Canvas Standard. If the former works and the latter doesn't, chances are that your machine is incompatible with Fabulous Graphics, which most Canvas pipelines use. Unfortunately, there's no fix for this.
+
+- Forget-me-not not working, but the other pipelines work alright? Please grab your log in `.minecraft/logs/latest.log` and all contents of the `.minecraft/canvas_shader_debug/` folder. Additionally, a screenhot of the game with the F3 menu open would help. Once you have these, please either open a GitHub issue or let me know about it on my discord (whose link is at the bottom of the page).
 
 ## cool features
 - bloom, tone mapping, and HDR shader effects
-- overhauled sky & fog visuals
-- custom 2D clouds with proper shading
-- water waves & terrain reflections
-- shadows (wip) & volumetric light rays (very wip)
-- screen space global illumination (disabled by default)
+- custom atmosphere, including atmospheric fog, semi-realistic skies, and properly shaded clouds
+- water waves & reflections
+- shadows & advanced ambient light (RTAO)
+- TAA that removes almost all noise and aliasing
 
 ## credits
 -  [Blur function](https://github.com/Jam3/glsl-fast-gaussian-blur) used for bloom
 - Global illumination filter adapted from [Xordev's blur function](https://github.com/XorDev/Ominous-Shaderpack/blob/main/shaders/lib/Blur.inc)
-- Contrast and vibrance post processing function from Belmu#4066 in the [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849)
-- SixthSurge#3922 for helping me with curl noise used for clouds
-- [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help
+- The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
+- [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
 
 ## discord
 https://discord.gg/Zzn4jJapRH
 
 ## screenshots
-![a](https://media.discordapp.net/attachments/286649185468678144/974029571299098724/unknown.png?width=1276&height=676)
-![a](https://cdn.discordapp.com/attachments/734161464184799296/961154329191010314/unknown.png)
-![a](https://cdn.discordapp.com/attachments/734161464184799296/968210355715190804/unknown.png)
-![a](https://media.discordapp.net/attachments/968943385803108424/974033201217548388/unknown.png?width=1276&height=676)
-![a](https://cdn.discordapp.com/attachments/766910398108532737/981453894272057386/unknown.png)
+![a](https://cdn.discordapp.com/attachments/734161464184799296/1003051783909802015/unknown.png)
+![a](https://cdn.discordapp.com/attachments/839653070622818337/1003153222938148904/unknown.png)
+![a](https://media.discordapp.net/attachments/839653070622818337/1003154171635179671/unknown.png?width=1276&height=676)
+![a](https://cdn.discordapp.com/attachments/839653070622818337/1003169821766209606/unknown.png)
+![a](https://media.discordapp.net/attachments/903175815401975889/1003170619136938034/unknown.png?width=1276&height=676)
