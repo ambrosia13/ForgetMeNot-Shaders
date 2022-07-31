@@ -127,7 +127,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     #ifndef HIDE_SKY_GROUND
         float upDot = (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);
     #else
-        float upDot = mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y));
+        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);
     #endif
     
     upDot = pow(upDot, 1.0) * (frx_worldIsEnd == 1 ? 50.0 : 1.0);
@@ -166,9 +166,9 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 totalScatter = scatterSun * sunBrightness * factor;
 
     if(frx_worldIsOverworld == 1) {
-        totalScatter += 40.0 * scatter(mie, opticalDepth) * 
+        totalScatter += mix(80.0, 40.0, sqrt(sunDotU)) * scatter(mie, opticalDepth) * 
         miePhase(frx_smootherstep(0.9996, 0.9998, sunDotV), opticalDepth) * 
-        smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
+        //smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
         frx_smootherstep(0.9985 , 0.9995, dot(viewDir, sunVector));// * vec3(1.1, 1.1, 0.9);
     }
 

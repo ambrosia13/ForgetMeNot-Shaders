@@ -5,6 +5,14 @@
     #define WAVES_QUALITY 3
 #endif
 
+// https://iquilezles.org/articles/smin/
+// polynomial smooth min
+float smaxCubic( float a, float b, float k )
+{
+    float h = max( k-abs(a-b), 0.0 )/k;
+    return max( a, b ) - h*h*h*k*(1.0/6.0);
+}
+
 float waterHeightNoise(in vec2 uv) {
     float waterHeight;
     float waves;
@@ -14,6 +22,7 @@ float waterHeightNoise(in vec2 uv) {
     vec2 coord = uv * vec2(1.0, 0.7);
 
     float noise = fmn_fbm2D(coord, 3, 1.0) * (4.0 / 3.0);
+    //noise = max(noise, fmn_fbm2D(coord - 100.0, 3, -1.0));
     noise += (fmn_fbm2D(coord * vec2(8.0, 1.5), 3, 2.0) * 2.0 - 1.0) * 0.025;
 
     return pow(noise * 0.5, 1.5) * (0.15);
@@ -79,6 +88,7 @@ void frx_materialFragment() {
             float deltaY = (centerNoise - height3) * 50.0;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+            
             //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
             frx_fragNormal = normalize(frx_fragNormal);
         #else
@@ -101,7 +111,7 @@ void frx_materialFragment() {
     #endif
 
     #ifdef RED_LAVA
-        frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
+        frx_fragColor = vec4(0.0, 0.16, 0.09, 0.5);
     #endif
     //frx_fragColor = frx_vertexColor * vec4(0.2, 0.9, 1.0, 1.0);
     // frx_fragColor.a *= 0.75;

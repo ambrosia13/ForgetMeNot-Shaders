@@ -67,15 +67,15 @@
             ]
         },
         {
-            name: "bloom_h1",
-            lod: 0,
+            name: "bloom_downsample",
+            lod: 6,
             internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
                 {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
                 }, 
                 {
                     name: "TEXTURE_MAG_FILTER", val: "LINEAR"
@@ -89,367 +89,15 @@
             ]
         },
         {
-            name: "bloom_v1",
-            lod: 0,
+            name: "bloom_upsample",
+            lod: 6,
             internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
                 {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_h2",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_v2",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_h3",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_v3",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_h4",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_v4",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_h5",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_v5",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_h6",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_v6",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u1",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u2",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u3",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u4",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u5",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "bloom_u6",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
                 }, 
                 {
                     name: "TEXTURE_MAG_FILTER", val: "LINEAR"
@@ -512,138 +160,58 @@
             ]
         },
         {
-            name: "bloom_h1",
+            name: "bloom_d0",
             colorAttachments: [
                 {
-                    image: "bloom_h1"
+                    image: "bloom_downsample"
                 }
             ]
         },
         {
-            name: "bloom_v1",
+            name: "bloom_d1",
             colorAttachments: [
                 {
-                    image: "bloom_v1"
+                    image: "bloom_downsample", lod: 1
                 }
             ]
         },
         {
-            name: "bloom_h2",
+            name: "bloom_d2",
             colorAttachments: [
                 {
-                    image: "bloom_h2"
+                    image: "bloom_downsample", lod: 2
                 }
             ]
         },
         {
-            name: "bloom_v2",
+            name: "bloom_d3",
             colorAttachments: [
                 {
-                    image: "bloom_v2"
+                    image: "bloom_downsample", lod: 3
                 }
             ]
         },
         {
-            name: "bloom_h3",
+            name: "bloom_d4",
             colorAttachments: [
                 {
-                    image: "bloom_h3"
+                    image: "bloom_downsample", lod: 4
                 }
             ]
         },
         {
-            name: "bloom_v3",
+            name: "bloom_d5",
             colorAttachments: [
                 {
-                    image: "bloom_v3"
+                    image: "bloom_downsample", lod: 5
                 }
             ]
         },
         {
-            name: "bloom_h4",
+            name: "bloom_d6",
             colorAttachments: [
                 {
-                    image: "bloom_h4"
-                }
-            ]
-        },
-        {
-            name: "bloom_v4",
-            colorAttachments: [
-                {
-                    image: "bloom_v4"
-                }
-            ]
-        },
-        {
-            name: "bloom_h5",
-            colorAttachments: [
-                {
-                    image: "bloom_h5"
-                }
-            ]
-        },
-        {
-            name: "bloom_v5",
-            colorAttachments: [
-                {
-                    image: "bloom_v5"
-                }
-            ]
-        },
-        {
-            name: "bloom_h6",
-            colorAttachments: [
-                {
-                    image: "bloom_h6"
-                }
-            ]
-        },
-        {
-            name: "bloom_v6",
-            colorAttachments: [
-                {
-                    image: "bloom_v6"
-                }
-            ]
-        },
-        {
-            name: "bloom_u1",
-            colorAttachments: [
-                {
-                    image: "bloom_u1"
-                }
-            ]
-        },
-        {
-            name: "bloom_u2",
-            colorAttachments: [
-                {
-                    image: "bloom_u2"
-                }
-            ]
-        },
-        {
-            name: "bloom_u3",
-            colorAttachments: [
-                {
-                    image: "bloom_u3"
-                }
-            ]
-        },
-        {
-            name: "bloom_u4",
-            colorAttachments: [
-                {
-                    image: "bloom_u4"
-                }
-            ]
-        },
-        {
-            name: "bloom_u5",
-            colorAttachments: [
-                {
-                    image: "bloom_u5"
+                    image: "bloom_downsample", lod: 6
                 }
             ]
         },
@@ -651,7 +219,55 @@
             name: "bloom_u6",
             colorAttachments: [
                 {
-                    image: "bloom_u6"
+                    image: "bloom_upsample", lod: 6
+                }
+            ]
+        },
+        {
+            name: "bloom_u5",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample", lod: 5
+                }
+            ]
+        },
+        {
+            name: "bloom_u4",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample", lod: 4
+                }
+            ]
+        },
+        {
+            name: "bloom_u3",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample", lod: 3
+                }
+            ]
+        },
+        {
+            name: "bloom_u2",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample", lod: 2
+                }
+            ]
+        },
+        {
+            name: "bloom_u1",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample", lod: 1
+                }
+            ]
+        },
+        {
+            name: "bloom_u0",
+            colorAttachments: [
+                {
+                    image: "bloom_upsample"
                 }
             ]
         },
@@ -696,28 +312,28 @@
             ]
         },
         {
-            name: "blur_horizontal",
+            name: "bloom_downsample",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/bloom/blur_horizontal.frag",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_downsample.frag",
             samplers: [
                 "u_color"
             ]
         },
         {
-            name: "blur_vertical",
+            name: "bloom_upsample_first",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/bloom/blur_vertical.frag",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_upsample_first.frag",
             samplers: [
                 "u_color"
             ]
         },
         {
-            name: "bloom_upscale",
+            name: "bloom_upsample",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_upscale.frag",
+            fragmentSource: "forgetmenot:shaders/post/bloom/bloom_upsample.frag",
             samplers: [
-                "u_prior", 
-                "u_color"
+                "u_color",
+                "u_prior"
             ]
         },
         {
@@ -732,7 +348,7 @@
         },
         {
             name: "final",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            vertexSource: "forgetmenot:shaders/post/final_frame.vert",
             fragmentSource: "forgetmenot:shaders/post/final.frag",
             samplers: [
                 "u_color"
@@ -767,172 +383,140 @@
                 program: "bright_color",
                 framebuffer: "bright_color",
                 samplerImages: [
-                    "main_color",
+                    "pre_bloom_copy",
                     "main_data"
-                ],
-                lod: 1
+                ]
             },
             {
-                name: "bloom_h1",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h1",
+                name: "bloom_d0",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d0",
                 samplerImages: [
                     "bright_color"
+                ]
+            },
+            {
+                name: "bloom_d1",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d1",
+                samplerImages: [
+                    "bloom_downsample"
                 ],
                 lod: 1
             },
             {
-                name: "bloom_v1",
-                program: "blur_vertical",
-                framebuffer: "bloom_v1",
+                name: "bloom_d2",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d2",
                 samplerImages: [
-                    "bloom_h1"
+                    "bloom_downsample"
                 ],
-                lod: 0
+                lod: 2
             },
             {
-                name: "bloom_h2",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h2",
+                name: "bloom_d3",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d3",
                 samplerImages: [
-                    "bloom_v1"
+                    "bloom_downsample"
                 ],
-                lod: 1
+                lod: 3
             },
             {
-                name: "bloom_v2",
-                program: "blur_vertical",
-                framebuffer: "bloom_v2",
+                name: "bloom_d4",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d4",
                 samplerImages: [
-                    "bloom_h2"
+                    "bloom_downsample"
                 ],
-                lod: 0
+                lod: 4
             },
             {
-                name: "bloom_h3",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h3",
+                name: "bloom_d5",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d5",
                 samplerImages: [
-                    "bloom_v2"
+                    "bloom_downsample"
                 ],
-                lod: 1
+                lod: 5
             },
             {
-                name: "bloom_v3",
-                program: "blur_vertical",
-                framebuffer: "bloom_v3",
+                name: "bloom_d6",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d6",
                 samplerImages: [
-                    "bloom_h3"
+                    "bloom_downsample"
                 ],
-                lod: 0
-            },
-            {
-                name: "bloom_h4",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h4",
-                samplerImages: [
-                    "bloom_v3"
-                ],
-                lod: 1
-            },
-            {
-                name: "bloom_v4",
-                program: "blur_vertical",
-                framebuffer: "bloom_v4",
-                samplerImages: [
-                    "bloom_h4"
-                ],
-                lod: 0
-            },
-            {
-                name: "bloom_h5",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h5",
-                samplerImages: [
-                    "bloom_v4"
-                ],
-                lod: 1
-            },
-            {
-                name: "bloom_v5",
-                program: "blur_vertical",
-                framebuffer: "bloom_v5",
-                samplerImages: [
-                    "bloom_h5"
-                ],
-                lod: 0
-            },
-            {
-                name: "bloom_h6",
-                program: "blur_horizontal",
-                framebuffer: "bloom_h6",
-                samplerImages: [
-                    "bloom_v5"
-                ],
-                lod: 1
-            },
-            {
-                name: "bloom_v6",
-                program: "blur_vertical",
-                framebuffer: "bloom_v6",
-                samplerImages: [
-                    "bloom_h6"
-                ],
-                lod: 0
-            },
-            {
-                name: "bloom_u1",
-                program: "bloom_upscale",
-                framebuffer: "bloom_u1",
-                samplerImages: [
-                    "bloom_v6",
-                    "bloom_v5"
-                ],
-            },
-            {
-                name: "bloom_u2",
-                program: "bloom_upscale",
-                framebuffer: "bloom_u2",
-                samplerImages: [
-                    "bloom_u1",
-                    "bloom_v4"
-                ],
-            },
-            {
-                name: "bloom_u3",
-                program: "bloom_upscale",
-                framebuffer: "bloom_u3",
-                samplerImages: [
-                    "bloom_u2",
-                    "bloom_v3"
-                ],
-            },
-            {
-                name: "bloom_u4",
-                program: "bloom_upscale",
-                framebuffer: "bloom_u4",
-                samplerImages: [
-                    "bloom_u3",
-                    "bloom_v2"
-                ],
-            },
-            {
-                name: "bloom_u5",
-                program: "bloom_upscale",
-                framebuffer: "bloom_u5",
-                samplerImages: [
-                    "bloom_u4",
-                    "bloom_v1"
-                ],
+                lod: 6
             },
             {
                 name: "bloom_u6",
-                program: "bloom_upscale",
+                program: "bloom_upsample_first",
                 framebuffer: "bloom_u6",
                 samplerImages: [
-                    "bloom_u5",
-                    "bright_color"
+                    "bloom_downsample"
                 ],
+                lod: 6
+            },
+            {
+                name: "bloom_u5",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u5",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 5
+            },
+            {
+                name: "bloom_u4",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u4",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 4
+            },
+            {
+                name: "bloom_u3",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u3",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 3
+            },
+            {
+                name: "bloom_u2",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u2",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 2
+            },
+            {
+                name: "bloom_u1",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u1",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 1
+            },
+            {
+                name: "bloom_u0",
+                program: "bloom_upsample",
+                framebuffer: "bloom_u0",
+                samplerImages: [
+                    "bloom_downsample",
+                    "bloom_upsample"
+                ],
+                lod: 0
             },
             {
                 name: "bloom_merge",
@@ -941,7 +525,7 @@
                 samplerImages: [
                     "pre_bloom_copy",
                     "bright_color",
-                    "bloom_u6"
+                    "bloom_upsample"
                 ],
             },
             {

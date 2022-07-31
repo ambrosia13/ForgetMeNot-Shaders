@@ -365,7 +365,7 @@ void main() {
             
             vec3 reflectance = vec3(0.0);
 
-            if(frx_worldIsEnd != 1) {
+            if(frx_worldIsEnd != 1 || true) {
                 if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
 
                 for(int i = 0; i < SSR_STEPS; i++) {
@@ -429,7 +429,7 @@ void main() {
 
             if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && frx_smoothedEyeBrightness.y < 0.9) {
                 for(int i = 0; i < RTAO_STEPS; i++) {
-                    rayPos += (rayDir / RTAO_STEPS) * (interleaved_gradient() * 0.5 + 0.5) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
+                    rayPos += (rayDir / RTAO_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
 
                     vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
 

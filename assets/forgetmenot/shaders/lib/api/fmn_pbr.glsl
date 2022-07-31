@@ -20,7 +20,7 @@
     int fmn_isWater = 0;
 
     // Amount of subsurface scattering (SSS) to apply for this material. 
-    // Not physically based at all.
+    // Not physically based at all; this just ignores the NdotL component of shadowing.
     // Defaulted to 1.0 when diffuse shading is disable.
     float fmn_sssAmount = frx_matDisableDiffuse == 1 ? 1.0 : 0.0;
 #endif

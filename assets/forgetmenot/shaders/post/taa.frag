@@ -9,6 +9,13 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
+vec3 toneMap(in vec3 color) {
+    return color / (color + 1.0);
+}
+vec3 inverseToneMap(in vec3 color) {
+    return -color / (color - 1.0);
+}
+
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
 // Code by Belmu#4066
 vec3 clipAABB(vec3 prevColor, vec3 minColor, vec3 maxColor) {
@@ -29,6 +36,7 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
     for(int x = -NEIGHBORHOOD_SIZE; x <= NEIGHBORHOOD_SIZE; x++) {
         for(int y = -NEIGHBORHOOD_SIZE; y <= NEIGHBORHOOD_SIZE; y++) {
             vec3 color = texelFetch(currTex, ivec2(gl_FragCoord.xy) + ivec2(x, y), 0).rgb;
+            color = toneMap(color);
             minColor = min(minColor, color); maxColor = max(maxColor, color); 
         }
     }
@@ -52,11 +60,13 @@ void main() {
     float handDepth = texture(u_hand_depth, texcoord).r;
 
     color = texture(u_color, texcoord);
+    color.rgb = toneMap(color.rgb);
     
     vec3 viewPos = setupViewSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(viewPos + positionDifference);
     previousColor = texture(u_previous_frame, lastScreenPos.xy);
+    previousColor.rgb = toneMap(previousColor.rgb);
 
     //color = mix(color, previousColor, 0.9 * floor(handDepth));
 
@@ -64,5 +74,6 @@ void main() {
 
     color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
 
+    color.rgb = inverseToneMap(color.rgb);
     fragColor = max(vec4(1.0 / 65536.0), color);
 }

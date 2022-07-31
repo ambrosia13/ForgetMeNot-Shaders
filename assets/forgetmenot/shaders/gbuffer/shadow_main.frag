@@ -7,6 +7,7 @@ uniform sampler2D u_glint;
 uniform sampler2DArray u_shadow_color;
 
 in vec4 shadowViewPos;
+in vec4 originalPos;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
@@ -157,8 +158,8 @@ const vec2 vogel_disk_36_progressive[36] = vec2[](
 
 // procedural rain noise
 float rainHeightNoise(in vec2 uv) {
-    float time = frx_renderSeconds * 8.0;
-    uv += floor(time) * 0.2;
+    float time = 1.0 * 8.0;
+    uv += floor(time) * 0.2 * rand2D(vec2(floor(time)));
     time = mix(fract(time), 0.0, smoothstep(0.8, 0.9, fract(time))) * 0.2;
 
     //uv += frx_renderSeconds;
@@ -171,7 +172,11 @@ float rainHeightNoise(in vec2 uv) {
 
     return noise * 0.01;
 }
-
+vec2 parallaxMapping(in vec2 texcoord, in float height) {
+    vec3 viewDir = normalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
+    vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
+    return texcoord - p;
+}
 
 void frx_pipelineFragment() {
     bool isInventory = frx_isGui && !frx_isHand;
@@ -189,20 +194,22 @@ void frx_pipelineFragment() {
 
     #ifdef PBR_ENABLED
         // vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+        // uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
+        // float centerNoise = rainHeightNoise(uv);
 
-        // vec2 off = vec2(1e-2, 0.0);
+        // float offset = 1e-2;
 
-        // float height1 = rainHeightNoise(uv + off.xy);
-        // float height2 = rainHeightNoise(uv - off.xy);
-        // float height3 = rainHeightNoise(uv + off.yx);
-        // float height4 = rainHeightNoise(uv - off.yx);
+        // float height1 = rainHeightNoise(uv + vec2(offset, 0.0));
+        // float height2 = rainHeightNoise(uv - vec2(offset, 0.0));
+        // float height3 = rainHeightNoise(uv + vec2(0.0, offset));
+        // float height4 = rainHeightNoise(uv - vec2(0.0, offset));
 
-        // float deltaX = height2 - height1 * 50.0;
-        // float deltaY = height4 - height3 * 50.0;
+        // float deltaX = height2 - height1 * 25.0;
+        // float deltaY = height4 - height3 * 25.0;
 
         // vec3 newNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
 
-        // frx_fragNormal = newNormal;
+        // frx_fragNormal = normalize(newNormal);
 
         frx_fragNormal = tbn * frx_fragNormal;
         if(frx_isHand) {
@@ -214,7 +221,7 @@ void frx_pipelineFragment() {
 
     // Fake roughness lol
     if(frx_fragRoughness == 1.0) frx_fragRoughness = 0.0;
-    frx_fragNormal += rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0)) * (frx_fragRoughness / 10.0);
+    frx_fragNormal += normalize(rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0))) * (frx_fragRoughness / 10.0);
     frx_fragNormal = normalize(frx_fragNormal);
 
     frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
@@ -302,19 +309,21 @@ void frx_pipelineFragment() {
             frx_fragLight.x = pow(frx_fragLight.x, 1.0);
 
 
-            vec3 blockLightColor = mix(normalize(vec3(3.6, 1.9, 0.8)) * 2.0, pow(vec3(1.0, 0.9, 0.8), vec3(2.2)) * 1.25, BLOCKLIGHT_NEUTRALITY);
+            vec3 blockLightColor = vec3(1.0, 0.49, 0.16);
 
-            float blocklight = smoothstep(0.0, 1.0, frx_fragLight.x);
-            blocklight = pow(blocklight * 2.0, 2.0);
-            //blocklight = 1.0 / pow(16.0 - 15.0 * blocklight, 2.0);
-            //blocklight *= smoothstep(0.005, 1e-2, blocklight);
+            float blockLightFalloff = 8.0;
+            float blocklight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.x) * 16.0;
+            //blocklight = 1.0 / max(0.001, blocklight * blocklight);
+            //blocklight = exp(-(1.0 - blocklight) * blockLightFalloff);
+            //blocklight = max(0.0, blocklight - exp(-blockLightFalloff));
+
 
             lightmap = vec3(0.0);
 
             vec3 undergroundLighting;
             undergroundLighting = max(vec3(0.0025), undergroundLighting);
             // undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
-            undergroundLighting += blockLightColor * blockLightColor * blocklight;
+            undergroundLighting += blockLightColor * smoothstep(0.0, 16.0, blocklight) * 3.0;
 
             // float blockLightIntensity = 10.0 / pow((1.0 - (frx_fragLight.x)) * 16.0, 2.0);
             // undergroundLighting += blockLightColor * blockLightIntensity * 1.0;
@@ -336,7 +345,7 @@ void frx_pipelineFragment() {
                 skyIlluminance *= 1.33;
             #endif
             //skyIlluminance = max(skyIlluminance, 0.005);
-            skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
+            //skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
 
             #ifdef AMBIENT_LIGHT_BOOST
                 ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
@@ -355,7 +364,7 @@ void frx_pipelineFragment() {
             #endif
             aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * (NdotL * NdotL));
 
-            aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), pow(frx_fragLight.x, 2.0));
+            aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), smoothstep(0.0, 16.0, blocklight));
 
             //if(cascade == 3) aboveGroundLighting += frx_skyLightVector.y * (2.0 + NdotL) * shadowBlurColor * shadowMapInverse;
 
@@ -388,12 +397,15 @@ void frx_pipelineFragment() {
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
 
-            color.rgb *= lightmap;
+            //color.rgb *= lightmap;
         }
 
         // Material info stuff
         color.rgb = mix(color.rgb, frx_fragColor.rgb, frx_fragEmissive * mix((1.0), (frx_darknessEffectFactor), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0))));
-        color.rgb += color.rgb * mix(20.0, 8.0, float(frx_isHand)) * frx_fragEmissive;
+        
+        float emissionFactor = frx_luminance(color.rgb + 4.0 * color.rgb * pow(1.0 + frx_fragEmissive, 2.0));
+        color.rgb += color.rgb * 10.0 * frx_fragEmissive;
+        //color.rgb = mix(vec3(frx_luminance(color.rgb)), color.rgb, 1.0 + 0.5 * frx_fragEmissive);
 
         color.rgb = mix(color.rgb, vec3(frx_luminance(lightmap), 0.0, 0.0), 0.5 * frx_matHurt); 
         color.rgb = mix(color.rgb, vec3(2.0), 0.5 * frx_matFlash); 

@@ -398,4 +398,14 @@ float interleaved_gradient() {
     int internal_modulus = (components.x + components.y) & (ref_fixed_point - 1);
     return fract(float(internal_modulus) * (fixed2float * interleaved_z));
 }
+
+// accepts offset parameter
+float interleaved_gradient(int offset) {
+    ivec2 seed = ivec2(gl_FragCoord.xy) + offset;
+    int t = int(frx_renderFrames % 100u);
+    ivec2 components = ivec2(seed + 5.588238 * t) * interleave_vec;
+    int internal_modulus = (components.x + components.y) & (ref_fixed_point - 1);
+    return fract(float(internal_modulus) * (fixed2float * interleaved_z));
+}
+
 #endif
