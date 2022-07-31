@@ -7,7 +7,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 ## how to use
 1. Be sure you're on 1.18.2 or above. I can only offer support for the MC versions that Canvas supports.
 2. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
-3. Get Canvas Renderer mod through either [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds) or [Curseforge](https://www.curseforge.com/minecraft/mc-mods/canvas-renderer) (stable builds). Keep in mind that Canvas is not compatible with Sodium, Iris, or Optifine/Optifabric.
+3. Get Canvas Renderer mod through either [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds) or [Curseforge](https://www.curseforge.com/minecraft/mc-mods/canvas-renderer) (stable builds). **Keep in mind that Canvas is not compatible with Sodium, Iris, or Optifine/Optifabric**.
 4. Download Forget-me-not, either via the [releases tab](https://github.com/Poisoned-Honey/ForgetMeNot-Shaders/releases) or the green `Code` button on this GitHub page.
 5. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
 6. Activate your preferred pipeline shaderpack in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
@@ -38,6 +38,6 @@ https://discord.gg/Zzn4jJapRH
 ## screenshots
 ![a](https://cdn.discordapp.com/attachments/734161464184799296/1003051783909802015/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/839653070622818337/1003153222938148904/unknown.png)
-![a](https://media.discordapp.net/attachments/839653070622818337/1003154171635179671/unknown.png?width=1276&height=676)
+![a](https://cdn.discordapp.com/attachments/736930818835873813/1003347482014654524/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/839653070622818337/1003169821766209606/unknown.png)
 ![a](https://media.discordapp.net/attachments/903175815401975889/1003170619136938034/unknown.png?width=1276&height=676)

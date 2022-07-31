@@ -290,7 +290,7 @@ void main() {
         translucent_color.rgb *= vec3(1.0, 1.3, 0.7);
         float sunDotU = dot(getSunVector(), vec3(0.0, 1.0, 0.0));
 
-        float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos);
+        float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos); // warning: destroys underwater translucent visibility
 
         vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
         //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
@@ -338,7 +338,7 @@ void main() {
 
 
     #ifdef RTAO 
-        const float RTAO_BLEND_FACTOR = 0.95;
+        const float RTAO_BLEND_FACTOR = 0.05;
         vec3 rtao = vec3(1.0);
 
         vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
@@ -416,6 +416,35 @@ void main() {
         #ifdef RTAO
             const int RTAO_RAYS = 1;
             const int RTAO_STEPS = 10;
+
+            vec3 rayPos = minViewSpacePos;
+            vec3 rayDir = (normal);
+            float stepLength = 5.0 / RTAO_STEPS;
+
+            for(int i = 0; i < RTAO_STEPS; i++) {
+                rayPos += (normalize(rayDir + normalize(rand3D(2000.0 * (i + texcoord + fmn_time)))) * stepLength) * interleaved_gradient(i);
+
+                vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
+
+                if(clamp01(rayScreen) != rayScreen) {
+                    break;
+                } else {
+                    float depthQuery = texture(u_translucent_depth, rayScreen.xy).r;
+
+                    if(rayScreen.z > depthQuery && distance(rayPos, setupViewSpacePos(rayScreen.xy, depthQuery)) < 1.0) {
+                        rtao *= 0.1;
+                        break;
+                    }
+                }
+
+                stepLength *= 1.0;
+            }
+
+            composite *= mix(lastFrameRtao, rtao, 0.05);
+        #endif
+
+        #ifdef RAYTRACED_HELD_LIGHT
+            const int HELD_LIGHT_STEPS = 10;
 // float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
 // heldLightFactor *= clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0))));
 
@@ -425,11 +454,11 @@ void main() {
 
             vec3 rayPos = minViewSpacePos;
             vec3 rayDir = -(heldLightPos);
-            float stepLength = 0.05 / RTAO_STEPS;
+            float stepLength = 0.05 / HELD_LIGHT_STEPS;
 
             if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && frx_smoothedEyeBrightness.y < 0.9) {
-                for(int i = 0; i < RTAO_STEPS; i++) {
-                    rayPos += (rayDir / RTAO_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
+                for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
+                    rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
 
                     vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
 
@@ -464,15 +493,17 @@ void main() {
 
                 float fogOpticalDepth = 750000.0 - 500000.0 * frx_skyLightVector.y;
                 //fogOpticalDepth = fogDist * 3000000.0;
-        
-                float fogTransmittance = exp(-fogDist * (0.15 + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
+                float fogAmount = 0.15;
+                fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
+
+                float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
                 //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
 
                 if(min_depth == 1.0) fogTransmittance = 1.0;
                 if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
                 vec3 fogScattering = getFogScattering(viewDir, fogOpticalDepth);
-                fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.4, 0.0, 0.0), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+                fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.05, 0.025, 0.1), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
                 fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
 
                 fogScattering *= (1.0 - fogTransmittance);
