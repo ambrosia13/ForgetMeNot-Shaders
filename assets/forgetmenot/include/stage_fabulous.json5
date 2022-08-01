@@ -1,6 +1,28 @@
 {
     images: [
         {
+            name: "quarter_res_depth",
+            lod: 2,
+            internalFormat: "R32F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
             name: "sort",
             lod: 0,
             internalFormat: "RGBA16F",
@@ -48,6 +70,30 @@
 
     framebuffers: [
         {
+            name: "depth_d0",
+            colorAttachments: [
+                {
+                    image: "quarter_res_depth"
+                }
+            ]
+        },
+        {
+            name: "depth_d1",
+            colorAttachments: [
+                {
+                    image: "quarter_res_depth", lod: 1
+                }
+            ]
+        },
+        {
+            name: "depth_d2",
+            colorAttachments: [
+                {
+                    image: "quarter_res_depth", lod: 2
+                }
+            ]
+        },
+        {
             name: "sort",
             colorAttachments: [
                 {
@@ -69,6 +115,14 @@
     ],
 
     programs: [
+        {
+            name: "depth_downsample",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
+            samplers: [
+                "u_depth"
+            ]
+        },
         {
             name: "sort",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
@@ -92,7 +146,8 @@
                 "u_normal",
                 "u_translucent_vertex_normal",
                 "u_pbr_data",
-                "u_previous_frame"
+                "u_previous_frame",
+                "u_depth_mipmaps"
             ]
         },
         {
@@ -107,6 +162,32 @@
 
     fabulous: {
         passes: [
+            {
+                name: "depth_d0",
+                program: "depth_downsample",
+                framebuffer: "depth_d0",
+                samplerImages: [
+                    "translucent_depth"
+                ]
+            },
+            {
+                name: "depth_d1",
+                program: "depth_downsample",
+                framebuffer: "depth_d1",
+                samplerImages: [
+                    "quarter_res_depth"
+                ],
+                lod: 1
+            },
+            {
+                name: "depth_d2",
+                program: "depth_downsample",
+                framebuffer: "depth_d2",
+                samplerImages: [
+                    "quarter_res_depth"
+                ],
+                lod: 2
+            },
             {
                 name: "sort",
                 program: "sort",
@@ -130,7 +211,8 @@
                     "composite_normal",
                     "translucent_vertex_normal",
                     "pbr_data",
-                    "taa"
+                    "taa",
+                    "quarter_res_depth"
                 ]
             },
             {

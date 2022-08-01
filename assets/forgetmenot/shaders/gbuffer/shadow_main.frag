@@ -158,7 +158,7 @@ const vec2 vogel_disk_36_progressive[36] = vec2[](
 
 // procedural rain noise
 float rainHeightNoise(in vec2 uv) {
-    float time = 1.0 * 8.0;
+    float time = frx_renderSeconds * 8.0;
     uv += floor(time) * 0.2 * rand2D(vec2(floor(time)));
     time = mix(fract(time), 0.0, smoothstep(0.8, 0.9, fract(time))) * 0.2;
 
@@ -193,8 +193,8 @@ void frx_pipelineFragment() {
     );
 
     #ifdef PBR_ENABLED
-        // vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
-        // uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
+        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+        uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
         // float centerNoise = rainHeightNoise(uv);
 
         // float offset = 1e-2;
@@ -210,6 +210,11 @@ void frx_pipelineFragment() {
         // vec3 newNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
 
         // frx_fragNormal = normalize(newNormal);
+        if(frx_smoothedRainGradient > 0.0) {
+            vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
+            frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
+            frx_fragNormal = normalize(frx_fragNormal);
+        }
 
         frx_fragNormal = tbn * frx_fragNormal;
         if(frx_isHand) {
@@ -223,6 +228,11 @@ void frx_pipelineFragment() {
     if(frx_fragRoughness == 1.0) frx_fragRoughness = 0.0;
     frx_fragNormal += normalize(rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0))) * (frx_fragRoughness / 10.0);
     frx_fragNormal = normalize(frx_fragNormal);
+
+    if(frx_fragReflectance == 0.04) {
+        frx_fragReflectance = 0.0;
+        if(frx_vertexNormal.y > 0.9) frx_fragReflectance = mix(0.0, 0.04, frx_smoothedRainGradient * smoothstep(0.5, 0.7, frx_fragLight.y));
+    }
 
     frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
     vec4 color = frx_fragColor;
@@ -309,7 +319,7 @@ void frx_pipelineFragment() {
             frx_fragLight.x = pow(frx_fragLight.x, 1.0);
 
 
-            vec3 blockLightColor = vec3(1.0, 0.49, 0.16);
+            vec3 blockLightColor = vec3(1.0, 0.49, 0.16) * 2.0;
 
             float blockLightFalloff = 8.0;
             float blocklight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.x) * 16.0;
@@ -323,7 +333,7 @@ void frx_pipelineFragment() {
             vec3 undergroundLighting;
             undergroundLighting = max(vec3(0.0025), undergroundLighting);
             // undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
-            undergroundLighting += blockLightColor * smoothstep(0.0, 16.0, blocklight) * 3.0;
+            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), smoothstep(0.0, 16.0, blocklight));
 
             // float blockLightIntensity = 10.0 / pow((1.0 - (frx_fragLight.x)) * 16.0, 2.0);
             // undergroundLighting += blockLightColor * blockLightIntensity * 1.0;
@@ -362,7 +372,7 @@ void frx_pipelineFragment() {
             #else
                 aboveGroundLighting += skyIlluminance * ambientLightColor * shadowMapInverse;
             #endif
-            aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * (NdotL * NdotL));
+            aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * (NdotL));
 
             aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), smoothstep(0.0, 16.0, blocklight));
 
@@ -380,7 +390,7 @@ void frx_pipelineFragment() {
 
             // handheld light
             float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
-            heldLightFactor *= clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+            heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
             if(frx_isHand && !all(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
             heldLightFactor = clamp01(heldLightFactor);
             lightmap = mix(lightmap, (max(pow(frx_heldLight.rgb * 1.2, vec3(2.2)), lightmap)), heldLightFactor);
@@ -424,7 +434,6 @@ void frx_pipelineFragment() {
     }
 
     if(color.a < 0.05 && frx_renderTargetSolid && !frx_isGui) discard;
-    if(frx_fragReflectance == 0.04) frx_fragReflectance = 0.0;
 
     //color.rgb = shadowBlurColor;
 

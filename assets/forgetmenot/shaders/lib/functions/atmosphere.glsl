@@ -165,11 +165,27 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
 
+    float sunVisibility = frx_smootherstep(0.9996 , 0.9996, dot(viewDir, sunVector));
+
+    if(sunVector == getMoonVector()) {
+        int phase = (int(frx_worldDay) % 8) - 4;
+
+        float rotateAmount = 10.0;
+        if(abs(phase) == 3) rotateAmount = 0.04;
+        if(abs(phase) == 2) rotateAmount = 0.02;
+        if(abs(phase) == 1) rotateAmount = 0.01;
+        if(phase == 0)  rotateAmount = 0.00;
+        rotateAmount *= sign(phase);
+        
+        vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
+        sunVisibility -= frx_smootherstep(0.9996, 0.9996, dot(viewDir, normalize(vec3(rotation.x, sunVector.y, rotation.y))));
+
+        //if(sign(phase) < 0) sunVisibility = 1.0 - sunVisibility;
+    }
+
     if(frx_worldIsOverworld == 1) {
         totalScatter += mix(80.0, 40.0, sqrt(sunDotU)) * scatter(mie, opticalDepth) * 
-        miePhase(frx_smootherstep(0.9996, 0.9998, sunDotV), opticalDepth) * 
-        //smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
-        frx_smootherstep(0.9985 , 0.9995, dot(viewDir, sunVector));// * vec3(1.1, 1.1, 0.9);
+        miePhase(frx_smootherstep(0.9996, 0.9998, sunDotV), opticalDepth) * clamp01(sunVisibility);
     }
 
     vec3 totalAbsorb = absorbSun * factor;
@@ -286,7 +302,12 @@ vec3 getFogScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in fl
     vec3 totalScatter = scatterSun * sunBrightness * factor;    
     vec3 totalAbsorb = absorbSun * factor;
 
-    return totalScatter * totalAbsorb;
+    vec3 fogScattering = totalScatter * totalAbsorb;
+
+    fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.05, 0.025, 0.1), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+    fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
+
+    return fogScattering;
 }
 vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
     vec3 fogScattering;

@@ -21,6 +21,7 @@ uniform sampler2D u_normal;
 uniform sampler2D u_translucent_vertex_normal;
 uniform sampler2D u_pbr_data;
 uniform sampler2D u_previous_frame;
+uniform sampler2D u_depth_mipmaps;
 
 in vec2 texcoord;
 
@@ -175,7 +176,7 @@ void main() {
 
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
-    vec3 viewDir = normalize(maxViewSpacePos);
+    vec3 viewDir = normalize(setupViewSpacePos(texcoord, 1.0));
 
     vec3 tdata = getTimeOfDayFactors();
 
@@ -228,7 +229,7 @@ void main() {
                 cumulusCloudsDensity = sampleCumulusCloud(plane, CLOUD_DETAIL);
 
                 vec2 planeMarch = plane;
-                float stepLength = 1.0 / 8.0;
+                float stepLength = 4.0 / 8.0;
 
                 vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), (1.0 - frx_skyLightTransitionFactor));
                 vec2 rayDirection = normalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y) / 2.0;
@@ -239,14 +240,14 @@ void main() {
 
                 float transmittance = 1.0;
                 vec3 scattering;
-                for(int i = 0; i < 3; i++) {
+                for(int i = 0; i < 1; i++) {
                     planeMarch += rayDirection * stepLength * interleaved_gradient();
 
 
                     float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_SHADING_DETAIL);
                     //if(currentDensity == 0.0) break;
 
-                    lightOpticalDepth += currentDensity / 8.0;
+                    lightOpticalDepth += currentDensity / 2.0;
 
                     //if(currentDensity == 0.0) break;
 
@@ -361,9 +362,14 @@ void main() {
 
             float stepLength = 1.0 / SSR_STEPS;
 
-            vec3 reflectColor = max(vec3(0.005), getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, normal)) * clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y));
+            vec3 reflectColor = mix(
+                frx_smoothedEyeBrightness.y < 15.0 / 16.0 ? (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) : vec3(0.05),
+                getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, normal)),
+                clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
+            );
             
             vec3 reflectance = vec3(0.0);
+            if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir))) * smoothstep(-0.9, 0.0, f0.r);
 
             if(frx_worldIsEnd != 1 || true) {
                 if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
@@ -375,7 +381,7 @@ void main() {
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
                     } else {
-                        float depthQuery = texture(u_particles_depth, screenPos.xy).r;
+                        float depthQuery = textureLod(u_depth_mipmaps, screenPos.xy, 2).r;
 
                         if(depthQuery == 1.0) continue;
 
@@ -394,7 +400,7 @@ void main() {
 
                 float binaryStepLength = 0.5 / SSR_STEPS;
                 for(int i = 0; i < 4; i++) {
-                    reflectionCoord += sign(texture(u_particles_depth, reflectionCoord.xy).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                    reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, 2).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
                     binaryStepLength *= 0.5;
                 }
 
@@ -402,7 +408,6 @@ void main() {
 
             if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
 
-            if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
             // if(frx_cameraInWater == 1 && acos(dot(normal, -viewDir)) * (180 / PI) > 60.0) {
             //     reflectance = vec3(1.0);
 
@@ -429,7 +434,7 @@ void main() {
                 if(clamp01(rayScreen) != rayScreen) {
                     break;
                 } else {
-                    float depthQuery = texture(u_translucent_depth, rayScreen.xy).r;
+                    float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
 
                     if(rayScreen.z > depthQuery && distance(rayPos, setupViewSpacePos(rayScreen.xy, depthQuery)) < 1.0) {
                         rtao *= 0.1;
@@ -503,8 +508,6 @@ void main() {
                 if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
                 vec3 fogScattering = getFogScattering(viewDir, fogOpticalDepth);
-                fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.05, 0.025, 0.1), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
-                fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, sunDotU), frx_cameraInWater);
 
                 fogScattering *= (1.0 - fogTransmittance);
 
