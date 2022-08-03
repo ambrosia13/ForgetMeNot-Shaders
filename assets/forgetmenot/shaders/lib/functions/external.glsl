@@ -15,6 +15,29 @@ vec4 blur13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
   color += textureLod(image, uv - (off3 / resolution), frxu_lod) * 0.010381362401148057;
   return color;
 }
+vec4 blur13_lod(sampler2D image, vec2 uv, vec2 resolution, vec2 direction, int lod) {
+  vec4 color = vec4(0.0);
+  vec2 off1 = vec2(1.411764705882353) * direction;
+  vec2 off2 = vec2(3.2941176470588234) * direction;
+  vec2 off3 = vec2(5.176470588235294) * direction;
+  color += textureLod(image, uv, lod) * 0.1964825501511404;
+  color += textureLod(image, uv + (off1 / resolution), lod) * 0.2969069646728344;
+  color += textureLod(image, uv - (off1 / resolution), lod) * 0.2969069646728344;
+  color += textureLod(image, uv + (off2 / resolution), lod) * 0.09447039785044732;
+  color += textureLod(image, uv - (off2 / resolution), lod) * 0.09447039785044732;
+  color += textureLod(image, uv + (off3 / resolution), lod) * 0.010381362401148057;
+  color += textureLod(image, uv - (off3 / resolution), lod) * 0.010381362401148057;
+  return color;
+}
+vec4 cross_blur_lod(sampler2D image, vec2 uv, int lod, float rotation) {
+  vec4 color = vec4(0.0);
+
+  vec2 h = rotate2D(vec2(1.0, 0.0), rotation);
+  vec2 v = rotate2D(vec2(0.0, 1.0), rotation);
+
+  color += blur13_lod(image, uv, frxu_size, h, lod) + blur13_lod(image, uv, frxu_size, v, lod);
+  return color / 2.0;
+}
 
 vec4 blur5(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
   vec4 color = vec4(0.0);

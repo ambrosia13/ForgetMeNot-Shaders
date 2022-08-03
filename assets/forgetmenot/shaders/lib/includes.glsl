@@ -5,7 +5,6 @@
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
-#define GOLDEN_RATIO 1.618033988749894
 
 #include forgetmenot:atmospherics
 #include forgetmenot:lighting
@@ -29,5 +28,6 @@ uniform int frxu_lod;
 #include forgetmenot:shaders/lib/functions/utility.glsl
 #include forgetmenot:shaders/lib/functions/atmosphere.glsl
 #include forgetmenot:shaders/lib/functions/fxaa.glsl
+#include forgetmenot:shaders/lib/functions/kernels.glsl
 
 #include forgetmenot:shaders/lib/api/fmn_pbr.glsl

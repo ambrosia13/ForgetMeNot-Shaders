@@ -28,7 +28,7 @@ void main() {
 
     //if(texcoord.x > 0.5) vibrance(finalColor, pow(l, 1.0 / 2.0));
 
-    finalColor *= 0.5 + 0.5 * smoothstep(-0.3, 0.9, pow(3.0 * texcoord.x * texcoord.y * (1.0 - texcoord.x) * (1.0 - texcoord.y), 0.25));
+    //finalColor *= 0.5 + 0.5 * smoothstep(-0.3, 0.9, pow(3.0 * texcoord.x * texcoord.y * (1.0 - texcoord.x) * (1.0 - texcoord.y), 0.25));
 
     fragColor = vec4(finalColor + frx_noise2d(texcoord) / 100.0, 1.0);
 }

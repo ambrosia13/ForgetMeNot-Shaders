@@ -147,7 +147,9 @@
                 "u_translucent_vertex_normal",
                 "u_pbr_data",
                 "u_previous_frame",
-                "u_depth_mipmaps"
+                "u_depth_mipmaps",
+
+                "u_shadow_map"
             ]
         },
         {
@@ -212,7 +214,9 @@
                     "translucent_vertex_normal",
                     "pbr_data",
                     "taa",
-                    "quarter_res_depth"
+                    "quarter_res_depth",
+                    
+                    "shadow_map"
                 ]
             },
             {

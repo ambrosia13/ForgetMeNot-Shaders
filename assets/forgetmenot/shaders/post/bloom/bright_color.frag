@@ -22,6 +22,11 @@ void main() {
     // fragColor = vec4(color * (frx_smootherstep(0.8, 2.0, luminance)), 1.0);
 
     // #ifdef BLOOM_MIX_FACTOR
+    // if(frx_cameraInFluid == 1) {
+    //     fragColor = vec4(pow(color, vec3(1.0)), 1.0);
+    //     return;
+    // }
+
     fragColor = vec4(color + color * pow(frx_luminance(tanh(color)), 4.0), 1.0);
     // #endif
 }
