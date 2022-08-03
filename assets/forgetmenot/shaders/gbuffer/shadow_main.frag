@@ -173,7 +173,7 @@ void frx_pipelineFragment() {
             shadowMap = mix(shadowMap, 0.0, tdata.z);
             shadowMapInverse = 1.0 - shadowMap;
 
-            float NdotL = dot(frx_fragNormal, frx_skyLightVector) * 0.2 + 0.8;
+            float NdotL = dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5;
             NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
 
             frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);

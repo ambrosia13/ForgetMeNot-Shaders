@@ -272,6 +272,67 @@ vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
     return fogScattering;
 }
 
+vec3 getCloudsScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in float sunBrightness, in float opticalDepth) {
+    const float ln2 = log(2.0);
+
+    vec3 rayleigh = kRlh;
+    vec3 mie = kMie;
+
+    if(frx_worldIsEnd == 1) {
+        viewDir.y = abs(viewDir.y);
+        rayleigh = vec3(0.8, 0.3, 1.0) * 1e-5;
+        sunVector = normalize(vec3(1.0, 0.1, 0.2));
+    }
+
+    float LdotU = sunVector.y;
+    float LdotV = clamp01(dot(sunVector, viewDir));
+    float upDot = min(viewDir.y, 0.4);
+
+    float lightOpticalDepth = particleThickness(LdotU);
+
+    vec3 scatterView = kTotal * opticalDepth;
+    vec3 absorbView = exp2(-scatterView);
+
+    vec3 scatterLight = kTotal * lightOpticalDepth;
+    vec3 absorbLight = exp2(-scatterLight);
+
+    vec3 absorbSun = abs(absorbLight - absorbView) / d0((scatterLight - scatterView) * ln2);
+
+    vec3 rlhDayScatter = rayleigh * opticalDepth * 1.125;
+    vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(LdotV, MIE_AMOUNT);
+
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+
+    // -------
+
+    vec3 totalScatter = scatterSun * sunBrightness * factor;    
+    vec3 totalAbsorb = absorbSun * factor;
+
+    vec3 fogScattering = totalScatter * totalAbsorb;
+
+    fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.05, 0.025, 0.1), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+    fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, LdotU), frx_cameraInWater);
+
+    return fogScattering;
+}
+vec3 getCloudsScattering(in vec3 viewDir) {
+    float opticalDepth = 250000.0;
+    
+    vec3 fogScattering;
+    vec3 tdata = getTimeOfDayFactors();
+
+    if(1.0 - tdata.y > 0.0) {
+        vec3 sunVector = getSunVector();
+        fogScattering += getCloudsScattering(viewDir, sunVector, 1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0), opticalDepth) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+    }
+    if(1.0 - tdata.x > 0.0) {
+        vec3 moonVector = getMoonVector();
+        fogScattering += getCloudsScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0), opticalDepth) * vec3(0.125, 0.175, 0.375);
+    }
+
+    return fogScattering;
+}
+
 vec3 atmosphericScatteringTop(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
     const float ln2 = log(2.0);
 

@@ -92,9 +92,10 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
         density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.25 - 0.25;
     #endif
 
-    coverageBias = mix(coverageBias, 0.35, frx_smoothedRainGradient);
-    coverageBias = mix(coverageBias, 0.15, frx_smoothedThunderGradient);
     coverageBias = clamp(coverageBias, 0.3, 0.7);
+
+    coverageBias = mix(coverageBias, 0.35, frx_smoothedRainGradient);
+    coverageBias = mix(coverageBias, 0.2, frx_smoothedThunderGradient);
     mistiness = mix(mistiness, 0.3, frx_smoothedRainGradient);
     float lowerBound = coverageBias;
     float upperBound = coverageBias + mistiness;
@@ -205,7 +206,7 @@ void main() {
 
     if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
         vec2 clipPos = texcoord * 2.0 - 1.0;
-        clipPos += taaOffsets[frx_renderFrames % 8u] / frxu_size;
+        clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
         vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
         vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
         vec3 jitteredViewDir = normalize(jitteredViewPos);
@@ -215,9 +216,10 @@ void main() {
         vec3 ambientLightColor = vec3(0.0);
         ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
         float skyIlluminance = frx_luminance(ambientLightColor * 8.0);
-        vec3 skyLightColor = mix(normalize(getSkyColor(normalize(frx_skyLightVector - vec3(0.0, 0., 0.0)))), normalize(vec3(5.0, 1.75, 0.5)), 1.0 - frx_skyLightTransitionFactor) * (skyIlluminance / 1.5);
-        skyLightColor *= mix(vec3(1.0), vec3(0.5, 0.7, 1.5), (1.0 - frx_skyLightTransitionFactor) * smoothstep(0.0, 0.1, dot(viewDir, getMoonVector())));
-
+        //vec3 skyLightColor = mix(normalize(getSkyColor(normalize(frx_skyLightVector - vec3(0.0, 0., 0.0)))), normalize(vec3(7.0, 1.75, 0.5)), 1.0 - frx_skyLightTransitionFactor) * (skyIlluminance);
+        vec3 skyLightColor = normalize(getCloudsScattering(frx_skyLightVector)) * skyIlluminance;
+        //skyLightColor = mix(skyLightColor, skyLightColor * 0.25 + 0.75, 1.0) * skyIlluminance;
+        skyLightColor *= mix(vec3(1.0), vec3(0.2, 0.5, 2.0), (1.0 - frx_skyLightTransitionFactor) * smoothstep(-0.5, 0.5, dot(viewDir, getMoonVector())));
         vec3 viewPos = maxViewSpacePos;
 
         if(viewDir.y > 0.0) {
@@ -229,7 +231,7 @@ void main() {
                 plane += frx_cameraPos.xz / 150.0;
 
                 #ifdef CURL_NOISE
-                    plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
+                    //plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
                     //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
                 #endif
 
@@ -249,7 +251,7 @@ void main() {
                 cumulusCloudsDensity = sampleCumulusCloud(plane, CLOUD_DETAIL);
 
                 vec2 planeMarch = plane;
-                float stepLength = 4.0 / 8.0;
+                float stepLength = 1.0;
 
                 vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), (1.0 - frx_skyLightTransitionFactor));
                 vec2 rayDirection = normalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y) / 2.0;
@@ -264,14 +266,14 @@ void main() {
                     planeMarch += rayDirection * stepLength * interleaved_gradient();
 
 
-                    float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_SHADING_DETAIL);
+                    float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
                     //if(currentDensity == 0.0) break;
 
-                    lightOpticalDepth += currentDensity / 2.0;
+                    lightOpticalDepth += currentDensity;
 
                     //if(currentDensity == 0.0) break;
 
-                    stepLength *= 1.5;
+                    //stepLength *= 1.5;
                 }
 
                 //lightOpticalDepth = mix(lightOpticalDepth, 0.5, 1.0 - frx_skyLightTransitionFactor);
@@ -279,8 +281,8 @@ void main() {
 
                 opticalDepth = cumulusCloudsDensity;
 
-                transmittance = exp2(-opticalDepth * 4.0);
-                scattering = vec3(exp2(-lightOpticalDepth * 5.0) * (1.0 - transmittance)) * mie;
+                transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
+                scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 2.5 * frx_smoothedRainGradient)) * (1.0 - transmittance)) * mie;
                 //scattering = mix(scattering, vec3(0.1 * mie), 1.0 - frx_skyLightTransitionFactor);
 
                 main_color.rgb = mix(main_color.rgb, main_color.rgb * transmittance + scattering, smoothstep(0.0, 0.1, viewDir.y));
