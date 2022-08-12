@@ -84,7 +84,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
         float upDot = mix(pow(-viewDir.y, 1.0 / SKY_GROUND_FOG), viewDir.y, step(0.0, viewDir.y));
     #else
         // add padding to the atmosphere to hide the sky ground
-        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : mix(pow(-viewDir.y, 1.0 / SKY_GROUND_FOG), viewDir.y, step(0.0, viewDir.y));
+        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);;
     #endif
     
     if(frx_worldIsEnd == 1) upDot *= 50.0;
@@ -262,11 +262,11 @@ vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
 
     if(1.0 - tdata.y > 0.0) {
         vec3 sunVector = getSunVector();
-        fogScattering += getFogScattering(viewDir, sunVector, 1.0 - tdata.y, 1.0 + 1.5 * pow(1.0 - sunVector.y, 5.0), opticalDepth) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+        fogScattering += getFogScattering(viewDir, sunVector, 1.0 - tdata.y, DAY_BRIGHTNESS, opticalDepth) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();
-        fogScattering += getFogScattering(viewDir, moonVector, 1.0 - tdata.x, 0.1 + 0. * pow(1.0 - moonVector.y, 5.0), opticalDepth) * vec3(0.125, 0.175, 0.375);
+        fogScattering += getFogScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, opticalDepth) * vec3(0.125, 0.175, 0.375);
     }
 
     return fogScattering;
@@ -309,9 +309,6 @@ vec3 getCloudsScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in
     vec3 totalAbsorb = absorbSun * factor;
 
     vec3 fogScattering = totalScatter * totalAbsorb;
-
-    fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.05, 0.025, 0.1), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
-    fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, LdotU), frx_cameraInWater);
 
     return fogScattering;
 }
@@ -428,7 +425,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     }
 
     if(frx_worldIsEnd == 1) {
-        viewDir.zy = rotate2D(viewDir.zy, 2.8);
+        viewDir.zy = rotate2D(viewDir.zy, 2.4);
+        viewDir.xy = rotate2D(viewDir.xy, 0.3);
 
         //viewDir.y = -viewDir.y;
 
@@ -439,7 +437,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
         viewDir.xy = rotate2D(viewDir.xy, -0.1);
         viewPos.xy = rotate2D(viewPos.xy, -0.1);
 
-        viewDir.y += 0.2;
+        viewDir.y += 0.4;
         viewDir = normalize(viewDir);
 
         atmosphere += atmosphericScattering(viewDir, vec3(0.0), 2.0, 1.0);

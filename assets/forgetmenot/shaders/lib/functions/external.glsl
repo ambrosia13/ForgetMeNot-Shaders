@@ -430,5 +430,83 @@ float interleaved_gradient(int offset) {
     int internal_modulus = (components.x + components.y) & (ref_fixed_point - 1);
     return fract(float(internal_modulus) * (fixed2float * interleaved_z));
 }
-
 #endif
+
+// https://www.shadertoy.com/view/ltB3zD
+float gold_noise(in vec2 xy, in float seed) {
+  return fract(tan(distance(xy * 1.61803398874989484820459, xy)*seed)*xy.x);
+}
+
+#define LEVEL 15U
+#define WIDTH ( (1U << LEVEL) )
+#define AREA ( WIDTH * WIDTH )
+
+// Following functions taken or adapted from https://www.shadertoy.com/view/3tB3z3
+uint inverse_gray32(uint n) {
+    n = n ^ (n >> 1);
+    n = n ^ (n >> 2);
+    n = n ^ (n >> 4);
+    n = n ^ (n >> 8);
+    n = n ^ (n >> 16);
+    return n;
+}
+uint HilbertIndex( uvec2 Position )
+{   
+    uvec2 Regions;
+    uint Index = 0U;
+    for( uint CurLevel = WIDTH/2U; CurLevel > 0U; CurLevel /= 2U )
+    {
+        uvec2 Region = uvec2(greaterThan((Position & uvec2(CurLevel)), uvec2(0U)));
+        Index += CurLevel * CurLevel * ( (3U * Region.x) ^ Region.y);
+        if( Region.y == 0U )
+        {
+            if( Region.x == 1U )
+            {
+                Position = uvec2(WIDTH - 1U) - Position;
+            }
+            Position.xy = Position.yx;
+        }
+    }
+    
+    return Index;
+}
+float pseudoBlueNoise(in vec2 coord, in int seed) {
+  coord += seed;
+  uint x = HilbertIndex(uvec2(coord)) % (1u << 17u);
+  
+  const float phi = 0.61803398875;
+	float c = fract(0.5+phi*float(x));
+
+  return c;
+}
+
+// =========================
+// From SixthSurge
+// =========================
+const float phi1 = 1.6180339887; // Golden ratio, solution to x^2 = x + 1
+const float phi2 = 1.3247179572; // Plastic constant, solution to x^3 = x + 1
+const float phi3 = 1.2207440846; // Solution to x^4 = x + 1
+
+float R1(int n, float seed) {
+    const float alpha = 1.0 / phi1;
+    return fract(seed + n * alpha);
+}
+float R1(int n) {
+    return R1(n, 0.5);
+}
+
+vec2 R2(int n, vec2 seed) {
+    const vec2 alpha = 1.0 / vec2(phi2, phi2 * phi2);
+    return fract(seed + n * alpha);
+}
+vec2 R2(int n) {
+    return R2(n, vec2(0.5));
+}
+
+vec3 R3(int n, vec3 seed) {
+    const vec3 alpha = 1.0 / vec3(phi3, phi3 * phi3, phi3 * phi3 * phi3);
+    return fract(seed + n * alpha);
+}
+vec3 R3(int n) {
+    return R3(n, vec3(0.5));
+}

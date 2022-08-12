@@ -39,7 +39,7 @@ void frx_materialFragment() {
         frx_fragNormal = normalize(frx_fragNormal);
 
         frx_fragReflectance = 0.06;
-        frx_fragRoughness = 0.00;
+        frx_fragRoughness = 0.0;
         //frx_fragEnableDiffuse = false;
     #endif
 
@@ -53,5 +53,5 @@ void frx_materialFragment() {
     #endif
 
     // frx_fragColor = vec4(0.0, 0.0, 0.0, 0.5);
-    // frx_fragColor.a *= 0.5;
+    //frx_fragColor.a *= 0.5;
 }

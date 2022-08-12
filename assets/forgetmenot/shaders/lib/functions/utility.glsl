@@ -205,7 +205,7 @@ float fbmHash(vec2 uv, int octaves, float t) {
 
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + mod(fmn_time * t, 1000.0);
+		uv = rotationMatrix * uv * 2. + mod(fmn_time * t, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -340,3 +340,81 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
 	
     return ggx1 * ggx2;
 }
+
+// bool screenSpaceRayTrace(in vec3 screenPos, in vec3 viewSpaceRayDirection,)
+
+// Thanks Belmu#4066 for helping me solve the issues with my variable penumbra shadows!
+vec2 sincos(float x) {
+    return vec2(sin(x), cos(x));
+}
+vec2 diskSampling(float i, float n, float phi){
+    float theta = (i + phi) / n; 
+    return sincos(theta * TAU * n * 1.618033988749894) * theta;
+}
+
+// From lumi lights by spiralhalo
+float linearizeDepth(float depth) {
+	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
+	const float farZ = 1.0;
+	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
+}
+
+#ifndef VERTEX_SHADER
+    // vec3 noise3d() {
+    //     float seed = mod(frx_renderSeconds, 10.0);
+    //     vec3 r = vec3(
+    //         gold_noise(gl_FragCoord.xy, seed),
+    //         gold_noise(gl_FragCoord.xy, seed + 1.0),
+    //         gold_noise(gl_FragCoord.xy, seed + 2.0)
+    //     );
+    //     r = (r) * 2.0 - 1.0;
+    //     return r;
+    // }
+    vec3 noise3d(float seed) {
+        vec3 r = vec3(
+            gold_noise(gl_FragCoord.xy, seed),
+            gold_noise(gl_FragCoord.xy, seed + 1.0),
+            gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
+    float pseudoBlueNoise(in int seed) {
+        return pseudoBlueNoise(gl_FragCoord.xy, seed);
+    }
+    vec3 pseudoBlueNoise_3d(in int seed) {
+        vec3 r = vec3(
+            pseudoBlueNoise(seed),
+            pseudoBlueNoise(seed - 3000),
+            pseudoBlueNoise(seed + 3000)
+        );
+        return normalize(r) * 2.0 - 1.0;
+    }
+    vec3 pseudoBlueNoise_3d() {
+        uint seed = (frx_renderFrames * 40u) % 100u;
+        return pseudoBlueNoise_3d(int(seed));
+    }
+
+// https://www.pcg-random.org/
+// Code isolated by Belmu#4066
+float pcg(in uint seed) {
+    uint state = seed * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    seed = (word >> 22u) ^ word;
+    return float(seed);
+}
+float pcg() {
+    uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+    return pcg(seed) / float(0xffffffffu);
+}
+vec3 noise3d() {
+    uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+
+    vec3 r = vec3(
+        pcg(seed),
+        pcg(seed - 1000u),
+        pcg(seed + 1000u)    
+    );
+    return normalize(r) * 2.0 - 1.0;
+}
+#endif

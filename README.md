@@ -23,7 +23,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - bloom, tone mapping, and HDR shader effects
 - custom atmosphere, including atmospheric fog, semi-realistic skies, and properly shaded clouds
 - water waves & reflections
-- shadows & advanced ambient light (RTAO)
+- variable penumbra shadows & advanced ambient light (RTAO)
 - TAA that removes almost all noise and aliasing
 
 ## credits

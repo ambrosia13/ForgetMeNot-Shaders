@@ -45,7 +45,7 @@
             ]
         },
         {
-            name: "reflection_result",
+            name: "global_illumination",
             lod: 0,
             internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
@@ -98,9 +98,6 @@
             colorAttachments: [
                 {
                     image: "sort", clearColor: 0x00000000
-                },
-                {
-                    image: "reflection_result", clearColor: 0x00000000
                 }
             ]
         },
@@ -148,6 +145,7 @@
                 "u_pbr_data",
                 "u_previous_frame",
                 "u_depth_mipmaps",
+                "u_blue_noise"
 
                 "u_shadow_map"
             ]
@@ -190,6 +188,14 @@
                 ],
                 lod: 2
             },
+            // {
+            //     name: "gi_copy",
+            //     program: "copy",
+            //     framebuffer: "copy_to_main",
+            //     samplerImages: [
+            //         "sort"
+            //     ]
+            // }
             {
                 name: "sort",
                 program: "sort",
@@ -215,6 +221,7 @@
                     "pbr_data",
                     "taa",
                     "quarter_res_depth",
+                    "forgetmenot:textures/blue_noise.png"
                     
                     "shadow_map"
                 ]

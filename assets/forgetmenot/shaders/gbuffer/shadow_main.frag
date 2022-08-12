@@ -7,13 +7,11 @@ uniform sampler2D u_glint;
 uniform sampler2DArray u_shadow_color;
 
 in vec4 shadowViewPos;
-in vec4 originalPos;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 pbrData;
 layout(location = 3) out vec4 vertexNormal;
-
 
 // procedural rain noise
 float rainHeightNoise(in vec2 uv) {
@@ -37,124 +35,127 @@ vec2 parallaxMapping(in vec2 texcoord, in float height) {
     return texcoord - p;
 }
 
+mat3 tbnMatrix() {
+    return mat3(
+        frx_vertexTangent.xyz, 
+        cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
+        frx_vertexNormal.xyz
+    );
+}
+void resolveNormals() {
+    mat3 tbn = tbnMatrix();
+
+    frx_fragNormal = tbn * frx_fragNormal;
+    if(frx_isHand) {
+        frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
+    }
+}
+
 void frx_pipelineFragment() {
     bool isInventory = frx_isGui && !frx_isHand;
     vec3 gamma = vec3(isInventory ? 1.0 : 2.2);
+    vec3 tdata = getTimeOfDayFactors();
 
     #ifdef WHITE_WORLD
         frx_fragColor.rgb = vec3(1.0);
     #endif
 
-    mat3 tbn = mat3(
-        frx_vertexTangent.xyz, 
-        cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
-        frx_vertexNormal.xyz
-    );
+    frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
+    vec4 color = frx_fragColor;
 
-    #ifdef PBR_ENABLED
-        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
-        uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
-        // float centerNoise = rainHeightNoise(uv);
+    resolveNormals();
+    float VNdotL = dot(frx_vertexNormal, frx_skyLightVector);
+    float NdotL = dot(frx_fragNormal, frx_skyLightVector);
+    NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
 
-        // float offset = 1e-2;
+    // Rain ripples
+    vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+    uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
 
-        // float height1 = rainHeightNoise(uv + vec2(offset, 0.0));
-        // float height2 = rainHeightNoise(uv - vec2(offset, 0.0));
-        // float height3 = rainHeightNoise(uv + vec2(0.0, offset));
-        // float height4 = rainHeightNoise(uv - vec2(0.0, offset));
-
-        // float deltaX = height2 - height1 * 25.0;
-        // float deltaY = height4 - height3 * 25.0;
-
-        // vec3 newNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
-
-        // frx_fragNormal = normalize(newNormal);
-        if(frx_smoothedRainGradient > 0.0) {
-            vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
-            frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
-            frx_fragNormal = normalize(frx_fragNormal);
-        }
-
-        frx_fragNormal = tbn * frx_fragNormal;
-        if(frx_isHand) {
-            frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
-        }
-    #else
-        #define frx_fragNormal frx_vertexNormal
-    #endif
-
-    // Fake roughness lol
-    if(frx_fragRoughness == 1.0) frx_fragRoughness = 0.0;
-    frx_fragNormal += normalize(rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0))) * (frx_fragRoughness / 10.0);
-    frx_fragNormal = normalize(frx_fragNormal);
-
+    if(frx_smoothedRainGradient > 0.0) {
+        vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
+        frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
+        frx_fragNormal = normalize(frx_fragNormal);
+    }
     if(frx_fragReflectance == 0.04) {
         frx_fragReflectance = 0.0;
         if(frx_vertexNormal.y > 0.9) frx_fragReflectance = mix(0.0, 0.04, frx_smoothedRainGradient * smoothstep(0.5, 0.7, frx_fragLight.y));
     }
 
-    frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
-    vec4 color = frx_fragColor;
+    // // Fake roughness
+    // if(frx_fragRoughness == 1.0) frx_fragRoughness = 0.0;
+    // frx_fragNormal += normalize(rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0))) * (frx_fragRoughness / 10.0);
+    // frx_fragNormal = normalize(frx_fragNormal);
 
+
+    // Makes shadows pixel aligned
+    // vec4 viewPos = frx_shadowViewMatrix * vec4((floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0) - frx_cameraPos, frx_vertex.w);
     int cascade = selectShadowCascade(shadowViewPos);
     vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
     float shadowMap;
     vec3 shadowBlurColor;
-    //shadowMap += texture(frxs_shadowMap, vec4((shadowScreenPos.xy), cascade, shadowScreenPos.z));
-    //if(frx_matCutout == 1) fmn_sssAmount = 1.0;
 
-    // for(int i = -3; i < 3; i++) {
-    //     for(int j = -3; j < 3; j++) {
-    //         shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vec2(i, j) / SHADOW_MAP_SIZE, cascade, shadowScreenPos.z)) / 16.0;
-    //     }
-    // }
+    float penumbraSize = 2.0;
+    float dither = sqrt(interleaved_gradient());
 
-    //shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + rand2D(100.0 * (gl_FragCoord.xy + frx_renderSeconds)) / 800.0, cascade, shadowScreenPos.z - 0.0001 * (3 - cascade)));
+    // Blocker search, adjusts penumbraSize accordingly
+    #ifdef VARIABLE_PENUMBRA_SHADOWS
+        float blockerCount;
+        float blockers;
+
+        for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
+            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * 24.0;
+            vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
+
+            float depthQuery = texture(frxs_shadowMapTexture, vec3(sampleCoord, cascade)).r;
+            float diff = max(0.0, shadowScreenPos.z - depthQuery) * 1000.0;
+
+            blockers += diff;
+            blockerCount += 1.0;
+        }
+        blockers /= blockerCount;
+
+        penumbraSize = blockers;
+        penumbraSize = min(penumbraSize, 10.0 * (cascade));
+        penumbraSize = max(penumbraSize, 1.0);
+
+        // SSS approximation, blur backface shadows
+        penumbraSize = mix(penumbraSize, 8.0 * cascade, fmn_sssAmount * step(0.0, -VNdotL));
+    #endif
+
+    vec3 shadowPosDX = dFdx(shadowScreenPos);
+    vec3 shadowPosDY = dFdy(shadowScreenPos);
+
+    vec2 receiverPlaneDepthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
+
+    float fractionalSamplingError = 2.0 * dot(vec2(1.0 / SHADOW_MAP_SIZE), abs(receiverPlaneDepthBias));
+    float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - VNdotL) + 0.00009 * (3 - cascade);
     
-    for(int i = 0; i < 36; i++) {
-        shadowMap += texture(frxs_shadowMap, vec4(shadowScreenPos.xy + vogel_disk_36_progressive[i] / 1600.0, cascade, shadowScreenPos.z)) / 20.0;
+    #ifdef BIAS_MULT
+        float biasMult = 1.0 + 0.3 * max(0, 2 - cascade);
+    #else
+        float biasMult = 1.0;
+    #endif
+
+    shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, frx_matCutout);
+
+    for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
+        vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
+        vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
+        shadowMap += texture(frxs_shadowMap, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
     }
-    shadowMap = smoothstep(0.0, 0.9, shadowMap);
+
     shadowMap = clamp01(shadowMap);
-    shadowMap *= mix(smoothstep(-0.0, 0.1, dot(frx_vertexNormal, frx_skyLightVector)), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
+    shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
-    // if(cascade == 3) {
-    //     for(int i = 0; i < 100; i++) {
-    //         vec3 flux = texture(u_shadow_color, vec3(shadowScreenPos.xy + vogel_disk_100_progressive[i] / 5.0, 0)).rgb;
-    //         //flux *= max(0.0, dot(-frx_fragNormal, frx_skyLightVector));
-    //         //flux /= pow(abs(shadowScreenPos.z - texture(frxs_shadowMapTexture, vec3(shadowScreenPos.xy, cascade))).r, 4.0);
+    // backface brightening - apparently happens in real life with SSS
+    shadowMap *= mix(1.0, 2.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
 
-    //         shadowBlurColor += flux / 100.0;    
-    //     }
-    // }
-
-
-    // shadowBlurColor += 1.0 * shadowBlurColor * frx_luminance(shadowBlurColor);
-    // shadowBlurColor = pow(shadowBlurColor, vec3(2.2));
-    // vec3 flux;
-    // vec4 shadowViewRSM = shadowViewPos;
-
-    // vec3 direction = reflect(frx_fragNormal, -frx_skyLightVector);
-    // // for(int i = -4; i < 4; i++) {
-    // //     for(int j = -4; j < 4; j++) {
-    // //         //vec2 offset = vec2(i, j)
-    // //         shadowViewRSM.xyz += direction / 64.0;
-
-    // //         int cascadeRSM = selectShadowCascade(shadowViewRSM);
-    // //         vec4 shadowClipPosRSM = frx_shadowProjectionMatrix(cascadeRSM) * shadowViewRSM;
-    // //         vec3 shadowScreenPosRSM = (shadowClipPosRSM.xyz / shadowClipPosRSM.w) * 0.5 + 0.5;
-    // //         flux += distance(shadowViewRSM.xyz, shadowViewPos.xyz) * pow(texture(u_shadow_color, vec3(shadowScreenPosRSM.xy + 15.0 * vec2(i, j) / SHADOW_MAP_SIZE, 0)).rgb * 1.5, vec3(2.2)) / 64.0;
-    // //     }
-    // // }
-    // shadowBlurColor = flux * max(0.0, dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5);
-    // shadowBlurColor *= 1.0 - shadowMap;
-
-    shadowMap = mix(0.0, shadowMap, frx_fragLight.y);
-
-    if(frx_isHand) shadowMap = 0.5;
-    float shadowMapInverse;
+    shadowMap = mix(shadowMap, 0.0, tdata.z);
+    shadowMap *= frx_worldIsOverworld;
+    float shadowMapInverse = 1.0 - clamp01(shadowMap);
 
     if(!isInventory) {
         vec3 lightmap = vec3(1.0);
@@ -164,90 +165,59 @@ void frx_pipelineFragment() {
         #endif
 
         if(frx_worldIsEnd + frx_worldIsNether + frx_worldIsOverworld >= 1) {
-            frx_fragLight.xy *= mix((1.0), (frx_darknessEffectFactor * 0.95 + 0.05), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
-            frx_fragLight.z = mix(frx_fragLight.z, 1.0, shadowMap);
-
-            vec3 tdata = getTimeOfDayFactors();
             frx_fragLight.y = mix(frx_fragLight.y, 1.0, frx_worldIsEnd);
 
-            shadowMap = mix(shadowMap, 0.0, tdata.z);
-            shadowMapInverse = 1.0 - shadowMap;
-
-            float NdotL = dot(frx_fragNormal, frx_skyLightVector) * 0.5 + 0.5;
-            NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
-
-            frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
-            frx_fragLight.x = pow(frx_fragLight.x, 1.0);
+            frx_fragLight.xy *= mix(1.0, frx_darknessEffectFactor * 0.95 + 0.05, frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));            
+            frx_fragLight.z = mix(frx_fragLight.z, 1.0, clamp01(shadowMap + frx_matDisableAo));
 
 
-            vec3 blockLightColor = vec3(1.0, 0.49, 0.16) * 2.0;
+            float directionalShadingFactor = NdotL * 0.5 + 0.5;
 
-            float blockLightFalloff = 8.0;
+            vec3 blockLightColor = mix(vec3(1.0, 0.49, 0.16), vec3(1.0), BLOCKLIGHT_NEUTRALITY) * 2.0;
+
             float blocklight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.x) * 16.0;
-            //blocklight = 1.0 / max(0.001, blocklight * blocklight);
-            //blocklight = exp(-(1.0 - blocklight) * blockLightFalloff);
-            //blocklight = max(0.0, blocklight - exp(-blockLightFalloff));
-
+            float skylight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y) * 16.0;
 
             lightmap = vec3(0.0);
-
-            vec3 undergroundLighting;
-            undergroundLighting = max(vec3(0.0025), undergroundLighting);
-            // undergroundLighting += vec3(1.2, 0.9, 0.5) * blocklight;
-            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), smoothstep(0.0, 16.0, blocklight));
-
-            // float blockLightIntensity = 10.0 / pow((1.0 - (frx_fragLight.x)) * 16.0, 2.0);
-            // undergroundLighting += blockLightColor * blockLightIntensity * 1.0;
-
-            lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
 
             vec3 aboveGroundLighting;
 
             vec3 skyLightColor = getSkyColor(frx_skyLightVector);
-
             vec3 ambientLightColor = getFogScattering(vec3(0.0, 1.0, 0.0), 100000.0);
             
             if(frx_worldIsEnd == 1) {
+                // Never thought I'd ever name a variable NdotPlanet
                 float NdotPlanet = dot(frx_fragNormal, normalize(vec3(0.8, 0.3, -0.5)));
                 ambientLightColor = mix(ambientLightColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
                 ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
             }
 
             float skyIlluminance = frx_luminance(ambientLightColor) * mix(1.0, 1.5, clamp01(frx_skyLightVector.y));
+
             #ifdef AMBIENT_LIGHT_BOOST
                 skyIlluminance *= 1.33;
-            #endif
-            //skyIlluminance = max(skyIlluminance, 0.005);
-            //skyIlluminance *= mix(1.0, 1.0, sqrt(clamp01(getMoonVector().y)));
-
-            #ifdef AMBIENT_LIGHT_BOOST
                 ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
-            #else
-                ambientLightColor = normalize(ambientLightColor);
-            #endif
-
-            //ambientLightColor = mix(ambientLightColor, max(ambientLightColor, shadowBlurColor * 4.0), smoothstep(1.0, -0.5, clamp01(dot(frx_fragNormal, frx_skyLightVector))));
-
-            skyLightColor = normalize(skyLightColor) * 6.5;
-
-            #ifdef AMBIENT_LIGHT_BOOST
                 aboveGroundLighting += max(0.075, skyIlluminance) * ambientLightColor * shadowMapInverse;
             #else
+                ambientLightColor = normalize(ambientLightColor);
                 aboveGroundLighting += skyIlluminance * ambientLightColor * shadowMapInverse;
             #endif
-            aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * (NdotL));
+
+            skyLightColor = normalize(skyLightColor) * 6.5;
+            aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
 
             aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), smoothstep(0.0, 16.0, blocklight));
 
-            //if(cascade == 3) aboveGroundLighting += frx_skyLightVector.y * (2.0 + NdotL) * shadowBlurColor * shadowMapInverse;
-
             lightmap = mix(lightmap, aboveGroundLighting, frx_fragLight.y);
 
+            vec3 undergroundLighting = vec3(0.005);
+            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), smoothstep(0.0, 16.0, blocklight));
+            undergroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
+
+            lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
 
             if(frx_worldIsNether == 1) {
-                lightmap = vec3(0.0);
-                lightmap += vec3(0.1, 0.05, 0.0);
-
+                lightmap = vec3(0.1, 0.05, 0.0);
                 lightmap += vec3(1.0, 0.25, 0.0) * (smoothstep(-0.5, 0.5, -frx_fragNormal.y) + 2.0 * pow(frx_fragLight.x, 2.0) + 0.3);
             }
 
@@ -266,7 +236,7 @@ void frx_pipelineFragment() {
 
             lightmap = max(vec3(0.0005), lightmap);
 
-            color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+            if(frx_fragReflectance < 1.0 || frx_isGui) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
 
@@ -303,7 +273,7 @@ void frx_pipelineFragment() {
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
     vertexNormal = vec4(frx_vertexNormal * 0.5 + 0.5, 1.0);
-    pbrData = vec4(frx_fragReflectance, fmn_isWater, 1.0, 1.0);
+    pbrData = vec4(frx_fragReflectance, fmn_isWater, frx_fragRoughness, 1.0);
 
     gl_FragDepth = gl_FragCoord.z;
 }

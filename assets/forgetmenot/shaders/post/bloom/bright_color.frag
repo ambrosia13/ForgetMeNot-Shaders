@@ -9,7 +9,7 @@ layout(location = 0) out vec4 fragColor;
 
 void main() {
     vec4 sample = texture(u_color, texcoord);
-    vec3 color = pow(sample.rgb, vec3(1.0)) / 6.0;
+    vec3 color = pow(sample.rgb, vec3(1.0)) / 1.0;
     // float l = length(color);
     // l = max(0.01, l);
     // color = ((color * color) / l) * pow(max(0.01, l), 1.1);
@@ -27,6 +27,6 @@ void main() {
     //     return;
     // }
 
-    fragColor = vec4(color + color * pow(frx_luminance(tanh(color)), 4.0), 1.0);
+    fragColor = vec4(color, 1.0);
     // #endif
 }

@@ -1,7 +1,7 @@
 {
 	"layers": [
 		{
-			"fragmentSource": "minecraft:shaders/material/stylize/metal.frag"
+			"fragmentSource": "minecraft:shaders/material/metals/metal.frag"
         }
 	]
 }

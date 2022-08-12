@@ -101,6 +101,11 @@
                     nameKey: "config.forgetmenot.name.blocklight_neutrality",
                     descriptionKey: "config.forgetmenot.desc.blocklight_neutrality"
                 },
+                refraction: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.refraction",
+                    descriptionKey: "config.forgetmenot.desc.refraction"
+                },
                 vanilla_ao: {
                     default: true,
                     nameKey: "config.forgetmenot.name.vanilla_ao",
@@ -111,6 +116,43 @@
                     nameKey: "config.forgetmenot.name.rtao",
                     descriptionKey: "config.forgetmenot.desc.rtao"
                 }
+            }
+        },
+        {
+            includeToken: "forgetmenot:shadows",
+            categoryKey: "config.forgetmenot.category.shadows",
+            elements: {
+                variable_penumbra_shadows: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.variable_penumbra_shadows",
+                    descriptionKey: "config.forgetmenot.desc.variable_penumbra_shadows"
+                },
+                vps_search_samples: {
+                    default: 8,
+                    min: 8,
+                    max: 30,
+                    nameKey: "config.forgetmenot.name.vps_search_samples",
+                    descriptionKey: "config.forgetmenot.desc.vps_search_samples"
+                },
+                shadow_filter_samples: {
+                    default: 8,
+                    min: 8,
+                    max: 100,
+                    nameKey: "config.forgetmenot.name.shadow_filter_samples",
+                    descriptionKey: "config.forgetmenot.desc.shadow_filter_samples"
+                },
+                vps_size_multiplier: {
+                    default: 1000,
+                    min: 100,
+                    max: 5000,
+                    nameKey: "config.forgetmenot.name.vps_size_multiplier",
+                    descriptionKey: "config.forgetmenot.desc.vps_size_multiplier"
+                },
+                bias_mult: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.bias_mult",
+                    descriptionKey: "config.forgetmenot.desc.bias_mult"
+                },
             }
         },
         {

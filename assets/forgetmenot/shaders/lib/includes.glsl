@@ -7,8 +7,10 @@ uniform int frxu_lod;
 
 
 #include forgetmenot:atmospherics
+#include forgetmenot:shadows
 #include forgetmenot:lighting
 #include forgetmenot:debug
+
 #ifndef SKY_GROUND_FOG
     #define SKY_GROUND_FOG 1.5
     #define MIE_AMOUNT 10.0
