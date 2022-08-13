@@ -262,7 +262,7 @@ void main() {
                 plane += frx_cameraPos.xz / 150.0;
 
                 #ifdef CURL_NOISE
-                    //plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
+                    plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
                     //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
                 #endif
 
@@ -388,7 +388,7 @@ void main() {
         composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), fogDensity), waterFogColor, fogDensity);
     }
 
-    vec2 jitterCoord = (Jitter(gl_FragCoord.xy, int(frx_renderFrames))) / frxu_size;
+    vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
 
     vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
@@ -398,7 +398,8 @@ void main() {
         const float RTAO_BLEND_FACTOR = 0.05;
         vec3 rtao = vec3(1.0);
 
-        vec4 lastFrameSample = texture(u_previous_frame, lastScreenPos.xy + taaOffsets[frx_renderFrames % 8u] / frxu_size);
+        vec4 lastFrameSample = vec4(1.0);
+        if(clamp01(lastScreenPos.xy) == lastScreenPos.xy) lastFrameSample = texture(u_previous_frame, lastScreenPos.xy + taaOffsets[frx_renderFrames % 8u] / frxu_size);
         vec3 lastFrameRtao = lastFrameSample.aaa;
     #endif
 
@@ -487,14 +488,16 @@ void main() {
 
         #ifdef RTAO
             const int RTAO_RAYS = 1;
-            const int RTAO_STEPS = 10;
+            //const int RTAO_STEPS = 5;
 
             vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = normalize(normal + 1.0 * mix(vec3(0.0, 1.0, 0.0), frx_skyLightVector, 0.0));
-            float stepLength = 2.0 / RTAO_STEPS;
+            vec3 rayDir = normalize(normal);
+            float stepLength = 1.0 / RTAO_STEPS;
+
+            //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
             for(int i = 0; i < RTAO_STEPS; i++) {
-                rayPos += (normalize(rayDir + normalize(noise3d(i + int(frx_renderFrames % 500u)))) * stepLength) * interleaved_gradient(i);
+                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * interleaved_gradient(i);
 
                 vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
 
@@ -503,7 +506,7 @@ void main() {
                 } else {
                     float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
 
-                    if(rayScreen.z > depthQuery && distance(rayPos, setupViewSpacePos(rayScreen.xy, depthQuery)) < 1.0) {
+                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
                         rtao *= 0.05;
                         break;
                     }
@@ -512,7 +515,9 @@ void main() {
                 stepLength *= 2.0;
             }
 
-            composite *= mix(lastFrameRtao, rtao, 0.05);
+            rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
+
+            composite *= mix(lastFrameRtao, rtao, 0.1);
         #endif
 
         #ifdef RAYTRACED_HELD_LIGHT
@@ -576,10 +581,19 @@ void main() {
 
             vec3 fogScattering = getFogScattering(viewDir, 750000);
 
+            fogScattering *= (1.0 - fogTransmittance);
+
+            composite = composite * fogTransmittance + fogScattering;
+
             // vec3 vlPos = minViewSpacePos;
             // float vlFactor;
+
+            // float opticalDepth = 0.0;
+            // float lightOpticalDepth = 0.0;
             // for(int i = 0; i < 8; i++) {
             //     vlPos -= (minViewSpacePos / 10) * interleaved_gradient();
+
+            //     opticalDepth += smoothstep(0.0 + smoothstep(80.0, 100.0, vlPos.y + frx_cameraPos.y), 1.0, fbm(vlPos * 0.1)) * (distance(vlPos, minViewSpacePos) / 16.0);
 
             //     vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
             //     int cascade = selectShadowCascade(shadowViewPos);
@@ -587,16 +601,17 @@ void main() {
             //     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
             //     float shadowFactor;
-            //     shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
-            //     composite += getFogScattering(viewDir, 1000 * (shadowFactor / 10) * (distance(vlPos, minViewSpacePos) / 10));
+            //     shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 8.0;
+
+            //     lightOpticalDepth += 1.0 - shadowFactor;
+            //     //composite += getFogScattering(viewDir, 1000 * (shadowFactor / 10) * (distance(vlPos, minViewSpacePos) / 10));
             // }
-            // //vlFactor = 1.0 - exp2(vlFactor);
 
-            // fogTransmittance = mix(1.0, fogTransmittance, vlFactor);
+            // float transmittance = exp(-opticalDepth);
+            // vec3 scattering = exp(-lightOpticalDepth) * getSkyColor(frx_skyLightVector);
+            // scattering *= (1.0 - transmittance);
 
-            fogScattering *= (1.0 - fogTransmittance);
-
-            composite = composite * fogTransmittance + fogScattering;
+            // composite = composite * transmittance + scattering;
         } else if(frx_worldIsNether == 1) {
             float fogDist = blockDist;
             if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
@@ -623,7 +638,7 @@ void main() {
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 
     #ifdef RTAO
-        float alpha = frx_luminance(mix(lastFrameRtao, rtao, RTAO_BLEND_FACTOR));
+        float alpha = frx_luminance(mix(lastFrameRtao, rtao, 0.05));
     #else
         float alpha = 1.0;
     #endif

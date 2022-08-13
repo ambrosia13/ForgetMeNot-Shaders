@@ -392,7 +392,7 @@ float fbm(vec3 pos) {
     float weight = 0.5;
     float totalWeight = 0.0;
     float frequency = 0.1;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 4; i++) {
         val += noise(pos * frequency) * weight;
         totalWeight += weight;
         weight /= 2.0;

@@ -72,7 +72,11 @@ void main() {
 
     vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
 
-    color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+    #ifdef NO_CLIP
+        color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
+    #else
+        color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+    #endif
 
     color.rgb = inverseToneMap(color.rgb);
     fragColor = max(vec4(1.0 / 65536.0), color);

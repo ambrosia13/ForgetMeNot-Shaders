@@ -150,7 +150,7 @@ vec3 endSecondAtmosphere(in vec3 viewSpacePos, in vec3 sunVector, in float facto
 
     if(frx_worldIsEnd == 1) {
         viewDir.y = abs(viewDir.y);
-        rayleigh = vec3(0.5, 1.0, 0.3) * 1e-5;
+        rayleigh = vec3(0.75, 1.0, 0.3) * 1e-5;
         sunVector = normalize(vec3(1.0, 0.6, 0.2));
         //sunVector.yz = rotate2D(sunVector.yz, frx_renderSeconds);
         //sunVector.y += sin(frx_renderSeconds);
@@ -414,14 +414,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     vec3 secondViewDir = viewDir;
 
     if(frx_worldIsOverworld == 1) {
-        if(1.0 - tdata.y > 0.0) {
-            vec3 sunVector = getSunVector();
-            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
-        }
-        if(1.0 - tdata.x > 0.0) {
-            vec3 moonVector = getMoonVector();
-            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS) * vec3(0.5, 0.7, 1.5) * 0.25;
-        }
+        atmosphere = getSkyColor(viewDir);
     }
 
     if(frx_worldIsEnd == 1) {

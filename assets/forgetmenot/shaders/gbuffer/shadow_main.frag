@@ -151,7 +151,7 @@ void frx_pipelineFragment() {
     shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
     // backface brightening - apparently happens in real life with SSS
-    shadowMap *= mix(1.0, 2.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
+    shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
 
     shadowMap = mix(shadowMap, 0.0, tdata.z);
     shadowMap *= frx_worldIsOverworld;

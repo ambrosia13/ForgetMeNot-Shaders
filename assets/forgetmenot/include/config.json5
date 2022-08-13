@@ -47,13 +47,6 @@
                     nameKey: "config.forgetmenot.name.cloud_detail",
                     descriptionKey: "config.forgetmenot.desc.cloud_detail"
                 },
-                cloud_shading_detail: {
-                    default: 3,
-                    min: 3,
-                    max: 15,
-                    nameKey: "config.forgetmenot.name.cloud_shading_detail",
-                    descriptionKey: "config.forgetmenot.desc.cloud_shading_detail"
-                },
                 curl_noise: {
                     default: true,
                     nameKey: "config.forgetmenot.name.curl_noise",
@@ -95,7 +88,7 @@
                     descriptionKey: "config.forgetmenot.desc.ambient_light_boost"
                 },
                 blocklight_neutrality: {
-                    default: 0.75,
+                    default: 0.0,
                     min: 0.0,
                     max: 1.0,
                     nameKey: "config.forgetmenot.name.blocklight_neutrality",
@@ -115,6 +108,13 @@
                     default: false,
                     nameKey: "config.forgetmenot.name.rtao",
                     descriptionKey: "config.forgetmenot.desc.rtao"
+                },
+                rtao_steps: {
+                    default: 10,
+                    min: 5,
+                    max: 40, 
+                    nameKey: "config.forgetmenot.name.rtao_steps",
+                    descriptionKey: "config.forgetmenot.desc.rtao_steps"
                 }
             }
         },
@@ -164,10 +164,10 @@
                     nameKey: "config.forgetmenot.name.white_world",
                     descriptionKey: "config.forgetmenot.desc.white_world"
                 },
-                red_lava: {
+                internal_materials: {
                     default: true,
-                    nameKey: "config.forgetmenot.name.red_lava",
-                    descriptionKey: "config.forgetmenot.desc.red_lava"
+                    nameKey: "config.forgetmenot.name.internal_materials",
+                    descriptionKey: "config.forgetmenot.desc.internal_materials"
                 }
             }
         },
