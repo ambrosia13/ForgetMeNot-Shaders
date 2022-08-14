@@ -122,6 +122,12 @@ float sampleCirrusCloud(in vec2 plane, in int octaves) {
     float clouds = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.5, 1.5, fbmHash(plane * 0.5, octaves, 0.01));
     return clouds;
 }
+float getVLFogDensity(in vec3 pos) {
+    pos += frx_cameraPos;
+    float h = smoothstep(0.0, 200.0, pos.y);
+    h = h;
+    return smoothstep(0.0 + h, 1.0, fbm(pos * 0.3));
+}
 
 vec2 Jitter(vec2 fragCoord, int frame)
 {
@@ -585,30 +591,38 @@ void main() {
 
             composite = composite * fogTransmittance + fogScattering;
 
-            // vec3 vlPos = minViewSpacePos;
-            // float vlFactor;
+            vec3 vlPos = minViewSpacePos;
+            vec3 traceDir = clamp(-(vlPos / 8) * interleaved_gradient(), vec3(-frx_viewDistance), vec3(frx_viewDistance));
+            //if(min_depth == 1.0) traceDir = -normalize(vlPos) * frx_viewDistance;
 
-            // float opticalDepth = 0.0;
-            // float lightOpticalDepth = 0.0;
-            // for(int i = 0; i < 8; i++) {
-            //     vlPos -= (minViewSpacePos / 10) * interleaved_gradient();
+            float opticalDepth = 0.0;
+            float lightOpticalDepth = 0.0;
+            
+            // if(min_depth < 1.0 || true) {
+            //     for(int i = 0; i < 8; i++) {
+            //         vlPos += traceDir;
 
-            //     opticalDepth += smoothstep(0.0 + smoothstep(80.0, 100.0, vlPos.y + frx_cameraPos.y), 1.0, fbm(vlPos * 0.1)) * (distance(vlPos, minViewSpacePos) / 16.0);
+            //         opticalDepth += getVLFogDensity(vlPos) * length(vlPos) / frx_viewDistance;
 
-            //     vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
-            //     int cascade = selectShadowCascade(shadowViewPos);
-            //     vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
-            //     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+            //         // shadow
+            //         vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
+            //         int cascade = selectShadowCascade(shadowViewPos);
+            //         vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
+            //         vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
-            //     float shadowFactor;
-            //     shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 8.0;
+            //         float shadowFactor;
+            //         shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 4.0;
 
-            //     lightOpticalDepth += 1.0 - shadowFactor;
-            //     //composite += getFogScattering(viewDir, 1000 * (shadowFactor / 10) * (distance(vlPos, minViewSpacePos) / 10));
+
+            //         for(int j = 0; j < 4; j++) {
+            //             vlPos += frx_skyLightVector * interleaved_gradient() * 20.0;
+            //             lightOpticalDepth += (getVLFogDensity(vlPos) / 2.0) * (1.0 - shadowFactor);
+            //         }
+            //     }
             // }
 
-            // float transmittance = exp(-opticalDepth);
-            // vec3 scattering = exp(-lightOpticalDepth) * getSkyColor(frx_skyLightVector);
+            // float transmittance = exp(-opticalDepth * 8.0);
+            // vec3 scattering = exp(-lightOpticalDepth) * getFogScattering(frx_skyLightVector, 750000);
             // scattering *= (1.0 - transmittance);
 
             // composite = composite * transmittance + scattering;
@@ -625,7 +639,7 @@ void main() {
     #endif
 
     #ifdef BORDER_FOG
-        if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
+        //if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
     #endif
 
     #ifdef frx_darknessEffectFactor

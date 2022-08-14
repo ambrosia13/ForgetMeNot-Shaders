@@ -61,6 +61,7 @@ float particleThicknessConst(const float depth){
 #define d0(x) (abs(x) + 1e-8)
 #define d02(x) (abs(x) + 1e-3)
 const vec3 kRlh = (vec3(0.27, 0.5, 1.0) * 1e-5);
+//const vec3 kRlh = (vec3(1.0, 0.7, 0.7) * 1e-5);
 const vec3 kMie = vec3(0.5e-6);
 const vec3 kTotal = kRlh + kMie;
 
@@ -214,6 +215,7 @@ vec3 endSecondAtmosphere(in vec3 viewSpacePos, in vec3 sunVector, in float facto
 }
 
 vec3 getFogScattering(in vec3 viewDir, in vec3 sunVector, in float factor, in float sunBrightness, in float opticalDepth) {
+    if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
     const float ln2 = log(2.0);
 
     vec3 rayleigh = kRlh;
