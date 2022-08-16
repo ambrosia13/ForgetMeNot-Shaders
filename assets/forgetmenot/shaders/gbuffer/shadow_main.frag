@@ -76,6 +76,8 @@ void frx_pipelineFragment() {
         vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
         frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
         frx_fragNormal = normalize(frx_fragNormal);
+
+        frx_fragRoughness = mix(frx_fragRoughness, 0.0, frx_smoothedRainGradient);
     }
     if(frx_fragReflectance == 0.04) {
         frx_fragReflectance = 0.0;
@@ -139,7 +141,7 @@ void frx_pipelineFragment() {
         float biasMult = 1.0;
     #endif
 
-    shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, frx_matCutout);
+    shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, 1);
 
     for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
         vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
@@ -151,7 +153,7 @@ void frx_pipelineFragment() {
     shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
     // backface brightening - apparently happens in real life with SSS
-    shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
+    //shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
 
     shadowMap = mix(shadowMap, 0.0, tdata.z);
     shadowMap *= frx_worldIsOverworld;
@@ -194,6 +196,10 @@ void frx_pipelineFragment() {
 
             float skyIlluminance = frx_luminance(ambientLightColor) * mix(1.0, 1.5, clamp01(frx_skyLightVector.y));
 
+            // #ifdef DEPRESSING_MODE
+            //     skyIlluminance = frx_luminance(getSkyColor(vec3(0.0, 1.0, 0.0)));
+            // #endif
+
             #ifdef AMBIENT_LIGHT_BOOST
                 skyIlluminance *= 1.33;
                 ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
@@ -203,7 +209,7 @@ void frx_pipelineFragment() {
                 aboveGroundLighting += skyIlluminance * ambientLightColor * shadowMapInverse;
             #endif
 
-            skyLightColor = normalize(skyLightColor) * 6.5;
+            skyLightColor = normalize(skyLightColor) * 7.5;
             aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
 
             aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), smoothstep(0.0, 16.0, blocklight));
@@ -236,9 +242,11 @@ void frx_pipelineFragment() {
 
             lightmap = max(vec3(0.0005), lightmap);
 
-            if(frx_fragReflectance < 1.0 || frx_isGui) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+            //if(frx_fragReflectance < 1.0 || frx_isGui) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+            color.rgb *= mix(vec3(1.0), skyLightColor, clamp01(shadowMap) * NdotL);
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
+            color.rgb *= lightmap;
 
             //color.rgb *= lightmap;
         }
@@ -253,10 +261,10 @@ void frx_pipelineFragment() {
         color.rgb = mix(color.rgb, vec3(frx_luminance(lightmap), 0.0, 0.0), 0.5 * frx_matHurt); 
         color.rgb = mix(color.rgb, vec3(2.0), 0.5 * frx_matFlash); 
     } else {
-        vec3 direction = vec3(0.2, 0.8, 0.6);
-        float lengthSquared = dot(direction, direction);
-        direction /= lengthSquared * inversesqrt(lengthSquared);
-        color.rgb *= dot(frx_vertexNormal, direction) * 0.35 + 0.65;
+        vec3 direction = vec3(-0.2, 1.0, 0.75);
+        // float lengthSquared = dot(direction, direction);
+        // direction /= lengthSquared * inversesqrt(lengthSquared);
+        color.rgb *= dot(frx_vertexNormal, normalize(direction)) * 0.4 + 0.6;
     }
 
     if(frx_matGlint == 1) {

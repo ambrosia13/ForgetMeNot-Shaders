@@ -47,7 +47,73 @@
         {
             name: "global_illumination",
             lod: 0,
-            internalFormat: "R11F_G11F_B10F",
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "global_illumination_copy",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "success_dir",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "success_dir_copy",
+            lod: 0,
+            internalFormat: "RGBA16F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -98,6 +164,12 @@
             colorAttachments: [
                 {
                     image: "sort", clearColor: 0x00000000
+                },
+                {
+                    image: "global_illumination", clearColor: 0x00000000
+                }
+                {
+                    image: "success_dir", clearColor: 0x00000000
                 }
             ]
         },
@@ -106,6 +178,25 @@
             colorAttachments: [
                 {
                     image: "main_color", clearColor: 0x00000000
+                }
+            ]
+        }
+        {
+            name: "gi",
+            colorAttachments: [
+                {
+                    image: "global_illumination", clearColor: 0x00000000
+                }
+            ]
+        }
+        {
+            name: "gi_copy",
+            colorAttachments: [
+                {
+                    image: "global_illumination_copy", clearColor: 0x00000000
+                },
+                {
+                    image: "success_dir_copy", clearColor: 0x00000000
                 }
             ]
         }
@@ -145,11 +236,22 @@
                 "u_pbr_data",
                 "u_previous_frame",
                 "u_depth_mipmaps",
-                "u_blue_noise"
+                "u_blue_noise",
+                "u_global_illumination_copy",
+                "u_success_dir_copy",
 
                 "u_shadow_map"
             ]
         },
+        {
+            name: "copy_gi",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/copy_gi.frag",
+            samplers: [
+                "u_global_illumination",
+                "u_success_dir"
+            ]
+        }
         {
             name: "copy",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
@@ -221,11 +323,22 @@
                     "pbr_data",
                     "taa",
                     "quarter_res_depth",
-                    "forgetmenot:textures/blue_noise.png"
+                    "forgetmenot:textures/blue_noise.png",
+                    "global_illumination_copy",
+                    "success_dir_copy",
                     
                     "shadow_map"
                 ]
             },
+            {
+                name: "copy_gi",
+                program: "copy_gi",
+                framebuffer: "gi_copy",
+                samplerImages: [
+                    "global_illumination",
+                    "success_dir"
+                ]
+            }
             {
                 name: "copy",
                 program: "copy",

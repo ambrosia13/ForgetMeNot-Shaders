@@ -4,6 +4,11 @@
             includeToken: "forgetmenot:atmospherics",
             categoryKey: "config.forgetmenot.category.atmospherics",
             elements: {
+                depressing_mode: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.depressing_mode",
+                    descriptionKey: "config.forgetmenot.desc.depressing_mode"
+                },
                 hide_sky_ground: {
                     default: true,
                     nameKey: "config.forgetmenot.name.hide_sky_ground",

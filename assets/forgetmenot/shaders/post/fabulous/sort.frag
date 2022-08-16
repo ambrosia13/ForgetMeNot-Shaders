@@ -23,6 +23,8 @@ uniform sampler2D u_pbr_data;
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_blue_noise;
+uniform sampler2D u_global_illumination_copy;
+uniform sampler2D u_success_dir_copy;
 
 uniform sampler2DArrayShadow u_shadow_map;
 
@@ -30,6 +32,7 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 globalIllumination;
+layout(location = 2) out vec4 successDir;
 
 // vanilla fabulous blending
 
@@ -124,9 +127,9 @@ float sampleCirrusCloud(in vec2 plane, in int octaves) {
 }
 float getVLFogDensity(in vec3 pos) {
     pos += frx_cameraPos;
-    float h = smoothstep(0.0, 200.0, pos.y);
-    h = h;
-    return smoothstep(0.0 + h, 1.0, fbm(pos * 0.3));
+    float h = smoothstep(0.0, 250.0, pos.y);
+    // h = 0.0;
+    return smoothstep(0.0 + h, 1.0, fbm(pos * 0.9));
 }
 
 vec2 Jitter(vec2 fragCoord, int frame)
@@ -154,7 +157,7 @@ vec2 taaOffsets[8] = vec2[8](
 );
 
 vec3 getBlueNoise() {
-    ivec2 coord = ivec2(gl_FragCoord.xy + frx_renderFrames * 100u);
+    ivec2 coord = ivec2(gl_FragCoord.xy + 1u * frx_renderFrames * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
     return normalize(r) * 2.0 - 1.0;
@@ -172,7 +175,7 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
+    vec4 pbrData = texture(u_pbr_data, texcoord).rgba;
     vec3 f0 = pbrData.rrr;
     float roughness = pbrData.b;
 
@@ -236,9 +239,89 @@ void main() {
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
+
+    vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
+    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+    vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
+
+    #if defined RTAO || defined SSGI 
+        const float RTAO_BLEND_FACTOR = 0.05;
+        vec3 rtao = vec3(1.0);
+        vec3 ssgi = vec3(1.0);
+        float hit = 0.0;
+        vec3 success;
+        vec3 lastFrameSuccess;
+
+        vec4 lastFrameSample = vec4(1.0);
+        if(clamp01(lastScreenPos.xy) == lastScreenPos.xy) lastFrameSample = texture(u_global_illumination_copy, lastScreenPos.xy);
+        if(clamp01(lastScreenPos.xy) == lastScreenPos.xy) lastFrameSuccess = texture(u_success_dir_copy, lastScreenPos.xy).rgb;
+        vec3 lastFrameRtao = lastFrameSample.aaa;
+        float lastFrameHit = lastFrameSample.a;
+    #endif
+
+#define SSGI
+    if(max_depth < 1.0) {
+        #ifdef SSGI
+            const int SSGI_RAYS = 1;
+            const int SSGI_STEPS = 100;
+
+            vec3 finalSSGICoords;
+            bool ssgiHit = false;
+
+            vec3 rayPos = minViewSpacePos;
+            vec3 rayDir = normalize(normal + getBlueNoise() + lastFrameSuccess);
+            success = normalize(rayDir + getBlueNoise() * 0.25);
+            float stepLength = 1.0 / SSGI_STEPS;
+
+            vec3 rayScreen = vec3(texcoord, min_depth);
+
+            vec3 screenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
+
+            // vec3 signDir = (sign(rayDir) - rayScreen) / rayDir;
+            //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
+
+            for(int i = 0; i < SSGI_STEPS; i++) {
+                rayScreen += screenDir * stepLength * interleaved_gradient(i);
+
+                if(clamp01(rayScreen) != rayScreen) {
+                    break;
+                } else {
+                    float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
+
+                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.05) {
+                        finalSSGICoords = rayScreen;
+                        ssgiHit = true;
+                        break;
+                    }
+                }
+
+                stepLength *= 1.0;
+            }
+
+            vec3 ssgiViewPos = setupViewSpacePos(finalSSGICoords.xy, finalSSGICoords.z);
+            finalSSGICoords = lastFrameViewSpaceToScreenSpace(ssgiViewPos + frx_cameraPos - frx_lastCameraPos); 
+
+            if(ssgiHit) {
+                vec3 emission = mix(
+                    texture(u_previous_frame, finalSSGICoords.xy).rgb,
+                    lastFrameSample.rgb,
+                    0.0
+                );
+
+                ssgi *= emission;
+                hit = 1.0;
+                success *= tanh(frx_luminance(emission));
+            } else {
+                ssgi *= getSkyColor(rayDir);
+            }
+            if(f0.r < 1.0) main_color.rgb *= ssgi;
+
+        #endif
+    }
+
 
     vec3 skyColor = getSkyColor(viewDir);
-
     if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxViewSpacePos)) > 0.0) {
         vec2 clipPos = texcoord * 2.0 - 1.0;
         clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
@@ -257,6 +340,7 @@ void main() {
         skyLightColor *= mix(vec3(1.0), vec3(0.2, 0.5, 2.0), (1.0 - frx_skyLightTransitionFactor) * smoothstep(-0.5, 0.5, dot(viewDir, getMoonVector())));
         vec3 viewPos = maxViewSpacePos;
 
+        #if 1
         if(viewDir.y > 0.0) {
             if(frx_worldIsOverworld == 1) {
                 vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
@@ -347,6 +431,23 @@ void main() {
 
             skyColor.rgb += rand1D(texcoord * 2000.0) / 555.0;
         }
+        #else
+            //skyColor *= 0.1;
+            float opticalDepth = fbm(10.0 * viewDir, 6);
+            opticalDepth *= opticalDepth;
+            float lightOpticalDepth = fbm(10.0 * viewDir, 5) * 0.9;
+            lightOpticalDepth *= lightOpticalDepth;
+
+                float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
+                float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
+
+            float transmittance = exp2(-opticalDepth * 1.0);
+            vec3 scattering = vec3(exp2(-lightOpticalDepth * 30.0)) * max(1.0, miePhase(LdotV, 30.0) + miePhase(nLdotV, 30.0));
+            scattering *= (1.0 - transmittance);
+            scattering *= max(0.2, getSunVector().y);
+
+            skyColor = skyColor * transmittance + scattering;
+        #endif
         if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
             main_color.rgb = skyColor.rgb;
         }
@@ -393,21 +494,6 @@ void main() {
 
         composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), fogDensity), waterFogColor, fogDensity);
     }
-
-    vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
-
-    vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
-    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
-
-    #ifdef RTAO 
-        const float RTAO_BLEND_FACTOR = 0.05;
-        vec3 rtao = vec3(1.0);
-
-        vec4 lastFrameSample = vec4(1.0);
-        if(clamp01(lastScreenPos.xy) == lastScreenPos.xy) lastFrameSample = texture(u_previous_frame, lastScreenPos.xy + taaOffsets[frx_renderFrames % 8u] / frxu_size);
-        vec3 lastFrameRtao = lastFrameSample.aaa;
-    #endif
 
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
@@ -491,78 +577,6 @@ void main() {
             composite = mix(composite, reflectColor, reflectance);
             //composite = normal;
         }
-
-        #ifdef RTAO
-            const int RTAO_RAYS = 1;
-            //const int RTAO_STEPS = 5;
-
-            vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = normalize(normal);
-            float stepLength = 1.0 / RTAO_STEPS;
-
-            //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
-
-            for(int i = 0; i < RTAO_STEPS; i++) {
-                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * interleaved_gradient(i);
-
-                vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
-
-                if(clamp01(rayScreen) != rayScreen) {
-                    break;
-                } else {
-                    float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
-
-                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
-                        rtao *= 0.05;
-                        break;
-                    }
-                }
-
-                stepLength *= 2.0;
-            }
-
-            rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
-
-            composite *= mix(lastFrameRtao, rtao, 0.1);
-        #endif
-
-        #ifdef RAYTRACED_HELD_LIGHT
-            const int HELD_LIGHT_STEPS = 10;
-// float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
-// heldLightFactor *= clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0))));
-
-            vec3 heldLightPos = ((minViewSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
-            vec2 seed = vec2(fmn_time);
-            heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
-
-            vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = -(heldLightPos);
-            float stepLength = 0.05 / HELD_LIGHT_STEPS;
-
-            if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && frx_smoothedEyeBrightness.y < 0.9) {
-                for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
-                    rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
-
-                    vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
-
-                    if(clamp01(rayScreen) != rayScreen) {
-                        break;
-                    } else {
-                        float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
-
-                        if(rayScreen.z > depthQuery && distance(rayPos, setupViewSpacePos(rayScreen.xy, depthQuery)) < 10.0) {
-                            rtao *= 0.2 + 0.8 * frx_smoothedEyeBrightness.y;
-                            break;
-                        }
-                    }
-
-                    stepLength *= 1.5;
-                }
-            }
-
-            composite *= mix(lastFrameRtao, rtao, 0.5);
-        #endif
-
     }
 
     float blockDist = length(minViewSpacePos);
@@ -570,62 +584,74 @@ void main() {
 
     #ifdef ATMOSPHERIC_FOG
         if(frx_worldIsOverworld == 1) {
-            float fogDist = blockDist;
-            if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
-            fogDist /= 256.0;
+            #ifndef DEPRESSING_MODE
+                float fogDist = blockDist;
+                if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
+                fogDist /= 256.0;
 
-            float fogOpticalDepth = 750000.0 - 500000.0 * frx_skyLightVector.y;
-            //fogOpticalDepth = fogDist * 3000000.0;
-            float fogAmount = 0.3 - 0.25 * (1.0 - clamp01(frx_skyLightVector.y));
-            fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
+                float fogOpticalDepth = 750000.0 - 500000.0 * frx_skyLightVector.y;
+                //fogOpticalDepth = fogDist * 3000000.0;
+                float fogAmount = 0.3 - 0.25 * (1.0 - clamp01(frx_skyLightVector.y));
+                fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
+                fogAmount *= mix(1.0, 0.1, sqrt(sqrt(clamp01(getSunVector().y))));
 
-            float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
-            //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
+                float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
+                //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
 
-            fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
-            if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
+                fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
+                if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getFogScattering(viewDir, 750000);
+                vec3 fogScattering = getFogScattering(viewDir, 750000);
 
-            fogScattering *= (1.0 - fogTransmittance);
+                fogScattering *= (1.0 - fogTransmittance);
 
-            composite = composite * fogTransmittance + fogScattering;
+                composite = composite * fogTransmittance + fogScattering;
+            #else
+                vec3 vlPos = minViewSpacePos;
+                vec3 traceDir = clamp(-(vlPos / 8) * interleaved_gradient(), vec3(-frx_viewDistance), vec3(frx_viewDistance));
+                //if(min_depth == 1.0) traceDir = -normalize(vlPos) * frx_viewDistance;
 
-            vec3 vlPos = minViewSpacePos;
-            vec3 traceDir = clamp(-(vlPos / 8) * interleaved_gradient(), vec3(-frx_viewDistance), vec3(frx_viewDistance));
-            //if(min_depth == 1.0) traceDir = -normalize(vlPos) * frx_viewDistance;
+                float opticalDepth = 0.0;
+                float lightOpticalDepth = 0.0;
+                
+                opticalDepth = (1.0 - exp(-length(minViewSpacePos) / frx_viewDistance));
+                opticalDepth *= opticalDepth * opticalDepth * opticalDepth;
 
-            float opticalDepth = 0.0;
-            float lightOpticalDepth = 0.0;
-            
-            // if(min_depth < 1.0 || true) {
-            //     for(int i = 0; i < 8; i++) {
-            //         vlPos += traceDir;
+                float df = opticalDepth;
 
-            //         opticalDepth += getVLFogDensity(vlPos) * length(vlPos) / frx_viewDistance;
+                if(min_depth < 1.0) {
+                    for(int i = 0; i < 8; i++) {
+                        vlPos += traceDir;
 
-            //         // shadow
-            //         vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
-            //         int cascade = selectShadowCascade(shadowViewPos);
-            //         vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
-            //         vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+                        opticalDepth += getVLFogDensity(vlPos) * (pow(df, 1.0 / (1.3 + getTimeOfDayFactors().y)));
 
-            //         float shadowFactor;
-            //         shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z)) / 4.0;
+                        // shadow
+                        vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
+                        int cascade = selectShadowCascade(shadowViewPos);
+                        vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
+                        vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+
+                        float shadowFactor;
+                        shadowFactor = (1.0 - texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z))) / 1.0;
+
+                        lightOpticalDepth += 0.5 * shadowFactor;
+                        // for(int j = 0; j < 4; j++) {
+                        //     vlPos += frx_skyLightVector * interleaved_gradient() * 1.0;
+                        //     lightOpticalDepth += 0.05 * (getVLFogDensity(vlPos));
+                        // }
+                    }
+                } else {
+                    //opticalDepth = 0.8 * smoothstep(0.0 + smoothstep(-0.1, 0.1, viewDir.y), 1.0, fbm(viewDir * 100.0, 4));
+                    opticalDepth = 0.0;
+                }
 
 
-            //         for(int j = 0; j < 4; j++) {
-            //             vlPos += frx_skyLightVector * interleaved_gradient() * 20.0;
-            //             lightOpticalDepth += (getVLFogDensity(vlPos) / 2.0) * (1.0 - shadowFactor);
-            //         }
-            //     }
-            // }
+                float transmittance = exp(-opticalDepth * 1.0);
+                vec3 scattering = exp(-lightOpticalDepth * 0.5) * normalize(getSkyColor((frx_skyLightVector))) * min(1.5, frx_luminance(getSkyColor(vec3(0.0, 1.0, 0.0))) * 24.0) * max(0.1, smoothstep(-0.5, 0.0, getSunVector().y));
+                scattering *= (1.0 - transmittance);
 
-            // float transmittance = exp(-opticalDepth * 8.0);
-            // vec3 scattering = exp(-lightOpticalDepth) * getFogScattering(frx_skyLightVector, 750000);
-            // scattering *= (1.0 - transmittance);
-
-            // composite = composite * transmittance + scattering;
+                composite = composite * transmittance + scattering;
+            #endif
         } else if(frx_worldIsNether == 1) {
             float fogDist = blockDist;
             if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
@@ -638,8 +664,8 @@ void main() {
         }
     #endif
 
-    #ifdef BORDER_FOG
-        //if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
+    #if defined BORDER_FOG
+        if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
     #endif
 
     #ifdef frx_darknessEffectFactor
@@ -659,4 +685,8 @@ void main() {
 
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, alpha));
+    #ifdef SSGI
+        globalIllumination = vec4(ssgi, hit);
+        successDir = vec4(success, 1.0);
+    #endif
 }

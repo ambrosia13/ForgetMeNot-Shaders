@@ -30,12 +30,12 @@ vec3 clipAABB(vec3 prevColor, vec3 minColor, vec3 maxColor) {
 }
 
 #define NEIGHBORHOOD_SIZE 1
-vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
+vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor, in vec2 uv) {
     vec3 minColor = vec3(1e5), maxColor = vec3(-1e5);
 
     for(int x = -NEIGHBORHOOD_SIZE; x <= NEIGHBORHOOD_SIZE; x++) {
         for(int y = -NEIGHBORHOOD_SIZE; y <= NEIGHBORHOOD_SIZE; y++) {
-            vec3 color = texelFetch(currTex, ivec2(gl_FragCoord.xy) + ivec2(x, y), 0).rgb;
+            vec3 color = texelFetch(currTex, ivec2(uv * (frxu_size)) + ivec2(x, y), 0).rgb;
             color = toneMap(color);
             minColor = min(minColor, color); maxColor = max(maxColor, color); 
         }
@@ -70,7 +70,7 @@ void main() {
 
     //color = mix(color, previousColor, 0.9 * floor(handDepth));
 
-    vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
+    vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb, texcoord);
 
     #ifdef NO_CLIP
         color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
