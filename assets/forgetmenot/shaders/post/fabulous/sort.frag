@@ -262,20 +262,23 @@ void main() {
                 vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
                 plane *= 1.15;
 
+                #ifdef CURL_NOISE
+                    plane += 0.001 * curlNoise(plane * 6.0 + fmn_time / 20.0);
+                    //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
+                #endif
+
                 plane += fmn_time / 100.0;
 
                 vec2 cirrusPlane = plane + frx_cameraPos.xz / 1000.0;
                 plane += frx_cameraPos.xz / 150.0;
 
-                #ifdef CURL_NOISE
-                    plane += 0.0045 * curlNoise(plane * 3.0 + fmn_time / 20.0);
-                    //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
-                #endif
 
 
                 float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
                 float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
-                vec3 mie = max(1.0, miePhase(LdotV, 10.0) + miePhase(nLdotV, 10.0)) * skyLightColor;
+
+                float cloudsG = 0.9;
+                vec3 mie = max(1.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG)) * skyLightColor;
 
                 float cirrusClouds = sampleCirrusCloud(cirrusPlane + 10.0 + 0.3 * vec2(smoothHash(cirrusPlane), 0.0), 3) * (4.0 / 3.0);
                 float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
@@ -328,13 +331,13 @@ void main() {
 
                 #ifdef CLOUD_LIGHT_RAYS
                     float lightRaysOpticalDepth = 0.0;
-                    for(int i = 0; i < 10; i++) {
-                        planeMarch += rayDirection * 0.15;
-                        float currentDensity = sampleCumulusCloud(planeMarch, 7);
+                    for(int i = 0; i < 1; i++) {
+                        planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
+                        float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
 
                         //if(currentDensity > 0.5) break;
 
-                        lightRaysOpticalDepth += currentDensity / 10.0;
+                        lightRaysOpticalDepth += currentDensity * 10.0;
                     }
                     float lightRaysTransmittance = exp2(-lightRaysOpticalDepth * 15.0);
                     //lightRaysTransmittance = mix(lightRaysTransmittance, 1.0, 0.0 * smoothstep(1.0, 0.5, 1.0 * clamp01(dot(viewDir, frx_skyLightVector))));
@@ -578,6 +581,7 @@ void main() {
             //fogOpticalDepth = fogDist * 3000000.0;
             float fogAmount = 0.3 - 0.25 * (1.0 - clamp01(frx_skyLightVector.y));
             fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
+            fogAmount *= mix(1.0, 0.1, sqrt((getSunVector().y)));
 
             float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));

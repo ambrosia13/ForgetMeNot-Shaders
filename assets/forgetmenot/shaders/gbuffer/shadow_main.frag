@@ -106,7 +106,7 @@ void frx_pipelineFragment() {
         float blockers;
 
         for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
-            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * 24.0;
+            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * 10.0 * cascade;
             vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
 
             float depthQuery = texture(frxs_shadowMapTexture, vec3(sampleCoord, cascade)).r;
@@ -134,7 +134,7 @@ void frx_pipelineFragment() {
     float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - VNdotL) + 0.00009 * (3 - cascade);
     
     #ifdef BIAS_MULT
-        float biasMult = 1.0 + 0.3 * max(0, 2 - cascade);
+        float biasMult = 1.0 + 0.1 * max(0, 2 - cascade);
     #else
         float biasMult = 1.0;
     #endif
@@ -151,7 +151,7 @@ void frx_pipelineFragment() {
     shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
     // backface brightening - apparently happens in real life with SSS
-    shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
+    //shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
 
     shadowMap = mix(shadowMap, 0.0, tdata.z);
     shadowMap *= frx_worldIsOverworld;

@@ -140,6 +140,81 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     return totalScatter * totalAbsorb;
 }
+vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness, float drawSun) {
+    if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
+
+    const float ln2 = 0.693147181;
+
+    vec3 viewDir = normalize(viewSpacePos);
+
+    vec3 rayleigh = kRlh;
+    vec3 mie = kMie;
+
+    if(frx_worldIsEnd == 1) {
+        viewDir.y = abs(viewDir.y);
+        rayleigh = vec3(0.8, 0.3, 1.0) * 1e-5;
+        sunVector = normalize(vec3(1.0, 0.1, 0.2));
+    }
+
+    #ifndef HIDE_SKY_GROUND
+        float upDot = mix(pow(-viewDir.y, 1.0 / SKY_GROUND_FOG), viewDir.y, step(0.0, viewDir.y));
+    #else
+        // add padding to the atmosphere to hide the sky ground
+        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / SKY_GROUND_FOG) : viewDir.y);;
+    #endif
+    
+    if(frx_worldIsEnd == 1) upDot *= 50.0;
+
+	float opticalDepth = particleThickness(upDot + 0.0615 + 0.05 * pow(1.0 - viewDir.y, 3.0));
+
+    float LdotU = sunVector.y;
+    LdotU = smoothstep(0.0, 1.0, LdotU);
+
+    float LdotV = clamp01(dot(sunVector, viewDir));
+    LdotV = mix(frx_smootherstep(0.0, 1.5, LdotV), LdotV, frx_smootherstep(0.0, 1.0, LdotV));
+
+    float lightOpticalDepth = particleThickness(LdotU);
+
+    vec3 scatterView = kTotal * opticalDepth;
+    vec3 absorbView = exp2(-scatterView);
+
+    vec3 scatterLight = kTotal * lightOpticalDepth;
+    vec3 absorbLight = exp2(-scatterLight);
+
+    vec3 absorbSun = abs(absorbLight - absorbView) / d0((scatterLight - scatterView) * ln2);
+
+    vec3 rlhDayScatter = rayleigh * opticalDepth * 1.125;
+    vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(LdotV, 20.0);
+
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+
+    vec3 totalScatter = scatterSun * sunBrightness * factor;
+    vec3 totalAbsorb = absorbSun * factor;
+
+    if(frx_worldIsOverworld == 1 && drawSun > 0.0) {
+        float diskVisibility = step(0.9996, dot(viewDir, sunVector));
+
+        if(sunVector == getMoonVector()) {
+            diskVisibility = step(0.9999, dot(viewDir, sunVector));
+            int phase = (int(frx_worldDay) % 8) - 4;
+
+            float rotateAmount = 10.0;
+            if(abs(phase) == 3) rotateAmount = 0.015;
+            if(abs(phase) == 2) rotateAmount = 0.01;
+            if(abs(phase) == 1) rotateAmount = 0.005;
+            if(phase == 0)  rotateAmount = 0.00;
+            rotateAmount *= sign(phase);
+            
+            vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
+            diskVisibility -= step(0.9999, dot(viewDir, normalize(vec3(rotation.x, sunVector.y, rotation.y))));
+        }
+
+        totalScatter += drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * miePhase(frx_smootherstep(0.9996, 0.9998, LdotV), opticalDepth) * clamp01(diskVisibility);
+    }
+
+
+    return totalScatter * totalAbsorb;
+}
 vec3 endSecondAtmosphere(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
     const float ln2 = log(2.0);
 
@@ -405,6 +480,25 @@ vec3 getSkyColor(in vec3 viewDir) {
 
     return atmosphere;
 }
+vec3 getSkyColor(in vec3 viewDir, float drawSun) {
+    vec3 atmosphere;
+    vec3 tdata = getTimeOfDayFactors();
+
+    if(1.0 - tdata.y > 0.0) {
+        vec3 sunVector = getSunVector();
+        atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+    }
+    if(1.0 - tdata.x > 0.0) {
+        vec3 moonVector = getMoonVector();
+        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * vec3(0.5, 0.7, 1.5) * 0.25;
+    }
+
+    if(frx_worldIsEnd == 1) {
+
+    }
+
+    return atmosphere;
+}
 
 vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
@@ -417,6 +511,70 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos) {
 
     if(frx_worldIsOverworld == 1) {
         atmosphere = getSkyColor(viewDir);
+    }
+
+    if(frx_worldIsEnd == 1) {
+        viewDir.zy = rotate2D(viewDir.zy, 2.4);
+        viewDir.xy = rotate2D(viewDir.xy, 0.3);
+
+        //viewDir.y = -viewDir.y;
+
+        secondViewDir = viewDir;
+        
+        viewDir.y = -viewDir.y;
+        viewPos.y = -viewPos.y;
+        viewDir.xy = rotate2D(viewDir.xy, -0.1);
+        viewPos.xy = rotate2D(viewPos.xy, -0.1);
+
+        viewDir.y += 0.4;
+        viewDir = normalize(viewDir);
+
+        atmosphere += atmosphericScattering(viewDir, vec3(0.0), 2.0, 1.0);
+
+        secondViewDir.yz = rotate2D(secondViewDir.yz, 0.7);
+        secondViewDir.xy = rotate2D(secondViewDir.xy, -0.74);
+        secondViewDir.y += 0.95;
+        secondViewDir = normalize(secondViewDir);
+        
+        atmosphere += endSecondAtmosphere(secondViewDir, normalize(vec3(1.0, 0.1, 0.2)), 1.0, 1.0);
+        if(secondViewDir.y < 0.0) {
+            atmosphere += vec3(0.09, 0.12, 0.03) * smoothstep(-0.0, 1.0, dot(normalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
+        } else if(viewDir.y < 0.0) {
+            atmosphere += vec3(0.01, 0.0, 0.01);
+        }
+    }
+
+    vec3 viewPosCopy = viewPos;
+
+    if(viewDir.y > 0.0 && secondViewDir.y > 0.0) {
+        viewPos.xy = rotate2D(viewPos.xy, -frx_skyAngleRadians);
+        viewPos.y = abs(viewPos.y);
+        vec2 starPlane = viewPos.xz / (viewPos.y + length(viewPos.xz));
+        starPlane *= 200.0;
+        viewPos.y = viewPosCopy.y;
+
+        vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
+        float skyIlluminance = frx_luminance(ambientLightColor * 8.0);
+
+        vec3 stars = vec3(step(0.985 - 0.005 * (smoothHash(starPlane) * 0.5 + 0.5), 1.0 - cellular2x2(starPlane * 0.1).x)) * (smoothHash(starPlane * 0.01) * 0.5 + 0.5);
+        stars = (stars) * normalize(rand3D(floor(starPlane)) * 0.3 + 0.7);
+
+        atmosphere.rgb = mix(atmosphere.rgb + stars, atmosphere.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
+    }
+
+    return atmosphere;
+}
+vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
+    if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
+
+    vec3 atmosphere;
+    vec3 tdata = getTimeOfDayFactors();
+
+
+    vec3 secondViewDir = viewDir;
+
+    if(frx_worldIsOverworld == 1) {
+        atmosphere = getSkyColor(viewDir, drawSun);
     }
 
     if(frx_worldIsEnd == 1) {
