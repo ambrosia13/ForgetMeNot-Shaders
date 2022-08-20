@@ -36,7 +36,7 @@
                     descriptionKey: "config.forgetmenot.desc.dynamic_weather"
                 },
                 cloud_light_rays: {
-                    default: false,
+                    default: true,
                     nameKey: "config.forgetmenot.name.cloud_light_rays",
                     descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
                 },
