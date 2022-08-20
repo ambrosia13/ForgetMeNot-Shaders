@@ -36,7 +36,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 https://discord.gg/Zzn4jJapRH
 
 ## screenshots
-![a](https://cdn.discordapp.com/attachments/734161464184799296/1003051783909802015/unknown.png)
+![a](https://cdn.discordapp.com/attachments/903175815401975889/1010347020961189929/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/839653070622818337/1003153222938148904/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/736930818835873813/1003347482014654524/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/839653070622818337/1003169821766209606/unknown.png)
