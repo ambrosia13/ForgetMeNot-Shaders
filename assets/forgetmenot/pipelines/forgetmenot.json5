@@ -133,20 +133,6 @@
             ]
         },
         {
-            name: "shadow_factor",
-            lod: 0,
-            internalFormat: "R8",
-            pixelFormat: "FLOAT",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
-                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
-                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
-                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
-            ]
-        },
-        {
             name: "composite_normal",
             lod: 0,
             internalFormat: "RGBA16",

@@ -262,6 +262,8 @@ void main() {
                 vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
                 plane *= 1.15;
 
+                plane += frx_cameraPos.xz / 150.0;
+
                 #ifdef CURL_NOISE
                     plane += 0.001 * curlNoise(plane * 6.0 + fmn_time / 20.0);
                     //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
@@ -269,16 +271,17 @@ void main() {
 
                 plane += fmn_time / 100.0;
 
-                vec2 cirrusPlane = plane + frx_cameraPos.xz / 1000.0;
-                plane += frx_cameraPos.xz / 150.0;
+                vec2 cirrusPlane = (plane - frx_cameraPos.xz / 150.0) + frx_cameraPos.xz / 1000.0;
 
 
 
                 float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
                 float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
 
-                float cloudsG = 0.9;
-                vec3 mie = max(1.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG)) * skyLightColor;
+                float cloudsG = 0.8;
+                float phaseMie = max(0.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG));
+
+                vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
 
                 float cirrusClouds = sampleCirrusCloud(cirrusPlane + 10.0 + 0.3 * vec2(smoothHash(cirrusPlane), 0.0), 3) * (4.0 / 3.0);
                 float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
@@ -331,6 +334,9 @@ void main() {
 
                 #ifdef CLOUD_LIGHT_RAYS
                     float lightRaysOpticalDepth = 0.0;
+
+                    rayDirection = normalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
+
                     for(int i = 0; i < 1; i++) {
                         planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
                         float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
@@ -339,12 +345,11 @@ void main() {
 
                         lightRaysOpticalDepth += currentDensity * 10.0;
                     }
-                    float lightRaysTransmittance = exp2(-lightRaysOpticalDepth * 15.0);
-                    //lightRaysTransmittance = mix(lightRaysTransmittance, 1.0, 0.0 * smoothstep(1.0, 0.5, 1.0 * clamp01(dot(viewDir, frx_skyLightVector))));
-                    vec3 lightRaysScattering = vec3(-0.0) * (1.0 - lightRaysTransmittance);
+                    float lightRays = exp2(-lightRaysOpticalDepth * 50.0);
+                    lightRays *= (1.0 - sqrt(clamp01(getSunVector().y))) * (getTimeOfDayFactors().x);
 
-                    float lightRaysFactor = smoothstep(0.75, 1.0, 1.0 * clamp01(dot(viewDir, frx_skyLightVector)));
-                    if(lightRaysFactor > 0.0) skyColor.rgb = mix(skyColor.rgb, skyColor.rgb + (0.5 * mie * lightRaysFactor) * lightRaysTransmittance, smoothstep(0.0, 0.1, viewDir.y));
+
+                    skyColor.rgb = mix(skyColor.rgb, skyColor.rgb + (0.25 * skyLightColor * phaseMie) * lightRays, smoothstep(0.0, 0.1, viewDir.y));
                 #endif
             }
 
@@ -581,7 +586,7 @@ void main() {
             //fogOpticalDepth = fogDist * 3000000.0;
             float fogAmount = 0.3 - 0.25 * (1.0 - clamp01(frx_skyLightVector.y));
             fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
-            fogAmount *= mix(1.0, 0.1, sqrt((getSunVector().y)));
+            fogAmount *= mix(1.0, 0.1, sqrt(clamp01(getSunVector().y)));
 
             float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
