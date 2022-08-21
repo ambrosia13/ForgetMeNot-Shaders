@@ -35,11 +35,6 @@
                     nameKey: "config.forgetmenot.name.dynamic_weather",
                     descriptionKey: "config.forgetmenot.desc.dynamic_weather"
                 },
-                cloud_light_rays: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.cloud_light_rays",
-                    descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
-                },
                 cloud_detail: {
                     default: 7,
                     min: 3,
@@ -51,6 +46,16 @@
                     default: true,
                     nameKey: "config.forgetmenot.name.curl_noise",
                     descriptionKey: "config.forgetmenot.desc.curl_noise"
+                },
+                cloud_light_rays: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.cloud_light_rays",
+                    descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
+                },
+                volumetric_lighting: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.volumetric_lighting",
+                    descriptionKey: "config.forgetmenot.desc.volumetric_lighting"
                 },
                 atmospheric_fog: {
                     default: true,

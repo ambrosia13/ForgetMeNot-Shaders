@@ -65,6 +65,8 @@ const vec3 kRlh = (vec3(0.27, 0.5, 1.0) * 1e-5);
 const vec3 kMie = vec3(0.5e-6);
 const vec3 kTotal = kRlh + kMie;
 
+const vec3 moonFlux = vec3(0.7, 1.3, 2.3) * 0.25;
+
 vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
 
@@ -111,7 +113,12 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 rlhDayScatter = rayleigh * opticalDepth * 1.125;
     vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(LdotV, 20.0);
 
-    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+    float blueHourFactor = abs(mod(getWorldTime(), 12000.0) / 12000.0 - 12000.0) / 12000.0;
+    blueHourFactor = blueHourFactor * blueHourFactor * (3.0 - 2.0 * blueHourFactor);
+    blueHourFactor = blueHourFactor * blueHourFactor;
+
+    vec3 mieMult = mix(vec3(1.0), vec3(1.5, 1.3, 1.7), blueHourFactor);
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375 * mieMult;
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
     vec3 totalAbsorb = absorbSun * factor;
@@ -471,7 +478,7 @@ vec3 getSkyColor(in vec3 viewDir) {
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();
-        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS) * vec3(0.5, 0.7, 1.5) * 0.25;
+        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS) * moonFlux;
     }
 
     if(frx_worldIsEnd == 1) {
@@ -490,7 +497,7 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
     }
     if(1.0 - tdata.x > 0.0) {
         vec3 moonVector = getMoonVector();
-        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * vec3(0.5, 0.7, 1.5) * 0.25;
+        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * moonFlux;
     }
 
     if(frx_worldIsEnd == 1) {

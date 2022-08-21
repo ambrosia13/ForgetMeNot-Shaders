@@ -35,5 +35,5 @@ void frx_pipelineVertex() {
         gl_Position.xy += (taaOffsets[frx_renderFrames % 8u] * (1.0 / vec2(frx_viewWidth, frx_viewHeight))) * gl_Position.w;
     }
 
-        shadowViewPos = (frx_shadowViewMatrix * frx_vertex);
+        shadowViewPos = (frx_shadowViewMatrix * vec4(frx_vertex.xyz, 1.0));
 }
