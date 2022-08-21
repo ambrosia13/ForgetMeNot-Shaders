@@ -25,6 +25,7 @@ uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_blue_noise;
 uniform sampler2D u_global_illumination_copy;
 uniform sampler2D u_success_dir_copy;
+uniform sampler2D u_processed_color;
 
 uniform sampler2DArrayShadow u_shadow_map;
 
@@ -157,13 +158,13 @@ vec2 taaOffsets[8] = vec2[8](
 );
 
 vec3 getBlueNoise() {
-    ivec2 coord = ivec2(gl_FragCoord.xy + 1u * frx_renderFrames * 100u);
+    ivec2 coord = ivec2(gl_FragCoord.xy + 1u * frx_renderFrames * 500u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
     return normalize(r) * 2.0 - 1.0;
 }
 vec3 getBlueNoise(float offset) {
-    ivec2 coord = ivec2(rotate2D(texcoord, offset) * frxu_size + frx_renderFrames * 100u);
+    ivec2 coord = ivec2(rotate2D(texcoord, offset) * frxu_size + frx_renderFrames * 500u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
     return normalize(r) * 2.0 - 1.0;
@@ -245,6 +246,8 @@ void main() {
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
 
+#define SSGI
+
     #if defined RTAO || defined SSGI 
         const float RTAO_BLEND_FACTOR = 0.05;
         vec3 rtao = vec3(1.0);
@@ -260,7 +263,6 @@ void main() {
         float lastFrameHit = lastFrameSample.a;
     #endif
 
-#define SSGI
     if(max_depth < 1.0) {
         #ifdef SSGI
             const int SSGI_RAYS = 1;
@@ -271,7 +273,7 @@ void main() {
 
             vec3 rayPos = minViewSpacePos;
             vec3 rayDir = normalize(normal + getBlueNoise() + lastFrameSuccess);
-            success = normalize(rayDir + getBlueNoise() * 0.25);
+            success = normalize(rayDir + getBlueNoise(1.0) * 0.25);
             float stepLength = 1.0 / SSGI_STEPS;
 
             vec3 rayScreen = vec3(texcoord, min_depth);
@@ -299,12 +301,19 @@ void main() {
                 stepLength *= 1.0;
             }
 
+            float binaryStepLength = 1.0 / SSGI_STEPS;
+            for(int i = 0; i < 0; i++) {
+                finalSSGICoords += sign(textureLod(u_depth_mipmaps, finalSSGICoords.xy, 0).r - finalSSGICoords.z) * screenDir * binaryStepLength;
+                binaryStepLength *= 0.5;
+            }
+
             vec3 ssgiViewPos = setupViewSpacePos(finalSSGICoords.xy, finalSSGICoords.z);
             finalSSGICoords = lastFrameViewSpaceToScreenSpace(ssgiViewPos + frx_cameraPos - frx_lastCameraPos); 
 
             if(ssgiHit) {
                 vec3 emission = mix(
-                    texture(u_previous_frame, finalSSGICoords.xy).rgb,
+                    textureLod(u_previous_frame, finalSSGICoords.xy, 0).rgb,
+                    //textureLod(u_processed_color, finalSSGICoords.xy, 0).rgb / 6.0,
                     lastFrameSample.rgb,
                     0.0
                 );

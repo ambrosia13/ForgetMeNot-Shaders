@@ -239,6 +239,7 @@
                 "u_blue_noise",
                 "u_global_illumination_copy",
                 "u_success_dir_copy",
+                "u_processed_color",
 
                 "u_shadow_map"
             ]
@@ -326,6 +327,7 @@
                     "forgetmenot:textures/blue_noise.png",
                     "global_illumination_copy",
                     "success_dir_copy",
+                    "bloom_upsample"
                     
                     "shadow_map"
                 ]

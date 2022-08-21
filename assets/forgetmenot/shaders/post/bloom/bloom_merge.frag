@@ -18,5 +18,5 @@ void main() {
         bloomFactor = mix(frx_luminance(tanh(bloom.rgb)), 1.0, frx_cameraInFluid);
     #endif
 
-    fragColor = mix(color, bloom, bloomFactor);
+    fragColor = mix(color, bloom, 0.0*bloomFactor);
 }
