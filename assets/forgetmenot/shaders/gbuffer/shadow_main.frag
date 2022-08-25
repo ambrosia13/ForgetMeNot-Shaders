@@ -106,7 +106,7 @@ void frx_pipelineFragment() {
         float blockers;
 
         for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
-            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * 10.0 * cascade;
+            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * (10.0 * cascade);
             vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
 
             float depthQuery = texture(frxs_shadowMapTexture, vec3(sampleCoord, cascade)).r;

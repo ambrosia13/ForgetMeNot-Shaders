@@ -219,7 +219,7 @@
                     "composite_normal",
                     "translucent_vertex_normal",
                     "pbr_data",
-                    "taa",
+                    "bloom_downsample",
                     "quarter_res_depth",
                     "forgetmenot:textures/blue_noise.png"
                     

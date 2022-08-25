@@ -431,16 +431,17 @@ void main() {
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
             vec3 cosineDistribution = getBlueNoise();
-            vec3 roughNormal = normalize(normal + normalize(cosineDistribution) * roughness * (interleaved_gradient()));
+            vec3 microfacetNormal = normalize(normal + normalize(cosineDistribution) * roughness * (interleaved_gradient()));
+            if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
-            vec3 viewSpaceReflectionDir = reflect(viewDir, roughNormal);
+            vec3 viewSpaceReflectionDir = reflect(viewDir, microfacetNormal);
             vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
 
             float stepLength = 1.0 / SSR_STEPS;
 
             vec3 reflectColor = mix(
                 (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
-                getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, roughNormal)),
+                getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, microfacetNormal)),
                 clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
             );
             
@@ -449,10 +450,8 @@ void main() {
             if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
             if(frx_worldIsEnd != 1 || true) {
-                if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
-
                 for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * interleaved_gradient(i);
+                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient() * 0.5 + 0.5);
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
@@ -486,10 +485,12 @@ void main() {
 
             }
 
+            if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
+
             vec3 rView = setupViewSpacePos(reflectionCoord.xy, reflectionCoord.z);
             reflectionCoord = lastFrameViewSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
 
-            if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
+            if(ssrHit) reflectColor = textureLod(u_previous_frame, reflectionCoord.xy, 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
             // if(frx_cameraInWater == 1 && acos(dot(normal, -viewDir)) * (180 / PI) > 60.0) {
@@ -595,13 +596,13 @@ void main() {
                 fogAmount *= 0.1;
             #endif
 
-            float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
+            float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 10.0 * frx_cameraInFluid));
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
 
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getFogScattering(viewDir, particleThickness(0.05));
+            vec3 fogScattering = getFogScattering(viewDir, particleThickness(0.01));
 
             fogScattering *= (1.0 - fogTransmittance);
 

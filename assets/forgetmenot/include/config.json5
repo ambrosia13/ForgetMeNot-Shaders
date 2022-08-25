@@ -53,7 +53,7 @@
                     descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
                 },
                 volumetric_lighting: {
-                    default: true,
+                    default: false,
                     nameKey: "config.forgetmenot.name.volumetric_lighting",
                     descriptionKey: "config.forgetmenot.desc.volumetric_lighting"
                 },

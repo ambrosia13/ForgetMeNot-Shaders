@@ -183,15 +183,15 @@ float smoothHash(in vec2 st) {
     return noise;
 }
 
+const mat2 fbmRot = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
+
 float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
-
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + mod(fmn_time / 10.0, 1000.0);
+		uv = fbmRot * uv * 2.0 + mod(fmn_time / 10.0, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -201,11 +201,9 @@ float fbmHash(vec2 uv, int octaves, float t) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
-
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2. + mod(fmn_time * t, 1000.0);
+		uv = fbmRot * uv * 2. + mod(fmn_time * t, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -225,11 +223,6 @@ vec4 fastDownsample(sampler2D image, vec2 uv) {
     col += -0.12487566 * texture(image, uv + vec2(0.0,2.90709914) / frxu_size);
 
     return col;
-}
-
-vec3 nightEyeAdjust(in vec3 color) {
-    float amt = getTimeOfDayFactors().y * 0.5;
-    return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
 }
 
 // https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
