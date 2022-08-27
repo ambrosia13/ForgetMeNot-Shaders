@@ -145,9 +145,10 @@
                 "u_pbr_data",
                 "u_previous_frame",
                 "u_depth_mipmaps",
-                "u_blue_noise"
+                "u_blue_noise",
 
-                "u_shadow_map"
+                "u_shadow_map",
+                "u_shadow_tex"
             ]
         },
         {
@@ -221,8 +222,9 @@
                     "pbr_data",
                     "bloom_downsample",
                     "quarter_res_depth",
-                    "forgetmenot:textures/blue_noise.png"
+                    "forgetmenot:textures/blue_noise.png",
                     
+                    "shadow_map",
                     "shadow_map"
                 ]
             },

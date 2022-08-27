@@ -1,5 +1,6 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 #include forgetmenot:shadows
+#include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
@@ -25,6 +26,7 @@ uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_blue_noise;
 
 uniform sampler2DArrayShadow u_shadow_map;
+uniform sampler2DArray u_shadow_tex;
 
 in vec2 texcoord;
 
@@ -214,8 +216,6 @@ void main() {
     clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
     float clouds_depth = texture(u_clouds_depth, texcoord).r;
 
-
-
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // common things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -239,6 +239,80 @@ void main() {
 
     vec3 skyLightColor = normalize(getSkyColor(normalize(frx_skyLightVector - vec3(0.0, 0., 0.0)))) * (skyIlluminance);
     skyLightColor *= mix(vec3(1.0), vec3(0.2, 0.5, 2.0), (1.0 - frx_skyLightTransitionFactor) * smoothstep(-0.5, 0.5, dot(viewDir, getMoonVector())));
+
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // deferred lighting
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    float NdotL = dot(normal, frx_skyLightVector);
+
+    vec4 shadowViewPos = frx_shadowViewMatrix * vec4(maxViewSpacePos, 1.0);
+    int cascade = selectShadowCascade(shadowViewPos);
+
+    vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
+    vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+
+    // float shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
+    // main_color.rgb *= shadowFactor;
+
+    float shadowMap;
+
+    float penumbraSize = 2.0;
+    float dither = (interleaved_gradient());
+
+    // Blocker search, adjusts penumbraSize accordingly
+    #ifdef VARIABLE_PENUMBRA_SHADOWS
+        float blockerCount;
+        float blockers;
+
+        for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
+            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * (10.0 * cascade);
+            vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
+
+            float depthQuery = texture(u_shadow_tex, vec3(sampleCoord, cascade)).r;
+            float diff = max(0.0, shadowScreenPos.z - depthQuery) * 1000.0;
+
+            blockers += diff;
+            blockerCount += 1.0;
+        }
+        blockers /= blockerCount;
+
+        penumbraSize = blockers;
+        penumbraSize = min(penumbraSize, 10.0 * (cascade));
+        penumbraSize = max(penumbraSize, 2.0);
+
+        // SSS approximation, blur backface shadows
+        //penumbraSize = mix(penumbraSize, 8.0 * cascade, fmn_sssAmount * step(0.0, -VNdotL));
+    #endif
+
+    vec3 shadowPosDX = dFdx(shadowScreenPos);
+    vec3 shadowPosDY = dFdy(shadowScreenPos);
+
+    vec2 receiverPlaneDepthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
+
+    float fractionalSamplingError = 2.0 * dot(vec2(1.0 / SHADOW_MAP_SIZE), abs(receiverPlaneDepthBias));
+    float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - NdotL) + 0.00009 * (3 - cascade);
+    
+    #ifdef BIAS_MULT
+        float biasMult = 1.0 + 0.1 * max(0, 2 - cascade);
+    #else
+        float biasMult = 1.0;
+    #endif
+
+    shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, 1.0);
+
+    for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
+        vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
+        vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
+        shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
+    }
+
+    shadowMap = clamp01(shadowMap);
+    shadowMap *= mix(smoothstep(-0.0, 0.1, NdotL), 1.0, 0.0); // skip NdotL shading to approximate SSS
+
+    main_color.rgb *= shadowMap;
+
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
@@ -514,7 +588,7 @@ void main() {
             //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
             for(int i = 0; i < RTAO_STEPS; i++) {
-                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * interleaved_gradient(i);
+                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * (interleaved_gradient(i) * 0.5 + 0.5);
 
                 vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
 
@@ -534,7 +608,7 @@ void main() {
 
             rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
 
-            composite *= mix(lastFrameRtao, rtao, 0.1);
+            composite *= mix(lastFrameRtao, rtao, 1.0);
         #endif
 
         #ifdef RAYTRACED_HELD_LIGHT

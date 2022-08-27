@@ -165,6 +165,8 @@ void frx_pipelineFragment() {
         #endif
 
         if(frx_worldIsEnd + frx_worldIsNether + frx_worldIsOverworld >= 1) {
+            float brightness = frx_smoothedEyeBrightness.y;
+
             frx_fragLight.y = mix(frx_fragLight.y, 1.0, frx_worldIsEnd);
 
             frx_fragLight.xy *= mix(1.0, frx_darknessEffectFactor * 0.95 + 0.05, frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));            
@@ -176,6 +178,9 @@ void frx_pipelineFragment() {
             vec3 blockLightColor = mix(vec3(1.0, 0.49, 0.16), vec3(1.0), BLOCKLIGHT_NEUTRALITY) * 2.0;
 
             float blocklight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.x) * 16.0;
+            // blocklight *= 1.0 + 4.0 * smoothstep(15.5, 16.0, blocklight);
+
+            blocklight = mix(max((blocklight * blocklight * blocklight) / 1024.0, blocklight / 16.0), blocklight / 16.0, brightness);
             float skylight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y) * 16.0;
 
             lightmap = vec3(0.0);
@@ -206,12 +211,12 @@ void frx_pipelineFragment() {
             skyLightColor = normalize(skyLightColor) * 6.5;
             aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
 
-            aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), smoothstep(0.0, 16.0, blocklight));
+            aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), blocklight);
 
             lightmap = mix(lightmap, aboveGroundLighting, frx_fragLight.y);
 
             vec3 undergroundLighting = vec3(0.005);
-            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), smoothstep(0.0, 16.0, blocklight));
+            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), blocklight);
             undergroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
 
             lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
@@ -225,7 +230,10 @@ void frx_pipelineFragment() {
             float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
             heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
             if(frx_isHand && !all(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
-            heldLightFactor = clamp01(heldLightFactor);
+            
+            heldLightFactor *= 13.0;
+            heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
+            //heldLightFactor = clamp01(heldLightFactor);
             lightmap = mix(lightmap, (max(pow(frx_heldLight.rgb * 1.2, vec3(2.2)), lightmap)), heldLightFactor);
 
             //lightmap = pow(lightmap, vec3(1.0 / (0.5 + frx_viewBrightness)));
@@ -236,8 +244,8 @@ void frx_pipelineFragment() {
 
             lightmap = max(vec3(0.0005), lightmap);
 
-            if(frx_fragReflectance < 1.0 || frx_isGui) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
-        } else {
+            if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+        } else if(!frx_renderTargetSolid) {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
 
             //color.rgb *= lightmap;
