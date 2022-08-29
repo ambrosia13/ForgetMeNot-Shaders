@@ -32,9 +32,6 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
 
-## discord
-https://discord.gg/Zzn4jJapRH
-
 ## screenshots
 ![a](https://cdn.discordapp.com/attachments/903175815401975889/1010347020961189929/unknown.png)
 ![a](https://cdn.discordapp.com/attachments/839653070622818337/1003153222938148904/unknown.png)

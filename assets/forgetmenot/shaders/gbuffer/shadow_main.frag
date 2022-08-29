@@ -118,7 +118,7 @@ void frx_pipelineFragment() {
         blockers /= blockerCount;
 
         penumbraSize = blockers;
-        penumbraSize = min(penumbraSize, 10.0 * (cascade));
+        penumbraSize = min(penumbraSize, 20.0 * (cascade));
         penumbraSize = max(penumbraSize, 1.0);
 
         // SSS approximation, blur backface shadows
