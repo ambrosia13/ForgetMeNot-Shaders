@@ -280,7 +280,7 @@ void main() {
                 float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
 
                 float cloudsG = 0.8;
-                float phaseMie = max(0.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG));
+                float phaseMie = max(0.0, henyeyGreenstein(LdotV, atmosphereG) + henyeyGreenstein(nLdotV, atmosphereG));
 
                 vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
 
@@ -451,7 +451,7 @@ void main() {
 
             if(frx_worldIsEnd != 1 || true) {
                 for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient() * 0.5 + 0.5);
+                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.25 + 0.75);
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
@@ -471,16 +471,17 @@ void main() {
                             reflectionCoord = screenPos;
                             ssrHit = true;
 
+                            float binaryStepLength = stepLength * 0.5;
+                            reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
+                            for(int i = 0; i < 4; i++) {
+                                reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, depthLod).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                                binaryStepLength *= 0.5;
+                            }
+
                             break;
                         }
                     }
                     //stepLength *= 1.06;
-                }
-
-                float binaryStepLength = 0.5 / SSR_STEPS;
-                for(int i = 0; i < 4; i++) {
-                    reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, depthLod).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
-                    binaryStepLength *= 0.5;
                 }
 
             }

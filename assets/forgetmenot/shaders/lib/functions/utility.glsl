@@ -353,16 +353,16 @@ float linearizeDepth(float depth) {
 }
 
 #ifndef VERTEX_SHADER
-    // vec3 noise3d() {
-    //     float seed = mod(frx_renderSeconds, 10.0);
-    //     vec3 r = vec3(
-    //         gold_noise(gl_FragCoord.xy, seed),
-    //         gold_noise(gl_FragCoord.xy, seed + 1.0),
-    //         gold_noise(gl_FragCoord.xy, seed + 2.0)
-    //     );
-    //     r = (r) * 2.0 - 1.0;
-    //     return r;
-    // }
+    vec3 goldNoise3d() {
+        float seed = mod(frx_renderSeconds, 10.0);
+        vec3 r = vec3(
+            gold_noise(gl_FragCoord.xy, seed),
+            gold_noise(gl_FragCoord.xy, seed + 1.0),
+            gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
     vec3 noise3d(float seed) {
         vec3 r = vec3(
             gold_noise(gl_FragCoord.xy, seed),
