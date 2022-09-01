@@ -19,7 +19,6 @@ uniform sampler2D u_translucent_data;
 uniform sampler2D u_solid_data;
 
 uniform sampler2D u_normal;
-uniform sampler2D u_translucent_vertex_normal;
 uniform sampler2D u_pbr_data;
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_depth_mipmaps;
@@ -582,35 +581,35 @@ void main() {
             //const int RTAO_STEPS = 5;
 
             vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = normalize(normal);
-            float stepLength = 1.0 / RTAO_STEPS;
+            vec3 rayScreen = vec3(texcoord, max_depth);
+            vec3 rayDir = normalize(normal + noise3d());
+            rayDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
+            float stepLength = 0.25 / RTAO_STEPS;
 
             //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
             for(int i = 0; i < RTAO_STEPS; i++) {
-                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * (interleaved_gradient(i) * 0.5 + 0.5);
-
-                vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
+                rayScreen += rayDir * stepLength * (interleaved_gradient());
 
                 if(clamp01(rayScreen) != rayScreen) {
                     break;
                 } else {
                     float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
 
-                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
+                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.005) {
                         rtao *= 0.05;
                         break;
                     }
                 }
 
-                stepLength *= 2.0;
+                //stepLength *= 2.0;
             }
 
             rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
 
             composite *= mix(lastFrameRtao, rtao, 1.0);
         #endif
-
+        
         #ifdef RAYTRACED_HELD_LIGHT
             const int HELD_LIGHT_STEPS = 10;
 // float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
