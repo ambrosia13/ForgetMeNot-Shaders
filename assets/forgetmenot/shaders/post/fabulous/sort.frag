@@ -290,7 +290,6 @@ void main() {
 
                 skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittanceCirrus + scatteringCirrus, smoothstep(0.0, 0.1, viewDir.y));
 
-
                 float cumulusCloudsDensity;
                 cumulusCloudsDensity = sampleCumulusCloud(plane, CLOUD_DETAIL);
 
@@ -509,33 +508,33 @@ void main() {
             //const int RTAO_STEPS = 5;
 
             vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = normalize(normal);
-            float stepLength = 1.0 / RTAO_STEPS;
+            vec3 rayScreen = vec3(texcoord, max_depth);
+            vec3 rayDir = normalize(normal + noise3d());
+            rayDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
+            float stepLength = 0.25 / RTAO_STEPS;
 
             //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
             for(int i = 0; i < RTAO_STEPS; i++) {
-                rayPos += (normalize(rayDir + (getBlueNoise(i + frx_renderSeconds))) * stepLength) * interleaved_gradient(i);
-
-                vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
+                rayScreen += rayDir * stepLength * (interleaved_gradient());
 
                 if(clamp01(rayScreen) != rayScreen) {
                     break;
                 } else {
                     float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
 
-                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
+                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.005) {
                         rtao *= 0.05;
                         break;
                     }
                 }
 
-                stepLength *= 2.0;
+                //stepLength *= 2.0;
             }
 
             rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
 
-            composite *= mix(lastFrameRtao, rtao, 0.1);
+            composite *= mix(lastFrameRtao, rtao, 1.0);
         #endif
 
         #ifdef RAYTRACED_HELD_LIGHT
@@ -638,7 +637,7 @@ void main() {
 
                 skyLightColor = mix(skyLightColor, vec3(0.0, 0.5, 0.4), frx_cameraInWater);
 
-                composite = composite + 0.2 * skyLightColor * vl * henyeyGreenstein(clamp01(dot(viewDir, frx_skyLightVector)), 0.75) * frx_skyLightTransitionFactor;
+                if(min_depth < 1.0) composite = composite + skyLightColor * vl * (henyeyGreenstein(clamp01(dot(viewDir, frx_skyLightVector)), 0.75)) * frx_skyLightTransitionFactor;
             #endif
         } else if(frx_worldIsNether == 1) {
             float fogDist = blockDist;
