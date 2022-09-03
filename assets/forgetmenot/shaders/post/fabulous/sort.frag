@@ -331,7 +331,7 @@ void main() {
             ssgi = mix(ssgi, vec3(1.0), clamp01(main_color.a));
 
             ssgi = mix(ssgi, lastFrameSample.rgb, 0.99 * (1.0 - step(0.001, distance(frx_cameraPos, frx_lastCameraPos))));
-            if(f0.r < 1.0) main_color.rgb *= ssgi;
+            if(f0.r < 0.99) main_color.rgb *= ssgi;
 
         #endif
     }
