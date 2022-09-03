@@ -251,7 +251,7 @@ void main() {
     #if defined RTAO || defined SSGI 
         const float RTAO_BLEND_FACTOR = 0.05;
         vec3 rtao = vec3(1.0);
-        vec3 ssgi = vec3(1.0);
+        vec3 ssgi = vec3(0.0);
         float hit = 0.0;
         vec3 success;
         vec3 lastFrameSuccess;
@@ -272,8 +272,8 @@ void main() {
             bool ssgiHit = false;
 
             vec3 rayPos = minViewSpacePos;
-            vec3 rayDir = normalize(normal + getBlueNoise() + lastFrameSuccess);
-            success = normalize(rayDir + getBlueNoise(1.0) * 0.25);
+            vec3 rayDir = normalize(normal + roughness * normalize(goldNoise3d()));
+            //success = normalize(rayDir + noise3d(1.0) * 0.25);
             float stepLength = 1.0 / SSGI_STEPS;
 
             vec3 rayScreen = vec3(texcoord, min_depth);
@@ -284,7 +284,13 @@ void main() {
             //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
             for(int i = 0; i < SSGI_STEPS; i++) {
-                rayScreen += screenDir * stepLength * interleaved_gradient(i);
+                if(false) {
+                    rayPos += normalize(normal + normalize(noise3d())) * interleaved_gradient(i);
+
+                    rayScreen = viewSpaceToScreenSpace(rayPos);
+                } else {
+                    rayScreen += screenDir * interleaved_gradient(i) * stepLength;
+                }
 
                 if(clamp01(rayScreen) != rayScreen) {
                     break;
@@ -301,29 +307,30 @@ void main() {
                 stepLength *= 1.0;
             }
 
-            float binaryStepLength = 1.0 / SSGI_STEPS;
-            for(int i = 0; i < 0; i++) {
-                finalSSGICoords += sign(textureLod(u_depth_mipmaps, finalSSGICoords.xy, 0).r - finalSSGICoords.z) * screenDir * binaryStepLength;
-                binaryStepLength *= 0.5;
-            }
+            // float binaryStepLength = 1.0 / SSGI_STEPS;
+            // for(int i = 0; i < 0; i++) {
+            //     finalSSGICoords += sign(textureLod(u_depth_mipmaps, finalSSGICoords.xy, 0).r - finalSSGICoords.z) * screenDir * binaryStepLength;
+            //     binaryStepLength *= 0.5;
+            // }
 
             vec3 ssgiViewPos = setupViewSpacePos(finalSSGICoords.xy, finalSSGICoords.z);
             finalSSGICoords = lastFrameViewSpaceToScreenSpace(ssgiViewPos + frx_cameraPos - frx_lastCameraPos); 
 
-            if(ssgiHit) {
-                vec3 emission = mix(
-                    textureLod(u_previous_frame, finalSSGICoords.xy, 0).rgb,
-                    //textureLod(u_processed_color, finalSSGICoords.xy, 0).rgb / 6.0,
-                    lastFrameSample.rgb,
-                    0.0
-                );
+            if(true) {
+                if(ssgiHit) {
+                    vec3 emission = textureLod(u_previous_frame, finalSSGICoords.xy, 0).rgb;
 
-                ssgi *= emission;
-                hit = 1.0;
-                success *= tanh(frx_luminance(emission));
-            } else {
-                ssgi *= getSkyColor(rayDir);
+                    ssgi += emission;
+                    hit = 1.0;
+                    success *= tanh(frx_luminance(emission));
+                } else {
+                    ssgi += getSkyColor(rayDir) * smoothstep(0.1, 0.2, frx_eyeBrightness.y);
+                }
             }
+
+            ssgi = mix(ssgi, vec3(1.0), clamp01(main_color.a));
+
+            ssgi = mix(ssgi, lastFrameSample.rgb, 0.99 * (1.0 - step(0.001, distance(frx_cameraPos, frx_lastCameraPos))));
             if(f0.r < 1.0) main_color.rgb *= ssgi;
 
         #endif
@@ -505,17 +512,17 @@ void main() {
     }
 
     if(min_depth < 1.0) {
-        if(f0.r > 0.0) {
+        if(true) {
             vec3 reflectionCoord;
             bool ssrHit = false;
 
-            #define SSR_STEPS 32
-            const int depthLod = 2;
+            #define SSR_STEPS 64
+            const int depthLod = 0;
 
             vec3 screenPos = vec3(texcoord, min_depth);
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
-            vec3 cosineDistribution = getBlueNoise();
+            vec3 cosineDistribution = goldNoise3d();
             vec3 roughNormal = normalize(normal + normalize(cosineDistribution) * roughness * (interleaved_gradient()));
 
             vec3 viewSpaceReflectionDir = reflect(viewDir, roughNormal);
@@ -537,7 +544,7 @@ void main() {
                 if(frx_luminance(reflectColor.rgb) > 5.5) reflectance = vec3(0.5);
 
                 for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * mix(interleaved_gradient(), 1.0, clamp01(0.22 + 0.01 * SSR_STEPS));
+                    screenPos += screenSpaceReflectionDir * stepLength * interleaved_gradient(i);
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
@@ -563,11 +570,11 @@ void main() {
                     //stepLength *= 1.06;
                 }
 
-                float binaryStepLength = 0.5 / SSR_STEPS;
-                for(int i = 0; i < 8; i++) {
-                    reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, depthLod).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
-                    binaryStepLength *= 0.5;
-                }
+                // float binaryStepLength = 0.5 / SSR_STEPS;
+                // for(int i = 0; i < 8; i++) {
+                //     reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, depthLod).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                //     binaryStepLength *= 0.5;
+                // }
 
             }
 

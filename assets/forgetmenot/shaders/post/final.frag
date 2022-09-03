@@ -14,11 +14,8 @@ void main() {
     //finalColor *= vec3(1.1, 1.1, 0.9);
 
     //finalColor = tanh(finalColor);
-    #ifdef DEPRESSING_MODE
-        finalColor = 1.0 - exp(-finalColor);
-    #else
-        finalColor = 1.0 - exp(-finalColor);
-    #endif
+    finalColor = 1.0 - exp(-finalColor);
+    //finalColor = frx_toneMap(finalColor);
     //finalColor *= inversesqrt(finalColor * finalColor + 1.0);
 
     finalColor = max(finalColor, vec3(0.0));

@@ -149,7 +149,6 @@ void frx_pipelineFragment() {
         shadowMap += texture(frxs_shadowMap, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
     }
 
-    shadowMap = clamp01(shadowMap);
     shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
     // backface brightening - apparently happens in real life with SSS
@@ -158,6 +157,8 @@ void frx_pipelineFragment() {
     shadowMap = mix(shadowMap, 0.0, tdata.z);
     shadowMap *= frx_worldIsOverworld;
     float shadowMapInverse = 1.0 - clamp01(shadowMap);
+
+    shadowMap = clamp01(shadowMap);
 
     if(!isInventory) {
         vec3 lightmap = vec3(1.0);
@@ -242,8 +243,8 @@ void frx_pipelineFragment() {
 
             lightmap = max(vec3(0.0005), lightmap);
 
-            //if(frx_fragReflectance < 1.0 || frx_isGui) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
-            color.rgb *= mix(vec3(1.0), skyLightColor, clamp01(shadowMap) * NdotL);
+            if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+            color.rgb *= mix(vec3(1.0), 0.1 * getSkyColor(frx_skyLightVector), clamp01(shadowMap) * NdotL);
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
             color.rgb *= lightmap;
@@ -255,7 +256,9 @@ void frx_pipelineFragment() {
         color.rgb = mix(color.rgb, frx_fragColor.rgb, frx_fragEmissive * mix((1.0), (frx_darknessEffectFactor), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0))));
         
         float emissionFactor = frx_luminance(color.rgb + 4.0 * color.rgb * pow(1.0 + frx_fragEmissive, 2.0));
-        color.rgb += color.rgb * 10.0 * frx_fragEmissive;
+        color.rgb += color.rgb * 20.0 * frx_fragEmissive;
+        frx_fragEmissive = sqrt(frx_fragEmissive);
+        frx_fragEmissive = (frx_fragEmissive + shadowMap * NdotL);
         //color.rgb = mix(vec3(frx_luminance(color.rgb)), color.rgb, 1.0 + 0.5 * frx_fragEmissive);
 
         color.rgb = mix(color.rgb, vec3(frx_luminance(lightmap), 0.0, 0.0), 0.5 * frx_matHurt); 
@@ -277,6 +280,7 @@ void frx_pipelineFragment() {
     if(color.a < 0.05 && frx_renderTargetSolid && !frx_isGui) discard;
 
     //color.rgb = shadowBlurColor;
+    if(frx_renderTargetSolid) color.a = frx_fragEmissive;
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
