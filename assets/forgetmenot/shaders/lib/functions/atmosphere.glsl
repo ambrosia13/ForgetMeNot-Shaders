@@ -125,7 +125,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 totalAbsorb = absorbSun * factor;
 
     if(frx_worldIsOverworld == 1) {
-        float diskVisibility = step(0.9996, dot(viewDir, sunVector));
+        float diskVisibility = step(0.9995, dot(viewDir, sunVector));
 
         if(sunVector == getMoonVector()) {
             diskVisibility = step(0.9999, dot(viewDir, sunVector));
@@ -142,7 +142,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
             diskVisibility -= step(0.9999, dot(viewDir, normalize(vec3(rotation.x, sunVector.y, rotation.y))));
         }
 
-        totalScatter += mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * miePhase(frx_smootherstep(0.9996, 0.9998, LdotV), atmosphereG) * clamp01(diskVisibility);
+        totalScatter += 5.0 * mie * opticalDepth * miePhase(LdotV, 0.99) * clamp01(diskVisibility);
     }
 
 
