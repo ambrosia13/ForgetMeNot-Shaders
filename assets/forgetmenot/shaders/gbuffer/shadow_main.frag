@@ -56,6 +56,35 @@ void frx_pipelineFragment() {
     vec3 gamma = vec3(isInventory ? 1.0 : 2.2);
     vec3 tdata = getTimeOfDayFactors();
 
+    if(tbnMatrix() * frx_fragNormal == frx_vertexNormal) {
+        vec2 uv = frx_normalizeMappedUV(frx_texcoord);
+        vec2 uv1, uv2, uv3, uv4;
+
+        vec2 offset = vec2(1.0 / 32.0, 0.0);
+
+        uv1 = uv + offset.xy;
+        uv2 = uv - offset.xy;
+        uv3 = uv + offset.yx;
+        uv4 = uv - offset.yx;
+
+        if(
+            clamp01(uv1) == uv1 &&
+            clamp01(uv2) == uv2 && 
+            clamp01(uv3) == uv3 &&
+            clamp01(uv4) == uv4  
+        ) {
+            float height1 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv1)).rgb);
+            float height2 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv2)).rgb);
+            float height3 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv3)).rgb);
+            float height4 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv4)).rgb);
+
+            float deltaX = (height2 - height1) * 1.0;
+            float deltaY = (height4 - height3) * 1.0;
+
+            if(frx_matDisableDiffuse == 0) frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
+        }
+    }
+
     #ifdef WHITE_WORLD
         frx_fragColor.rgb = vec3(1.0);
     #endif
