@@ -4,14 +4,13 @@
 #include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_glint;
-uniform sampler2DArray u_shadow_color;
 
 in vec4 shadowViewPos;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 pbrData;
-layout(location = 3) out vec4 vertexNormal;
+layout(location = 3) out vec4 materialData;
 
 // procedural rain noise
 float rainHeightNoise(in vec2 uv) {
@@ -29,11 +28,6 @@ float rainHeightNoise(in vec2 uv) {
 
     return noise * 0.01;
 }
-vec2 parallaxMapping(in vec2 texcoord, in float height) {
-    vec3 viewDir = normalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
-    vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
-    return texcoord - p;
-}
 
 mat3 tbnMatrix() {
     return mat3(
@@ -42,51 +36,56 @@ mat3 tbnMatrix() {
         frx_vertexNormal.xyz
     );
 }
-void resolveNormals() {
+void resolveMaterials() {
     mat3 tbn = tbnMatrix();
 
     frx_fragNormal = tbn * frx_fragNormal;
     if(frx_isHand) {
         frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
     }
+
+    // No reflections on default materials
+    if(frx_fragReflectance == 0.04) frx_fragReflectance = 0.0;
+
+    // Hurt effect
+    frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);
+
+    // Glint effect
+    if(frx_matGlint == 1) {
+        vec3 glint = texture(u_glint, frx_normalizeMappedUV(frx_texcoord * 0.2 + frx_renderSeconds / 500.0)).rgb;
+        glint = pow(glint, vec3(4.0));
+        frx_fragColor.rgb += glint;
+        frx_fragEmissive += frx_luminance(glint) * 0.5;
+    }
+
+    // white world - for debug
+    #ifdef WHITE_WORLD
+        frx_fragColor.rgb = vec3(1.0);
+    #endif
 }
 
 void frx_pipelineFragment() {
+    resolveMaterials();
+
     bool isInventory = frx_isGui && !frx_isHand;
     vec3 gamma = vec3(isInventory ? 1.0 : 2.2);
     vec3 tdata = getTimeOfDayFactors();
 
-    #ifdef WHITE_WORLD
-        frx_fragColor.rgb = vec3(1.0);
-    #endif
-
     frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
     vec4 color = frx_fragColor;
 
-    resolveNormals();
     float VNdotL = dot(frx_vertexNormal, frx_skyLightVector);
     float NdotL = dot(frx_fragNormal, frx_skyLightVector);
     NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
 
     // Rain ripples
-    vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
-    uv = parallaxMapping(uv, rainHeightNoise(uv) * 4.0);
-
     if(frx_smoothedRainGradient > 0.0) {
+        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+
         vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
         frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
         frx_fragNormal = normalize(frx_fragNormal);
     }
-    if(frx_fragReflectance == 0.04) {
-        frx_fragReflectance = 0.0;
-        if(frx_vertexNormal.y > 0.9) frx_fragReflectance = mix(0.0, 0.04, frx_smoothedRainGradient * smoothstep(0.5, 0.7, frx_fragLight.y));
-    }
-
-    // // Fake roughness
-    // if(frx_fragRoughness == 1.0) frx_fragRoughness = 0.0;
-    // frx_fragNormal += normalize(rand3D(10.0 * gl_FragCoord.xy + 2.0 * mod(frx_renderSeconds, 1000.0))) * (frx_fragRoughness / 10.0);
-    // frx_fragNormal = normalize(frx_fragNormal);
-
 
     // Makes shadows pixel aligned
     // vec4 viewPos = frx_shadowViewMatrix * vec4((floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0) - frx_cameraPos, frx_vertex.w);
@@ -95,7 +94,6 @@ void frx_pipelineFragment() {
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
     float shadowMap;
-    vec3 shadowBlurColor;
 
     float penumbraSize = 2.0;
     float dither = sqrt(interleaved_gradient());
@@ -244,7 +242,7 @@ void frx_pipelineFragment() {
 
             lightmap = max(vec3(0.0005), lightmap);
 
-            if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
+            if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid || frx_isHand) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
         } else if(!frx_renderTargetSolid) {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
 
@@ -258,7 +256,6 @@ void frx_pipelineFragment() {
         color.rgb += color.rgb * 10.0 * frx_fragEmissive;
         //color.rgb = mix(vec3(frx_luminance(color.rgb)), color.rgb, 1.0 + 0.5 * frx_fragEmissive);
 
-        color.rgb = mix(color.rgb, vec3(frx_luminance(lightmap), 0.0, 0.0), 0.5 * frx_matHurt); 
         color.rgb = mix(color.rgb, vec3(2.0), 0.5 * frx_matFlash); 
     } else {
         vec3 direction = vec3(0.2, 0.8, 0.6);
@@ -267,21 +264,15 @@ void frx_pipelineFragment() {
         color.rgb *= dot(frx_vertexNormal, direction) * 0.35 + 0.65;
     }
 
-    if(frx_matGlint == 1) {
-        vec3 glint = texture(u_glint, frx_normalizeMappedUV(frx_texcoord * 0.2 + frx_renderSeconds / 500.0)).rgb;
-        glint = pow(glint, vec3(4.0));
-        color.rgb += glint;
-        frx_fragEmissive += frx_luminance(glint) * 0.5;
-    }
-
-    if(color.a < 0.05 && frx_renderTargetSolid && !frx_isGui) discard;
+    if(color.a < 0.01 && frx_renderTargetSolid && !frx_isGui) discard;
 
     //color.rgb = shadowBlurColor;
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    vertexNormal = vec4(frx_vertexNormal * 0.5 + 0.5, 1.0);
     pbrData = vec4(frx_fragReflectance, fmn_isWater, frx_fragRoughness, 1.0);
+    materialData = vec4(frx_matDisableAo, frx_matDisableDiffuse, 0.0, 0.0);
+
 
     gl_FragDepth = gl_FragCoord.z;
 }

@@ -353,17 +353,17 @@ float linearizeDepth(float depth) {
 }
 
 #ifndef VERTEX_SHADER
-    // vec3 noise3d() {
-    //     float seed = mod(frx_renderSeconds, 10.0);
-    //     vec3 r = vec3(
-    //         gold_noise(gl_FragCoord.xy, seed),
-    //         gold_noise(gl_FragCoord.xy, seed + 1.0),
-    //         gold_noise(gl_FragCoord.xy, seed + 2.0)
-    //     );
-    //     r = (r) * 2.0 - 1.0;
-    //     return r;
-    // }
-    vec3 noise3d(float seed) {
+    vec3 goldNoise3d() {
+        float seed = mod(frx_renderSeconds, 10.0);
+        vec3 r = vec3(
+            gold_noise(gl_FragCoord.xy, seed),
+            gold_noise(gl_FragCoord.xy, seed + 1.0),
+            gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
+    vec3 goldNoise3d(float seed) {
         vec3 r = vec3(
             gold_noise(gl_FragCoord.xy, seed),
             gold_noise(gl_FragCoord.xy, seed + 1.0),
@@ -394,11 +394,11 @@ float pcg(in uint seed) {
     uint state = seed * 747796405u + 2891336453u;
     uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
     seed = (word >> 22u) ^ word;
-    return float(seed);
+    return float(seed) / float(0xffffffffu);
 }
 float pcg() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
-    return pcg(seed) / float(0xffffffffu);
+    return pcg(seed);
 }
 vec3 noise3d() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
@@ -408,6 +408,19 @@ vec3 noise3d() {
         pcg(seed - 1000u),
         pcg(seed + 1000u)    
     );
+
+    //float l = length(r);
+
     return normalize(r) * 2.0 - 1.0;
 }
+#else
+    vec3 goldNoise3d(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(100.0), seed),
+            gold_noise(vec2(1.0), seed + 1.0),
+            gold_noise(vec2(1.0), seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
 #endif

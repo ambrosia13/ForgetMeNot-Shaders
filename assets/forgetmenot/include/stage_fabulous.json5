@@ -44,28 +44,6 @@
                 }
             ]
         },
-        {
-            name: "global_illumination",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
     ],
 
     framebuffers: [
@@ -122,7 +100,7 @@
         },
         {
             name: "sort",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
             samplers: [
                 "u_main_color",
@@ -137,11 +115,8 @@
                 "u_clouds_depth",
                 "u_particles_color",
                 "u_particles_depth",
-                "u_translucent_data",
-                "u_solid_data"
                 
                 "u_normal",
-                "u_translucent_vertex_normal",
                 "u_pbr_data",
                 "u_previous_frame",
                 "u_depth_mipmaps",
@@ -214,11 +189,8 @@
                     "clouds_depth",
                     "particles_color",
                     "particles_depth",
-                    "translucent_data",
-                    "main_data",
 
                     "composite_normal",
-                    "translucent_vertex_normal",
                     "pbr_data",
                     "bloom_downsample",
                     "quarter_res_depth",
