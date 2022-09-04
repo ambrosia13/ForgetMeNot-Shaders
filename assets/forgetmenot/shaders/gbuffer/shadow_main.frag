@@ -273,7 +273,7 @@ void frx_pipelineFragment() {
             lightmap = max(vec3(0.0005), lightmap);
 
             if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
-            if(frx_fragReflectance < 1.0) color.rgb *= mix(vec3(1.0), 0.1 * getSkyColor(frx_skyLightVector), clamp01(shadowMap) * NdotL);
+            if(frx_fragReflectance < 1.0) color.rgb *= mix(vec3(1.0), 0.05 * getSkyColor(frx_skyLightVector), clamp01(shadowMap) * NdotL);
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
             color.rgb *= lightmap;

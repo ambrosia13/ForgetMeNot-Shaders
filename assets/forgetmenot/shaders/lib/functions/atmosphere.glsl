@@ -68,6 +68,8 @@ float particleThicknessConst(const float depth){
 const vec3 kMie = vec3(0.5e-6);
 const vec3 kTotal = kRlh + kMie;
 
+const float atmosphereG = 0.85;
+
 vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness) {
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 4.0, vec3(2.2));
 
