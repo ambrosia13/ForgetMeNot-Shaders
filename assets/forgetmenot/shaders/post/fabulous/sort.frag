@@ -579,7 +579,7 @@ void main() {
             if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
-            reflectColor = mix(lastFrameSuccess.rgb, reflectColor, 0.1);
+            reflectColor = mix(reflectColor.rgb, lastFrameSuccess.rgb, 0.99 * (1.0 - step(0.001, distance(frx_cameraPos, frx_lastCameraPos))));
 
             // if(frx_cameraInWater == 1 && acos(dot(normal, -viewDir)) * (180 / PI) > 60.0) {
             //     reflectance = vec3(1.0);
