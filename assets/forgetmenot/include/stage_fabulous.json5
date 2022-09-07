@@ -118,6 +118,9 @@
                 
                 "u_normal",
                 "u_pbr_data",
+                "u_material_data",
+                "u_light_data",
+
                 "u_previous_frame",
                 "u_depth_mipmaps",
                 "u_blue_noise",
@@ -192,6 +195,9 @@
 
                     "composite_normal",
                     "pbr_data",
+                    "material_data"
+                    "light_data"
+
                     "bloom_downsample",
                     "quarter_res_depth",
                     "forgetmenot:textures/blue_noise.png",
