@@ -67,6 +67,28 @@
             ]
         },
         {
+            name: "final_lighting",
+            lod: 0,
+            internalFormat: "RGBA32F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
             name: "global_illumination_copy",
             lod: 0,
             internalFormat: "RGBA32F",
@@ -167,9 +189,12 @@
                 },
                 {
                     image: "global_illumination", clearColor: 0x00000000
-                }
+                },
                 {
                     image: "success_dir", clearColor: 0x00000000
+                },
+                {
+                    image: "final_lighting", clearColor: 0x00000000
                 }
             ]
         },

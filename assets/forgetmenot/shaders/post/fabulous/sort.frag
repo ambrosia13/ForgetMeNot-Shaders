@@ -34,6 +34,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 globalIllumination;
 layout(location = 2) out vec4 successDir;
+layout(location = 3) out vec4 finalGI;
 
 // vanilla fabulous blending
 
@@ -337,7 +338,7 @@ void main() {
             }
 
             ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
-            if(f0.r < 0.99) main_color.rgb *= ssgi;
+            if(f0.r < 0.99) main_color *= vec4(ssgi, 1.0);
 
         #endif
     }
