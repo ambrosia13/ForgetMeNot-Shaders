@@ -19,6 +19,7 @@ uniform sampler2D u_normal;
 uniform sampler2D u_pbr_data;
 uniform sampler2D u_material_data;
 uniform sampler2D u_light_data;
+uniform sampler2D u_ambient;
 
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_depth_mipmaps;
@@ -327,11 +328,19 @@ void main() {
     float ambientLightIlluminance = skyIlluminance;
 
     vec3 lightmap = vec3(0.0);
+    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 2.0, 3, u_normal).r;
 
     float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
+    float aoFactor = min(rtao, ao);
+    aoFactor = mix(aoFactor, 1.0, shadowMap);
+
+    vec3 ambientColor = mix(vec3(0.01), 2.0 * getSkyColor(vec3(0.0, 1.0, 0.0), 0.0), skyLight);
+    vec3 ambientLight = ambientColor * aoFactor;
 
     lightmap.rgb += mix(vec3(0.0), skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)), clamp01(shadowMap));
-    lightmap.rgb += mix(vec3(0.0), ao * ao * getSkyColor(vec3(0.0, 1.0, 0.0), 0.0), 1.0 - clamp01(shadowMap));
+    lightmap.rgb += mix(vec3(0.0), ambientLight, 1.0 - clamp01(shadowMap));
+
+    lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * aoFactor, blockLight * blockLight);
 
     if(f0.r < 0.999) main_color.rgb *= mix(lightmap, vec3(1.0), emission);
 
@@ -517,7 +526,7 @@ void main() {
             vec3 reflectionCoord;
             bool ssrHit = false;
 
-            #define SSR_STEPS 32
+            #define SSR_STEPS 16
             const int depthLod = 2;
 
             vec3 screenPos = vec3(texcoord, min_depth);
@@ -546,7 +555,7 @@ void main() {
 
             if(roughness < 0.5) {
                 for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.25 + 0.75);
+                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.5 + 0.5);
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;

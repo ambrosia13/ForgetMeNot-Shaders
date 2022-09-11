@@ -31,5 +31,6 @@ uniform int frxu_lod;
 #include forgetmenot:shaders/lib/functions/atmosphere.glsl
 #include forgetmenot:shaders/lib/functions/fxaa.glsl
 #include forgetmenot:shaders/lib/functions/kernels.glsl
+#include forgetmenot:shaders/lib/functions/temporal.glsl
 
 #include forgetmenot:shaders/lib/api/fmn_pbr.glsl

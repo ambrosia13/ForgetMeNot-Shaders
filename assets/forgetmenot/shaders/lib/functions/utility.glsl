@@ -424,3 +424,7 @@ vec3 noise3d() {
         return r;
     }
 #endif
+
+vec3 mixmax(in vec3 a, in vec3 b, in float x) {
+    return mix(a, max(a, b), x);
+}

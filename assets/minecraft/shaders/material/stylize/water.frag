@@ -5,14 +5,6 @@
     #define WAVES_QUALITY 3
 #endif
 
-// https://iquilezles.org/articles/smin/
-// polynomial smooth min
-float smaxCubic( float a, float b, float k )
-{
-    float h = max( k-abs(a-b), 0.0 )/k;
-    return max( a, b ) - h*h*h*k*(1.0/6.0);
-}
-
 float waterHeightNoise(in vec2 uv) {
     float waterHeight;
     float waves;
@@ -60,6 +52,11 @@ float waterHeightNoise(in vec2 uv) {
     // return noise * 0.05;
 }
 
+// vec2 waterParallax(in vec2 uv) {
+//     vec2 parallaxUv = fmn_parallaxMapping(uv, waterHeightNoise(uv));
+//     return mix(uv, parallaxUv, )
+// }
+
 void frx_materialFragment() {
     vec2 uv0 = frx_var0.xy;
     vec2 uv = uv0 * 0.8;
@@ -78,14 +75,15 @@ void frx_materialFragment() {
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
             float offset = 1e-2;
+            float wavesStrength = mix(0.05, 1.0, frx_fragLight.y);
 
             float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
-            // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
+            float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
             float height3 = waterHeightNoise(uv + vec2(0.0, offset));
-            // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
+            float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-            float deltaX = (centerNoise - height1) * 50.0;
-            float deltaY = (centerNoise - height3) * 50.0;
+            float deltaX = ((height2 - height1) / offset) * wavesStrength;
+            float deltaY = ((height4 - height3) / offset) * wavesStrength;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             

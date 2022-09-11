@@ -10,10 +10,16 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 vec3 toneMap(in vec3 color) {
-    return color / (color + 1.0);
+    color = color / (color + 1.0);
+    //color = pow(color, vec3(1.0 / 2.2));
+
+    return color;
 }
 vec3 inverseToneMap(in vec3 color) {
-    return -color / (color - 1.0);
+    //color = pow(color, vec3(2.2));
+    color = -color / (color - 1.0);
+
+    return color;
 }
 
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
