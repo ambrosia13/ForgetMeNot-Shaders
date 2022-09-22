@@ -16,6 +16,8 @@ uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
 uniform sampler2D u_normal;
+uniform sampler2D u_solid_normal;
+uniform sampler2D u_tangent_normal;
 uniform sampler2D u_pbr_data;
 uniform sampler2D u_material_data;
 uniform sampler2D u_light_data;
@@ -173,11 +175,6 @@ void main() {
     // sample things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
-    vec3 f0 = pbrData.rrr;
-    float roughness = pbrData.b;
-
     vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
 
@@ -185,25 +182,25 @@ void main() {
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
     vec3 coords = vec3(texcoord, 0.0);
+    #define REFRACTION
     #ifdef REFRACTION
-    vec3 rview = setupCleanViewSpacePos(texcoord, translucent_depth);
-    rview = normalize(rview);
+        // vec3 rViewDir = normalize(setupViewSpacePos(texcoord, 1.0));
+        // rViewDir = refract(rViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.1);
 
-    if(translucent_depth != max(particles_depth, translucent_depth)) {
-        vec3 rd = refract(rview, normal, 0.99);
-        coords = cleanViewSpaceToScreenSpace(rd).xyz;
-
-        if(clamp01(coords.xy) != coords.xy) coords.xy = texcoord;
-        // main_color.rgb = texture(u_main_color, coords.xy).rgb;
-    }
+        float doRefraction = 0.0;
+        if(translucent_depth != particles_depth) doRefraction = 1.0;
     #endif
 
-    translucent_depth = texture(u_translucent_depth, coords.xy).r;
-    particles_depth = texture(u_particles_depth, coords.xy).r;
+    //translucent_depth = texture(u_translucent_depth, coords.xy).r;
+    //particles_depth = texture(u_particles_depth, coords.xy).r;
 
+    vec3 normal = texture(u_solid_normal, texcoord).rgb * 2.0 - 1.0;
+    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
+    vec3 f0 = pbrData.rrr;
+    float roughness = pbrData.b;
 
     vec4  main_color = texture(u_main_color, coords.xy);
-    float main_depth = texture(u_main_depth, coords.xy).r;
+    float main_depth = texture(u_main_depth, texcoord.xy).r;
     
     vec4  entity_color = texture(u_entity_color, texcoord);
     float entity_depth = texture(u_entity_depth, texcoord).r;
@@ -223,6 +220,7 @@ void main() {
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
+    vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
     vec3 viewDir = normalize(setupViewSpacePos(texcoord, 1.0));
@@ -253,7 +251,7 @@ void main() {
 
     vec3 light = texture(u_light_data, texcoord).rgb;
     float blockLight = light.r;
-    float skyLight = light.g;
+    float skyLight = mix(light.g, 1.0, 1.0 - frx_worldIsOverworld);
     float ao = light.b;
 
     float NdotL = dot(normal, frx_skyLightVector);
@@ -268,6 +266,8 @@ void main() {
     // main_color.rgb *= shadowFactor;
 
     float shadowMap;
+    bool inShadowMap = texture(u_shadow_tex, vec3(shadowScreenPos.xy, cascade)).r < 1.0;
+    //inShadowMap = clamp01(shadowScreenPos.xyz) == shadowScreenPos.xyz;
 
     float penumbraSize = 2.0;
     float dither = (interleaved_gradient());
@@ -318,23 +318,62 @@ void main() {
         vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
         shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
     }
+    vec3 shadowRayPos = vec3(texcoord, max_depth);
+    vec3 shadowRayDir = normalize(viewSpaceToScreenSpace(maxViewSpacePos + frx_skyLightVector) - shadowRayPos);
+    
+    // almost pixel perfect raytrace
+    float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
+
+    float shadowRayDither = getBlueNoise().x * 0.3 + 0.7;
+    if(sssAmount > 0.04 || NdotL > 0.0) {
+        for(int i = 0; i < 12; i++) {
+            shadowRayPos += shadowRayDir * shadowRayStep * shadowRayDither;
+
+            if(clamp01(shadowRayPos.xy) != shadowRayPos.xy) {
+                break;
+            } else {
+                float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
+
+                if(max_depth > 0.94 && shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (length(maxViewSpacePos) < 128.0 ? (mix(0.0001, 0.0005, sssAmount)) : 0.05)) {
+                    if(sssAmount < 0.04 || !inShadowMap)  {
+                        shadowMap *= 0.0;
+                        break;
+                    } else {
+                        shadowMap *= 0.75;
+                    }
+                }
+            }
+        }
+    }
+
     shadowMap = clamp01(shadowMap);
     shadowMap *= mix(smoothstep(-0.0, 0.1, NdotL), 1.0, sssAmount); // skip NdotL shading to approximate SSS
 
     shadowMap = mix(shadowMap, 0.0, 1.0 - frx_skyLightTransitionFactor);
+    shadowMap = mix(0.0, shadowMap, frx_worldIsOverworld);
 
     float skyLightIlluminance = frx_luminance(skyLightColor);
     float directLightIlluminance = skyIlluminance * 8.0;
     float ambientLightIlluminance = skyIlluminance;
 
     vec3 lightmap = vec3(0.0);
-    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 2.0, 3, u_normal).r;
+    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 3.0, 3, u_normal).r;
 
     float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
-    float aoFactor = min(rtao, ao);
+    float aoFactor = min(pow(rtao, 1.5), ao);
     aoFactor = mix(aoFactor, 1.0, shadowMap);
 
-    vec3 ambientColor = mix(vec3(0.01), 2.0 * getSkyColor(vec3(0.0, 1.0, 0.0), 0.0), skyLight);
+    vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
+    vec3 ambientColor = mix(vec3(0.01), (2.0 + 1.0 * lambertFactor) * (upColor), skyLight);
+    if(frx_worldIsEnd == 1) {
+        // Never thought I'd ever name a variable NdotPlanet
+        float NdotPlanet = dot(normal, normalize(vec3(0.8, 0.3, -0.5)));
+        ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+        ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+
+        ambientColor = ambientColor * 0.75 + 0.25;
+    }
+
     vec3 ambientLight = ambientColor * aoFactor;
 
     lightmap.rgb += mix(vec3(0.0), skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)), clamp01(shadowMap));
@@ -344,6 +383,7 @@ void main() {
 
     if(f0.r < 0.999) main_color.rgb *= mix(lightmap, vec3(1.0), emission);
 
+    normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -357,6 +397,8 @@ void main() {
         vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
         vec3 jitteredViewDir = normalize(jitteredViewPos);
 
+        if(pbrData.g > 0.5 && frx_cameraInWater == 1) jitteredViewDir = refract(jitteredViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.25);
+
         skyColor = getSkyColorDetailed(jitteredViewDir, minViewSpacePos);
 
         vec3 viewPos = maxViewSpacePos;
@@ -365,7 +407,7 @@ void main() {
         #ifdef CLOUDS
             if(viewDir.y > 0.0) {
                 if(frx_worldIsOverworld == 1) {
-                    vec2 plane = viewPos.xz / (viewPos.y + 0.1 * length(viewPos.xz));
+                    vec2 plane = jitteredViewDir.xz / (jitteredViewDir.y + 0.1 * length(jitteredViewDir.xz));
                     plane *= 1.15;
 
                     plane += frx_cameraPos.xz / 150.0;
@@ -432,8 +474,13 @@ void main() {
                     //lightOpticalDepth /= 2.0;
 
                     transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
-                    scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 2.5 * frx_smoothedRainGradient)) * (1.0 - transmittance)) * mie;
+                    scattering = vec3(exp2(-lightOpticalDepth * (2.0 - 1.0 * frx_skyLightVector.y) * (2.5 + 2.5 * frx_smoothedRainGradient))) * mie;
                     //scattering = mix(scattering, vec3(0.1 * mie), 1.0 - frx_skyLightTransitionFactor);
+
+                    transmittance = mix(transmittance, 0.75 + 0.25 * transmittance, tdata.z);
+                    scattering *= frx_skyLightTransitionFactor;
+
+                    scattering *= (1.0 - transmittance);
 
                     skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittance + scattering, smoothstep(0.0, 0.05, viewDir.y));
 
@@ -443,7 +490,7 @@ void main() {
                         rayDirection = normalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
 
                         for(int i = 0; i < 1; i++) {
-                            planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
+                            planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient(2);
                             float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
 
                             //if(currentDensity > 0.5) break;
@@ -499,7 +546,7 @@ void main() {
         //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
         waterFogColor *= (clamp01(sunDotU) * 0.9  + 0.1) * (frx_smoothedEyeBrightness.y * 0.95 + 0.05);
         
-        if(max_depth == 1.0) waterFogDistance *= 1000.0;
+        if(max_depth == 1.0) waterFogDistance *= 0.0;
         float fogDensity = 1.0 - exp2(-waterFogDistance * 0.5);
         float foggerDensity = 1.0 - exp2(-waterFogDistance * 1.5);
 
@@ -512,27 +559,18 @@ void main() {
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
 
-    #ifdef RTAO 
-        const float RTAO_BLEND_FACTOR = 0.05;
-        vec3 rtao = vec3(1.0);
-
-        vec4 lastFrameSample = vec4(1.0);
-        if(clamp01(lastScreenPos.xy) == lastScreenPos.xy) lastFrameSample = texture(u_previous_frame, lastScreenPos.xy + taaOffsets[frx_renderFrames % 8u] / frxu_size);
-        vec3 lastFrameRtao = lastFrameSample.aaa;
-    #endif
-
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
             vec3 reflectionCoord;
             bool ssrHit = false;
 
-            #define SSR_STEPS 16
+            #define SSR_STEPS 64
             const int depthLod = 2;
 
             vec3 screenPos = vec3(texcoord, min_depth);
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
-            vec3 cosineDistribution = noise3d();
+            vec3 cosineDistribution = getBlueNoise();
             vec3 microfacetNormal = normalize(normal + normalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
             if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
@@ -553,9 +591,9 @@ void main() {
             if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir))) * smoothstep(-0.9, 0.0, f0.r);
             if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
-            if(roughness < 0.5) {
+            if(roughness * roughness < 0.5) {
                 for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.5 + 0.5);
+                    screenPos += screenSpaceReflectionDir * stepLength * ((cosineDistribution.x * 0.5 + 0.5) * 0.5 + 0.5);
 
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
@@ -587,7 +625,36 @@ void main() {
                     }
                     //stepLength *= 1.06;
                 }
+                // int lod = 2;
 
+                // for(int i = 0; i < 512; i++) {
+                //     if(clamp01(screenPos.xy) != screenPos.xy) break;
+
+                //     float depthQuery = textureLod(u_depth_mipmaps, screenPos.xy, lod).r;
+
+                //     if(screenPos.z > depthQuery) { // intersection in current lod, check lower lod
+                //         lod--;
+                //         float stepSize = log2(float(lod)) / min(frxu_size.x, frxu_size.y);
+                //         screenPos += screenSpaceReflectionDir * stepSize * (interleaved_gradient(i) * 0.5 + 0.5);
+
+                //         if(lod == 0) {
+                //             reflectionCoord = screenPos;
+                //             ssrHit = true;
+
+                //             // float binaryStepLength = stepSize * 0.5;
+                //             // reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
+                //             // for(int i = 0; i < 4; i++) {
+                //             //     reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                //             //     binaryStepLength *= 0.5;
+                //             // }
+
+                //             break;
+                //         }
+                //     } else {
+                //         float stepSize = log2(float(lod)) / min(frxu_size.x, frxu_size.y);
+                //         screenPos += screenSpaceReflectionDir * stepSize;
+                //     }
+                // }
             }
 
             if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
@@ -608,40 +675,6 @@ void main() {
             //composite = normal;
         }
 
-        #ifdef RTAO
-            const int RTAO_RAYS = 1;
-            //const int RTAO_STEPS = 5;
-
-            vec3 rayPos = minViewSpacePos;
-            vec3 rayScreen = vec3(texcoord, max_depth);
-            vec3 rayDir = normalize(normal + noise3d());
-            rayDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
-            float stepLength = 0.25 / RTAO_STEPS;
-
-            //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
-
-            for(int i = 0; i < RTAO_STEPS; i++) {
-                rayScreen += rayDir * stepLength * (interleaved_gradient());
-
-                if(clamp01(rayScreen) != rayScreen) {
-                    break;
-                } else {
-                    float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
-
-                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.005) {
-                        rtao *= 0.05;
-                        break;
-                    }
-                }
-
-                //stepLength *= 2.0;
-            }
-
-            rtao = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - rtao));
-
-            composite *= mix(lastFrameRtao, rtao, 1.0);
-        #endif
-        
         #ifdef RAYTRACED_HELD_LIGHT
             const int HELD_LIGHT_STEPS = 10;
 // float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
@@ -767,14 +800,5 @@ void main() {
         composite = mix(composite, vec3(0.0), (smoothstep(0.0, 20.0 * darknessFactor, blockDist)) * frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
     #endif
 
-    // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
-
-    #ifdef RTAO
-        float alpha = frx_luminance(mix(lastFrameRtao, rtao, 0.05));
-    #else
-        float alpha = 1.0;
-    #endif
-
-
-    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, alpha));
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, doRefraction));
 }

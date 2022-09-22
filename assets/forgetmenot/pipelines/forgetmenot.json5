@@ -131,9 +131,37 @@
             ]
         },
         {
+            name: "tangent_normal",
+            lod: 0,
+            internalFormat: "RGB16",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+            ]
+        },
+        {
             name: "composite_normal",
             lod: 0,
             internalFormat: "RGB16",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
+                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+            ]
+        },
+        {
+            name: "solid_normal",
+            lod: 0,
+            internalFormat: "RGB8",
             pixelFormat: "RGB",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -178,6 +206,10 @@
                     clearColor: 0x00000000
                 },
                 {
+                    image: "tangent_normal",
+                    clearColor: 0x00000000
+                },
+                {
                     image: "pbr_data",
                     clearColor: 0x00000000
                 },
@@ -187,6 +219,10 @@
                 },
                 {
                     image: "light_data",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "solid_normal",
                     clearColor: 0x00000000
                 }
             ]

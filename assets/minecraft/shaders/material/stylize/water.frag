@@ -58,14 +58,14 @@ float waterHeightNoise(in vec2 uv) {
 // }
 
 void frx_materialFragment() {
+    mat3 tbn = mat3(
+        frx_vertexTangent.xyz, 
+        cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
+        frx_vertexNormal.xyz
+    );
+
     vec2 uv0 = frx_var0.xy;
     vec2 uv = uv0 * 0.8;
-    // vec2(
-    //     uv0.x + (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0),
-    //     uv0.y - (sin(frx_renderSeconds / 1.0) / 2.0 + frx_renderSeconds / 1.0)
-    // ) * 0.3;
-
-    //uv = floor(uv * 116.0) / 116.0;
     
     float centerNoise = waterHeightNoise(uv);
     uv = fmn_parallaxMapping(uv, centerNoise * 4.0);
@@ -75,15 +75,16 @@ void frx_materialFragment() {
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
             float offset = 1e-2;
-            float wavesStrength = mix(0.05, 1.0, frx_fragLight.y);
+            float wavesStrength = mix(0.05, 0.75, frx_fragLight.y);
+            //centerNoise *= wavesStrength;
 
             float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
-            float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
+            //float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
             float height3 = waterHeightNoise(uv + vec2(0.0, offset));
-            float height4 = waterHeightNoise(uv - vec2(0.0, offset));
+            //float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-            float deltaX = ((height2 - height1) / offset) * wavesStrength;
-            float deltaY = ((height4 - height3) / offset) * wavesStrength;
+            float deltaX = ((-centerNoise + height1) / (offset * 0.5)) * wavesStrength;
+            float deltaY = ((-centerNoise + height3) / (offset * 0.5)) * wavesStrength;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             
@@ -91,8 +92,8 @@ void frx_materialFragment() {
             frx_fragNormal = normalize(frx_fragNormal);
         #else
             float height = waterHeightNoise(uv);
-            frx_fragNormal = normalize(cross(dFdx(frx_vertex.xyz - vec3(0.0, height, 0.0)), dFdy(frx_vertex.xyz - vec3(0.0, height, 0.0))))
-                            *mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
+            frx_fragNormal = normalize(cross(dFdx(frx_vertex.xyz - vec3(0.0, height, 0.0)), dFdy(frx_vertex.xyz - vec3(0.0, height, 0.0)))) * tbn;
+                            
         #endif
 
         frx_fragReflectance = 0.05;
