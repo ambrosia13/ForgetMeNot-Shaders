@@ -47,7 +47,9 @@ void frx_materialFragment() {
         frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
     #endif
 
-    frx_fragColor.rgb *= 0.5;
+    #ifdef INTERNAL_MATERIALS
+        frx_fragColor.rgb *= 0.5;
+    #endif
 
     #if LUMI_PBR_API >= 8
         frx_fragColor.rgb *= 2.0; // I only want to darken ice in forget-me-not shaders
