@@ -71,55 +71,57 @@ vec3 blend( vec3 dst, vec4 src ) {
 }
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
-    float worldTime = frx_worldDay + frx_worldTime;
-    worldTime *= 0.1;
+    // float worldTime = frx_worldDay + frx_worldTime;
+    // worldTime *= 0.1;
 
-    // 0.3 to 0.7
-    float coverageBias = 0.5;
+    // // 0.3 to 0.7
+    // float coverageBias = 0.5;
 
-    // 0.2 to 0.35
-    float mistiness = 0.2;
+    // // 0.2 to 0.35
+    // float mistiness = 0.2;
 
-    // 1.3 to 3.3
-    float irregularity = 1.3;
+    // // 1.3 to 3.3
+    // float irregularity = 1.3;
 
-    // 0.0 to 2.0
-    float windWispyness = 0.0;
+    // // 0.0 to 2.0
+    // float windWispyness = 0.0;
 
-    // 0.5 to 1.0
-    float density = 1.0;
+    // // 0.5 to 1.0
+    // float density = 1.0;
 
-    #ifdef DYNAMIC_WEATHER
-        coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + fmn_time / 60.0) * 0.2;
-        mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.15 + 0.15;
-        //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
-        //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
-        density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.25 - 0.25;
-    #endif
+    // #ifdef DYNAMIC_WEATHER
+    //     coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + fmn_time / 60.0) * 0.2;
+    //     mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.15 + 0.15;
+    //     //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
+    //     //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
+    //     density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.25 - 0.25;
+    // #endif
 
-    coverageBias = clamp(coverageBias, 0.3, 0.7);
+    // coverageBias = clamp(coverageBias, 0.3, 0.7);
 
-    coverageBias = mix(coverageBias, 0.35, frx_smoothedRainGradient);
-    coverageBias = mix(coverageBias, 0.2, frx_smoothedThunderGradient);
-    mistiness = mix(mistiness, 0.3, frx_smoothedRainGradient);
-    float lowerBound = coverageBias;
-    float upperBound = coverageBias + mistiness;
+    // coverageBias = mix(coverageBias, 0.35, frx_smoothedRainGradient);
+    // coverageBias = mix(coverageBias, 0.2, frx_smoothedThunderGradient);
+    // mistiness = mix(mistiness, 0.3, frx_smoothedRainGradient);
+    // float lowerBound = coverageBias;
+    // float upperBound = coverageBias + mistiness;
     
-    if(windWispyness > 0.0) plane.x += windWispyness * fbmHash(plane.yy * 0.3, 3, 0.01);
+    // if(windWispyness > 0.0) plane.x += windWispyness * fbmHash(plane.yy * 0.3, 3, 0.01);
 
-    float noiseLocal = mix(smoothHash(plane * irregularity + fmn_time / 40.0), smoothHash(plane * irregularity + fmn_time / 60.0 + 10.0), 0.5);
-    float clouds = (smoothstep(lowerBound + 0.2 * noiseLocal, upperBound + 0.2 * noiseLocal, fbmHash(plane, octaves, 0.001)));
+    // float noiseLocal = mix(smoothHash(plane * irregularity + fmn_time / 40.0), smoothHash(plane * irregularity + fmn_time / 60.0 + 10.0), 0.5);
+    // float clouds = (smoothstep(lowerBound + 0.2 * noiseLocal, upperBound + 0.2 * noiseLocal, fbmHash(plane, octaves, 0.001)));
 
-    return clouds * ((octaves + 1.0) / octaves);
+    // return clouds * ((octaves + 1.0) / octaves);
 
-    // float noiseLocal = fbmHash(plane * 2.0, octaves, 0.001);
-    // float n2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
+    float noiseLocal = fbmHash(plane * 2.0, octaves, 0.001);
+    float n2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
 
-    // float a = smoothstep(0.7, 0.8, noiseLocal) * ((octaves + 1.0) / octaves);
-    // float b = smoothstep(0.5, 0.7, n2) * ((octaves + 1.0) / octaves);
-    // float x = smoothHash(plane) * 0.5 + 0.5;
+    float a = smoothstep(0.7, 0.9, noiseLocal) * ((octaves + 1.0) / octaves);
+    float b = smoothstep(0.5, 0.9, n2) * ((octaves + 1.0) / octaves);
+    float x = smoothHash(plane) * 0.5 + 0.5;
 
-    // return mix(a, b, x);
+    return mix(a, b, x);
+
+    //return smoothstep(0.5, 0.9, fbmHash(plane * 2.0, octaves, 0.001));
 }
 float sampleCirrusCloud(in vec2 plane, in int octaves) {
     plane *= 2.0;
@@ -237,7 +239,8 @@ void main() {
 
     vec3 skyLightColor = normalize(getSkyColor(frx_skyLightVector)) * (skyIlluminance);
     skyLightColor = mix(skyLightColor, normalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
-    //skyLightColor *= mix(vec3(1.0), vec3(0.2, 0.5, 2.0), (1.0 - frx_skyLightTransitionFactor) * smoothstep(-0.5, 0.5, dot(viewDir, getMoonVector())));
+    skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
+    skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
 
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -364,6 +367,8 @@ void main() {
     aoFactor = mix(aoFactor, 1.0, shadowMap);
 
     vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
+    upColor = mix(upColor, vec3(frx_luminance(upColor)), 0.5 * sqrt(clamp01(getMoonVector().y)));
+
     vec3 ambientColor = mix(vec3(0.01), (2.0 + 1.0 * lambertFactor) * (upColor), skyLight);
     if(frx_worldIsEnd == 1) {
         // Never thought I'd ever name a variable NdotPlanet
@@ -474,11 +479,11 @@ void main() {
                     //lightOpticalDepth /= 2.0;
 
                     transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
-                    scattering = vec3(exp2(-lightOpticalDepth * (2.0 - 1.0 * frx_skyLightVector.y) * (2.5 + 2.5 * frx_smoothedRainGradient))) * mie;
+                    scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 2.5 * frx_smoothedRainGradient))) * mie;
                     //scattering = mix(scattering, vec3(0.1 * mie), 1.0 - frx_skyLightTransitionFactor);
 
-                    transmittance = mix(transmittance, 0.75 + 0.25 * transmittance, tdata.z);
-                    scattering *= frx_skyLightTransitionFactor;
+                    //transmittance = mix(transmittance, 0.75 + 0.25 * transmittance, tdata.z);
+                    //scattering *= frx_skyLightTransitionFactor;
 
                     scattering *= (1.0 - transmittance);
 
@@ -790,7 +795,7 @@ void main() {
     #endif
 
     #ifdef BORDER_FOG
-        //if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
+        if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
     #endif
 
     #ifdef frx_darknessEffectFactor
