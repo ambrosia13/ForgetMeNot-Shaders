@@ -337,7 +337,7 @@ void main() {
                 ssgiNormal = texture(u_normal, finalSSGICoords.xy).rgb * 2.0 - 1.0;
             }
 
-            ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
+            ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
             if(f0.r < 0.99) main_color *= vec4(ssgi, 1.0);
 
         #endif
@@ -533,7 +533,7 @@ void main() {
             float stepLength = 1.0 / SSR_STEPS;
 
             reflectColor = mix(
-                frx_smoothedEyeBrightness.y < 15.0 / 16.0 ? (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) : vec3(0.05),
+                frx_smoothedEyeBrightness.y < -1.0 / 16.0 ? (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) : vec3(0.00),
                 getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, roughNormal)),
                 clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
             );
@@ -586,7 +586,7 @@ void main() {
             if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
-            reflectColor = mix(reflectColor.rgb, lastFrameSuccess.rgb, 0.999 * (1.0 - step(0.001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
+            reflectColor = mix(reflectColor.rgb, lastFrameSuccess.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
 
             // if(frx_cameraInWater == 1 && acos(dot(normal, -viewDir)) * (180 / PI) > 60.0) {
             //     reflectance = vec3(1.0);

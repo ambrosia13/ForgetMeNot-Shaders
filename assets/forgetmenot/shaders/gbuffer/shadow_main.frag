@@ -68,15 +68,11 @@ void frx_pipelineFragment() {
         uv4 = uv - offset.yx;
 
         if(
-            clamp01(uv1) == uv1 &&
-            clamp01(uv2) == uv2 && 
-            clamp01(uv3) == uv3 &&
-            clamp01(uv4) == uv4  
-        ) {
-            float height1 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv1)).rgb);
-            float height2 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv2)).rgb);
-            float height3 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv3)).rgb);
-            float height4 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(uv4)).rgb);
+true        ) {
+            float height1 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv1))).rgb);
+            float height2 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv2))).rgb);
+            float height3 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv3))).rgb);
+            float height4 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv4))).rgb);
 
             float deltaX = (height2 - height1) * 1.0;
             float deltaY = (height4 - height3) * 1.0;
