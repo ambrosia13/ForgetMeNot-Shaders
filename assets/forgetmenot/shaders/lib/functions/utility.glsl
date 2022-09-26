@@ -345,12 +345,6 @@ vec2 diskSampling(float i, float n, float phi){
     return sincos(theta * TAU * n * 1.618033988749894) * theta;
 }
 
-// From lumi lights by spiralhalo
-float linearizeDepth(float depth) {
-	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
-	const float farZ = 1.0;
-	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
-}
 
 #ifndef VERTEX_SHADER
     vec3 goldNoise3d() {
@@ -368,6 +362,15 @@ float linearizeDepth(float depth) {
             gold_noise(gl_FragCoord.xy, seed),
             gold_noise(gl_FragCoord.xy, seed + 1.0),
             gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
+    vec3 goldNoise3d_noiseless(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(0.5), seed),
+            gold_noise(vec2(0.5), seed + 1.0),
+            gold_noise(vec2(0.5), seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
         return r;

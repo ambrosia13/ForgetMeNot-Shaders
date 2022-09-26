@@ -6,6 +6,7 @@ uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
 
+
 #include forgetmenot:atmospherics
 #include forgetmenot:shadows
 #include forgetmenot:lighting
@@ -20,6 +21,14 @@ uniform int frxu_lod;
 #endif
 
 #include forgetmenot:shaders/lib/api_includes.glsl 
+
+
+// From lumi lights by spiralhalo
+float linearizeDepth(float depth) {
+	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
+	const float farZ = 1.0;
+	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
+}
 
 //#define frx_renderSeconds (float(frx_renderFrames))
 //#define frx_renderSeconds 600.0

@@ -237,7 +237,7 @@ void main() {
 
     float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
-    vec3 skyLightColor = normalize(getSkyColor(frx_skyLightVector)) * (skyIlluminance);
+    vec3 skyLightColor = normalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
     skyLightColor = mix(skyLightColor, normalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
     skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
     skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
@@ -265,12 +265,8 @@ void main() {
     vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
-    // float shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
-    // main_color.rgb *= shadowFactor;
-
     float shadowMap;
     bool inShadowMap = texture(u_shadow_tex, vec3(shadowScreenPos.xy, cascade)).r < 1.0;
-    //inShadowMap = clamp01(shadowScreenPos.xyz) == shadowScreenPos.xyz;
 
     float penumbraSize = 2.0;
     float dither = (interleaved_gradient());
@@ -355,19 +351,23 @@ void main() {
     shadowMap = mix(shadowMap, 0.0, 1.0 - frx_skyLightTransitionFactor);
     shadowMap = mix(0.0, shadowMap, frx_worldIsOverworld);
 
-    float skyLightIlluminance = frx_luminance(skyLightColor);
-    float directLightIlluminance = skyIlluminance * 8.0;
-    float ambientLightIlluminance = skyIlluminance;
-
     vec3 lightmap = vec3(0.0);
-    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 3.0, 3, u_normal).r;
 
-    float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
-    float aoFactor = min(pow(rtao, 1.5), ao);
+    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 4, u_normal).r;
+    //float rtao = texture(u_ambient, texcoord.xy).r;
+    float aoFactor = min(pow(rtao, 2.0), ao);
     aoFactor = mix(aoFactor, 1.0, shadowMap);
 
+    float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
+
     vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
-    upColor = mix(upColor, vec3(frx_luminance(upColor)), 0.5 * sqrt(clamp01(getMoonVector().y)));
+    //upColor *= frx_luminance(getSkyColor(vec3(0.0, 1.0, 0.0), 0.0)) / frx_luminance(upColor);
+    // for(int i = 0; i < 8; i++) {
+    //     vec3 sampleDir = goldNoise3d_noiseless(i);
+    //     upColor += getSkyColor(normalize(normal + sampleDir), 0.0);
+    // }
+    // upColor /= 8;
+    //upColor = mix(upColor, vec3(frx_luminance(upColor)), 0.5 * sqrt(clamp01(getMoonVector().y)));
 
     vec3 ambientColor = mix(vec3(0.01), (2.0 + 1.0 * lambertFactor) * (upColor), skyLight);
     if(frx_worldIsEnd == 1) {
@@ -381,10 +381,26 @@ void main() {
 
     vec3 ambientLight = ambientColor * aoFactor;
 
-    lightmap.rgb += mix(vec3(0.0), skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)), clamp01(shadowMap));
-    lightmap.rgb += mix(vec3(0.0), ambientLight, 1.0 - clamp01(shadowMap));
+    // lightmap.rgb += mix(vec3(0.0), skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)), clamp01(shadowMap));
+    // lightmap.rgb += mix(vec3(0.0), ambientLight, 1.0 - clamp01(shadowMap));
 
+
+    lightmap.rgb += ambientLight;
+    lightmap += skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
+    
     lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * aoFactor, blockLight * blockLight);
+
+    // handheld light
+    float heldLightFactor = 1.0 / max(1.0, pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxViewSpacePos + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxViewSpacePos + frx_cameraPos));
+    heldLightFactor *= mix(clamp01(dot(-normal, normalize((maxViewSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxViewSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+    heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxViewSpacePos + frx_cameraPos));
+
+    // heldLightFactor *= 13.0;
+    // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
+    //heldLightFactor = clamp01(heldLightFactor);
+    if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * 2.2 * aoFactor, vec3(2.2))), heldLightFactor);
+
+    lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * aoFactor, frx_effectNightVision * frx_effectModifier);
 
     if(f0.r < 0.999) main_color.rgb *= mix(lightmap, vec3(1.0), emission);
 
@@ -621,7 +637,7 @@ void main() {
                             float binaryStepLength = stepLength * 0.5;
                             reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
                             for(int i = 0; i < 4; i++) {
-                                reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, depthLod).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                                reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
                                 binaryStepLength *= 0.5;
                             }
 

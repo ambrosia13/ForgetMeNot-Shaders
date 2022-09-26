@@ -69,7 +69,6 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
     return clipAABB(prevColor, minColor, maxColor);
 }
 
-
 void main() {
      vec3 ambientLight = vec3(0.0);
      float noHit = 1.0;
@@ -93,53 +92,46 @@ void main() {
 
           vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
-          for(int i = 0; i < RTAO_STEPS; i++) {
-               stepLength = min(stepLength, 1.0 / RTAO_STEPS);
 
-               rayScreen += rayScreenDir * stepLength * (bn.r * 0.5 + 0.5);
+          if(rayScreenDir.z < 0.0) {
+               for(int i = 0; i < RTAO_STEPS; i++) {
+                    stepLength = min(stepLength, 1.0 / RTAO_STEPS);
 
-               if(clamp01(rayScreen) != rayScreen) {
-                    break;
-               } else {
-                    float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
+                    rayScreen += rayScreenDir * stepLength * (bn.r * 0.5 + 0.5);
 
-                    if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.001) {
-                         noHit *= 0.0;
+                    if(clamp01(rayScreen) != rayScreen) {
                          break;
+                    } else {
+                         float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
+
+                         if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.001) {
+                              noHit *= 0.0;
+                              break;
+                         }
                     }
+
+                    stepLength *= 2.0;
                }
-
-               stepLength *= 2.0;
           }
-
           //noHit = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - noHit));
      #else
-          #define SSAO_SAMPLES 4
+          vec3 random3D = goldNoise3d();
+          vec3 tangent = normalize(random3D - normal * dot(random3D, normal));
+          vec3 bitangent = cross(normal, tangent);
+          mat3 tbn = mat3(tangent, bitangent, normal);
 
-          vec3 rayPos = setupViewSpacePos(coordJittered, depth);
-          vec3 rayScreen = vec3(coordJittered, depth);
+          vec3 scenePos = setupViewSpacePos(texcoord, depth);
 
-          vec3 rayDir = normalize(normal + goldNoise3d());
-          // vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
+          float occlusion = 0.0;
+          for(int i = 0; i < 10; i++) {
+               vec3 samplePos = tbn * goldNoise3d(i);
+               samplePos = scenePos + samplePos * 0.5;
 
-          float stepLength = 0.2 / SSAO_SAMPLES;
-
-          for(int i = 0; i < SSAO_SAMPLES; i++) {
-               vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
-
-               vec3 samplePos = rayScreen + rayScreenDir * stepLength * interleaved_gradient(i);
-
-               if(clamp01(samplePos) != samplePos) {
-                    break;
-               } else {
-                    float depthQuery = textureLod(u_depth_mipmaps, samplePos.xy, 2).r;
-
-                    if(samplePos.z > depthQuery && abs(linearizeDepth(samplePos.z) - linearizeDepth(depthQuery)) < 0.001) {
-                         noHit *= 0.0;
-                         break;
-                    }
-               }
+               vec3 screenPos = viewSpaceToScreenSpace(samplePos);
+               occlusion += float(screenPos.z > texture(u_depth_mipmaps, screenPos.xy).r);
           }
+
+          noHit = 1.0 - occlusion;
      #endif
 
 
@@ -151,9 +143,9 @@ void main() {
      
      vec3 previousColor = texture(u_history, lastScreenPos.xy).rgb;
 
-     if(clamp01(lastScreenPos.xy) == lastScreenPos.xy)
+     //if(clamp01(lastScreenPos.xy) == lastScreenPos.xy)
      //ambientLight = mix(ambientLight, normalAwareBlur(u_history, lastScreenPos.xy, 2.0, 3, u_normal).rgb, taaBlendFactor(texcoord, lastScreenPos.xy));
-     ambientLight = mix(ambientLight, previousColor, 0.9);
+     //ambientLight = mix(ambientLight, previousColor, 0.9);
 
      fragColor = vec4(ambientLight, 1.0);
 }

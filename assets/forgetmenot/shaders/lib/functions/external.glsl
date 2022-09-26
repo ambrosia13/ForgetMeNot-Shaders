@@ -127,6 +127,40 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
 	}
   return col / max(0.01, weight);
 }
+vec4 normalAndDepthAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2D normal, sampler2D depth) {
+  vec3 centerNormal = texture(normal, uv).rgb;
+  vec4 centerColor = texture(image, uv);
+  float centerDepth = linearizeDepth(texture(normal, uv).r);
+
+	vec2 texel = 1.0 / frxu_size;
+
+  float weight = 0.0;
+  vec4 col = vec4(0.0);
+
+  float d = 1.0;
+  vec2 samp = vec2(radius) / float(quality);
+
+	mat2 ang = mat2(0.73736882209777832, -0.67549037933349609, 0.67549037933349609, 0.73736882209777832);
+
+
+	for(int i = 0; i < quality * quality; i++) {
+    d += 1.0 / d;
+    samp *= ang;
+    vec2 uv = uv + samp * (d - 1.0) * texel;
+    vec3 currentNormal = texture(normal, uv).rgb;
+    float depth = linearizeDepth(texture(depth, uv).r);
+
+    float w = 1.0 / max(0.01, d - 1.0);
+    if(all(equal(currentNormal, centerNormal)) && abs(depth - centerDepth) < 0.01) {
+      weight += w;
+      col += texture(image, uv) * w;
+    } else {
+      col += centerColor * w;
+      weight += w;  
+    }
+	}
+  return col / max(0.001, weight);
+}
 float shadowFilter(sampler2DArrayShadow shadowMap, vec3 shadowPos, int cascade, float radius, int samples) {
 	vec2 texel = 1.0 / vec2(1024.0);
 
