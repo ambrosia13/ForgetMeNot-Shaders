@@ -227,6 +227,17 @@ void main() {
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
     vec3 viewDir = normalize(setupViewSpacePos(texcoord, 1.0));
 
+    vec2 clipPos = texcoord * 2.0 - 1.0;
+    clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
+    vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
+    vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
+    vec3 jitteredViewDir = normalize(jitteredViewPos);
+
+    if(pbrData.g > 0.5 && frx_cameraInWater == 1) {
+        vec3 transNormal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
+        jitteredViewDir = refract(jitteredViewDir, transNormal, 1.33);
+    }
+
     vec3 tdata = getTimeOfDayFactors();
 
     vec3 sunVector = getSunVector();
@@ -412,14 +423,6 @@ void main() {
     vec3 skyColor = getSkyColor(viewDir);
 
     if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxViewSpacePos)) > 0.0) {
-        vec2 clipPos = texcoord * 2.0 - 1.0;
-        clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
-        vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
-        vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
-        vec3 jitteredViewDir = normalize(jitteredViewPos);
-
-        if(pbrData.g > 0.5 && frx_cameraInWater == 1) jitteredViewDir = refract(jitteredViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.25);
-
         skyColor = getSkyColorDetailed(jitteredViewDir, minViewSpacePos);
 
         vec3 viewPos = maxViewSpacePos;
@@ -580,6 +583,7 @@ void main() {
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
 
+    vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
             vec3 reflectionCoord;
@@ -596,19 +600,19 @@ void main() {
             if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
             vec3 viewSpaceReflectionDir = reflect(viewDir, microfacetNormal);
-            vec2 view = rotate2D(viewSpaceReflectionDir.xz, atan(frx_cameraView.x, -frx_cameraView.z));
 
             vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
 
             float stepLength = 1.0 / SSR_STEPS;
 
-            vec3 reflectColor = mix(
+            reflectColor = mix(
                 (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
                 getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, microfacetNormal)),
                 clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
             );
+            reflectColor = mix(reflectColor, vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y), frx_cameraInWater);
             
-            vec3 reflectance = vec3(0.0);
+            reflectance = vec3(0.0);
             if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir))) * smoothstep(-0.9, 0.0, f0.r);
             if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
@@ -644,38 +648,7 @@ void main() {
                             break;
                         }
                     }
-                    //stepLength *= 1.06;
                 }
-                // int lod = 2;
-
-                // for(int i = 0; i < 512; i++) {
-                //     if(clamp01(screenPos.xy) != screenPos.xy) break;
-
-                //     float depthQuery = textureLod(u_depth_mipmaps, screenPos.xy, lod).r;
-
-                //     if(screenPos.z > depthQuery) { // intersection in current lod, check lower lod
-                //         lod--;
-                //         float stepSize = log2(float(lod)) / min(frxu_size.x, frxu_size.y);
-                //         screenPos += screenSpaceReflectionDir * stepSize * (interleaved_gradient(i) * 0.5 + 0.5);
-
-                //         if(lod == 0) {
-                //             reflectionCoord = screenPos;
-                //             ssrHit = true;
-
-                //             // float binaryStepLength = stepSize * 0.5;
-                //             // reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
-                //             // for(int i = 0; i < 4; i++) {
-                //             //     reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
-                //             //     binaryStepLength *= 0.5;
-                //             // }
-
-                //             break;
-                //         }
-                //     } else {
-                //         float stepSize = log2(float(lod)) / min(frxu_size.x, frxu_size.y);
-                //         screenPos += screenSpaceReflectionDir * stepSize;
-                //     }
-                // }
             }
 
             if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
@@ -686,15 +659,22 @@ void main() {
             if(ssrHit) reflectColor = textureLod(u_previous_frame, reflectionCoord.xy, 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
-            // if(frx_cameraInWater == 1 && acos(dot(normal, -viewDir)) * (180 / PI) > 60.0) {
-            //     reflectance = vec3(1.0);
+            // if(frx_cameraInWater == 1) {
+            //     reflectance = vec3(0.0);
 
-            //     if(!ssrHit) reflectColor = vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y);
+            //     reflectColor = vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y);
             // }
 
-            composite = mix(composite, reflectColor, reflectance);
-            //composite = normal;
         }
+        if((acos(dot(normal, -viewDir)) * (180 / PI) > 48.60172336679899) && frx_cameraInWater == 1 && pbrData.g > 0.5) {
+            reflectance = vec3(1.0);
+
+            //reflectColor = vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y);
+            composite = vec3(1.0, 0.0, 0.0);
+        }
+
+        composite = mix(composite, reflectColor, reflectance);
+        //composite = normal;
 
         #ifdef RAYTRACED_HELD_LIGHT
             const int HELD_LIGHT_STEPS = 10;
