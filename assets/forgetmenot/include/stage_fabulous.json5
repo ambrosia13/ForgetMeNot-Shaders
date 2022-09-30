@@ -25,7 +25,7 @@
         {
             name: "ambient_history",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "R8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -47,7 +47,29 @@
         {
             name: "ambient",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "R8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "ambient_filter",
+            lod: 0,
+            internalFormat: "R8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -154,6 +176,14 @@
             ]
         },
         {
+            name: "ambient_filter",
+            colorAttachments: [
+                {
+                    image: "ambient_filter", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
             name: "sort",
             colorAttachments: [
                 {
@@ -185,7 +215,9 @@
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_history.frag",
             samplers: [
-                "u_history"
+                "u_history",
+                "u_normal",
+                "u_depth"
             ]
         },
         {
@@ -198,6 +230,16 @@
                 "u_depth_mipmaps",
                 "u_history",
                 "u_blue_noise"
+            ]
+        },
+        {
+            name: "ambient_filter",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_filter.frag",
+            samplers: [
+                "u_rtao",
+                "u_normal",
+                "u_depth"
             ]
         },
         {
@@ -278,7 +320,9 @@
                 program: "ambient_history",
                 framebuffer: "ambient_history",
                 samplerImages: [
-                    "ambient"
+                    "ambient",
+                    "composite_normal",
+                    "quarter_res_depth"
                 ]
             },
             {
@@ -291,6 +335,16 @@
                     "quarter_res_depth",
                     "ambient_history",
                     "forgetmenot:textures/blue_noise.png"
+                ]
+            },
+            {
+                name: "ambient_filter",
+                program: "ambient_filter",
+                framebuffer: "ambient_filter",
+                samplerImages: [
+                    "ambient",
+                    "composite_normal",
+                    "quarter_res_depth"
                 ]
             },
             {
@@ -317,7 +371,7 @@
                     "pbr_data",
                     "material_data",
                     "light_data",
-                    "ambient",
+                    "ambient_filter",
 
                     "bloom_downsample",
                     "quarter_res_depth",

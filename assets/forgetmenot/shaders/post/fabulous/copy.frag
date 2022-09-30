@@ -15,10 +15,10 @@ void main() {
 
     // vec2 coord;
     // if(composite.a > 0.5) {
-    //     vec3 viewDir = normalize(setupViewSpacePos(texcoord, 1.0));
+    //     vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
     //     viewDir = refract(viewDir, normal, 0.99);
 
-    //     coord = viewSpaceToScreenSpace(viewDir).xy;
+    //     coord = sceneSpaceToScreenSpace(viewDir).xy;
     //     composite = texture(u_composite, coord);
     // }
 

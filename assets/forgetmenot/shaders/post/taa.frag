@@ -68,9 +68,9 @@ void main() {
     color = texture(u_color, texcoord);
     color.rgb = toneMap(color.rgb);
     
-    vec3 viewPos = setupViewSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
+    vec3 viewPos = setupSceneSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(viewPos + positionDifference);
+    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
     previousColor = texture(u_previous_frame, lastScreenPos.xy);
     previousColor.rgb = toneMap(previousColor.rgb);
 

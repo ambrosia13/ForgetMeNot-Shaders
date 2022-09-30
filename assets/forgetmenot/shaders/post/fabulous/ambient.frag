@@ -72,10 +72,10 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
 void main() {
      vec3 ambientLight = vec3(0.0);
      float noHit = 1.0;
-     vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
+     vec2 coordJittered = texcoord;//((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
 
      float depth = textureLod(u_depth_mipmaps, coordJittered, 0).r;
-     vec3 normal = normalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
+     vec3 normal = frx_normalModelMatrix * normalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
 
      #define RTAO
      #ifdef RTAO
@@ -93,7 +93,7 @@ void main() {
           vec3 bn = getBlueNoise(frx_renderFrames & 50u);
 
 
-          if(rayScreenDir.z < 0.0) {
+          if(depth < 1.0 && (rayPos + rayDir).z < 0.0) {
                for(int i = 0; i < RTAO_STEPS; i++) {
                     stepLength = min(stepLength, 1.0 / RTAO_STEPS);
 
@@ -120,14 +120,14 @@ void main() {
           vec3 bitangent = cross(normal, tangent);
           mat3 tbn = mat3(tangent, bitangent, normal);
 
-          vec3 scenePos = setupViewSpacePos(texcoord, depth);
+          vec3 scenePos = setupSceneSpacePos(texcoord, depth);
 
           float occlusion = 0.0;
           for(int i = 0; i < 10; i++) {
                vec3 samplePos = tbn * goldNoise3d(i);
                samplePos = scenePos + samplePos * 0.5;
 
-               vec3 screenPos = viewSpaceToScreenSpace(samplePos);
+               vec3 screenPos = sceneSpaceToScreenSpace(samplePos);
                occlusion += float(screenPos.z > texture(u_depth_mipmaps, screenPos.xy).r);
           }
 
@@ -137,15 +137,15 @@ void main() {
 
      ambientLight += 1.0 * noHit;
 
-     vec3 viewPos = setupViewSpacePos(coordJittered, depth);
+     vec3 viewPos = setupSceneSpacePos(coordJittered, depth);
      vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-     vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(viewPos + positionDifference);
+     vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
      
      vec3 previousColor = texture(u_history, lastScreenPos.xy).rgb;
 
-     //if(clamp01(lastScreenPos.xy) == lastScreenPos.xy)
+     if(clamp01(lastScreenPos.xy) == lastScreenPos.xy)
      //ambientLight = mix(ambientLight, normalAwareBlur(u_history, lastScreenPos.xy, 2.0, 3, u_normal).rgb, taaBlendFactor(texcoord, lastScreenPos.xy));
-     //ambientLight = mix(ambientLight, previousColor, 0.9);
+     ambientLight = mix(ambientLight, previousColor, 0.9);
 
      fragColor = vec4(ambientLight, 1.0);
 }

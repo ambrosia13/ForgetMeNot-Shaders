@@ -186,7 +186,7 @@ void main() {
     vec3 coords = vec3(texcoord, 0.0);
     #define REFRACTION
     #ifdef REFRACTION
-        // vec3 rViewDir = normalize(setupViewSpacePos(texcoord, 1.0));
+        // vec3 rViewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
         // rViewDir = refract(rViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.1);
 
         float doRefraction = 0.0;
@@ -223,14 +223,17 @@ void main() {
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
     vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
+
+    vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
+    vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
-    vec3 viewDir = normalize(setupViewSpacePos(texcoord, 1.0));
+    vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
 
     vec2 clipPos = texcoord * 2.0 - 1.0;
     clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
     vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
-    vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
+    vec3 jitteredViewPos = setupSceneSpacePos(newTexcoordJittered, 1.0);
     vec3 jitteredViewDir = normalize(jitteredViewPos);
 
     if(pbrData.g > 0.5 && frx_cameraInWater == 1) {
@@ -270,7 +273,7 @@ void main() {
 
     float NdotL = dot(normal, frx_skyLightVector);
 
-    vec4 shadowViewPos = frx_shadowViewMatrix * vec4(maxViewSpacePos, 1.0);
+    vec4 shadowViewPos = frx_shadowViewMatrix * vec4(maxSceneSpacePos, 1.0);
     int cascade = selectShadowCascade(shadowViewPos);
 
     vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
@@ -328,14 +331,17 @@ void main() {
         vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
         shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
     }
+    
     vec3 shadowRayPos = vec3(texcoord, max_depth);
-    vec3 shadowRayDir = normalize(viewSpaceToScreenSpace(maxViewSpacePos + frx_skyLightVector) - shadowRayPos);
+    vec3 shadowRayViewPos = setupViewSpacePos(texcoord, max_depth);
+    vec3 shadowRayViewDir = frx_normalModelMatrix * frx_skyLightVector;
+    vec3 shadowRayDir = normalize(viewSpaceToScreenSpace(shadowRayViewPos + shadowRayViewDir) - shadowRayPos);
     
     // almost pixel perfect raytrace
     float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
 
     float shadowRayDither = getBlueNoise().x * 0.3 + 0.7;
-    if(sssAmount > 0.04 || NdotL > 0.0) {
+    if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
         for(int i = 0; i < 12; i++) {
             shadowRayPos += shadowRayDir * shadowRayStep * shadowRayDither;
 
@@ -344,7 +350,7 @@ void main() {
             } else {
                 float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
 
-                if(max_depth > 0.94 && shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (length(maxViewSpacePos) < 128.0 ? (mix(0.0001, 0.0005, sssAmount)) : 0.05)) {
+                if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (length(maxSceneSpacePos) < 128.0 ? (mix(0.0001, 0.0005, sssAmount)) : 0.05)) {
                     if(sssAmount < 0.04 || !inShadowMap)  {
                         shadowMap *= 0.0;
                         break;
@@ -364,7 +370,7 @@ void main() {
 
     vec3 lightmap = vec3(0.0);
 
-    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 4, u_normal).r;
+    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 3, u_normal, u_particles_depth).r;
     //float rtao = texture(u_ambient, texcoord.xy).r;
     float aoFactor = min(pow(rtao, 2.0), ao);
     aoFactor = mix(aoFactor, 1.0, shadowMap);
@@ -402,9 +408,9 @@ void main() {
     lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * aoFactor, blockLight * blockLight);
 
     // handheld light
-    float heldLightFactor = 1.0 / max(1.0, pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxViewSpacePos + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxViewSpacePos + frx_cameraPos));
-    heldLightFactor *= mix(clamp01(dot(-normal, normalize((maxViewSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxViewSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
-    heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxViewSpacePos + frx_cameraPos));
+    float heldLightFactor = 1.0 / max(1.0, pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
+    heldLightFactor *= mix(clamp01(dot(-normal, normalize((maxSceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+    heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
 
     // heldLightFactor *= 13.0;
     // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
@@ -422,10 +428,10 @@ void main() {
 
     vec3 skyColor = getSkyColor(viewDir);
 
-    if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxViewSpacePos)) > 0.0) {
-        skyColor = getSkyColorDetailed(jitteredViewDir, minViewSpacePos);
+    if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxSceneSpacePos)) > 0.0) {
+        skyColor = getSkyColorDetailed(jitteredViewDir, minSceneSpacePos);
 
-        vec3 viewPos = maxViewSpacePos;
+        vec3 viewPos = maxSceneSpacePos;
 
     #define CLOUDS
         #ifdef CLOUDS
@@ -564,7 +570,7 @@ void main() {
     if(pbrData.g > 0.5) {
         float sunDotU = getSunVector().y;
 
-        float waterFogDistance = distance(minViewSpacePos, maxViewSpacePos); // warning: destroys underwater translucent visibility
+        float waterFogDistance = distance(minSceneSpacePos, maxSceneSpacePos); // warning: destroys underwater translucent visibility
 
         vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
         //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
@@ -579,9 +585,9 @@ void main() {
 
     vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
 
-    vec3 jitterPos = setupViewSpacePos(jitterCoord, min_depth);
+    vec3 jitterPos = setupSceneSpacePos(jitterCoord, min_depth);
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(minViewSpacePos + positionDifference);
+    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
 
     vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
@@ -593,13 +599,14 @@ void main() {
             const int depthLod = 2;
 
             vec3 screenPos = vec3(texcoord, min_depth);
+            vec3 viewSpaceDir = normalize(setupViewSpacePos(texcoord, 1.0));
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
             vec3 cosineDistribution = getBlueNoise();
-            vec3 microfacetNormal = normalize(normal + normalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
+            vec3 microfacetNormal = frx_normalModelMatrix * normalize(normal + normalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
             if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
-            vec3 viewSpaceReflectionDir = reflect(viewDir, microfacetNormal);
+            vec3 viewSpaceReflectionDir = reflect(viewSpaceDir, microfacetNormal);
 
             vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
 
@@ -607,7 +614,7 @@ void main() {
 
             reflectColor = mix(
                 (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
-                getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, microfacetNormal)),
+                getSkyColorDetailed(reflect(viewDir, microfacetNormal * frx_normalModelMatrix), reflect(minSceneSpacePos, microfacetNormal * frx_normalModelMatrix)),
                 clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
             );
             reflectColor = mix(reflectColor, vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y), frx_cameraInWater);
@@ -616,7 +623,7 @@ void main() {
             if(reflectance.r == 0.0) reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir))) * smoothstep(-0.9, 0.0, f0.r);
             if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
-            if(roughness * roughness < 0.5) {
+            if(roughness * roughness < 0.5 && (reflect(minViewSpacePos, microfacetNormal) + viewSpaceReflectionDir * stepLength).z < 0.0) {
                 for(int i = 0; i < SSR_STEPS; i++) {
                     screenPos += screenSpaceReflectionDir * stepLength * ((cosineDistribution.x * 0.5 + 0.5) * 0.5 + 0.5);
 
@@ -631,7 +638,7 @@ void main() {
                             continue;
                         }
 
-                        float lenience = max(abs((screenSpaceReflectionDir.z)) * 3.0, 0.02 / pow(length(minViewSpacePos), 2.0));
+                        float lenience = max(abs((screenSpaceReflectionDir.z)) * 3.0, 0.02 / pow(length(minSceneSpacePos), 2.0));
 
                         if(abs(lenience - (screenPos.z - depthQuery)) < lenience) {
                             //reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
@@ -653,8 +660,8 @@ void main() {
 
             if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
 
-            vec3 rView = setupViewSpacePos(reflectionCoord.xy, reflectionCoord.z);
-            reflectionCoord = lastFrameViewSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
+            vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
+            reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
 
             if(ssrHit) reflectColor = textureLod(u_previous_frame, reflectionCoord.xy, 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
@@ -681,11 +688,11 @@ void main() {
 // float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
 // heldLightFactor *= clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0))));
 
-            vec3 heldLightPos = ((minViewSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
+            vec3 heldLightPos = ((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
             vec2 seed = vec2(fmn_time);
             heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
 
-            vec3 rayPos = minViewSpacePos;
+            vec3 rayPos = minSceneSpacePos;
             vec3 rayDir = -(heldLightPos);
             float stepLength = 0.05 / HELD_LIGHT_STEPS;
 
@@ -693,14 +700,14 @@ void main() {
                 for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
                     rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
 
-                    vec3 rayScreen = viewSpaceToScreenSpace(rayPos);
+                    vec3 rayScreen = sceneSpaceToScreenSpace(rayPos);
 
                     if(clamp01(rayScreen) != rayScreen) {
                         break;
                     } else {
                         float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
 
-                        if(rayScreen.z > depthQuery && distance(rayPos, setupViewSpacePos(rayScreen.xy, depthQuery)) < 10.0) {
+                        if(rayScreen.z > depthQuery && distance(rayPos, setupSceneSpacePos(rayScreen.xy, depthQuery)) < 10.0) {
                             rtao *= 0.2 + 0.8 * frx_smoothedEyeBrightness.y;
                             break;
                         }
@@ -715,7 +722,7 @@ void main() {
 
     }
 
-    float blockDist = length(minViewSpacePos);
+    float blockDist = length(minSceneSpacePos);
     float sunDotU = getSunVector().y;
 
     #ifdef ATMOSPHERIC_FOG
@@ -750,7 +757,7 @@ void main() {
             #ifdef VOLUMETRIC_LIGHTING
                 const int VL_SAMPLES = 8;
 
-                vec3 vlPos = minViewSpacePos;
+                vec3 vlPos = minSceneSpacePos;
                 vec3 traceDir = -vlPos;
 
                 float vl = 1.0;
@@ -770,7 +777,7 @@ void main() {
                         float shadowFactor;
                         shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
 
-                        vl += (shadowFactor / VL_SAMPLES) * tanh(distance(minViewSpacePos, vlPos) / 128.0);
+                        vl += (shadowFactor / VL_SAMPLES) * tanh(distance(minSceneSpacePos, vlPos) / 128.0);
                     }
                 }
 

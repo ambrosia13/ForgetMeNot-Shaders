@@ -1,32 +1,42 @@
 // Space conversions
-vec3 setupViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = frx_inverseViewProjectionMatrix * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 viewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_viewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 sceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_viewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
-vec3 setupCleanViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupViewSpacePos(in vec2 texcoord, in float depth) {
+    vec3 screenSpacePos = vec3(texcoord, depth);
+    vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
+    vec4 temp = frx_inverseProjectionMatrix * vec4(clipSpacePos, 1.0);
+    return temp.xyz / temp.w;
+}
+vec3 viewSpaceToScreenSpace(in vec3 viewSpacePos) {
+    vec4 temp = frx_projectionMatrix * vec4(viewSpacePos, 1.0);
+    return (temp.xyz / temp.w) * 0.5 + 0.5;
+}
+vec3 setupCleanSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = frx_inverseCleanViewProjectionMatrix * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 cleanViewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_cleanViewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 cleanSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_cleanViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
-vec3 setupLastFrameViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupLastFrameSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = (frx_lastViewProjectionMatrix) * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 lastFrameViewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_lastViewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 lastFrameSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_lastViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
 
