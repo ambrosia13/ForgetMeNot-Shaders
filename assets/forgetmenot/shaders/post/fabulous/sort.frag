@@ -273,6 +273,7 @@ void main() {
             bool ssgiHit = false;
 
             vec3 ssgiNormal = normal;
+            float ssgiDepth = min_depth;
 
             for(int b = 0; b < SSGI_BOUNCES; b++) {
                 vec3 rayPos = minViewSpacePos;
@@ -280,7 +281,7 @@ void main() {
                 //success = normalize(rayDir + noise3d(1.0) * 0.25);
                 float stepLength = 1.0 / SSGI_STEPS;
 
-                vec3 rayScreen = vec3(texcoord, min_depth);
+                vec3 rayScreen = vec3(texcoord, ssgiDepth);
 
                 vec3 screenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
 
@@ -301,7 +302,7 @@ void main() {
                     } else {
                         float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
 
-                        if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.05) {
+                        if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.001) {
                             finalSSGICoords = rayScreen;
                             ssgiHit = true;
                             break;
@@ -335,6 +336,7 @@ void main() {
                 ssgi = mix(ssgi, vec3(1.0), clamp01(main_color.a));
 
                 ssgiNormal = texture(u_normal, finalSSGICoords.xy).rgb * 2.0 - 1.0;
+                ssgiDepth = texture(u_translucent_depth, finalSSGICoords.xy).r;
             }
 
             ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
