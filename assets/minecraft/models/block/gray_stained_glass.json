@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "minecraft:block/gray_stained_glass",
+    "marker": "minecraft:block/marker_gray_stained_glass"
+  }
+}

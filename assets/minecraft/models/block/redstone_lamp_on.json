@@ -1,0 +1,1 @@
+{"parent":"minecraft:block/cube_all","textures":{"all":"minecraft:block/redstone_lamp_on","marker":"minecraft:block/marker_redstone_lamp"},"elements":[{"from":[1,1,1],"to":[15,15,15],"faces":{"up":{"texture":"#marker"},"down":{"texture":"#marker"}}}]}

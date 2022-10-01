@@ -431,6 +431,14 @@ void main() {
 
     vec3 skyColor = getSkyColor(viewDir);
 
+    float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
+    float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
+
+    float cloudsG = 0.8;
+    float phaseMie = max(0.0, henyeyGreenstein(LdotV, atmosphereG) + henyeyGreenstein(nLdotV, atmosphereG));
+
+    vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
+
     if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxSceneSpacePos)) > 0.0) {
         skyColor = getSkyColorDetailed(jitteredViewDir, minSceneSpacePos);
 
@@ -456,13 +464,6 @@ void main() {
 
 
 
-                    float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
-                    float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
-
-                    float cloudsG = 0.8;
-                    float phaseMie = max(0.0, henyeyGreenstein(LdotV, atmosphereG) + henyeyGreenstein(nLdotV, atmosphereG));
-
-                    vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
 
                     float cirrusClouds = sampleCirrusCloud(cirrusPlane + 10.0 + 0.3 * vec2(smoothHash(cirrusPlane), 0.0), 3) * (4.0 / 3.0);
                     float transmittanceCirrus = exp2(-cirrusClouds * 4.0);

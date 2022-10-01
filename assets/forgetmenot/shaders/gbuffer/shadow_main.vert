@@ -70,10 +70,23 @@ void frx_pipelineVertex() {
 
     vec3 offsetPos = frx_vertex.xyz - frx_vertexNormal.xyz * 0.25;
 
-    frx_vertex.xyz = offsetPos;
+    vec4 color = texture(frxs_baseColor, frx_texcoord);
+    if(distance(color.rgb, vec3(1.0, 0.0, 1.0)) < 0.01) {
+        bool inside;
+        ivec2 pixel = positionToPixel(floor(frx_vertex.xyz), screenSize, inside);
 
-    gl_Position = vec4(offsetPos.xz / screenSize, -1, 1);
-    return;
+        if(!inside) {
+            gl_Position = vec4(5, 5, 0, 1);
+            return;
+        }
+        gl_Position = vec4((vec2(pixel) + OFFSETS[imod(gl_VertexID, 4)]) / screenSize * 2.0 - 1.0, -1, 1);
+        return;
+    }
+
+    //frx_vertex.xyz = offsetPos;
+
+    // gl_Position = vec4(offsetPos.xz / screenSize, -1, 1);
+    // return;
 
 
     if (frx_modelOriginScreen) {
