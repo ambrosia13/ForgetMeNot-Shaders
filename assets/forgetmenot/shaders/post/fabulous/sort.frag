@@ -663,10 +663,10 @@ void main() {
 
             if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
 
-            vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
-            reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
+            // vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
+            // reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
 
-            if(ssrHit) reflectColor = textureLod(u_previous_frame, reflectionCoord.xy, 0).rgb;
+            if(ssrHit) reflectColor = textureLod(u_main_color, reflectionCoord.xy, 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
             // if(frx_cameraInWater == 1) {

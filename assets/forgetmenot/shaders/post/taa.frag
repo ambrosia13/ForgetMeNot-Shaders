@@ -78,11 +78,11 @@ void main() {
 
     vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
 
-    #ifdef NO_CLIP
-        color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
-    #else
-        color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
-    #endif
+    // #ifdef NO_CLIP
+    //     color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
+    // #else
+    //     color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+    // #endif
 
     color.rgb = inverseToneMap(color.rgb);
 

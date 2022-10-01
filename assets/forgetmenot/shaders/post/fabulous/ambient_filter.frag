@@ -13,5 +13,5 @@ void main() {
 
     //color *= color.a;
 
-    fragColor = color;
+    fragColor = vec4(1.0);
 }
