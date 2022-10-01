@@ -11,5 +11,7 @@ layout(location = 0) out vec4 fragColor;
 void main() {
     vec4 color = normalAwareBlur(u_rtao, texcoord, 8.0, 3, u_normal, u_depth);
 
+    //color *= color.a;
+
     fragColor = color;
 }

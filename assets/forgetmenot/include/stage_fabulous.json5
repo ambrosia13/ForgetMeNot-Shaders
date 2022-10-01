@@ -25,7 +25,7 @@
         {
             name: "ambient_history",
             lod: 0,
-            internalFormat: "R8",
+            internalFormat: "RGB8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -47,7 +47,7 @@
         {
             name: "ambient",
             lod: 0,
-            internalFormat: "R8",
+            internalFormat: "RGBA8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -69,7 +69,7 @@
         {
             name: "ambient_filter",
             lod: 0,
-            internalFormat: "R8",
+            internalFormat: "RGBA8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

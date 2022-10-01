@@ -76,6 +76,7 @@ void main() {
 
      float depth = textureLod(u_depth_mipmaps, coordJittered, 0).r;
      vec3 normal = frx_normalModelMatrix * normalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
+     vec3 lightmap = texture(u_lightmap, texcoord).rgb;
 
      #define RTAO
      #ifdef RTAO
@@ -86,6 +87,7 @@ void main() {
           vec3 rayScreen = vec3(coordJittered, depth);
 
           vec3 rayDir = normalize(normal + goldNoise3d());
+          vec3 rayWorldDir = normalize(normal * frx_normalModelMatrix + goldNoise3d());
           vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
 
           float stepLength = 0.005;
@@ -135,7 +137,8 @@ void main() {
      #endif
 
 
-     ambientLight += 1.0 * noHit;
+
+     ambientLight += mix(vec3(0.01), getSkyColor(rayWorldDir, 0.0), lightmap.g) * noHit;
 
      vec3 viewPos = setupSceneSpacePos(coordJittered, depth);
      vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
@@ -147,5 +150,5 @@ void main() {
      //ambientLight = mix(ambientLight, normalAwareBlur(u_history, lastScreenPos.xy, 2.0, 3, u_normal).rgb, taaBlendFactor(texcoord, lastScreenPos.xy));
      ambientLight = mix(ambientLight, previousColor, 0.9);
 
-     fragColor = vec4(ambientLight, 1.0);
+     fragColor = vec4(ambientLight, noHit);
 }

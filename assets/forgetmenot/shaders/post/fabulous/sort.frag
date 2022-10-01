@@ -370,33 +370,36 @@ void main() {
 
     vec3 lightmap = vec3(0.0);
 
-    float rtao = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 3, u_normal, u_particles_depth).r;
-    //float rtao = texture(u_ambient, texcoord.xy).r;
-    float aoFactor = min(pow(rtao, 2.0), ao);
-    aoFactor = mix(aoFactor, 1.0, shadowMap);
+    // float rtao = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 3, u_normal, u_particles_depth).r;
+    // //float rtao = texture(u_ambient, texcoord.xy).r;
+    // float aoFactor = min(pow(rtao, 2.0), ao);
+    // aoFactor = mix(aoFactor, 1.0, shadowMap);
 
     float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
 
-    vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
-    //upColor *= frx_luminance(getSkyColor(vec3(0.0, 1.0, 0.0), 0.0)) / frx_luminance(upColor);
-    // for(int i = 0; i < 8; i++) {
-    //     vec3 sampleDir = goldNoise3d_noiseless(i);
-    //     upColor += getSkyColor(normalize(normal + sampleDir), 0.0);
+    // vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
+    // //upColor *= frx_luminance(getSkyColor(vec3(0.0, 1.0, 0.0), 0.0)) / frx_luminance(upColor);
+    // // for(int i = 0; i < 8; i++) {
+    // //     vec3 sampleDir = goldNoise3d_noiseless(i);
+    // //     upColor += getSkyColor(normalize(normal + sampleDir), 0.0);
+    // // }
+    // // upColor /= 8;
+    // //upColor = mix(upColor, vec3(frx_luminance(upColor)), 0.5 * sqrt(clamp01(getMoonVector().y)));
+
+    // vec3 ambientColor = mix(vec3(0.01), (2.0 + 1.0 * lambertFactor) * (upColor), skyLight);
+    // if(frx_worldIsEnd == 1) {
+    //     // Never thought I'd ever name a variable NdotPlanet
+    //     float NdotPlanet = dot(normal, normalize(vec3(0.8, 0.3, -0.5)));
+    //     ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+    //     ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+
+    //     ambientColor = ambientColor * 0.75 + 0.25;
     // }
-    // upColor /= 8;
-    //upColor = mix(upColor, vec3(frx_luminance(upColor)), 0.5 * sqrt(clamp01(getMoonVector().y)));
 
-    vec3 ambientColor = mix(vec3(0.01), (2.0 + 1.0 * lambertFactor) * (upColor), skyLight);
-    if(frx_worldIsEnd == 1) {
-        // Never thought I'd ever name a variable NdotPlanet
-        float NdotPlanet = dot(normal, normalize(vec3(0.8, 0.3, -0.5)));
-        ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
-        ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
-
-        ambientColor = ambientColor * 0.75 + 0.25;
-    }
-
-    vec3 ambientLight = ambientColor * aoFactor;
+    // vec3 ambientLight = ambientColor * aoFactor;
+    vec4 ambientLightSample = normalAwareBlur(u_ambient, texcoord.xy, 8.0, 3, u_normal, u_particles_depth);
+    vec3 ambientLight = ambientLightSample.rgb * ambientLightSample.a;
+    float aoFactor = ambientLightSample.a * ambientLightSample.a;
 
     // lightmap.rgb += mix(vec3(0.0), skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)), clamp01(shadowMap));
     // lightmap.rgb += mix(vec3(0.0), ambientLight, 1.0 - clamp01(shadowMap));
@@ -415,7 +418,7 @@ void main() {
     // heldLightFactor *= 13.0;
     // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
     //heldLightFactor = clamp01(heldLightFactor);
-    if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * 2.2 * aoFactor, vec3(2.2))), heldLightFactor);
+    if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * 2.2, vec3(2.2)) * aoFactor), heldLightFactor);
 
     lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * aoFactor, frx_effectNightVision * frx_effectModifier);
 
