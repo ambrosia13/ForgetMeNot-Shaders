@@ -1,32 +1,42 @@
 // Space conversions
-vec3 setupViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = frx_inverseViewProjectionMatrix * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 viewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_viewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 sceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_viewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
-vec3 setupCleanViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupViewSpacePos(in vec2 texcoord, in float depth) {
+    vec3 screenSpacePos = vec3(texcoord, depth);
+    vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
+    vec4 temp = frx_inverseProjectionMatrix * vec4(clipSpacePos, 1.0);
+    return temp.xyz / temp.w;
+}
+vec3 viewSpaceToScreenSpace(in vec3 viewSpacePos) {
+    vec4 temp = frx_projectionMatrix * vec4(viewSpacePos, 1.0);
+    return (temp.xyz / temp.w) * 0.5 + 0.5;
+}
+vec3 setupCleanSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = frx_inverseCleanViewProjectionMatrix * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 cleanViewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_cleanViewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 cleanSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_cleanViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
-vec3 setupLastFrameViewSpacePos(in vec2 texcoord, in float depth) {
+vec3 setupLastFrameSceneSpacePos(in vec2 texcoord, in float depth) {
     vec3 screenSpacePos = vec3(texcoord, depth);
     vec3 clipSpacePos = screenSpacePos * 2.0 - 1.0;
     vec4 temp = (frx_lastViewProjectionMatrix) * vec4(clipSpacePos, 1.0);
     return temp.xyz / temp.w;
 }
-vec3 lastFrameViewSpaceToScreenSpace(in vec3 viewSpacePos) {
-    vec4 temp = frx_lastViewProjectionMatrix * vec4(viewSpacePos, 1.0);
+vec3 lastFrameSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_lastViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
 
@@ -345,12 +355,6 @@ vec2 diskSampling(float i, float n, float phi){
     return sincos(theta * TAU * n * 1.618033988749894) * theta;
 }
 
-// From lumi lights by spiralhalo
-float linearizeDepth(float depth) {
-	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
-	const float farZ = 1.0;
-	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
-}
 
 #ifndef VERTEX_SHADER
     vec3 goldNoise3d() {
@@ -363,11 +367,20 @@ float linearizeDepth(float depth) {
         r = (r) * 2.0 - 1.0;
         return r;
     }
-    vec3 noise3d(float seed) {
+    vec3 goldNoise3d(float seed) {
         vec3 r = vec3(
             gold_noise(gl_FragCoord.xy, seed),
             gold_noise(gl_FragCoord.xy, seed + 1.0),
             gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
+    vec3 goldNoise3d_noiseless(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(0.5), seed),
+            gold_noise(vec2(0.5), seed + 1.0),
+            gold_noise(vec2(0.5), seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
         return r;
@@ -394,11 +407,11 @@ float pcg(in uint seed) {
     uint state = seed * 747796405u + 2891336453u;
     uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
     seed = (word >> 22u) ^ word;
-    return float(seed);
+    return float(seed) / float(0xffffffffu);
 }
 float pcg() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
-    return pcg(seed) / float(0xffffffffu);
+    return pcg(seed);
 }
 vec3 noise3d() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
@@ -408,6 +421,23 @@ vec3 noise3d() {
         pcg(seed - 1000u),
         pcg(seed + 1000u)    
     );
+
+    //float l = length(r);
+
     return normalize(r) * 2.0 - 1.0;
 }
+#else
+    vec3 goldNoise3d(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(100.0), seed),
+            gold_noise(vec2(1.0), seed + 1.0),
+            gold_noise(vec2(1.0), seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
 #endif
+
+vec3 mixmax(in vec3 a, in vec3 b, in float x) {
+    return mix(a, max(a, b), x);
+}

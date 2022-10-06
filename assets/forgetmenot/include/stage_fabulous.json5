@@ -23,6 +23,72 @@
             ]
         },
         {
+            name: "ambient_history",
+            lod: 0,
+            internalFormat: "RGB8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "ambient",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "ambient_filter",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
             name: "sort",
             lod: 0,
             internalFormat: "RGBA16F",
@@ -44,28 +110,28 @@
                 }
             ]
         },
-        {
-            name: "global_illumination",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
+        // {
+        //     name: "reflections_result",
+        //     lod: 0,
+        //     internalFormat: "R11F_G11F_B10F",
+        //     pixelFormat: "RGBA",
+        //     pixelDataType: "UNSIGNED_BYTE",
+        //     target: "TEXTURE_2D",
+        //     texParams: [
+        //         {
+        //             name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+        //         },
+        //         {
+        //             name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+        //         }
+        //     ]
+        // },
     ],
 
     framebuffers: [
@@ -90,6 +156,30 @@
             colorAttachments: [
                 {
                     image: "quarter_res_depth", lod: 2
+                }
+            ]
+        },
+        {
+            name: "ambient_history",
+            colorAttachments: [
+                {
+                    image: "ambient_history", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "ambient",
+            colorAttachments: [
+                {
+                    image: "ambient", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "ambient_filter",
+            colorAttachments: [
+                {
+                    image: "ambient_filter", clearColor: 0x00000000
                 }
             ]
         },
@@ -121,8 +211,41 @@
             ]
         },
         {
-            name: "sort",
+            name: "ambient_history",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_history.frag",
+            samplers: [
+                "u_history",
+                "u_normal",
+                "u_depth"
+            ]
+        },
+        {
+            name: "ambient",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient.frag",
+            samplers: [
+                "u_lightmap",
+                "u_normal",
+                "u_depth_mipmaps",
+                "u_history",
+                "u_blue_noise"
+            ]
+        },
+        {
+            name: "ambient_filter",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_filter.frag",
+            samplers: [
+                "u_rtao",
+                "u_normal",
+                "u_depth",
+                "u_history"
+            ]
+        },
+        {
+            name: "sort",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
             samplers: [
                 "u_main_color",
@@ -137,17 +260,21 @@
                 "u_clouds_depth",
                 "u_particles_color",
                 "u_particles_depth",
-                "u_translucent_data",
-                "u_solid_data"
                 
                 "u_normal",
-                "u_translucent_vertex_normal",
+                "u_solid_normal",
+                "u_tangent_normal",
                 "u_pbr_data",
+                "u_material_data",
+                "u_light_data",
+                "u_ambient",
+
                 "u_previous_frame",
                 "u_depth_mipmaps",
-                "u_blue_noise"
+                "u_blue_noise",
 
-                "u_shadow_map"
+                "u_shadow_map",
+                "u_shadow_tex"
             ]
         },
         {
@@ -156,6 +283,7 @@
             fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
             samplers: [
                 "u_composite",
+                "u_normal"
             ]
         }
     ],
@@ -189,13 +317,38 @@
                 lod: 2
             },
             // {
-            //     name: "gi_copy",
-            //     program: "copy",
-            //     framebuffer: "copy_to_main",
+            //     name: "ambient_history",
+            //     program: "ambient_history",
+            //     framebuffer: "ambient_history",
             //     samplerImages: [
-            //         "sort"
+            //         "ambient",
+            //         "composite_normal",
+            //         "quarter_res_depth"
             //     ]
-            // }
+            // },
+            // {
+            //     name: "ambient",
+            //     program: "ambient",
+            //     framebuffer: "ambient",
+            //     samplerImages: [
+            //         "light_data",
+            //         "composite_normal",
+            //         "quarter_res_depth",
+            //         "ambient_history",
+            //         "forgetmenot:textures/blue_noise.png"
+            //     ]
+            // },
+            // {
+            //     name: "ambient_filter",
+            //     program: "ambient_filter",
+            //     framebuffer: "ambient_filter",
+            //     samplerImages: [
+            //         "ambient",
+            //         "composite_normal",
+            //         "quarter_res_depth",
+            //         "ambient_history"
+            //     ]
+            // },
             {
                 name: "sort",
                 program: "sort",
@@ -213,16 +366,20 @@
                     "clouds_depth",
                     "particles_color",
                     "particles_depth",
-                    "translucent_data",
-                    "main_data",
 
                     "composite_normal",
-                    "translucent_vertex_normal",
+                    "solid_normal",
+                    "tangent_normal",
                     "pbr_data",
+                    "material_data",
+                    "light_data",
+                    "ambient_filter",
+
                     "bloom_downsample",
                     "quarter_res_depth",
-                    "forgetmenot:textures/blue_noise.png"
+                    "forgetmenot:textures/blue_noise.png",
                     
+                    "shadow_map",
                     "shadow_map"
                 ]
             },
@@ -231,7 +388,8 @@
                 program: "copy",
                 framebuffer: "copy_to_main",
                 samplerImages: [
-                    "sort"
+                    "sort",
+                    "tangent_normal"
                 ]
             }
         ]

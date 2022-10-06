@@ -6,4 +6,5 @@ void frx_materialFragment() {
             fmn_sssAmount = 1.0;
         #endif
     #endif
+    frx_fragEnableDiffuse = false;
 }

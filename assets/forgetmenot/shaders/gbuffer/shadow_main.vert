@@ -31,9 +31,9 @@ void frx_pipelineVertex() {
 
         gl_Position = frx_viewProjectionMatrix * frx_vertex;
         frx_distance = length(frx_vertex.xyz);
-
-        gl_Position.xy += (taaOffsets[frx_renderFrames % 8u] * (1.0 / vec2(frx_viewWidth, frx_viewHeight))) * gl_Position.w;
     }
 
         shadowViewPos = (frx_shadowViewMatrix * vec4(frx_vertex.xyz, 1.0));
+
+    if(!frx_isGui || frx_isHand) gl_Position.xy += (taaOffsets[frx_renderFrames % 8u] * (1.0 / vec2(frx_viewWidth, frx_viewHeight))) * gl_Position.w;
 }

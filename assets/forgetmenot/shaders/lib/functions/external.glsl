@@ -1,105 +1,10 @@
 // --------------------------------------------------------------------------------------------------------
-// Taken from https://github.com/Jam3/glsl-fast-gaussian-normalAwareBlur - MIT License - changed deprecated texture2D() function to compile.
-// --------------------------------------------------------------------------------------------------------
-vec4 blur13(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.411764705882353) * direction;
-  vec2 off2 = vec2(3.2941176470588234) * direction;
-  vec2 off3 = vec2(5.176470588235294) * direction;
-  color += textureLod(image, uv, frxu_lod) * 0.1964825501511404;
-  color += textureLod(image, uv + (off1 / resolution), frxu_lod) * 0.2969069646728344;
-  color += textureLod(image, uv - (off1 / resolution), frxu_lod) * 0.2969069646728344;
-  color += textureLod(image, uv + (off2 / resolution), frxu_lod) * 0.09447039785044732;
-  color += textureLod(image, uv - (off2 / resolution), frxu_lod) * 0.09447039785044732;
-  color += textureLod(image, uv + (off3 / resolution), frxu_lod) * 0.010381362401148057;
-  color += textureLod(image, uv - (off3 / resolution), frxu_lod) * 0.010381362401148057;
-  return color;
-}
-vec4 blur13_lod(sampler2D image, vec2 uv, vec2 resolution, vec2 direction, int lod) {
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.411764705882353) * direction;
-  vec2 off2 = vec2(3.2941176470588234) * direction;
-  vec2 off3 = vec2(5.176470588235294) * direction;
-  color += textureLod(image, uv, lod) * 0.1964825501511404;
-  color += textureLod(image, uv + (off1 / resolution), lod) * 0.2969069646728344;
-  color += textureLod(image, uv - (off1 / resolution), lod) * 0.2969069646728344;
-  color += textureLod(image, uv + (off2 / resolution), lod) * 0.09447039785044732;
-  color += textureLod(image, uv - (off2 / resolution), lod) * 0.09447039785044732;
-  color += textureLod(image, uv + (off3 / resolution), lod) * 0.010381362401148057;
-  color += textureLod(image, uv - (off3 / resolution), lod) * 0.010381362401148057;
-  return color;
-}
-vec4 cross_blur_lod(sampler2D image, vec2 uv, int lod, float rotation) {
-  vec4 color = vec4(0.0);
-
-  vec2 h = rotate2D(vec2(1.0, 0.0), rotation);
-  vec2 v = rotate2D(vec2(0.0, 1.0), rotation);
-
-  color += blur13_lod(image, uv, frxu_size, h, lod) + blur13_lod(image, uv, frxu_size, v, lod);
-  return color / 2.0;
-}
-
-vec4 blur5(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.3333333333333333) * direction;
-  color += texture(image, uv) * 0.29411764705882354;
-  color += texture(image, uv + (off1 / resolution)) * 0.35294117647058826;
-  color += texture(image, uv - (off1 / resolution)) * 0.35294117647058826;
-  return color; 
-}
-
-vec4 blur9(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.3846153846) * direction;
-  vec2 off2 = vec2(3.2307692308) * direction;
-  color += texture(image, uv) * 0.2270270270;
-  color += texture(image, uv + (off1 / resolution)) * 0.3162162162;
-  color += texture(image, uv - (off1 / resolution)) * 0.3162162162;
-  color += texture(image, uv + (off2 / resolution)) * 0.0702702703;
-  color += texture(image, uv - (off2 / resolution)) * 0.0702702703;
-  return color;
-}
-
-// Following function adapted from previous normalAwareBlur function, kind of like edge-aware normalAwareBlur
-vec4 normalLockedBlur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction, sampler2D imageNormal) {
-  vec4 centerColor = textureLod(image, uv, frxu_lod);
-  vec3 centerNormal = texture(imageNormal, uv).rgb;
-
-  vec4 color = vec4(0.0);
-  vec2 off1 = vec2(1.411764705882353) * direction;
-  vec2 off2 = vec2(3.2941176470588234) * direction;
-  vec2 off3 = vec2(5.176470588235294) * direction;
-  color += centerColor * 0.1964825501511404;
-  if(all(equal(texture(imageNormal, uv + (off1 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv + (off1 / resolution), frxu_lod) * 0.2969069646728344;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
-  if(all(equal(texture(imageNormal, uv - (off1 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv - (off1 / resolution), frxu_lod) * 0.2969069646728344;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344);//vec4(1.0) * (0.98 - 0.2969069646728344);
-  if(all(equal(texture(imageNormal, uv + (off2 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv + (off2 / resolution), frxu_lod) * 0.09447039785044732;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
-  if(all(equal(texture(imageNormal, uv - (off2 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv - (off2 / resolution), frxu_lod) * 0.09447039785044732;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (0.1964825501511404 + 2.0 * 0.2969069646728344 + 2.0 * 0.09447039785044732);//vec4(1.0) * (0.98 - 0.09447039785044732);
-  if(all(equal(texture(imageNormal, uv + (off3 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv + (off3 / resolution), frxu_lod) * 0.010381362401148057;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 2.0 * 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
-  if(all(equal(texture(imageNormal, uv - (off3 / resolution)).rgb, centerNormal))) {
-    color += textureLod(image, uv - (off3 / resolution), frxu_lod) * 0.010381362401148057;
-  } else return blur5(image, uv, resolution, direction * 0.3);//color = centerColor * (1.0 - 0.010381362401148057);//vec4(1.0) * (0.98 - 0.010381362401148057);
-  return color;
-}
-// --------------------------------------------------------------------------------------------------------
-
-// --------------------------------------------------------------------------------------------------------
 // Adapted from Xordev's Ominous Shaderpack https://github.com/XorDev/Ominous-Shaderpack/blob/main/shaders/lib/Blur.inc, with permission
 // --------------------------------------------------------------------------------------------------------
-vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2D normal) {
-  vec3 centerNormal = texture(normal, uv).rgb;
+vec4 blur(sampler2D image,vec2 uv,float radius, int quality) {
   vec4 centerColor = texture(image, uv);
 
-	vec2 texel = 1.0 / frxu_size;
+  vec2 texel = 1.0 / frxu_size;
 
   float weight = 0.0;
   vec4 col = vec4(0.0);
@@ -107,49 +12,62 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
   float d = 1.0;
   vec2 samp = vec2(radius) / float(quality);
 
-	mat2 ang = mat2(0.73736882209777832, -0.67549037933349609, 0.67549037933349609, 0.73736882209777832);
+  mat2 ang = mat2(0.73736882209777832, -0.67549037933349609, 0.67549037933349609, 0.73736882209777832);
 
 
-	for(int i = 0; i < quality * quality; i++) {
+  for(int i = 0; i < quality * quality; i++) {
     d += 1.0 / d;
     samp *= ang;
-    vec2 uv = uv + samp * (d - 1.0) * texel;
-    vec3 currentNormal = texture(normal, uv).rgb;
-
+    vec2 newUv = uv + samp * (d - 1.0) * texel;
+    
     float w = 1.0 / max(0.01, d - 1.0);
-    if(all(equal(currentNormal, centerNormal))) {
-      weight += w;
-      col += texture(image, uv) * w;
-    } else {
-      col += centerColor * w;
-      weight += w;  
-    }
-	}
+
+    weight += w;
+    col += texture(image, newUv) * w;
+  }
   return col / max(0.01, weight);
 }
-float shadowFilter(sampler2DArrayShadow shadowMap, vec3 shadowPos, int cascade, float radius, int samples) {
-	vec2 texel = 1.0 / vec2(1024.0);
+
+vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2D normal, sampler2D depth) {
+  vec3 centerNormal = texture(normal, uv).rgb;
+  vec4 centerColor = texture(image, uv);
+  float centerDepth = linearizeDepth(texture(depth, uv).r);
+
+  vec2 texel = 1.0 / frxu_size;
 
   float weight = 0.0;
-  float shadowResult = 0.0;
+  vec4 col = vec4(0.0);
 
   float d = 1.0;
-  vec2 samp = vec2(radius) / samples;
+  vec2 samp = vec2(radius) / float(quality);
 
-	mat2 ang = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
+  mat2 ang = mat2(0.73736882209777832, -0.67549037933349609, 0.67549037933349609, 0.73736882209777832);
 
-	for(int i = 0;i<samples*samples;i++) {
+
+  for(int i = 0; i < quality * quality; i++) {
     d += 1.0 / d;
     samp *= ang;
+    vec2 newUv = uv + samp * (d - 1.0) * texel;
+    
+    vec3 currentNormal = texture(normal, newUv).rgb;
+    float currentDepth = linearizeDepth(texture(depth, newUv).r);
 
-    float w = 1.0 / (d - 1.0);
-    vec2 shadowUv = shadowPos.xy + samp * (d - 1.0) * texel;
+    float depthTolerance =  clamp01(smoothstep(0.0015, 0.001, abs(centerDepth - currentDepth)));
+    float normalTolerance = smoothstep(0.005, 0.001, length(centerNormal - currentNormal));
 
-		shadowResult += texture(shadowMap, vec4(shadowUv, cascade, shadowPos.z)) * w;
-    weight += w;
-	}
-  return shadowResult / weight;//+hash1(c-r)/128.;
+    float w = 1.0 / max(0.01, d - 1.0);
+
+    if(depthTolerance * normalTolerance > 0.0001) {
+      weight += w * depthTolerance * normalTolerance;
+      col += texture(image, newUv) * w * depthTolerance * normalTolerance;
+    } else {
+        weight += w;
+        col += texture(image, mix(newUv, uv, 0.95)) * w;
+    }
+  }
+  return col / max(0.01, weight);
 }
+
 // --------------------------------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------------------------------

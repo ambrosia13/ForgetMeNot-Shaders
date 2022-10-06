@@ -10,10 +10,16 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 vec3 toneMap(in vec3 color) {
-    return color / (color + 1.0);
+    color = color / (color + 1.0);
+    //color = pow(color, vec3(1.0 / 2.2));
+
+    return color;
 }
 vec3 inverseToneMap(in vec3 color) {
-    return -color / (color - 1.0);
+    //color = pow(color, vec3(2.2));
+    color = -color / (color - 1.0);
+
+    return color;
 }
 
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
@@ -62,9 +68,9 @@ void main() {
     color = texture(u_color, texcoord);
     color.rgb = toneMap(color.rgb);
     
-    vec3 viewPos = setupViewSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
+    vec3 viewPos = setupSceneSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameViewSpaceToScreenSpace(viewPos + positionDifference);
+    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
     previousColor = texture(u_previous_frame, lastScreenPos.xy);
     previousColor.rgb = toneMap(previousColor.rgb);
 
@@ -79,5 +85,6 @@ void main() {
     #endif
 
     color.rgb = inverseToneMap(color.rgb);
+
     fragColor = max(vec4(1.0 / 65536.0), color);
 }

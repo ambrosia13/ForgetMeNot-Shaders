@@ -20,4 +20,5 @@ void main() {
     #endif
 
     fragColor = mix(color, bloom, mix(pow(frx_luminance(tanh(pow(bloom.rgb, vec3(1.0 / 4.0)))), 5.0), 1.0, frx_cameraInFluid));
+    //fragColor = mix(color, bloom, 0.16);
 }

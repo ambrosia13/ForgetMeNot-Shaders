@@ -384,7 +384,6 @@
                 framebuffer: "bright_color",
                 samplerImages: [
                     "pre_bloom_copy",
-                    "main_data"
                 ]
             },
             {
