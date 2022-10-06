@@ -53,7 +53,7 @@ vec4 normalAwareBlur(sampler2D image,vec2 uv,float radius, int quality, sampler2
     float currentDepth = linearizeDepth(texture(depth, newUv).r);
 
     float depthTolerance =  clamp01(smoothstep(0.0015, 0.001, abs(centerDepth - currentDepth)));
-    float normalTolerance = smoothstep(0.0015, 0.001, length(centerNormal - currentNormal));
+    float normalTolerance = smoothstep(0.005, 0.001, length(centerNormal - currentNormal));
 
     float w = 1.0 / max(0.01, d - 1.0);
 

@@ -48,11 +48,11 @@ void frx_materialFragment() {
     #endif
 
     #ifdef INTERNAL_MATERIALS
-        frx_fragColor.rgb *= 0.5;
+        //frx_fragColor.rgb *= 0.5;
     #endif
 
     #if LUMI_PBR_API >= 8
-        frx_fragColor.rgb *= 2.0; // I only want to darken ice in forget-me-not shaders
+        //frx_fragColor.rgb *= 2.0; // I only want to darken ice in forget-me-not shaders
         pbr_f0 = 0.05;
         pbr_roughness = 0.05;
         pbr_isWater = false;

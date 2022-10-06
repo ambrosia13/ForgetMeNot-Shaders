@@ -35,44 +35,10 @@ vec3 getBlueNoise(float offset) {
     return normalize(r) * 2.0 - 1.0;
 }
 
-float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
-    vec2 velocity = (currentCoord - previousCoord) * frxu_size;
-
-    float blendFactor = float(clamp01(previousCoord) == previousCoord);
-    blendFactor *= exp(-length(velocity)) * 0.15 + 0.8;
-
-    return blendFactor;
-}
-// Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
-// Code by Belmu#4066
-vec3 clipAABB(vec3 prevColor, vec3 minColor, vec3 maxColor) {
-    vec3 pClip = 0.5 * (maxColor + minColor); // Center
-    vec3 eClip = 0.5 * (maxColor - minColor); // Size
-
-    vec3 vClip  = prevColor - pClip;
-    vec3 aUnit  = abs(vClip / eClip);
-    float denom = max(aUnit.x, max(aUnit.y, aUnit.z));
-
-    return denom > 1.0 ? pClip + vClip / denom : prevColor;
-}
-
-#define NEIGHBORHOOD_SIZE 1
-vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
-    vec3 minColor = vec3(1e5), maxColor = vec3(-1e5);
-
-    for(int x = -NEIGHBORHOOD_SIZE; x <= NEIGHBORHOOD_SIZE; x++) {
-        for(int y = -NEIGHBORHOOD_SIZE; y <= NEIGHBORHOOD_SIZE; y++) {
-            vec3 color = texelFetch(currTex, ivec2(gl_FragCoord.xy) + ivec2(x, y), 0).rgb;
-            minColor = min(minColor, color); maxColor = max(maxColor, color); 
-        }
-    }
-    return clipAABB(prevColor, minColor, maxColor);
-}
-
 void main() {
      vec3 ambientLight = vec3(0.0);
      float noHit = 1.0;
-     vec2 coordJittered = texcoord;//((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
+     vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
 
      float depth = textureLod(u_depth_mipmaps, coordJittered, 0).r;
      vec3 normal = frx_normalModelMatrix * normalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
@@ -81,7 +47,6 @@ void main() {
      #define RTAO
      #ifdef RTAO
           const int RTAO_RAYS = 1;
-          #define RTAO_STEPS 10
 
           vec3 rayPos = setupViewSpacePos(coordJittered, depth);
           vec3 rayScreen = vec3(coordJittered, depth);
@@ -97,7 +62,7 @@ void main() {
 
           if(depth < 1.0 && (rayPos + rayDir).z < 0.0) {
                for(int i = 0; i < RTAO_STEPS; i++) {
-                    stepLength = min(stepLength, 1.0 / RTAO_STEPS);
+                    stepLength = min(stepLength, 0.1);
 
                     rayScreen += rayScreenDir * stepLength * (bn.r * 0.5 + 0.5);
 
@@ -148,7 +113,7 @@ void main() {
 
      if(clamp01(lastScreenPos.xy) == lastScreenPos.xy)
      //ambientLight = mix(ambientLight, normalAwareBlur(u_history, lastScreenPos.xy, 2.0, 3, u_normal).rgb, taaBlendFactor(texcoord, lastScreenPos.xy));
-     ambientLight = mix(ambientLight, previousColor, 0.9);
+     ambientLight = mix(ambientLight, previousColor, 0.0);
 
      fragColor = vec4(ambientLight, noHit);
 }

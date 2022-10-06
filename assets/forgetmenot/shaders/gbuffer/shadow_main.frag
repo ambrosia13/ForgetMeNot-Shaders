@@ -101,31 +101,6 @@ void frx_pipelineFragment() {
     float penumbraSize = 2.0;
     float dither = sqrt(interleaved_gradient());
 
-    // Blocker search, adjusts penumbraSize accordingly
-    #ifdef VARIABLE_PENUMBRA_SHADOWS
-        float blockerCount;
-        float blockers;
-
-        for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
-            vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * (10.0 * cascade);
-            vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
-
-            float depthQuery = texture(frxs_shadowMapTexture, vec3(sampleCoord, cascade)).r;
-            float diff = max(0.0, shadowScreenPos.z - depthQuery) * 1000.0;
-
-            blockers += diff;
-            blockerCount += 1.0;
-        }
-        blockers /= blockerCount;
-
-        penumbraSize = blockers;
-        penumbraSize = min(penumbraSize, 10.0 * (cascade));
-        penumbraSize = max(penumbraSize, 1.0);
-
-        // SSS approximation, blur backface shadows
-        penumbraSize = mix(penumbraSize, 8.0 * cascade, fmn_sssAmount * step(0.0, -VNdotL));
-    #endif
-
     vec3 shadowPosDX = dFdx(shadowScreenPos);
     vec3 shadowPosDY = dFdy(shadowScreenPos);
 
@@ -142,6 +117,7 @@ void frx_pipelineFragment() {
 
     shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, frx_matCutout);
 
+    #define SHADOW_FILTER_SAMPLES 4
     for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
         vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
         vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
@@ -159,98 +135,58 @@ void frx_pipelineFragment() {
     float shadowMapInverse = 1.0 - clamp01(shadowMap);
 
     if(!isInventory) {
-        vec3 lightmap = vec3(1.0);
-
-        #ifndef VANILLA_AO
-            frx_fragLight.z = 1.0;
-        #endif
+        vec3 lightmap = vec3(0.0);
 
         if(frx_worldIsEnd + frx_worldIsNether + frx_worldIsOverworld >= 1) {
-            float brightness = frx_smoothedEyeBrightness.y;
+            if(frx_renderTargetSolid && !frx_isHand) {
+                lightmap = vec3(1.0);
+            } else {
+                vec3 ambientLightColor = vec3(0.0);
+                ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
 
-            frx_fragLight.y = mix(frx_fragLight.y, 1.0, frx_worldIsEnd);
+                float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
-            frx_fragLight.xy *= mix(1.0, frx_darknessEffectFactor * 0.95 + 0.05, frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));            
-            frx_fragLight.z = mix(frx_fragLight.z, 1.0, clamp01(shadowMap + frx_matDisableAo));
+                float lambertFactor = NdotL * 0.5 + 0.5;
 
+                vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
+                vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * lambertFactor) * (upColor)), frx_fragLight.y);
 
-            float directionalShadingFactor = NdotL * 0.5 + 0.5;
+                if(frx_worldIsEnd == 1) {
+                    // Never thought I'd ever name a variable NdotPlanet
+                    float NdotPlanet = dot(frx_fragNormal, normalize(vec3(0.8, 0.3, -0.5)));
+                    ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+                    ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
 
-            vec3 blockLightColor = mix(vec3(1.0, 0.49, 0.16), vec3(1.0), BLOCKLIGHT_NEUTRALITY) * 2.0;
+                    ambientColor = ambientColor * 0.75 + 0.25;
+                }
 
-            float blocklight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.x) * 16.0;
-            // blocklight *= 1.0 + 4.0 * smoothstep(15.5, 16.0, blocklight);
+                float ao = frx_fragLight.z;
+                vec3 ambientLight = ambientColor * ao * ao;
 
-            blocklight = mix(max((blocklight * blocklight * blocklight) / 1024.0, blocklight / 16.0), blocklight / 16.0, brightness);
-            float skylight = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y) * 16.0;
+                lightmap += ambientLight;
+                lightmap += skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
 
-            lightmap = vec3(0.0);
+                lightmap = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, frx_fragLight.x * frx_fragLight.x);
 
-            vec3 aboveGroundLighting;
+                // handheld light
+                float heldLightFactor = (1.0 + frx_heldLight.a) / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
+                heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+                heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
 
-            vec3 skyLightColor = getSkyColor(frx_skyLightVector);
-            vec3 ambientLightColor = getFogScattering(vec3(0.0, 1.0, 0.0), 100000.0);
-            
-            if(frx_worldIsEnd == 1) {
-                // Never thought I'd ever name a variable NdotPlanet
-                float NdotPlanet = dot(frx_fragNormal, normalize(vec3(0.8, 0.3, -0.5)));
-                ambientLightColor = mix(ambientLightColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
-                ambientLightColor = mix(ambientLightColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+                // heldLightFactor *= 13.0;
+                // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
+                //heldLightFactor = clamp01(heldLightFactor);
+                if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * 2.2, vec3(2.2)) * ao), heldLightFactor);
+
+                lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * ao, frx_effectNightVision * frx_effectModifier);
+                lightmap = mix(lightmap, vec3(1.0), frx_fragEmissive);
+                lightmap = mix(lightmap, vec3(1.0), step(0.99, frx_fragReflectance - float(frx_isHand)));
             }
-
-            float skyIlluminance = frx_luminance(ambientLightColor) * mix(1.0, 1.5, clamp01(frx_skyLightVector.y));
-
-            #ifdef AMBIENT_LIGHT_BOOST
-                skyIlluminance *= 1.33;
-                ambientLightColor = normalize(ambientLightColor) * 0.75 + 0.25;
-                aboveGroundLighting += max(0.075, skyIlluminance) * ambientLightColor * shadowMapInverse;
-            #else
-                ambientLightColor = normalize(ambientLightColor);
-                aboveGroundLighting += skyIlluminance * ambientLightColor * shadowMapInverse;
-            #endif
-
-            skyLightColor = normalize(skyLightColor) * 6.5;
-            aboveGroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
-
-            aboveGroundLighting = mix(aboveGroundLighting, max(blockLightColor, aboveGroundLighting), blocklight);
-
-            lightmap = mix(lightmap, aboveGroundLighting, frx_fragLight.y);
-
-            vec3 undergroundLighting = vec3(0.005);
-            undergroundLighting = mix(undergroundLighting, max(blockLightColor, undergroundLighting), blocklight);
-            undergroundLighting += min(vec3(3.0), skyIlluminance * skyLightColor * shadowMap * directionalShadingFactor);
-
-            lightmap = mix(undergroundLighting, lightmap, frx_fragLight.y);
-
-            if(frx_worldIsNether == 1) {
-                lightmap = vec3(0.1, 0.05, 0.0);
-                lightmap += vec3(1.0, 0.25, 0.0) * (smoothstep(-0.5, 0.5, -frx_fragNormal.y) + 2.0 * pow(frx_fragLight.x, 2.0) + 0.3);
-            }
-
-            // handheld light
-            float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
-            heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
-            if(frx_isHand && !all(equal(frx_heldLight.rgb, vec3(1.0)))) heldLightFactor = 1.0; // hand is lit if holding emitter
-            
-            heldLightFactor *= 13.0;
-            heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
-            //heldLightFactor = clamp01(heldLightFactor);
-            lightmap = mix(lightmap, (max(pow(frx_heldLight.rgb * 1.2, vec3(2.2)), lightmap)), heldLightFactor);
-
-            //lightmap = pow(lightmap, vec3(1.0 / (0.5 + frx_viewBrightness)));
-
-            lightmap = mix(lightmap, lightmap * 0.75 + 0.25, frx_worldIsEnd);
-
-            if(frx_effectNightVision == 1) lightmap = mix(lightmap, lightmap * 0.5 + 0.5, frx_effectModifier);
-
-            lightmap = max(vec3(0.0005), lightmap);
-
-            if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid || frx_isHand) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
-        } else if(!frx_renderTargetSolid) {
+        } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
-
-            //color.rgb *= lightmap;
         }
+
+        color.rgb *= lightmap;
 
         // Material info stuff
         color.rgb = mix(color.rgb, frx_fragColor.rgb, frx_fragEmissive * mix((1.0), (frx_darknessEffectFactor), frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0))));

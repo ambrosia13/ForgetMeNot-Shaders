@@ -9,31 +9,10 @@
                     nameKey: "config.forgetmenot.name.hide_sky_ground",
                     descriptionKey: "config.forgetmenot.desc.hide_sky_ground"
                 },
-                sky_ground_fog: {
-                    default: 1.5,
-                    min: 0.5,
-                    max: 4.0,
-                    nameKey: "config.forgetmenot.name.sky_ground_fog",
-                    descriptionKey: "config.forgetmenot.desc.sky_ground_fog"
-                },
-                mie_amount: {
-                    default: 10.0,
-                    min: 1.0,
-                    max: 40.0,
-                    nameKey: "config.forgetmenot.name.mie_amount",
-                    descriptionKey: "config.forgetmenot.desc.mie_amount"
-                },
-                sun_energy: {
-                    default: 3000.0,
-                    min: 1000.0,
-                    max: 5000.0,
-                    nameKey: "config.forgetmenot.name.sun_energy",
-                    descriptionKey: "config.forgetmenot.desc.sun_energy"
-                },
-                dynamic_weather: {
+                clouds: {
                     default: true,
-                    nameKey: "config.forgetmenot.name.dynamic_weather",
-                    descriptionKey: "config.forgetmenot.desc.dynamic_weather"
+                    nameKey: "config.forgetmenot.name.clouds",
+                    descriptionKey: "config.forgetmenot.desc.clouds"
                 },
                 cloud_detail: {
                     default: 7,
@@ -86,40 +65,6 @@
                     max: 4.0,
                     nameKey: "config.forgetmenot.name.night_brightness",
                     descriptionKey: "config.forgetmenot.desc.night_brightness"
-                },
-                ambient_light_boost: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.ambient_light_boost",
-                    descriptionKey: "config.forgetmenot.desc.ambient_light_boost"
-                },
-                blocklight_neutrality: {
-                    default: 0.0,
-                    min: 0.0,
-                    max: 1.0,
-                    nameKey: "config.forgetmenot.name.blocklight_neutrality",
-                    descriptionKey: "config.forgetmenot.desc.blocklight_neutrality"
-                },
-                refraction: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.refraction",
-                    descriptionKey: "config.forgetmenot.desc.refraction"
-                },
-                vanilla_ao: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.vanilla_ao",
-                    descriptionKey: "config.forgetmenot.desc.vanilla_ao"
-                },
-                rtao: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.rtao",
-                    descriptionKey: "config.forgetmenot.desc.rtao"
-                },
-                rtao_steps: {
-                    default: 10,
-                    min: 5,
-                    max: 40, 
-                    nameKey: "config.forgetmenot.name.rtao_steps",
-                    descriptionKey: "config.forgetmenot.desc.rtao_steps"
                 }
             }
         },
