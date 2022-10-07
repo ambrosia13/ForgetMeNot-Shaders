@@ -34,6 +34,7 @@ float linearizeDepth(float depth) {
 //#define frx_renderSeconds 600.0
 
 #define fmn_time (mod(frx_renderSeconds, 100000.0))
+#define fmn_rainFactor ((0.5 * frx_smoothedRainGradient + 0.5 * frx_smoothedThunderGradient) * frx_worldIsOverworld)
 
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl

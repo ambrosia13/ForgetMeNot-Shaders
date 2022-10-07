@@ -384,13 +384,19 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
         return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
     }
 
-    if(1.0 - tdata.y > 0.0) {
-        vec3 sunVector = getSunVector();
-        atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
-    }
-    if(1.0 - tdata.x > 0.0) {
-        vec3 moonVector = getMoonVector();
-        atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * moonFlux;
+    if(frx_worldIsOverworld == 1) {
+        drawSun *= mix(1.0, 0.0, fmn_rainFactor);
+
+        if(1.0 - tdata.y > 0.0) {
+            vec3 sunVector = getSunVector();
+            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+        }
+        if(1.0 - tdata.x > 0.0) {
+            vec3 moonVector = getMoonVector();
+            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * moonFlux;
+        }
+
+        atmosphere = mix(atmosphere, min(mix(atmosphere, vec3(frx_luminance(atmosphere)), 0.5), atmosphere * 0.15 + 0.15), fmn_rainFactor);
     }
 
     if(frx_worldIsEnd == 1) {

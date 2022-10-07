@@ -33,7 +33,6 @@ uniform sampler2DArray u_shadow_tex;
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec4 globalIllumination;
 
 // vanilla fabulous blending
 
@@ -67,7 +66,7 @@ void try_insert(vec4 color, float depth) {
 }
 
 vec3 blend( vec3 dst, vec4 src ) {
-    return ( dst * ( 1.0 - src.a ) ) + src.rgb;
+    return mix(dst, src.rgb, src.a);
 }
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
@@ -99,8 +98,6 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
 
     // coverageBias = clamp(coverageBias, 0.3, 0.7);
 
-    // coverageBias = mix(coverageBias, 0.35, frx_smoothedRainGradient);
-    // coverageBias = mix(coverageBias, 0.2, frx_smoothedThunderGradient);
     // mistiness = mix(mistiness, 0.3, frx_smoothedRainGradient);
     // float lowerBound = coverageBias;
     // float upperBound = coverageBias + mistiness;
@@ -115,8 +112,8 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
     float noise1 = fbmHash(plane * 2.0, octaves, 0.001);
     float noise2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
 
-    float aLowerBound = 0.7 - 0.35 * frx_smoothedRainGradient;
-    float bLowerBound = 0.5 - 0.25 * frx_smoothedRainGradient;
+    float aLowerBound = 0.7 - 0.7 * fmn_rainFactor;
+    float bLowerBound = 0.5 - 0.5 * fmn_rainFactor;
 
     float a = smoothstep(aLowerBound, 0.9, noise1) * ((octaves + 1.0) / octaves);
     float b = smoothstep(bLowerBound, 0.9, noise2) * ((octaves + 1.0) / octaves);
@@ -295,11 +292,11 @@ void main() {
             float blockers;
 
             for(int i = 0; i < VPS_SEARCH_SAMPLES; i++) {
-                vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, dither * TAU) * (10.0 * cascade);
+                vec2 offset = diskSampling(i, VPS_SEARCH_SAMPLES, interleaved_gradient(i) * TAU) * (10.0 * cascade);
                 vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
 
                 float depthQuery = texture(u_shadow_tex, vec3(sampleCoord, cascade)).r;
-                float diff = max(0.0, shadowScreenPos.z - depthQuery) * 1000.0;
+                float diff = max(0.0, shadowScreenPos.z - depthQuery) * mix(1000.0, 16000.0, fmn_rainFactor);
 
                 blockers += diff;
                 blockerCount += 1.0;
@@ -325,7 +322,7 @@ void main() {
         shadowScreenPos.z -= biasMult * cutoutBias;
 
         for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
-            vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
+            vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, interleaved_gradient(i) * TAU) * penumbraSize;
             vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
             shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
         }
@@ -338,7 +335,7 @@ void main() {
         // almost pixel perfect raytrace
         float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
 
-        float shadowRayDither = getBlueNoise().x * 0.3 + 0.7;
+        float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
         if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
             for(int i = 0; i < 12; i++) {
                 shadowRayPos += shadowRayDir * shadowRayStep * shadowRayDither;
@@ -385,8 +382,10 @@ void main() {
         float aoFactor = ao;
         vec3 ambientLight = ambientColor * ao * ao;
 
+        float sunlightStrength = 0.0005 - 0.0004 * fmn_rainFactor;
+
         lightmap.rgb += ambientLight;
-        lightmap += skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
+        lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
         
         lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, blockLight * blockLight);
 
@@ -394,6 +393,44 @@ void main() {
         float heldLightFactor = (1.0 + frx_heldLight.a) / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
         heldLightFactor *= mix(clamp01(dot(-normal, normalize((maxSceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
         heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
+
+        #ifdef RAYTRACED_HANDHELD_LIGHT_OCCLUSION
+            float occlusion = 1.0;
+
+            const int HELD_LIGHT_STEPS = 10;
+
+            vec3 heldLightPos = ((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
+
+            vec2 seed = vec2(fmn_time);
+            heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
+
+            vec3 rayPos = minSceneSpacePos;
+            vec3 rayDir = -(heldLightPos);
+            float stepLength = 0.05 / HELD_LIGHT_STEPS;
+
+            if(!all(equal(frx_heldLight.rgb, vec3(1.0)))) {
+                for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
+                    rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + goldNoise3d(i) * 0.001;
+
+                    vec3 rayScreen = sceneSpaceToScreenSpace(rayPos);
+
+                    if(clamp01(rayScreen) != rayScreen) {
+                        break;
+                    } else {
+                        float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
+
+                        if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
+                            occlusion *= 0.0;
+                            break;
+                        }
+                    }
+
+                    stepLength *= 1.5;
+                }
+            }
+
+            heldLightFactor *= occlusion;
+        #endif
 
         // heldLightFactor *= 13.0;
         // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
@@ -468,31 +505,14 @@ void main() {
                     for(int i = 0; i < 1; i++) {
                         planeMarch += rayDirection * stepLength * interleaved_gradient();
 
-
                         float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
-                        //if(currentDensity == 0.0) break;
-
                         lightOpticalDepth += currentDensity;
-
-                        //if(currentDensity == 0.0) break;
-
-                        //stepLength *= 1.5;
                     }
 
-                    //lightOpticalDepth = mix(lightOpticalDepth, 0.5, 1.0 - frx_skyLightTransitionFactor);
-
-
-                    // opticalDepth = cumulusCloudsDensity;
-                    //lightOpticalDepth = lightOpticalDepth * (2.0 / 3.0) + opticalDepth * (1.0 / 3.0);
-                    //lightOpticalDepth /= 2.0;
 
                     transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
-                    scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 2.5 * frx_smoothedRainGradient))) * mie;
-                    //scattering = mix(scattering, vec3(0.1 * mie), 1.0 - frx_skyLightTransitionFactor);
 
-                    //transmittance = mix(transmittance, 0.75 + 0.25 * transmittance, tdata.z);
-                    //scattering *= frx_skyLightTransitionFactor;
-
+                    scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 3.0 * fmn_rainFactor))) * mie;
                     scattering *= (1.0 - transmittance);
 
                     skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittance + scattering, smoothstep(0.0, 0.05, viewDir.y));
@@ -503,11 +523,9 @@ void main() {
                         rayDirection = normalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
 
                         for(int i = 0; i < 1; i++) {
-                            planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient(2);
+                            planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
+
                             float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
-
-                            //if(currentDensity > 0.5) break;
-
                             lightRaysOpticalDepth += currentDensity * 10.0;
                         }
                         float lightRays = exp2(-lightRaysOpticalDepth * 50.0);
@@ -665,44 +683,6 @@ void main() {
 
         composite = mix(composite, reflectColor, reflectance);
         //composite = normal;
-
-        #ifdef RAYTRACED_HELD_LIGHT
-            const int HELD_LIGHT_STEPS = 10;
-// float heldLightFactor = frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
-// heldLightFactor *= clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0))));
-
-            vec3 heldLightPos = ((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
-            vec2 seed = vec2(fmn_time);
-            heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
-
-            vec3 rayPos = minSceneSpacePos;
-            vec3 rayDir = -(heldLightPos);
-            float stepLength = 0.05 / HELD_LIGHT_STEPS;
-
-            if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && frx_smoothedEyeBrightness.y < 0.9) {
-                for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
-                    rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + rand3D(texcoord * 2000.0 + 100.0 * fmn_time) * 0.001;
-
-                    vec3 rayScreen = sceneSpaceToScreenSpace(rayPos);
-
-                    if(clamp01(rayScreen) != rayScreen) {
-                        break;
-                    } else {
-                        float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
-
-                        if(rayScreen.z > depthQuery && distance(rayPos, setupSceneSpacePos(rayScreen.xy, depthQuery)) < 10.0) {
-                            rtao *= 0.2 + 0.8 * frx_smoothedEyeBrightness.y;
-                            break;
-                        }
-                    }
-
-                    stepLength *= 1.5;
-                }
-            }
-
-            composite *= mix(lastFrameRtao, rtao, 0.5);
-        #endif
-
     }
 
     float blockDist = length(minSceneSpacePos);
@@ -721,6 +701,8 @@ void main() {
             fogAmount *= mix(1.0, 4.0, 1.0 - sqrt(sqrt(clamp01(getSunVector().y))));
             fogAmount *= mix(1.0, 0.1, sqrt(clamp01(getSunVector().y)));
 
+            fogAmount += 2.0 * fmn_rainFactor;
+
             #ifdef VOLUMETRIC_LIGHTING
                 fogAmount *= 0.1;
             #endif
@@ -731,7 +713,10 @@ void main() {
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getFogScattering(viewDir, particleThickness(0.01));
+            vec3 fogScattering = getSkyColor(viewDir, 0.0);
+            fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.1, 0.05, 0.025), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
+            fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
+            
             fogScattering *= (1.0 - fogTransmittance);
 
             composite = composite * fogTransmittance + fogScattering;

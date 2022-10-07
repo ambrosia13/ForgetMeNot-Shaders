@@ -13,7 +13,7 @@
 #include frex:shaders/api/world.glsl
 
 // Version number. Will increment when new variables are added.
-#define FMN_PBR 1
+#define FMN_PBR 2
 
 #if FMN_PBR >= 1
     // Flag for whether this material is water. Needed for water fog.
@@ -23,4 +23,8 @@
     // Not physically based at all; this just ignores the NdotL component of shadowing.
     // Defaulted to 1.0 when diffuse shading is disable.
     float fmn_sssAmount = frx_matDisableDiffuse == 1 ? 1.0 : 0.0;
+
+    #if FMN_PBR >= 2
+        int fmn_isPlayer = 0;
+    #endif
 #endif

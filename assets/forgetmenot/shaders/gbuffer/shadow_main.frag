@@ -81,14 +81,14 @@ void frx_pipelineFragment() {
     float NdotL = dot(frx_fragNormal, frx_skyLightVector);
     NdotL = mix(NdotL, 1.0, frx_matDisableDiffuse);
 
-    // Rain ripples
-    if(frx_smoothedRainGradient > 0.0) {
-        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+    // // Rain ripples
+    // if(frx_smoothedRainGradient > 0.0) {
+    //     vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
 
-        vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
-        frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
-        frx_fragNormal = normalize(frx_fragNormal);
-    }
+    //     vec3 noise = (vec3(rainHeightNoise(uv), rainHeightNoise(uv + 100.0), rainHeightNoise(uv - 100.0)));
+    //     frx_fragNormal += mix(vec3(0.0), noise * (2.0 * length(noise)) - length(noise), frx_smoothedRainGradient * step(0.9, frx_vertexNormal.y));
+    //     frx_fragNormal = normalize(frx_fragNormal);
+    // }
 
     // Makes shadows pixel aligned
     // vec4 viewPos = frx_shadowViewMatrix * vec4((floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0) - frx_cameraPos, frx_vertex.w);
@@ -163,8 +163,10 @@ void frx_pipelineFragment() {
                 float ao = frx_fragLight.z;
                 vec3 ambientLight = ambientColor * ao * ao;
 
+                float sunlightStrength = 0.0005 - 0.0004 * fmn_rainFactor;
+
                 lightmap += ambientLight;
-                lightmap += skyIlluminance * 0.0005 * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
+                lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
 
                 lightmap = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, frx_fragLight.x * frx_fragLight.x);
 
@@ -172,6 +174,8 @@ void frx_pipelineFragment() {
                 float heldLightFactor = (1.0 + frx_heldLight.a) / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
                 heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
+
+                if(frx_isHand && frx_heldLight.rgb != vec3(1.0)) heldLightFactor = 1.0;
 
                 // heldLightFactor *= 13.0;
                 // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
@@ -206,6 +210,8 @@ void frx_pipelineFragment() {
     if(color.a < 0.01 && frx_renderTargetSolid && !frx_isGui) discard;
 
     //color.rgb = shadowBlurColor;
+
+    //if(fmn_isPlayer == 1) discard;
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);

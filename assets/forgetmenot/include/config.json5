@@ -65,6 +65,11 @@
                     max: 4.0,
                     nameKey: "config.forgetmenot.name.night_brightness",
                     descriptionKey: "config.forgetmenot.desc.night_brightness"
+                },
+                raytraced_handheld_light_occlusion: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.raytraced_handheld_light_occlusion",
+                    descriptionKey: "config.forgetmenot.desc.raytraced_handheld_light_occlusion"
                 }
             }
         },
