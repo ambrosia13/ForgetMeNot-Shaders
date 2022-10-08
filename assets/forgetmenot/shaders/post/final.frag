@@ -29,7 +29,7 @@ void main() {
 
     float l = frx_luminance(finalColor);
 
-    //vibrance(finalColor, l);
+    vibrance(finalColor, mix(1.0, l, fmn_rainFactor));
     //finalColor = mix(finalColor * smoothstep(0.3, 0.9, 1.0 - pow(distance(texcoord, vec2(0.5)), 1.5)), finalColor, smoothstep(0.3, 0.7, l));
 
     //if(texcoord.x > 0.5) vibrance(finalColor, pow(l, 1.0 / 2.0));

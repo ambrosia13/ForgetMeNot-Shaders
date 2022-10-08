@@ -281,7 +281,9 @@ void main() {
         vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
         float shadowMap;
-        bool inShadowMap = texture(u_shadow_tex, vec3(shadowScreenPos.xy, cascade)).r < 1.0;
+
+        // this is not anywhere near exact so we undershoot it
+        bool inShadowMap = length(maxSceneSpacePos) < 128.0;
 
         float penumbraSize = 2.0;
         float dither = (interleaved_gradient());
@@ -335,6 +337,8 @@ void main() {
         // almost pixel perfect raytrace
         float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
 
+        //if(!inShadowMap) sssAmount = 0.0;
+
         float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
         if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
             for(int i = 0; i < 12; i++) {
@@ -345,7 +349,7 @@ void main() {
                 } else {
                     float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
 
-                    if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (length(maxSceneSpacePos) < 128.0 ? (mix(0.0001, 0.0005, sssAmount)) : 0.05)) {
+                    if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (inShadowMap ? 0.00015 : 0.01)) {
                         if(sssAmount < 0.04 || !inShadowMap)  {
                             shadowMap *= 0.0;
                             break;
@@ -362,6 +366,10 @@ void main() {
 
         shadowMap = mix(shadowMap, 0.0, tdata.z);
         shadowMap = mix(0.0, shadowMap, frx_worldIsOverworld);
+
+        #ifdef SKYLIGHT_LEAK_FIX
+            shadowMap *= smoothstep(1.0 / 16.0, 15.0 / 16.0, skyLight);
+        #endif
 
         vec3 lightmap = vec3(0.0);
 

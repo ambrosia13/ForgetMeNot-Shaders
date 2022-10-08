@@ -66,6 +66,11 @@
                     nameKey: "config.forgetmenot.name.night_brightness",
                     descriptionKey: "config.forgetmenot.desc.night_brightness"
                 },
+                skylight_leak_fix: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.skylight_leak_fix",
+                    descriptionKey: "config.forgetmenot.desc.skylight_leak_fix"
+                },
                 raytraced_handheld_light_occlusion: {
                     default: false,
                     nameKey: "config.forgetmenot.name.raytraced_handheld_light_occlusion",

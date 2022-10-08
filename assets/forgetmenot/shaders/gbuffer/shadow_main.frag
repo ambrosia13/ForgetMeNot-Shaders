@@ -134,6 +134,10 @@ void frx_pipelineFragment() {
     shadowMap *= frx_worldIsOverworld;
     float shadowMapInverse = 1.0 - clamp01(shadowMap);
 
+    #ifdef SKYLIGHT_LEAK_FIX
+        shadowMap *= smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y);
+    #endif
+
     if(!isInventory) {
         vec3 lightmap = vec3(0.0);
 
@@ -203,8 +207,8 @@ void frx_pipelineFragment() {
     } else {
         vec3 direction = vec3(0.2, 0.8, 0.6);
         float lengthSquared = dot(direction, direction);
-        direction /= lengthSquared * inversesqrt(lengthSquared);
-        color.rgb *= dot(frx_vertexNormal, direction) * 0.35 + 0.65;
+        direction *= inversesqrt(lengthSquared);
+        color.rgb *= dot(frx_vertexNormal, direction) * 0.45 + 0.55;
     }
 
     if(color.a < 0.01 && frx_renderTargetSolid && !frx_isGui) discard;
@@ -212,6 +216,8 @@ void frx_pipelineFragment() {
     //color.rgb = shadowBlurColor;
 
     //if(fmn_isPlayer == 1) discard;
+
+    //if(frx_fragLight.x <= 1.5 / 16.0) {color.r *= 2.0;color.gb *= 0.5;}
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);

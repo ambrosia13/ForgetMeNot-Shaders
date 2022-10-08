@@ -22,72 +22,72 @@
                 }
             ]
         },
-        {
-            name: "ambient_history",
-            lod: 0,
-            internalFormat: "RGB8",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "ambient",
-            lod: 0,
-            internalFormat: "RGBA8",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "ambient_filter",
-            lod: 0,
-            internalFormat: "RGBA8",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
+        // {
+        //     name: "ambient_history",
+        //     lod: 0,
+        //     internalFormat: "RGB8",
+        //     pixelFormat: "RGBA",
+        //     pixelDataType: "UNSIGNED_BYTE",
+        //     target: "TEXTURE_2D",
+        //     texParams: [
+        //         {
+        //             name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+        //         },
+        //         {
+        //             name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+        //         }
+        //     ]
+        // },
+        // {
+        //     name: "ambient",
+        //     lod: 0,
+        //     internalFormat: "RGBA8",
+        //     pixelFormat: "RGBA",
+        //     pixelDataType: "UNSIGNED_BYTE",
+        //     target: "TEXTURE_2D",
+        //     texParams: [
+        //         {
+        //             name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+        //         },
+        //         {
+        //             name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+        //         }
+        //     ]
+        // },
+        // {
+        //     name: "ambient_filter",
+        //     lod: 0,
+        //     internalFormat: "RGBA8",
+        //     pixelFormat: "RGBA",
+        //     pixelDataType: "UNSIGNED_BYTE",
+        //     target: "TEXTURE_2D",
+        //     texParams: [
+        //         {
+        //             name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+        //         },
+        //         {
+        //             name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+        //         }, 
+        //         {
+        //             name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+        //         }
+        //     ]
+        // },
         {
             name: "sort",
             lod: 0,
@@ -159,30 +159,30 @@
                 }
             ]
         },
-        {
-            name: "ambient_history",
-            colorAttachments: [
-                {
-                    image: "ambient_history", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "ambient",
-            colorAttachments: [
-                {
-                    image: "ambient", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "ambient_filter",
-            colorAttachments: [
-                {
-                    image: "ambient_filter", clearColor: 0x00000000
-                }
-            ]
-        },
+        // {
+        //     name: "ambient_history",
+        //     colorAttachments: [
+        //         {
+        //             image: "ambient_history", clearColor: 0x00000000
+        //         }
+        //     ]
+        // },
+        // {
+        //     name: "ambient",
+        //     colorAttachments: [
+        //         {
+        //             image: "ambient", clearColor: 0x00000000
+        //         }
+        //     ]
+        // },
+        // {
+        //     name: "ambient_filter",
+        //     colorAttachments: [
+        //         {
+        //             image: "ambient_filter", clearColor: 0x00000000
+        //         }
+        //     ]
+        // },
         {
             name: "sort",
             colorAttachments: [
@@ -210,39 +210,39 @@
                 "u_depth"
             ]
         },
-        {
-            name: "ambient_history",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_history.frag",
-            samplers: [
-                "u_history",
-                "u_normal",
-                "u_depth"
-            ]
-        },
-        {
-            name: "ambient",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient.frag",
-            samplers: [
-                "u_lightmap",
-                "u_normal",
-                "u_depth_mipmaps",
-                "u_history",
-                "u_blue_noise"
-            ]
-        },
-        {
-            name: "ambient_filter",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_filter.frag",
-            samplers: [
-                "u_rtao",
-                "u_normal",
-                "u_depth",
-                "u_history"
-            ]
-        },
+        // {
+        //     name: "ambient_history",
+        //     vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+        //     fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_history.frag",
+        //     samplers: [
+        //         "u_history",
+        //         "u_normal",
+        //         "u_depth"
+        //     ]
+        // },
+        // {
+        //     name: "ambient",
+        //     vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+        //     fragmentSource: "forgetmenot:shaders/post/fabulous/ambient.frag",
+        //     samplers: [
+        //         "u_lightmap",
+        //         "u_normal",
+        //         "u_depth_mipmaps",
+        //         "u_history",
+        //         "u_blue_noise"
+        //     ]
+        // },
+        // {
+        //     name: "ambient_filter",
+        //     vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+        //     fragmentSource: "forgetmenot:shaders/post/fabulous/ambient_filter.frag",
+        //     samplers: [
+        //         "u_rtao",
+        //         "u_normal",
+        //         "u_depth",
+        //         "u_history"
+        //     ]
+        // },
         {
             name: "sort",
             vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
@@ -267,7 +267,6 @@
                 "u_pbr_data",
                 "u_material_data",
                 "u_light_data",
-                "u_ambient",
 
                 "u_previous_frame",
                 "u_depth_mipmaps",
@@ -373,7 +372,6 @@
                     "pbr_data",
                     "material_data",
                     "light_data",
-                    "ambient_filter",
 
                     "bloom_downsample",
                     "quarter_res_depth",

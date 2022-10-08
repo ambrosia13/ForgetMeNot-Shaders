@@ -37,6 +37,8 @@
     "config.forgetmenot.desc.day_brightness": "Brightness of daylight",
     "config.forgetmenot.name.night_brightness": "Night Brightness",
     "config.forgetmenot.desc.night_brightness": "Brightness of nightlight",
+    "config.forgetmenot.name.skylight_leak_fix": "Skylight Leak Fix",
+    "config.forgetmenot.desc.skylight_leak_fix": "Blends the shadow map with the sky lightmap, removing some shadows but preventing incorrect sunlight in caves",
     "config.forgetmenot.name.raytraced_handheld_light_occlusion": "Raytraced Handheld Light Occlusion",
     "config.forgetmenot.desc.raytraced_handheld_light_occlusion": "Does a quick screen space raytrace to find occlusion for handheld light. Works best in 3rd person",
     "config.forgetmenot.name.ambient_light_boost": "Ambient Light Boost",
