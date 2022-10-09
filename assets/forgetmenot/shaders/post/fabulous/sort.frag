@@ -563,7 +563,7 @@ void main() {
 
     try_insert(translucent_color, translucent_depth);
     try_insert(entity_color, entity_depth);
-    try_insert(weather_color, weather_depth);
+    //try_insert(weather_color, weather_depth);
     try_insert(particles_color, particles_depth);
     //if(clouds_depth < max_depth) color_layers[0].rgb = mix(color_layers[0].rgb, clouds_color.rgb, clouds_color.a);
 
@@ -782,6 +782,10 @@ void main() {
         float darknessFactor = max(0.0, (frx_darknessEffectFactor) * 0.75 + 0.25);
         composite = mix(composite, vec3(0.0), (smoothstep(0.0, 20.0 * darknessFactor, blockDist)) * frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
     #endif
+
+    if(weather_depth < min_depth) {
+        composite = mix(composite, weather_color.rgb, weather_color.a);
+    }
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, doRefraction));
 }
