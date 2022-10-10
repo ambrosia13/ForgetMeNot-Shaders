@@ -25,6 +25,7 @@ uniform sampler2D u_ambient;
 
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_depth_mipmaps;
+uniform sampler2D u_depth_no_player;
 uniform sampler2D u_blue_noise;
 
 uniform sampler2DArrayShadow u_shadow_map;
@@ -70,53 +71,14 @@ vec3 blend( vec3 dst, vec4 src ) {
 }
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
-    // float worldTime = frx_worldDay + frx_worldTime;
-    // worldTime *= 0.1;
-
-    // // 0.3 to 0.7
-    // float coverageBias = 0.5;
-
-    // // 0.2 to 0.35
-    // float mistiness = 0.2;
-
-    // // 1.3 to 3.3
-    // float irregularity = 1.3;
-
-    // // 0.0 to 2.0
-    // float windWispyness = 0.0;
-
-    // // 0.5 to 1.0
-    // float density = 1.0;
-
-    // #ifdef DYNAMIC_WEATHER
-    //     coverageBias += smoothHash(plane * 0.1 + 20.0 * (worldTime + 4.0) + fmn_time / 60.0) * 0.2;
-    //     mistiness += smoothHash(100.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.15 + 0.15;
-    //     //irregularity += smoothHash(500.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
-    //     //windWispyness += smoothHash(1000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) + 1.0;
-    //     density += smoothHash(2000.0 + plane * 0.1 + 20.0 * (worldTime + 7.0) + fmn_time / 60.0) * 0.25 - 0.25;
-    // #endif
-
-    // coverageBias = clamp(coverageBias, 0.3, 0.7);
-
-    // mistiness = mix(mistiness, 0.3, frx_smoothedRainGradient);
-    // float lowerBound = coverageBias;
-    // float upperBound = coverageBias + mistiness;
-    
-    // if(windWispyness > 0.0) plane.x += windWispyness * fbmHash(plane.yy * 0.3, 3, 0.01);
-
-    // float noise1 = mix(smoothHash(plane * irregularity + fmn_time / 40.0), smoothHash(plane * irregularity + fmn_time / 60.0 + 10.0), 0.5);
-    // float clouds = (smoothstep(lowerBound + 0.2 * noise1, upperBound + 0.2 * noise1, fbmHash(plane, octaves, 0.001)));
-
-    // return clouds * ((octaves + 1.0) / octaves);
-
-    float noise1 = fbmHash(plane * 2.0, octaves, 0.001);
-    float noise2 = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
+    float noiseA = fbmHash(plane * 2.0, octaves, 0.001);
+    float noiseB = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
 
     float aLowerBound = 0.7 - 0.7 * fmn_rainFactor;
     float bLowerBound = 0.5 - 0.5 * fmn_rainFactor;
 
-    float a = smoothstep(aLowerBound, 0.9, noise1) * ((octaves + 1.0) / octaves);
-    float b = smoothstep(bLowerBound, 0.9, noise2) * ((octaves + 1.0) / octaves);
+    float a = smoothstep(aLowerBound, 0.9, noiseA) * ((octaves + 1.0) / octaves);
+    float b = smoothstep(bLowerBound, 0.9, noiseB) * ((octaves + 1.0) / octaves);
     float x = smoothHash(plane) * 0.5 + 0.5;
 
     return mix(a, b, x);
@@ -128,39 +90,9 @@ float sampleCirrusCloud(in vec2 plane, in int octaves) {
     float clouds = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.5, 1.5, fbmHash(plane * 0.5, octaves, 0.01));
     return clouds;
 }
-float getVLFogDensity(in vec3 pos) {
-    pos += frx_cameraPos;
-    float h = smoothstep(0.0, 200.0, pos.y);
-    h = h;
-    return smoothstep(0.0 + h, 1.0, fbm(pos * 0.3));
-}
-
-vec2 Jitter(vec2 fragCoord, int frame)
-{
-    int num = 8;
-    return (vec2(fragCoord + 0.25 * normalize(rand2D(vec2(frame)))));
-
-}
-
-bool isSolid(vec3 pos) {
-    vec3 cellPos = floor(pos);
-    return snoise(cellPos.xz) > 0.5;
-}
-
-// Offsets from Chocapic13 shaders
-vec2 taaOffsets[8] = vec2[8](
-    vec2( 0.125,-0.375),
-    vec2(-0.125, 0.375),
-    vec2( 0.625, 0.125),
-    vec2( 0.375,-0.625),
-    vec2(-0.625, 0.625),
-    vec2(-0.875,-0.125),
-    vec2( 0.375,-0.875),
-    vec2( 0.875, 0.875)
-);
 
 vec3 getBlueNoise() {
-    ivec2 coord = ivec2(gl_FragCoord.xy + frx_renderFrames * 100u);
+    ivec2 coord = ivec2(gl_FragCoord.xy + frx_renderFrames % 1000u * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
     return normalize(r) * 2.0 - 1.0;
@@ -403,31 +335,32 @@ void main() {
         heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
 
         #ifdef RAYTRACED_HANDHELD_LIGHT_OCCLUSION
+            float depthNoPlayer = textureLod(u_depth_no_player, texcoord, 0).r;
             float occlusion = 1.0;
 
             const int HELD_LIGHT_STEPS = 10;
 
-            vec3 heldLightPos = ((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0);
+            vec3 heldLightPos = sceneSpaceToViewSpace(((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0));
 
             vec2 seed = vec2(fmn_time);
             heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
 
-            vec3 rayPos = minSceneSpacePos;
-            vec3 rayDir = -(heldLightPos);
+            vec3 rayPos = vec3(texcoord, depthNoPlayer);
+            vec3 rayViewDir = (normalize(-heldLightPos) + 0.01 * goldNoise3d());
+            vec3 rayDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + rayViewDir) - rayPos);
+
             float stepLength = 0.05 / HELD_LIGHT_STEPS;
 
-            if(!all(equal(frx_heldLight.rgb, vec3(1.0)))) {
+            if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && (minViewSpacePos + rayViewDir).z < 0.0) {
                 for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
-                    rayPos += (rayDir / HELD_LIGHT_STEPS) * (interleaved_gradient() * 0.75 + 0.25) + goldNoise3d(i) * 0.001;
+                    rayPos += (rayDir * stepLength) * interleaved_gradient(i);
 
-                    vec3 rayScreen = sceneSpaceToScreenSpace(rayPos);
-
-                    if(clamp01(rayScreen) != rayScreen) {
+                    if(clamp01(rayPos) != rayPos) {
                         break;
                     } else {
-                        float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 2).r;
+                        float depthQuery = textureLod(u_depth_no_player, rayPos.xy, 0).r;
 
-                        if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.01) {
+                        if(rayPos.z > depthQuery && abs(linearizeDepth(rayPos.z) - linearizeDepth(depthQuery)) < 0.005) {
                             occlusion *= 0.0;
                             break;
                         }

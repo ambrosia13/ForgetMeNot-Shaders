@@ -54,6 +54,10 @@
                 {
                     image: "pbr_data",
                     clearColor: 0x00000000
+                },
+                {
+                    image: "depth_no_player",
+                    clearColor: 0x00000000
                 }
             ]
         },

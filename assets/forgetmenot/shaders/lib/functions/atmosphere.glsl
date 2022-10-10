@@ -403,7 +403,7 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
 
     }
 
-    return atmosphere;
+    return atmosphere + 2.0 * frx_skyFlashStrength;
 }
 
 vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {

@@ -270,6 +270,7 @@
 
                 "u_previous_frame",
                 "u_depth_mipmaps",
+                "u_depth_no_player"
                 "u_blue_noise",
 
                 "u_shadow_map",
@@ -375,6 +376,7 @@
 
                     "bloom_downsample",
                     "quarter_res_depth",
+                    "depth_no_player"
                     "forgetmenot:textures/blue_noise.png",
                     
                     "shadow_map",

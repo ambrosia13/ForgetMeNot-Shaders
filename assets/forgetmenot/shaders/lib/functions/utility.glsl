@@ -39,6 +39,10 @@ vec3 lastFrameSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
     vec4 temp = frx_lastViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
+vec3 sceneSpaceToViewSpace(in vec3 sceneSpacePos) {
+    vec3 screenPos = sceneSpaceToScreenSpace(sceneSpacePos);
+    return setupViewSpacePos(screenPos.xy, screenPos.z);
+}
 
 float clamp01(in float x) {
     return clamp(x, 0.0, 1.0);

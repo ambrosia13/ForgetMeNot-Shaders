@@ -36,7 +36,7 @@ void main() {
 
     //finalColor *= 0.5 + 0.5 * smoothstep(-0.3, 0.9, pow(3.0 * texcoord.x * texcoord.y * (1.0 - texcoord.x) * (1.0 - texcoord.y), 0.25));
 
-    finalColor = mix(finalColor, 1.0 - finalColor, clamp01(frx_skyFlashStrength * frx_smoothedEyeBrightness.y));
+    //finalColor = mix(finalColor, 1.0 - finalColor, clamp01(frx_skyFlashStrength * frx_smoothedEyeBrightness.y));
 
     fragColor = vec4(finalColor, 1.0);
 }

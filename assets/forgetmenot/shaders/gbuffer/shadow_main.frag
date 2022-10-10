@@ -11,9 +11,10 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
 layout(location = 2) out vec4 tangentNormal;
 layout(location = 3) out vec4 pbrData;
-layout(location = 4) out vec4 materialData;
-layout(location = 5) out vec4 lightData;
-layout(location = 6) out vec4 solidNormal;
+layout(location = 4) out vec4 depthNoPlayer;
+layout(location = 5) out vec4 materialData;
+layout(location = 6) out vec4 lightData;
+layout(location = 7) out vec4 solidNormal;
 
 // procedural rain noise
 float rainHeightNoise(in vec2 uv) {
@@ -215,11 +216,13 @@ void frx_pipelineFragment() {
 
     //color.rgb = shadowBlurColor;
 
-    //if(fmn_isPlayer == 1) discard;
+    if(fmn_isPlayer == 0) {
+        depthNoPlayer.r = gl_FragCoord.z;
+    }
 
     //if(frx_fragLight.x <= 1.5 / 16.0) {color.r *= 2.0;color.gb *= 0.5;}
 
-    fragColor = color;
+    fragColor = _CV_TARGET_INDEX == 2 ? color : vec4(0.0, 0.0, 0.0, 1.0);
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
     tangentNormal = vec4((frx_fragNormal * tbnMatrix()) * 0.5 + 0.5, 1.0);
     pbrData = vec4(frx_fragReflectance, fmn_isWater, frx_fragRoughness, 1.0);
