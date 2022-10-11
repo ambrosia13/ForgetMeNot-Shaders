@@ -1,4 +1,3 @@
-#include frex:shaders/api/vertex.glsl
 #include forgetmenot:shaders/lib/includes.glsl
 
 uniform mat4 frxu_frameProjectionMatrix;
