@@ -656,7 +656,7 @@ void main() {
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getFogScattering(viewDir, particleThickness(fogDist / 256.0));
+            vec3 fogScattering = getSkyColor(viewDir, 0.0);
             fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.1, 0.05, 0.025), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
             fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
