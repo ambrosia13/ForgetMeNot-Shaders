@@ -572,7 +572,7 @@ void main() {
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
                     } else {
-                        float depthQuery = textureLod(u_depth_mipmaps, screenPos.xy, depthLod).r;
+                        float depthQuery = texelFetch(u_depth_mipmaps, ivec2(screenPos.xy * frxu_size), 0).r;
                         // float ldepth = linearizeDepth(screenPos.z), lsample = linearizeDepth(depthQuery);
 
                         if(depthQuery == 1.0) {
@@ -590,7 +590,7 @@ void main() {
                             float binaryStepLength = stepLength * 0.5;
                             reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
                             for(int i = 0; i < 4; i++) {
-                                reflectionCoord += sign(textureLod(u_depth_mipmaps, reflectionCoord.xy, 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
+                                reflectionCoord += sign(texelFetch(u_depth_mipmaps, ivec2(reflectionCoord.xy * frxu_size), 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
                                 binaryStepLength *= 0.5;
                             }
 
@@ -605,7 +605,7 @@ void main() {
             vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
             reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
 
-            if(ssrHit) reflectColor = textureLod(u_previous_frame, reflectionCoord.xy, 0).rgb;
+            if(ssrHit) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord.xy * frxu_size), 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
 
             // if(frx_cameraInWater == 1) {
@@ -644,6 +644,8 @@ void main() {
 
             fogAmount += 2.0 * fmn_rainFactor;
 
+            //fogAmount *= 10.0;
+
             #ifdef VOLUMETRIC_LIGHTING
                 fogAmount *= 0.1;
             #endif
@@ -654,7 +656,7 @@ void main() {
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getSkyColor(viewDir, 0.0);
+            vec3 fogScattering = getFogScattering(viewDir, particleThickness(fogDist / 256.0));
             fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.1, 0.05, 0.025), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
             fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             

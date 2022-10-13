@@ -1,7 +1,8 @@
 {
 	"layers": [
 		{
-			"fragmentSource": "minecraft:shaders/material/stylize/sss.frag"
-        }
+			"fragmentSource": "minecraft:shaders/material/stylize/sss.frag",
+			"vertexSource": "canvas:shaders/material/leaves.vert"
+		}
 	]
 }
