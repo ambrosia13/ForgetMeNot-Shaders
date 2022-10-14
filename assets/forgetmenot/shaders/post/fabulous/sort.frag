@@ -349,7 +349,7 @@ void main() {
             vec3 rayViewDir = (normalize(-heldLightPos) + 0.01 * goldNoise3d());
             vec3 rayDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + rayViewDir) - rayPos);
 
-            float stepLength = 0.05 / HELD_LIGHT_STEPS;
+            float stepLength = 0.025 / HELD_LIGHT_STEPS;
 
             if(!all(equal(frx_heldLight.rgb, vec3(1.0))) && (minViewSpacePos + rayViewDir).z < 0.0) {
                 for(int i = 0; i < HELD_LIGHT_STEPS; i++) {
@@ -369,6 +369,8 @@ void main() {
                     stepLength *= 1.5;
                 }
             }
+
+            if(max_depth != depthNoPlayer) occlusion = 1.0;
 
             heldLightFactor *= occlusion;
         #endif
@@ -449,6 +451,7 @@ void main() {
                         float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
                         lightOpticalDepth += currentDensity;
                     }
+                    //lightOpticalDepth *= mix(1.0, 1.0, smoothstep(0.999, 1.0, dot(viewDir, abs(frx_skyLightVector))));
 
 
                     transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
