@@ -80,7 +80,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
     if(frx_worldIsEnd == 1) {
         viewDir.y = abs(viewDir.y);
-        rayleigh = vec3(0.8, 0.3, 1.0) * 1e-5;
+        rayleigh = vec3(0.6, 0.1, 1.2) * 1e-5;
         sunVector = normalize(vec3(1.0, 0.1, 0.2));
     }
 
@@ -146,9 +146,9 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     }
 
 
-    return totalScatter * totalAbsorb;
+    return totalScatter * totalAbsorb * (1.0 + frx_worldIsEnd);
 }
-vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness, float drawSun) {
+vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness, float drawSun, float vlFactor) {
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
 
     const float ln2 = 0.693147181;
@@ -195,6 +195,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(LdotV, atmosphereG);
 
     vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+    scatterSun += scatterSun * vlFactor * miePhase(LdotV, atmosphereG);
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
     vec3 totalAbsorb = absorbSun * factor;
@@ -382,6 +383,8 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
+    float vlFactor = mix(0.0, 1.0, fmn_rainFactor);
+
     if(frx_worldIsNether == 1) {
         return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
     }
@@ -391,11 +394,40 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
 
         if(1.0 - tdata.y > 0.0) {
             vec3 sunVector = getSunVector();
-            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun, vlFactor) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
         }
         if(1.0 - tdata.x > 0.0) {
             vec3 moonVector = getMoonVector();
-            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun) * moonFlux;
+            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun, vlFactor) * moonFlux;
+        }
+
+        atmosphere = mix(atmosphere, min(mix(atmosphere, vec3(frx_luminance(atmosphere)), 0.5), atmosphere * 0.15 + 0.15), fmn_rainFactor);
+    }
+
+    if(frx_worldIsEnd == 1) {
+
+    }
+
+    return atmosphere + 2.0 * frx_skyFlashStrength;
+}
+vec3 getSkyColor(in vec3 viewDir, float drawSun, float vlFactor) {
+    vec3 atmosphere;
+    vec3 tdata = getTimeOfDayFactors();
+
+    if(frx_worldIsNether == 1) {
+        return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
+    }
+
+    if(frx_worldIsOverworld == 1) {
+        drawSun *= mix(1.0, 0.0, fmn_rainFactor);
+
+        if(1.0 - tdata.y > 0.0) {
+            vec3 sunVector = getSunVector();
+            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun, vlFactor) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
+        }
+        if(1.0 - tdata.x > 0.0) {
+            vec3 moonVector = getMoonVector();
+            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun, vlFactor) * moonFlux;
         }
 
         atmosphere = mix(atmosphere, min(mix(atmosphere, vec3(frx_luminance(atmosphere)), 0.5), atmosphere * 0.15 + 0.15), fmn_rainFactor);
@@ -450,6 +482,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         } else if(viewDir.y < 0.0) {
             atmosphere += vec3(0.01, 0.0, 0.01);
         }
+
+        atmosphere *= 2.0;
     }
 
     vec3 viewPosCopy = viewPos;
