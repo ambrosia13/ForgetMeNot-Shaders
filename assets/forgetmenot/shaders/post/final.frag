@@ -20,15 +20,17 @@ void main() {
     //     finalColor *= vec3(1.0, 1.0, 0.0);
     // }
 
+    float l = frx_luminance(finalColor);
+    vibrance(finalColor, smoothstep(0.0, 0.35, l) * 0.7 + 0.3);
+
     //finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
     finalColor = frx_toneMap(finalColor);
 
     finalColor = max(finalColor, vec3(0.0));
     finalColor = pow(finalColor, vec3(1.0 / 2.2));
 
-    float l = frx_luminance(finalColor);
+    l = frx_luminance(finalColor);
 
-    vibrance(finalColor, smoothstep(0.0, 0.35, l));
     vibrance(finalColor, mix(1.0, l, fmn_rainFactor));
     //finalColor = mix(finalColor * smoothstep(0.3, 0.9, 1.0 - pow(distance(texcoord, vec2(0.5)), 1.5)), finalColor, smoothstep(0.3, 0.7, l));
 

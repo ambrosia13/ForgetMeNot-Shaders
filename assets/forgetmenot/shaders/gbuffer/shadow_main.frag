@@ -1,7 +1,4 @@
 #include forgetmenot:shaders/lib/includes.glsl 
-#define SHADOW_MAP_SIZE 2048
-#define SHADOW_FILTER_SIZE PCF_SIZE_LARGE
-#include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_glint;
 
@@ -49,17 +46,16 @@ void resolveMaterials() {
     }
 
     // No reflections on default materials
-    if(frx_fragReflectance == 0.04) frx_fragReflectance = 0.0;
+    if(abs(frx_fragReflectance - 0.04) < 0.001) frx_fragReflectance = 0.0;
 
     // Hurt effect
     frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);
 
-    // Glint effect
+    // Glint
     if(frx_matGlint == 1) {
-        vec3 glint = texture(u_glint, frx_normalizeMappedUV(frx_texcoord * 0.2 + frx_renderSeconds / 500.0)).rgb;
+        vec3 glint = texture(u_glint, fract(frx_normalizeMappedUV(frx_texcoord) * 0.5 + frx_renderSeconds * 0.1)).rgb;
         glint = pow(glint, vec3(4.0));
         frx_fragColor.rgb += glint;
-        frx_fragEmissive += frx_luminance(glint) * 0.5;
     }
 
     // white world - for debug
@@ -98,29 +94,20 @@ void frx_pipelineFragment() {
     vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
     float shadowMap;
-
     float penumbraSize = 2.0;
-    float dither = sqrt(interleaved_gradient());
 
-    vec3 shadowPosDX = dFdx(shadowScreenPos);
-    vec3 shadowPosDY = dFdy(shadowScreenPos);
-
-    vec2 receiverPlaneDepthBias = computeReceiverPlaneDepthBias(shadowPosDX, shadowPosDY);
-
-    float fractionalSamplingError = 2.0 * dot(vec2(1.0 / SHADOW_MAP_SIZE), abs(receiverPlaneDepthBias));
     float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - VNdotL) + 0.00009 * (3 - cascade);
-    
     #ifdef BIAS_MULT
         float biasMult = 1.0 + 0.1 * max(0, 2 - cascade);
     #else
         float biasMult = 1.0;
     #endif
+    shadowScreenPos.z -= biasMult * cutoutBias;
 
-    shadowScreenPos.z -= biasMult * mix(min(fractionalSamplingError, 0.01), cutoutBias, frx_matCutout);
-
-    #define SHADOW_FILTER_SAMPLES 4
+    // low quality shadows for translucents
+    #define SHADOW_FILTER_SAMPLES 3
     for(int i = 0; i < SHADOW_FILTER_SAMPLES; i++) {
-        vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, dither * TAU) * penumbraSize;
+        vec2 offset = diskSampling(i, SHADOW_FILTER_SAMPLES, interleaved_gradient(i) * TAU) * penumbraSize;
         vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
         shadowMap += texture(frxs_shadowMap, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
     }
@@ -128,16 +115,13 @@ void frx_pipelineFragment() {
     shadowMap = clamp01(shadowMap);
     shadowMap *= mix(smoothstep(-0.0, 0.1, VNdotL), 1.0, fmn_sssAmount); // skip NdotL shading to approximate SSS
 
-    // backface brightening - apparently happens in real life with SSS
-    //shadowMap *= mix(1.0, 3.3, fmn_sssAmount * step(0.0, -VNdotL) * (1.0 - frx_matDisableDiffuse));
+    #ifdef SKYLIGHT_LEAK_FIX
+        shadowMap *= smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y);
+    #endif
 
     shadowMap = mix(shadowMap, 0.0, tdata.z);
     shadowMap *= frx_worldIsOverworld;
     float shadowMapInverse = 1.0 - clamp01(shadowMap);
-
-    #ifdef SKYLIGHT_LEAK_FIX
-        shadowMap *= smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.y);
-    #endif
 
     if(!isInventory) {
         vec3 lightmap = vec3(0.0);
@@ -176,16 +160,13 @@ void frx_pipelineFragment() {
                 lightmap = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, frx_fragLight.x * frx_fragLight.x);
 
                 // handheld light
-                float heldLightFactor = (1.0 + frx_heldLight.a) / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
+                float heldLightFactor = 1.0 / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
                 heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, normalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
+                heldLightFactor *= frx_heldLight.a + 1.0;
 
                 if(frx_isHand && frx_heldLight.rgb != vec3(1.0)) heldLightFactor = 1.0;
-
-                // heldLightFactor *= 13.0;
-                // heldLightFactor = mix(max((heldLightFactor * heldLightFactor * heldLightFactor) / 800.0, heldLightFactor / 13.0), heldLightFactor / 13.0, frx_smoothedEyeBrightness.y);
-                //heldLightFactor = clamp01(heldLightFactor);
-                if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * 2.2, vec3(2.2)) * ao), heldLightFactor);
+                if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (2.2 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
 
                 lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * ao, frx_effectNightVision * frx_effectModifier);
                 lightmap = mix(lightmap, vec3(1.0), frx_fragEmissive);
