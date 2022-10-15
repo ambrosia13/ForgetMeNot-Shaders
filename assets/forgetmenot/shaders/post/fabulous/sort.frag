@@ -634,7 +634,7 @@ void main() {
 
     #ifdef ATMOSPHERIC_FOG
         if(frx_worldIsOverworld == 1) {
-            float vl = 1.0;
+            float vl = 0.0;
 
             #ifdef VOLUMETRIC_LIGHTING
                 const int VL_SAMPLES = 8;
