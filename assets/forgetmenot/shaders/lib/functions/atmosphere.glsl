@@ -361,6 +361,10 @@ vec3 getFogScattering(in vec3 viewDir, in float opticalDepth) {
 }
 
 vec3 getSkyColor(in vec3 viewDir) {
+    #ifdef WHITE_SKY
+        return vec3(1.0);
+    #endif
+
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
@@ -380,6 +384,10 @@ vec3 getSkyColor(in vec3 viewDir) {
     return atmosphere;
 }
 vec3 getSkyColor(in vec3 viewDir, float drawSun) {
+    #ifdef WHITE_SKY
+        return vec3(1.0);
+    #endif
+
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
