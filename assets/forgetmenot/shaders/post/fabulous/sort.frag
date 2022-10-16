@@ -322,6 +322,7 @@ void main() {
         vec3 ambientLight = ambientColor * ao * ao;
 
         #ifdef SSGI
+        {
             const int RTAO_RAYS = 6;
             const int RTAO_STEPS = 8;
 
@@ -364,6 +365,7 @@ void main() {
 
             ambientLight = mix(ambientColor, gi, hit);
             ao = mix(vec3(1.0), gi, hit);
+        }
         #endif
 
         float sunlightStrength = 0.0005 - 0.0004 * fmn_rainFactor;
@@ -380,6 +382,7 @@ void main() {
         heldLightFactor *= frx_heldLight.a + 1.0;
 
         #ifdef RAYTRACED_HANDHELD_LIGHT_OCCLUSION
+        {
             float depthNoPlayer = textureLod(u_depth_no_player, texcoord, 0).r;
             float occlusion = 1.0;
 
@@ -418,6 +421,7 @@ void main() {
             if(max_depth != depthNoPlayer) occlusion = 1.0;
 
             heldLightFactor *= occlusion;
+        }
         #endif
 
         if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (2.2 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
