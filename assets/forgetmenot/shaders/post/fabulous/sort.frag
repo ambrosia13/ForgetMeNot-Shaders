@@ -192,7 +192,7 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // deferred lighting
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#ifndef DISABLE_ALL_LIGHTING
     vec4 materialData = texture(u_material_data, texcoord);
     float emission = materialData.r;
     float disableDiffuse = materialData.g;
@@ -430,7 +430,7 @@ void main() {
 
         if(f0.r < 0.999) main_color.rgb *= mix(lightmap, vec3(1.0), emission);
     }
-
+#endif
     normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
@@ -541,6 +541,7 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#ifdef POST_FABULOUS_BLENDING
     if(pbrData.g > 0.5) {
         float sunDotU = getSunVector().y;
 
@@ -753,5 +754,6 @@ void main() {
         composite = mix(composite, weather_color.rgb, weather_color.a);
     }
 
-    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, doRefraction));
+#endif
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));
 }

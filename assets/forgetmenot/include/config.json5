@@ -133,7 +133,22 @@
                     default: true,
                     nameKey: "config.forgetmenot.name.internal_materials",
                     descriptionKey: "config.forgetmenot.desc.internal_materials"
-                }
+                },
+                white_sky: {
+                    default: false,
+                    nameKey: "White_Sky",
+                    descriptionKey: "White_Sky"
+                },
+                post_fabulous_blending: {
+                    default: false,
+                    nameKey: "Post Fabulous Blending",
+                    descriptionKey: "Disable all things after fabulous sort"
+                },
+                disable_all_lighting: {
+                    default: true,
+                    nameKey: "Disable all solid lighting",
+                    descriptionKey: "Disable all deferred lighting"
+                },
             }
         },
     ]

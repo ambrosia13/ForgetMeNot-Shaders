@@ -411,6 +411,10 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
     return atmosphere + 2.0 * frx_skyFlashStrength;
 }
 vec3 getSkyColor(in vec3 viewDir, float drawSun, float vlFactor) {
+    #ifdef WHITE_SKY
+        return vec3(1.0);
+    #endif
+
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
@@ -441,6 +445,10 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun, float vlFactor) {
 }
 
 vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
+    #ifdef WHITE_SKY
+        return vec3(1.0);
+    #endif
+
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
 
     vec3 atmosphere;
