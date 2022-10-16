@@ -201,7 +201,7 @@ void main() {
     vec3 light = texture(u_light_data, texcoord).rgb;
     float blockLight = light.r;
     float skyLight = mix(light.g, 1.0, 1.0 - frx_worldIsOverworld);
-    float ao = light.b;
+    vec3 ao = light.bbb;
 
     float NdotL = dot(normal, frx_skyLightVector);
 
@@ -319,8 +319,52 @@ void main() {
             ambientColor = ambientColor * 0.75 + 0.25;
         }
 
-        float aoFactor = ao;
         vec3 ambientLight = ambientColor * ao * ao;
+
+        #ifdef SSGI
+            const int RTAO_RAYS = 6;
+            const int RTAO_STEPS = 8;
+
+            ambientLight = vec3(0.0);
+            float hit = 0.0;
+            vec3 gi = vec3(0.0);
+
+            vec3 viewNormal = frx_normalModelMatrix * normal;
+
+            vec3 rtaoRayPos = maxViewSpacePos;
+            vec3 rayScreen = vec3(texcoord, max_depth);
+
+            float stepLength = 12.0 / frxu_size.x;
+
+            vec3 rayWorldDir = normalize(normal + goldNoise3d());
+            for(int i = 0; i < RTAO_RAYS; i++) {
+                vec3 rayDir = normalize(viewNormal + goldNoise3d(i));
+                vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
+                
+                vec3 rayScreenMarch = rayScreen;
+
+                if(min_depth == max_depth && max_depth < 1.0 && (rtaoRayPos + rayDir).z < 0.0) {
+                    for(int j = 0; j < RTAO_STEPS; j++) {
+                        rayScreenMarch += rayScreenDir * stepLength;
+
+                        if(clamp01(rayScreenMarch) != rayScreenMarch) {
+                            break;
+                        } else {
+                            float depthQuery = textureLod(u_depth_mipmaps, rayScreenMarch.xy, 2).r;
+
+                            if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.0025) {
+                                gi += 0.0/*texture(u_previous_frame, rayScreenMarch.xy).rgb*/ / RTAO_RAYS;
+                                hit += 0.75 / RTAO_RAYS;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            ambientLight = mix(ambientColor, gi, hit);
+            ao = mix(vec3(1.0), gi, hit);
+        #endif
 
         float sunlightStrength = 0.0005 - 0.0004 * fmn_rainFactor;
 

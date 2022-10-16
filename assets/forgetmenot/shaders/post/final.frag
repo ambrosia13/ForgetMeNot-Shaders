@@ -14,31 +14,18 @@ void main() {
     //color = floor(color * 16.0 + 0.5) / 16.0;
     vec3 finalColor = color.rgb;
 
-    //finalColor *= vec3(1.1, 1.1, 0.9);
-
-    // if(texcoord.x > 0.5) {
-    //     finalColor *= vec3(1.0, 1.0, 0.0);
-    // }
-
-    float l = frx_luminance(finalColor);
-    vibrance(finalColor, smoothstep(0.0, 0.35, l) * 0.7 + 0.3);
-
     //finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
     finalColor = frx_toneMap(finalColor);
 
     finalColor = max(finalColor, vec3(0.0));
     finalColor = pow(finalColor, vec3(1.0 / 2.2));
 
-    l = frx_luminance(finalColor);
+    float l = frx_luminance(finalColor);
+    vibrance(finalColor, smoothstep(0.0, 0.35, l) * 0.7 + 0.3);
 
     vibrance(finalColor, mix(1.0, l, fmn_rainFactor));
+
     //finalColor = mix(finalColor * smoothstep(0.3, 0.9, 1.0 - pow(distance(texcoord, vec2(0.5)), 1.5)), finalColor, smoothstep(0.3, 0.7, l));
-
-    //if(texcoord.x > 0.5) vibrance(finalColor, pow(l, 1.0 / 2.0));
-
-    //finalColor *= 0.5 + 0.5 * smoothstep(-0.3, 0.9, pow(3.0 * texcoord.x * texcoord.y * (1.0 - texcoord.x) * (1.0 - texcoord.y), 0.25));
-
-    //finalColor = mix(finalColor, 1.0 - finalColor, clamp01(frx_skyFlashStrength * frx_smoothedEyeBrightness.y));
 
     fragColor = vec4(finalColor, 1.0);
 }

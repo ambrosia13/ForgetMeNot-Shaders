@@ -372,6 +372,8 @@ vec2 diskSampling(float i, float n, float phi){
         return r;
     }
     vec3 goldNoise3d(float seed) {
+        seed += mod(frx_renderSeconds, 10.0);
+
         vec3 r = vec3(
             gold_noise(gl_FragCoord.xy, seed),
             gold_noise(gl_FragCoord.xy, seed + 1.0),

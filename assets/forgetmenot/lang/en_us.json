@@ -49,8 +49,8 @@
     "config.forgetmenot.desc.refraction": "Simple refraction of objects behind translucents, has issues",
     "config.forgetmenot.name.vanilla_ao": "Vanilla Ambient Occlusion",
     "config.forgetmenot.desc.vanilla_ao": "Whether to enable vanilla minecraft approximation of ambient occlusion",
-    "config.forgetmenot.name.rtao": "Raytraced Ambient Occlusion",
-    "config.forgetmenot.desc.rtao": "Whether to enable ray traced ambient occlusion ;Impacts performance",
+    "config.forgetmenot.name.ssgi": "Raytraced Ambient Occlusion",
+    "config.forgetmenot.desc.ssgi": "Occlusion checks for high quality ambient lighting, very slow",
     "config.forgetmenot.name.rtao_steps": "RTAO steps",
     "config.forgetmenot.desc.rtao_steps": "Quality of RTAO",
 

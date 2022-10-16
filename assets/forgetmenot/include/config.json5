@@ -75,6 +75,11 @@
                     default: false,
                     nameKey: "config.forgetmenot.name.raytraced_handheld_light_occlusion",
                     descriptionKey: "config.forgetmenot.desc.raytraced_handheld_light_occlusion"
+                },
+                ssgi: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.ssgi",
+                    descriptionKey: "config.forgetmenot.desc.ssgi"
                 }
             }
         },
