@@ -351,7 +351,7 @@ void main() {
                         if(clamp01(rayScreenMarch) != rayScreenMarch) {
                             break;
                         } else {
-                            float depthQuery = textureLod(u_depth_mipmaps, rayScreenMarch.xy, 2).r;
+                            float depthQuery = texelFetch(u_depth_mipmaps, ivec2(rayScreenMarch.xy * frxu_size * 0.25), 2).r;
 
                             if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.0025) {
                                 gi += 0.0/*texture(u_previous_frame, rayScreenMarch.xy).rgb*/ / RTAO_RAYS;
@@ -365,6 +365,11 @@ void main() {
 
             ambientLight = mix(ambientColor, gi, hit);
             ao = mix(vec3(1.0), gi, hit);
+
+            #ifdef DRAW_AO
+                fragColor = vec4(ao, 1.0);
+                return;
+            #endif
         }
         #endif
 
@@ -424,7 +429,7 @@ void main() {
         }
         #endif
 
-        if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (2.2 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
+        if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (1.0 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
 
         lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * ao, frx_effectNightVision * frx_effectModifier);
 
@@ -604,7 +609,7 @@ void main() {
                     if(clamp01(screenPos.xy) != screenPos.xy) {
                         break;
                     } else {
-                        float depthQuery = texelFetch(u_depth_mipmaps, ivec2(screenPos.xy * frxu_size), 0).r;
+                        float depthQuery = texelFetch(u_depth_mipmaps, ivec2(screenPos.xy * frxu_size * 0.25), 2).r;
                         // float ldepth = linearizeDepth(screenPos.z), lsample = linearizeDepth(depthQuery);
 
                         if(depthQuery == 1.0) {

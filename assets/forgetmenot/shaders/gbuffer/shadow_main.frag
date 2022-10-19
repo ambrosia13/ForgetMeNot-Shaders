@@ -138,7 +138,7 @@ void frx_pipelineFragment() {
                 float lambertFactor = NdotL * 0.5 + 0.5;
 
                 vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
-                vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * lambertFactor) * (upColor)), frx_fragLight.y);
+                vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * frx_fragNormal.y) * (upColor)), frx_fragLight.y);
 
                 if(frx_worldIsEnd == 1) {
                     // Never thought I'd ever name a variable NdotPlanet
@@ -152,7 +152,7 @@ void frx_pipelineFragment() {
                 float ao = frx_fragLight.z;
                 vec3 ambientLight = ambientColor * ao * ao;
 
-                float sunlightStrength = 0.0005 - 0.0004 * fmn_rainFactor;
+                float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
 
                 lightmap += ambientLight;
                 lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;

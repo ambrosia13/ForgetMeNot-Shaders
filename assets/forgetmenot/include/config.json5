@@ -84,6 +84,24 @@
             }
         },
         {
+            includeToken: "forgetmenot:post_processing",
+            categoryKey: "config.forgetmenot.category.post_processing",
+            elements: {
+                film_grain: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.film_grain",
+                    descriptionKey: "config.forgetmenot.desc.film_grain"
+                },
+                vibrance: {
+                    default: 1.0,
+                    min: 0.0,
+                    max: 2.0,
+                    nameKey: "config.forgetmenot.name.vibrance",
+                    descriptionKey: "config.forgetmenot.desc.vibrance"
+                }
+            }
+        },
+        {
             includeToken: "forgetmenot:shadows",
             categoryKey: "config.forgetmenot.category.shadows",
             elements: {
@@ -128,6 +146,11 @@
                     default: false,
                     nameKey: "config.forgetmenot.name.white_world",
                     descriptionKey: "config.forgetmenot.desc.white_world"
+                },
+                draw_ao: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.draw_ao",
+                    descriptionKey: "config.forgetmenot.desc.draw_ao"
                 },
                 internal_materials: {
                     default: true,
