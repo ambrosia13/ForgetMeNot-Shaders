@@ -270,7 +270,7 @@ true        ) {
 
             if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
             if(frx_fragReflectance < 1.0) {
-                color.rgb *= mix(vec3(1.0), getSkyColor(frx_skyLightVector, 0.5) * max(0.0, NdotL) * skyIlluminance, clamp01(shadowMap));
+                color.rgb *= mix(vec3(1.0), getSkyColor(frx_skyLightVector, 0.5) * skyIlluminance, clamp01(shadowMap) * max(0.0, NdotL));
                 //frx_fragEmissive += shadowMap * 0.25;
                 frx_fragEmissive = clamp01(frx_fragEmissive);
             }
@@ -307,6 +307,8 @@ true        ) {
     }
 
     if(color.a < 0.05 && frx_renderTargetSolid && !frx_isGui) discard;
+
+    //if(frx_renderTargetParticle) discard;
 
     //color.rgb = shadowBlurColor;
     if(frx_renderTargetSolid) color.a = frx_fragEmissive;

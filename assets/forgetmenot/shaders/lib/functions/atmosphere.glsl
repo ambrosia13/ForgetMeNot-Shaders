@@ -421,7 +421,8 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun, float vlFactor) {
     return atmosphere + 2.0 * frx_skyFlashStrength;
 }
 
-vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun = 1.0) {
+vec3 getSkyColorDetailed(in vec3 viewDir, in float drawSun = 1.0) {
+    vec3 viewPos = viewDir;
     if(frx_worldIsNether == 1) return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
 
     vec3 atmosphere;
@@ -465,6 +466,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun = 1.
         }
 
         atmosphere *= 2.0;
+
+        //atmosphere += vec3(10.0, 5.4, 14.0) * smoothstep(0.95, 0.995, dot(viewDir, normalize(vec3(1.0, 0.4, 0.0))));
     }
 
     vec3 viewPosCopy = viewPos;

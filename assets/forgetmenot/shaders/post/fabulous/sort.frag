@@ -314,7 +314,7 @@ void main() {
             // }
 
             if(!ssgiHit) {
-                ssgi += getSkyColor(normalize(normal + goldNoise3d()), 0.0) * frx_smoothedEyeBrightness.y;
+                ssgi += getSkyColorDetailed(normalize(normal + goldNoise3d()), 0.0) * frx_smoothedEyeBrightness.y;
             }
 
             ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
@@ -332,7 +332,7 @@ void main() {
         vec3 jitteredViewPos = setupViewSpacePos(newTexcoordJittered, 1.0);
         vec3 jitteredViewDir = normalize(jitteredViewPos);
 
-        skyColor = getSkyColorDetailed(jitteredViewDir, minViewSpacePos);
+        skyColor = getSkyColorDetailed(jitteredViewDir, 1.0);
 
         vec3 ambientLightColor = vec3(0.0);
         ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
@@ -514,7 +514,7 @@ void main() {
 
             reflectColor = mix(
                 frx_smoothedEyeBrightness.y < -1.0 / 16.0 ? (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) : vec3(0.00),
-                getSkyColorDetailed(viewSpaceReflectionDir, reflect(minViewSpacePos, roughNormal)),
+                getSkyColorDetailed(viewSpaceReflectionDir, 1.0),
                 clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y)
             );
             
