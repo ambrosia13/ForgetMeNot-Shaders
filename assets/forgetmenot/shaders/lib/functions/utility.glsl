@@ -183,15 +183,15 @@ float smoothHash(in vec2 st) {
     return noise;
 }
 
+const mat2 fbmRot = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
+
 float fbmHash(vec2 uv, int octaves) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
-
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2.0 + mod(fmn_time / 10.0, 1000.0);
+		uv = fbmRot * uv * 2.0 + mod(fmn_time / 10.0, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -201,11 +201,9 @@ float fbmHash(vec2 uv, int octaves, float t) {
 	float noise = 0.01;
 	float amp = 0.5;
 
-    mat2 rotationMatrix = mat2(cos(PI / 6.0), sin(PI / 6.0), -sin(PI / 6.0), cos(PI / 6.0));
-
 	for (int i = 0; i < octaves; i++) {
 		noise += amp * (smoothHash(uv) * 0.5 + 0.51);
-		uv = rotationMatrix * uv * 2. + mod(fmn_time * t, 1000.0);
+		uv = fbmRot * uv * 2. + mod(fmn_time * t, 1000.0);
 		amp *= 0.5;
 	}
 
@@ -225,11 +223,6 @@ vec4 fastDownsample(sampler2D image, vec2 uv) {
     col += -0.12487566 * texture(image, uv + vec2(0.0,2.90709914) / frxu_size);
 
     return col;
-}
-
-vec3 nightEyeAdjust(in vec3 color) {
-    float amt = getTimeOfDayFactors().y * 0.5;
-    return mix(color, frx_luminance(color) * vec3(0.2, 0.5, 1.0), amt);
 }
 
 // https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
@@ -352,12 +345,6 @@ vec2 diskSampling(float i, float n, float phi){
     return sincos(theta * TAU * n * 1.618033988749894) * theta;
 }
 
-// From lumi lights by spiralhalo
-float linearizeDepth(float depth) {
-	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
-	const float farZ = 1.0;
-	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
-}
 
 #ifndef VERTEX_SHADER
     vec3 goldNoise3d() {
@@ -370,11 +357,22 @@ float linearizeDepth(float depth) {
         r = (r) * 2.0 - 1.0;
         return r;
     }
-    vec3 noise3d(float seed) {
+    vec3 goldNoise3d(float seed) {
+        seed += mod(frx_renderSeconds, 10.0);
+
         vec3 r = vec3(
             gold_noise(gl_FragCoord.xy, seed),
             gold_noise(gl_FragCoord.xy, seed + 1.0),
             gold_noise(gl_FragCoord.xy, seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
+    vec3 goldNoise3d_noiseless(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(0.5), seed),
+            gold_noise(vec2(0.5), seed + 1.0),
+            gold_noise(vec2(0.5), seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
         return r;
@@ -401,11 +399,11 @@ float pcg(in uint seed) {
     uint state = seed * 747796405u + 2891336453u;
     uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
     seed = (word >> 22u) ^ word;
-    return float(seed);
+    return float(seed) / float(0xffffffffu);
 }
 float pcg() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
-    return pcg(seed) / float(0xffffffffu);
+    return pcg(seed);
 }
 vec3 noise3d() {
     uint seed = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
@@ -420,4 +418,18 @@ vec3 noise3d() {
 
     return normalize(r) * 2.0 - 1.0;
 }
+#else
+    vec3 goldNoise3d(float seed) {
+        vec3 r = vec3(
+            gold_noise(vec2(100.0), seed),
+            gold_noise(vec2(1.0), seed + 1.0),
+            gold_noise(vec2(1.0), seed + 2.0)
+        );
+        r = (r) * 2.0 - 1.0;
+        return r;
+    }
 #endif
+
+vec3 mixmax(in vec3 a, in vec3 b, in float x) {
+    return mix(a, max(a, b), x);
+}

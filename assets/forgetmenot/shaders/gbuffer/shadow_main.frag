@@ -77,7 +77,7 @@ true        ) {
             float deltaX = (height2 - height1) * 1.0;
             float deltaY = (height4 - height3) * 1.0;
 
-            if(frx_matDisableDiffuse == 0) frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
+            //if(frx_matDisableDiffuse == 0) frx_fragNormal = normalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
         }
     }
 
@@ -269,7 +269,11 @@ true        ) {
             lightmap = max(vec3(0.0005), lightmap);
 
             if((frx_fragReflectance < 1.0 || frx_isGui) && !frx_renderTargetSolid) color.rgb *= pow(lightmap, vec3(1.0)) * pow(frx_fragLight.z, 1.5);
-            if(frx_fragReflectance < 1.0) color.rgb *= mix(vec3(1.0), 0.05 * getSkyColor(frx_skyLightVector), clamp01(shadowMap) * NdotL);
+            if(frx_fragReflectance < 1.0) {
+                color.rgb *= mix(vec3(1.0), getSkyColor(frx_skyLightVector, 0.5) * max(0.0, NdotL) * skyIlluminance, clamp01(shadowMap));
+                //frx_fragEmissive += shadowMap * 0.25;
+                frx_fragEmissive = clamp01(frx_fragEmissive);
+            }
         } else {
             lightmap = pow(texture(frxs_lightmap, frx_fragLight.xy).rgb, vec3(2.2)) * pow(frx_fragLight.z, 1.5);
             color.rgb *= lightmap;

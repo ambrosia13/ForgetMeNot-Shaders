@@ -146,18 +146,6 @@ bool isSolid(vec3 pos) {
     return snoise(cellPos.xz) > 0.5;
 }
 
-// Offsets from Chocapic13 shaders
-vec2 taaOffsets[8] = vec2[8](
-    vec2( 0.125,-0.375),
-    vec2(-0.125, 0.375),
-    vec2( 0.625, 0.125),
-    vec2( 0.375,-0.625),
-    vec2(-0.625, 0.625),
-    vec2(-0.875,-0.125),
-    vec2( 0.375,-0.875),
-    vec2( 0.875, 0.875)
-);
-
 vec3 getBlueNoise() {
     ivec2 coord = ivec2(gl_FragCoord.xy + 1u * frx_renderFrames * 500u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
@@ -266,81 +254,71 @@ void main() {
 
     if(max_depth < 1.0) {
         #ifdef SSGI
-            const int SSGI_BOUNCES = 1;
+            const int SSGI_RAYS = 1;
             const int SSGI_STEPS = 100;
 
-            vec3 finalSSGICoords;
+            vec3 finalRayDir;
             bool ssgiHit = false;
 
             vec3 ssgiNormal = normal;
             float ssgiDepth = min_depth;
 
-            for(int b = 0; b < SSGI_BOUNCES; b++) {
-                vec3 rayPos = minViewSpacePos;
-                vec3 rayDir = normalize(ssgiNormal + roughness * normalize(goldNoise3d()));
-                //success = normalize(rayDir + noise3d(1.0) * 0.25);
+            for(int r = 0; r < SSGI_RAYS; r++) {
+                vec3 rayPos = maxViewSpacePos;
+                vec3 rayDirection = normalize(ssgiNormal + goldNoise3d(r));
                 float stepLength = 1.0 / SSGI_STEPS;
 
-                vec3 rayScreen = vec3(texcoord, ssgiDepth);
-
-                vec3 screenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
-
-                // vec3 signDir = (sign(rayDir) - rayScreen) / rayDir;
-                //vec3 bn = getBlueNoise(frx_renderFrames & 50u);
+                vec3 rayScreen = vec3(texcoord, max_depth);
+                vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDirection) - rayScreen);
 
                 for(int i = 0; i < SSGI_STEPS; i++) {
-                    if(false) {
-                        rayPos += normalize(normal + normalize(noise3d())) * interleaved_gradient(i);
-
-                        rayScreen = viewSpaceToScreenSpace(rayPos);
-                    } else {
-                        rayScreen += screenDir * interleaved_gradient(i) * stepLength;
-                    }
+                    rayScreen += rayScreenDir * stepLength * (interleaved_gradient(r * i));
 
                     if(clamp01(rayScreen) != rayScreen) {
                         break;
                     } else {
-                        float depthQuery = textureLod(u_depth_mipmaps, rayScreen.xy, 0).r;
+                        float depthQuery = texture(u_particles_depth, rayScreen.xy).r;
 
-                        if(rayScreen.z > depthQuery && abs(linearizeDepth(rayScreen.z) - linearizeDepth(depthQuery)) < 0.001) {
-                            finalSSGICoords = rayScreen;
+                        if(rayScreen.z > depthQuery) {
+                            ssgi += texture(u_previous_frame, rayScreen.xy).rgb / SSGI_RAYS;
                             ssgiHit = true;
                             break;
                         }
                     }
-
-                    stepLength *= 1.0;
                 }
+            }
+            // {
+            //     #define SHADOW_STEPS 50
 
-                // float binaryStepLength = 1.0 / SSGI_STEPS;
-                // for(int i = 0; i < 0; i++) {
-                //     finalSSGICoords += sign(textureLod(u_depth_mipmaps, finalSSGICoords.xy, 0).r - finalSSGICoords.z) * screenDir * binaryStepLength;
-                //     binaryStepLength *= 0.5;
-                // }
+            //     vec3 rayPos = maxViewSpacePos;
+            //     vec3 rayDirection = normalize(frx_skyLightVector + 0.01 * goldNoise3d());
+            //     float stepLength = 1.0 / SHADOW_STEPS;
 
-                vec3 ssgiViewPos = setupViewSpacePos(finalSSGICoords.xy, finalSSGICoords.z);
-                finalSSGICoords = lastFrameViewSpaceToScreenSpace(ssgiViewPos + frx_cameraPos - frx_lastCameraPos); 
+            //     vec3 rayScreen = vec3(texcoord, max_depth);
+            //     vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDirection) - rayScreen);   
+            //     for(int i = 0; i < SHADOW_STEPS; i++) {
+            //         rayScreen += rayScreenDir * stepLength * (interleaved_gradient(i) * 0.5 + 0.5);
 
-                if(true) {
-                    if(ssgiHit) {
-                        vec3 emission = textureLod(u_previous_frame, finalSSGICoords.xy, 0).rgb;
+            //         if(clamp01(rayScreen) != rayScreen) {
+            //             break;
+            //         } else {
+            //             float depthQuery = texture(u_particles_depth, rayScreen.xy).r;
 
-                        ssgi += emission * exp2(-b);
-                        hit = 1.0;
-                        success *= tanh(frx_luminance(emission));
-                    } else {
-                        ssgi += getSkyColor(rayDir) * smoothstep(0.1, 0.2, frx_eyeBrightness.y);
-                    }
-                }
+            //             if(rayScreen.z < depthQuery) {
+            //                 ssgi += getSkyColor(rayDirection, 0.0) * dot(ssgiNormal, rayDirection) / SHADOW_STEPS;
+            //             } else {
+            //                 break;
+            //             }
+            //         }
+            //     }
+            // }
 
-                ssgi = mix(ssgi, vec3(1.0), clamp01(main_color.a));
-
-                ssgiNormal = texture(u_normal, finalSSGICoords.xy).rgb * 2.0 - 1.0;
-                ssgiDepth = texture(u_translucent_depth, finalSSGICoords.xy).r;
+            if(!ssgiHit) {
+                ssgi += getSkyColor(normalize(normal + goldNoise3d()), 0.0) * frx_smoothedEyeBrightness.y;
             }
 
             ssgi = mix(ssgi, lastFrameSample.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
-            if(f0.r < 0.99) main_color *= vec4(ssgi, 1.0);
+            if(f0.r < 0.99) main_color *= vec4(mix(ssgi, vec3(1.0), main_color.a), 1.0);
 
         #endif
     }
@@ -516,7 +494,7 @@ void main() {
 
     vec3 reflectColor;
     if(min_depth < 1.0) {
-        if(true) {
+        if(f0.r > 0.04) {
             vec3 reflectionCoord;
             bool ssrHit = false;
 
