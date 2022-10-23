@@ -8,11 +8,13 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    //#define texcoord (floor(texcoord * (64.0 * frx_viewAspectRatio)) / (64.0 * frx_viewAspectRatio))
+    //#define texcoord (floor(texcoord * (0.05 * frxu_size)) / (0.05 * frxu_size))
 
     vec3 color = texture(u_color, texcoord).rgb;
 
     vec3 finalColor = color.rgb;
+
+    //finalColor = floor(finalColor * 16.0 + 0.5) / 16.0;
 
     //finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
     finalColor = frx_toneMap(finalColor);
