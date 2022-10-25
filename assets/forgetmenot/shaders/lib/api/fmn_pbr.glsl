@@ -12,7 +12,7 @@
 #include frex:shaders/api/view.glsl
 #include frex:shaders/api/world.glsl
 
-// Version number. Will increment when new variables are added.
+// Version number. Will increment when new material flags are added.
 #define FMN_PBR 2
 
 #if FMN_PBR >= 1
@@ -20,11 +20,13 @@
     int fmn_isWater = 0;
 
     // Amount of subsurface scattering (SSS) to apply for this material. 
-    // Not physically based at all; this just ignores the NdotL component of shadowing.
-    // Defaulted to 1.0 when diffuse shading is disable.
+    // In FMN, this is implemented such that SSS materials have both shadowmap-based SSS and screenspace SSS.
+    // Other pipelines may implement fmn_sssAmount in their own way.
+    // Defaults to 1.0 when diffuse shading is disabled.
     float fmn_sssAmount = frx_matDisableDiffuse == 1 ? 1.0 : 0.0;
 
     #if FMN_PBR >= 2
+        // Flag for whether this material is a player. 
         int fmn_isPlayer = 0;
     #endif
 #endif
