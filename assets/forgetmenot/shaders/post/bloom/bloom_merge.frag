@@ -17,6 +17,6 @@ void main() {
     float bloomAmount = 0.16 + 0.3 * pow(tanh(bloomLuminance) * smoothstep(0.0, 1.5, bloomLuminance), 1.0);
     bloomAmount = mix(bloomAmount, 0.5, fmn_rainFactor);
 
-    fragColor = mix(color, bloom, mix(bloomAmount, 1.0, frx_cameraInFluid));
-    //fragColor = mix(color, bloom, 0.16);
+    //fragColor = mix(color, bloom, mix(bloomAmount, 1.0, frx_cameraInFluid));
+    fragColor = mix(color, bloom, 0.25 + 0.75 * frx_cameraInFluid);
 }

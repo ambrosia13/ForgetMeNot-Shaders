@@ -2,7 +2,7 @@
 // https://iquilezles.org/articles/fog/
 vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
     vec3 tdata = getTimeOfDayFactors();
-    vec3 viewDir = normalize(viewSpacePos);
+    vec3 viewDir = fNormalize(viewSpacePos);
 
     float blockDist = length(viewSpacePos);
     if(frx_cameraInFluid == 0) blockDist = max(0.0, blockDist - 7.0);
@@ -38,7 +38,7 @@ vec3 simpleFog(in vec3 color, in vec3 viewSpacePos) {
         //fogColor *= mix(vec3(1.0), vec3(10.0, 7.692308))
 
         fogColor *= sunFactor;
-        fogColor = fogColor * 0.5 + normalize(fogColor) * 0.5;
+        fogColor = fogColor * 0.5 + fNormalize(fogColor) * 0.5;
     }
 
     return color * (1.0 - fogAmount) + fogColor * fogAmount;

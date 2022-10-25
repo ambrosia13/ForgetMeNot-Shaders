@@ -89,10 +89,10 @@ void frx_materialFragment() {
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             
             //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
-            frx_fragNormal = normalize(frx_fragNormal);
+            frx_fragNormal = fmn_fNormalize(frx_fragNormal);
         #else
             float height = waterHeightNoise(uv);
-            frx_fragNormal = normalize(cross(dFdx(frx_vertex.xyz - vec3(0.0, height, 0.0)), dFdy(frx_vertex.xyz - vec3(0.0, height, 0.0)))) * tbn;
+            frx_fragNormal = fmn_fNormalize(cross(dFdx(frx_vertex.xyz - vec3(0.0, height, 0.0)), dFdy(frx_vertex.xyz - vec3(0.0, height, 0.0)))) * tbn;
                             
         #endif
 

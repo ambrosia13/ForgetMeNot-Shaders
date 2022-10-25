@@ -14,13 +14,6 @@
                     nameKey: "config.forgetmenot.name.clouds",
                     descriptionKey: "config.forgetmenot.desc.clouds"
                 },
-                cloud_detail: {
-                    default: 7,
-                    min: 3,
-                    max: 15,
-                    nameKey: "config.forgetmenot.name.cloud_detail",
-                    descriptionKey: "config.forgetmenot.desc.cloud_detail"
-                },
                 curl_noise: {
                     default: true,
                     nameKey: "config.forgetmenot.name.curl_noise",
@@ -110,6 +103,52 @@
                     nameKey: "config.forgetmenot.name.variable_penumbra_shadows",
                     descriptionKey: "config.forgetmenot.desc.variable_penumbra_shadows"
                 },
+                vps_size_multiplier: {
+                    default: 1000,
+                    min: 100,
+                    max: 5000,
+                    nameKey: "config.forgetmenot.name.vps_size_multiplier",
+                    descriptionKey: "config.forgetmenot.desc.vps_size_multiplier"
+                },
+                bias_mult: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.bias_mult",
+                    descriptionKey: "config.forgetmenot.desc.bias_mult"
+                },
+            }
+        },
+        {
+            includeToken: "forgetmenot:performance",
+            categoryKey: "config.forgetmenot.category.performance",
+            elements: {
+                cloud_detail: {
+                    default: 7,
+                    min: 3,
+                    max: 15,
+                    nameKey: "config.forgetmenot.name.cloud_detail",
+                    descriptionKey: "config.forgetmenot.desc.cloud_detail"
+                },
+                held_light_occlusion_quality: {
+                    default: 10,
+                    min: 3,
+                    max: 20,
+                    nameKey: "config.forgetmenot.name.held_light_occlusion_quality",
+                    descriptionKey: "config.forgetmenot.desc.held_light_occlusion_quality"
+                },
+                ssgi_quality: {
+                    default: 6,
+                    min: 1,
+                    max: 12,
+                    nameKey: "config.forgetmenot.name.ssgi_quality",
+                    descriptionKey: "config.forgetmenot.desc.ssgi_quality"
+                },
+                ssr_quality: {
+                    default: 64,
+                    min: 8,
+                    max: 128,
+                    nameKey: "config.forgetmenot.name.ssr_quality",
+                    descriptionKey: "config.forgetmenot.desc.ssr_quality"
+                },
                 vps_search_samples: {
                     default: 8,
                     min: 8,
@@ -123,18 +162,6 @@
                     max: 100,
                     nameKey: "config.forgetmenot.name.shadow_filter_samples",
                     descriptionKey: "config.forgetmenot.desc.shadow_filter_samples"
-                },
-                vps_size_multiplier: {
-                    default: 1000,
-                    min: 100,
-                    max: 5000,
-                    nameKey: "config.forgetmenot.name.vps_size_multiplier",
-                    descriptionKey: "config.forgetmenot.desc.vps_size_multiplier"
-                },
-                bias_mult: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.bias_mult",
-                    descriptionKey: "config.forgetmenot.desc.bias_mult"
                 },
             }
         },

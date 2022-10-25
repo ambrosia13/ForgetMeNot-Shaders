@@ -26,13 +26,13 @@ vec3 getBlueNoise() {
     ivec2 coord = ivec2(rotate2D(texcoord, frx_renderFrames % 500u) * frxu_size + (frx_renderFrames % 500u) * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
-    return normalize(r) * 2.0 - 1.0;
+    return fNormalize(r) * 2.0 - 1.0;
 }
 vec3 getBlueNoise(float offset) {
     ivec2 coord = ivec2(rotate2D(texcoord, offset) * frxu_size + frx_renderFrames * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
-    return normalize(r) * 2.0 - 1.0;
+    return fNormalize(r) * 2.0 - 1.0;
 }
 
 void main() {
@@ -41,7 +41,7 @@ void main() {
      vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
 
      float depth = textureLod(u_depth_mipmaps, coordJittered, 0).r;
-     vec3 normal = frx_normalModelMatrix * normalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
+     vec3 normal = frx_normalModelMatrix * fNormalize(texture(u_normal, coordJittered).rgb * 2.0 - 1.0);
      vec3 lightmap = texture(u_lightmap, texcoord).rgb;
 
      #define RTAO
@@ -51,9 +51,9 @@ void main() {
           vec3 rayPos = setupViewSpacePos(coordJittered, depth);
           vec3 rayScreen = vec3(coordJittered, depth);
 
-          vec3 rayDir = normalize(normal + goldNoise3d());
-          vec3 rayWorldDir = normalize(normal * frx_normalModelMatrix + goldNoise3d());
-          vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
+          vec3 rayDir = fNormalize(normal + goldNoise3d());
+          vec3 rayWorldDir = fNormalize(normal * frx_normalModelMatrix + goldNoise3d());
+          vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreen);
 
           float stepLength = 0.005;
 
@@ -83,7 +83,7 @@ void main() {
           //noHit = 1.0 - clamp01(((RTAO_STEPS + 1) / RTAO_STEPS) * (1.0 - noHit));
      #else
           vec3 random3D = goldNoise3d();
-          vec3 tangent = normalize(random3D - normal * dot(random3D, normal));
+          vec3 tangent = fNormalize(random3D - normal * dot(random3D, normal));
           vec3 bitangent = cross(normal, tangent);
           mat3 tbn = mat3(tangent, bitangent, normal);
 

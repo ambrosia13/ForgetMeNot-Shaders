@@ -57,6 +57,19 @@ vec4 clamp01(in vec4 x) {
     return clamp(x, vec4(0.0), vec4(1.0));
 }
 
+vec2 fNormalize(in vec2 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+vec3 fNormalize(in vec3 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+vec4 fNormalize(in vec4 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+
 // More canvas utility stuff
 vec3 getSunVector() {
     vec3 sun = frx_worldIsMoonlit == 0 ? frx_skyLightVector : -frx_skyLightVector;
@@ -400,7 +413,7 @@ vec2 diskSampling(float i, float n, float phi){
             pseudoBlueNoise(seed - 3000),
             pseudoBlueNoise(seed + 3000)
         );
-        return normalize(r) * 2.0 - 1.0;
+        return fNormalize(r) * 2.0 - 1.0;
     }
     vec3 pseudoBlueNoise_3d() {
         uint seed = (frx_renderFrames * 40u) % 100u;
@@ -430,7 +443,7 @@ vec3 noise3d() {
 
     //float l = length(r);
 
-    return normalize(r) * 2.0 - 1.0;
+    return fNormalize(r) * 2.0 - 1.0;
 }
 #else
     vec3 goldNoise3d(float seed) {

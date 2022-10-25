@@ -11,6 +11,7 @@ uniform int frxu_lod;
 #include forgetmenot:shadows
 #include forgetmenot:lighting
 #include forgetmenot:post_processing
+#include forgetmenot:performance
 #include forgetmenot:debug
 
 #ifndef SKY_GROUND_FOG

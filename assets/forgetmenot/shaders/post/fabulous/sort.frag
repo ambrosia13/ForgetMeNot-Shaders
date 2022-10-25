@@ -95,13 +95,13 @@ vec3 getBlueNoise() {
     ivec2 coord = ivec2(gl_FragCoord.xy + frx_renderFrames % 1000u * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
-    return normalize(r) * 2.0 - 1.0;
+    return fNormalize(r) * 2.0 - 1.0;
 }
 vec3 getBlueNoise(float offset) {
     ivec2 coord = ivec2(rotate2D(texcoord, offset) * frxu_size + frx_renderFrames * 100u);
     vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
     
-    return normalize(r) * 2.0 - 1.0;
+    return fNormalize(r) * 2.0 - 1.0;
 }
 
 void main() {
@@ -118,7 +118,7 @@ void main() {
     vec3 coords = vec3(texcoord, 0.0);
     #define REFRACTION
     #ifdef REFRACTION
-        // vec3 rViewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
+        // vec3 rViewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
         // rViewDir = refract(rViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.1);
 
         float doRefraction = 0.0;
@@ -160,13 +160,13 @@ void main() {
     vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
     vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
     vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
-    vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
+    vec3 viewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
 
     vec2 clipPos = texcoord * 2.0 - 1.0;
     clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
     vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
     vec3 jitteredViewPos = setupSceneSpacePos(newTexcoordJittered, 1.0);
-    vec3 jitteredViewDir = normalize(jitteredViewPos);
+    vec3 jitteredViewDir = fNormalize(jitteredViewPos);
 
     if(pbrData.g > 0.5 && frx_cameraInWater == 1) {
         vec3 transNormal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
@@ -183,8 +183,8 @@ void main() {
 
     float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
-    vec3 skyLightColor = normalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
-    skyLightColor = mix(skyLightColor, normalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
+    vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
+    skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
     skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
     skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
 
@@ -261,32 +261,34 @@ void main() {
             shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
         }
         
-        vec3 shadowRayPos = vec3(texcoord, max_depth);
-        vec3 shadowRayViewPos = setupViewSpacePos(texcoord, max_depth);
-        vec3 shadowRayViewDir = frx_normalModelMatrix * frx_skyLightVector;
-        vec3 shadowRayDir = normalize(viewSpaceToScreenSpace(shadowRayViewPos + shadowRayViewDir) - shadowRayPos);
-        
-        // almost pixel perfect raytrace
-        float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
+        {
+            vec3 shadowRayPos = vec3(texcoord, max_depth);
+            vec3 shadowRayViewPos = setupViewSpacePos(texcoord, max_depth);
+            vec3 shadowRayViewDir = frx_normalModelMatrix * frx_skyLightVector;
+            vec3 shadowRayDir = fNormalize(viewSpaceToScreenSpace(shadowRayViewPos + shadowRayViewDir) - shadowRayPos);
+            
+            // almost pixel perfect raytrace
+            float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
 
-        //if(!inShadowMap) sssAmount = 0.0;
+            //if(!inShadowMap) sssAmount = 0.0;
 
-        float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
-        if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
-            for(int i = 0; i < 12; i++) {
-                shadowRayPos += shadowRayDir * shadowRayStep * shadowRayDither;
+            float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
+            if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
+                for(int i = 0; i < 12; i++) {
+                    shadowRayPos += shadowRayDir * shadowRayStep * shadowRayDither;
 
-                if(clamp01(shadowRayPos.xy) != shadowRayPos.xy) {
-                    break;
-                } else {
-                    float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
+                    if(clamp01(shadowRayPos.xy) != shadowRayPos.xy) {
+                        break;
+                    } else {
+                        float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
 
-                    if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (inShadowMap ? 0.00015 : 0.01)) {
-                        if(sssAmount < 0.04 || !inShadowMap)  {
-                            shadowMap *= 0.0;
-                            break;
-                        } else {
-                            shadowMap *= 0.75;
+                        if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (inShadowMap ? 0.00015 : 0.01)) {
+                            if(sssAmount < 0.04 || !inShadowMap)  {
+                                shadowMap *= 0.0;
+                                break;
+                            } else {
+                                shadowMap *= 0.75;
+                            }
                         }
                     }
                 }
@@ -312,7 +314,7 @@ void main() {
 
         if(frx_worldIsEnd == 1) {
             // Never thought I'd ever name a variable NdotPlanet
-            float NdotPlanet = dot(normal, normalize(vec3(0.8, 0.3, -0.5)));
+            float NdotPlanet = dot(normal, fNormalize(vec3(0.8, 0.3, -0.5)));
             ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
             ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.55), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
 
@@ -323,8 +325,8 @@ void main() {
 
         #ifdef SSGI
         {
-            const int RTAO_RAYS = 6;
-            const int RTAO_STEPS = 8;
+            const int RTAO_RAYS = 10;
+            const int RTAO_STEPS = 4;
 
             ambientLight = vec3(0.0);
             float hit = 0.0;
@@ -335,30 +337,30 @@ void main() {
             vec3 rtaoRayPos = maxViewSpacePos;
             vec3 rayScreen = vec3(texcoord, max_depth);
 
-            float stepLength = 12.0 / frxu_size.x;
-
-            vec3 rayWorldDir = normalize(normal + goldNoise3d());
             for(int i = 0; i < RTAO_RAYS; i++) {
-                vec3 rayDir = normalize(viewNormal + goldNoise3d(i));
-                vec3 rayScreenDir = normalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
-                
+                vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
+                vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
+                float stepLength = 0.05 / RTAO_STEPS;
+
                 vec3 rayScreenMarch = rayScreen;
 
                 if(min_depth == max_depth && max_depth < 1.0 && (rtaoRayPos + rayDir).z < 0.0) {
                     for(int j = 0; j < RTAO_STEPS; j++) {
-                        rayScreenMarch += rayScreenDir * stepLength;
+                        rayScreenMarch += rayScreenDir * stepLength * (interleaved_gradient(i + j) * 0.9 + 0.1);
 
                         if(clamp01(rayScreenMarch) != rayScreenMarch) {
                             break;
                         } else {
                             float depthQuery = texelFetch(u_depth_mipmaps, ivec2(rayScreenMarch.xy * frxu_size * 0.25), 2).r;
 
-                            if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.0025) {
-                                gi += 0.0/*texture(u_previous_frame, rayScreenMarch.xy).rgb*/ / RTAO_RAYS;
-                                hit += 0.75 / RTAO_RAYS;
+                            if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.005) {
+                                //gi += texture(u_previous_frame, rayScreenMarch.xy).rgb / RTAO_RAYS;
+                                hit += 1.0 / RTAO_RAYS;
                                 break;
                             }
                         }
+
+                        stepLength *= 2.0;
                     }
                 }
             }
@@ -382,7 +384,7 @@ void main() {
 
         // handheld light
         float heldLightFactor = 1.0 / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
-        heldLightFactor *= mix(clamp01(dot(-normal, normalize((maxSceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+        heldLightFactor *= mix(clamp01(dot(-normal, fNormalize((maxSceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), maxSceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
         heldLightFactor *= frx_smootherstep(frx_heldLight.a * 15.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
         heldLightFactor *= frx_heldLight.a + 1.0;
 
@@ -399,8 +401,8 @@ void main() {
             heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
 
             vec3 rayPos = vec3(texcoord, depthNoPlayer);
-            vec3 rayViewDir = (normalize(-heldLightPos) + 0.01 * goldNoise3d());
-            vec3 rayDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + rayViewDir) - rayPos);
+            vec3 rayViewDir = (fNormalize(-heldLightPos) + 0.01 * goldNoise3d());
+            vec3 rayDir = fNormalize(viewSpaceToScreenSpace(minViewSpacePos + rayViewDir) - rayPos);
 
             float stepLength = 0.025 / HELD_LIGHT_STEPS;
 
@@ -482,7 +484,7 @@ void main() {
                     float stepLength = 1.0;
 
                     vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), (1.0 - frx_skyLightTransitionFactor));
-                    vec2 rayDirection = normalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y);
+                    vec2 rayDirection = fNormalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y);
                     rayDirection *= mix(1.0, -1.0, 1.0 - frx_skyLightTransitionFactor);
 
                     float opticalDepth = cumulusCloudsDensity;
@@ -498,7 +500,7 @@ void main() {
                     #ifdef CLOUD_LIGHT_RAYS
                         float lightRaysOpticalDepth = 0.0;
 
-                        rayDirection = normalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
+                        rayDirection = fNormalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
 
                         for(int i = 0; i < 1; i++) {
                             planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
@@ -578,16 +580,16 @@ void main() {
             const int depthLod = 2;
 
             vec3 screenPos = vec3(texcoord, min_depth);
-            vec3 viewSpaceDir = normalize(setupViewSpacePos(texcoord, 1.0));
+            vec3 viewSpaceDir = fNormalize(setupViewSpacePos(texcoord, 1.0));
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
             vec3 cosineDistribution = getBlueNoise();
-            vec3 microfacetNormal = frx_normalModelMatrix * normalize(normal + normalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
+            vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
             if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
             vec3 viewSpaceReflectionDir = reflect(viewSpaceDir, microfacetNormal);
 
-            vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
+            vec3 screenSpaceReflectionDir = fNormalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
 
             float stepLength = 1.0 / SSR_STEPS;
 
@@ -637,7 +639,7 @@ void main() {
                 }
             }
 
-            if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
+            //if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
 
             vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
             reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
@@ -718,13 +720,14 @@ void main() {
                 fogAmount *= 0.1;
             #endif
 
-            float fogTransmittance = exp(-fogDist * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
+            float fogTransmittance = exp(-fogDist * (3.0 - 2.0 * frx_skyLightVector.y) * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
 
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
             vec3 fogScattering = getSkyColor(viewDir, 0.0, 1.0 * vl);
+            //fogScattering = getFogScattering(viewDir, particleThickness(0.1));
             fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.1, 0.05, 0.025), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
             fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
@@ -740,6 +743,13 @@ void main() {
             vec3 fogScattering = pow(frx_fogColor.rgb * 2.0, vec3(2.2)) * (1.0 - fogTransmittance);
 
             composite = composite * fogTransmittance + fogScattering;
+        }
+
+        {
+            vec3 scattering;
+            float transmittance;
+
+            
         }
     #endif
 

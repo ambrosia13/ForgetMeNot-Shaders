@@ -2,9 +2,22 @@
 #include forgetmenot:shaders/lib/api/fmn_pbr.glsl 
 #include forgetmenot:debug
 
+vec2 fmn_fNormalize(in vec2 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+vec3 fmn_fNormalize(in vec3 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+vec4 fmn_fNormalize(in vec4 x) {
+    float lengthSquared = dot(x, x);
+    return x * inversesqrt(lengthSquared);
+}
+
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 vec2 fmn_parallaxMapping(in vec2 texcoord, in float height) {
-    vec3 viewDir = normalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
+    vec3 viewDir = fmn_fNormalize(frx_vertex.xyz) * mat3(frx_vertexTangent.xyz, cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), frx_vertexNormal.xyz);
     vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
     return texcoord - p;
 }
