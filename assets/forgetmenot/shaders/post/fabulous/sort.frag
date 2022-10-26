@@ -693,7 +693,7 @@ void main() {
                         float shadowFactor;
                         shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
 
-                        vl += (shadowFactor / VL_SAMPLES) * (distance(minSceneSpacePos, vlPos) / 64.0);
+                        vl += (shadowFactor / VL_SAMPLES) * tanh(distance(minSceneSpacePos, vlPos) / 16.0);
 
                     }
 
