@@ -17,6 +17,8 @@
 
 #if FMN_PBR >= 1
     // Flag for whether this material is water. Needed for water fog.
+    // Water fog color will depend on the water albedo as of FMN_PBR version 3, 
+    // so set the albedo of the material to whatever you want the water fog color to be.
     int fmn_isWater = 0;
 
     // Amount of subsurface scattering (SSS) to apply for this material. 
