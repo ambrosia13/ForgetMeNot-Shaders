@@ -444,11 +444,11 @@ void main() {
             float fogOpticalDepth = 750000.0 - 500000.0 * frx_skyLightVector.y;
             //fogOpticalDepth = fogDist * 3000000.0;
             float fogAmount = 0.3 - 0.25 * (1.0 - clamp01(frx_skyLightVector.y));
-            fogAmount += 0.9 * smoothstep(0.0, -10.0, frx_cameraPos.y);
+            fogAmount += 3.0 * smoothstep(0.0, -10.0, frx_cameraPos.y);
             fogAmount *= mix(1.0, 4.0, 1.0 - sqrt(sqrt(clamp01(getSunVector().y))));
             fogAmount *= mix(1.0, 0.1, sqrt(clamp01(getSunVector().y)));
 
-            fogAmount += 2.0 * fmn_rainFactor;
+            fogAmount += 5.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
             //fogAmount *= 10.0;
 
@@ -489,7 +489,7 @@ void main() {
         bloomyFogTransmittance = mix(bloomyFogTransmittance, 0.0, floor(min_depth));
 
         if(frx_worldIsOverworld == 1) {
-            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
+            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
         } else if(frx_worldIsEnd == 1) {
             bloomyFogTransmittance = 1.0;
         }

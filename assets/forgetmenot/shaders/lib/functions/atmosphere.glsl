@@ -137,10 +137,10 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
             vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
             diskVisibility -= step(0.9999, dot(viewDir, fNormalize(vec3(rotation.x, sunVector.y, rotation.y))));
 
-            diskVisibility *= 0.01;
+            //diskVisibility *= 0.01;
         }
 
-        totalScatter += 512.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
+        totalScatter += 1024.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
     }
 
 

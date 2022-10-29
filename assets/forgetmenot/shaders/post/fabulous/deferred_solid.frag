@@ -112,13 +112,13 @@ void main() {
 
                penumbraSize = blockers;
                penumbraSize = min(penumbraSize, 20.0 * (cascade));
-               penumbraSize = max(penumbraSize, 1.0);
+               penumbraSize = max(penumbraSize, 3.0);
 
                // SSS approximation, blur backface shadows
                penumbraSize = mix(penumbraSize, 8.0 * cascade, sssAmount * step(0.0, -NdotL));
           #endif
 
-          float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - NdotL) + 0.00009 * (3 - cascade);
+          float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - NdotL) + 0.0001 * (3 - cascade);
           
           #ifdef BIAS_MULT
                float biasMult = 1.0 + 0.1 * max(0, 2 - cascade);
@@ -250,7 +250,7 @@ void main() {
           #endif
 
           float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
-          sunlightStrength *= 8.0;
+          sunlightStrength *= 4.0;
 
           lightmap.rgb += ambientLight;
           lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
