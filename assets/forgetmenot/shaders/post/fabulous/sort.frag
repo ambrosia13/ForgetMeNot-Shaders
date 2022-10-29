@@ -9,8 +9,6 @@ uniform sampler2D u_entity_color;
 uniform sampler2D u_entity_depth;
 uniform sampler2D u_weather_color;
 uniform sampler2D u_weather_depth;
-uniform sampler2D u_clouds_color;
-uniform sampler2D u_clouds_depth;
 uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
@@ -136,10 +134,6 @@ void main() {
     weather_color.rgb = pow(weather_color.rgb, vec3(2.2));
     float weather_depth = texture(u_weather_depth, texcoord).r;
 
-    vec4  clouds_color = texture(u_clouds_color, texcoord);
-    clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
-    float clouds_depth = texture(u_clouds_depth, texcoord).r;
-
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // common things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -262,9 +256,7 @@ void main() {
             }
         #endif
 
-        if(max(max_depth, max(clamp(clouds_depth, 0.0, 0.999), clamp(weather_depth, 0.0, 0.999))) == 1.0) {
-            main_color.rgb = skyColor.rgb;
-        }
+        main_color.rgb = mix(main_color.rgb, skyColor, floor(max_depth));
     } 
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------

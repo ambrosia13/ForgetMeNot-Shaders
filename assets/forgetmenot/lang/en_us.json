@@ -47,6 +47,8 @@
     "config.forgetmenot.desc.vps_size_multiplier": "Multiplier for the distance it takes for shadows to get softer",
     "config.forgetmenot.name.bias_mult": "Bias Multiplier",
     "config.forgetmenot.desc.bias_mult": "Recommended to leave on unless you turn off VPS",
+    "config.forgetmenot.name.contact_shadows": "Contact Shadows",
+    "config.forgetmenot.desc.contact_shadows": "Raytraces towards the sun in screen space for subsurface scattering and to cover up holes in the shadows.",
 
     "config.forgetmenot.category.performance": "Performance",
 

@@ -163,8 +163,6 @@
                 "u_entity_depth",
                 "u_weather_color",
                 "u_weather_depth",
-                "u_clouds_color",
-                "u_clouds_depth",
                 "u_particles_color",
                 "u_particles_depth",
                 
@@ -253,8 +251,6 @@
                     "entity_depth",
                     "weather_color",
                     "weather_depth",
-                    "clouds_color",
-                    "clouds_depth",
                     "particles_color",
                     "particles_depth",
 

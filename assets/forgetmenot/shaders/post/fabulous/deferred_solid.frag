@@ -134,6 +134,7 @@ void main() {
                shadowMap += texture(u_shadow_map, vec4(sampleCoord, cascade, shadowScreenPos.z)) / SHADOW_FILTER_SAMPLES;
           }
           
+          #ifdef CONTACT_SHADOWS
           {
                vec3 shadowRayPos = vec3(texcoord, max_depth);
                vec3 shadowRayViewPos = maxViewSpacePos;
@@ -142,7 +143,7 @@ void main() {
                
                // almost pixel perfect raytrace
                // TODO: make this constant and not based on resolution for more reliable results
-               float shadowRayStep = mix(6.0, 3.0, sssAmount) / min(frxu_size.x, frxu_size.y);
+               float shadowRayStep = mix(0.005, 0.003, sssAmount);
 
                float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
                if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
@@ -166,6 +167,7 @@ void main() {
                     }
                }
           }
+          #endif
 
           shadowMap = clamp01(shadowMap);
           shadowMap *= mix(smoothstep(-0.0, 0.1, NdotL), 1.0, sssAmount); // skip NdotL shading to approximate SSS

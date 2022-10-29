@@ -115,6 +115,11 @@
                     nameKey: "config.forgetmenot.name.bias_mult",
                     descriptionKey: "config.forgetmenot.desc.bias_mult"
                 },
+                contact_shadows: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.contact_shadows",
+                    descriptionKey: "config.forgetmenot.desc.contact_shadows"
+                },
             }
         },
         {
