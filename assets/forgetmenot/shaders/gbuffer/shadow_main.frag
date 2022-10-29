@@ -46,7 +46,7 @@ void resolveMaterials() {
     }
 
     // No reflections on default materials
-    if(abs(frx_fragReflectance - 0.04) < 0.001) frx_fragReflectance = 0.0;
+    frx_fragReflectance = mix(0.0, frx_fragReflectance, step(0.0001, frx_fragReflectance - 0.04));
 
     // Hurt effect
     frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);
