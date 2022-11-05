@@ -110,8 +110,9 @@ void frx_materialFragment() {
     #endif
 
     #ifdef INTERNAL_MATERIALS
-        frx_fragColor = vec4(0.0, 0.16, 0.09, 0.5);
-        // frx_fragColor.rgb *= vec3(1.0, 1.3, 0.7);
+        frx_fragColor = vec4(vec3(0.0, 0.64, 0.36), 0.5);
+    #else 
+
     #endif
     //frx_fragColor = frx_vertexColor * vec4(0.2, 0.9, 1.0, 1.0);
     // frx_fragColor.a *= 0.75;

@@ -142,8 +142,7 @@ void main() {
                vec3 shadowRayDir = fNormalize(viewSpaceToScreenSpace(shadowRayViewPos + shadowRayViewDir) - shadowRayPos);
                
                // almost pixel perfect raytrace
-               // TODO: make this constant and not based on resolution for more reliable results
-               float shadowRayStep = mix(0.005, 0.003, sssAmount);
+               float shadowRayStep = 0.01 - 0.005 * sssAmount;
 
                float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
                if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
@@ -164,6 +163,8 @@ void main() {
                                    }
                               }
                          }
+
+                         //shadowRayStep *= 2.0;
                     }
                }
           }
@@ -211,6 +212,8 @@ void main() {
                vec3 rtaoRayPos = maxViewSpacePos;
                vec3 rayScreen = vec3(texcoord, max_depth);
 
+               vec3 unoccludedRayDir = fNormalize(viewNormal + goldNoise3d());
+
                for(int i = 0; i < RTAO_RAYS; i++) {
                     vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
                     vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
@@ -250,7 +253,7 @@ void main() {
           #endif
 
           float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
-          sunlightStrength *= 4.0;
+          sunlightStrength *= 5.0;
 
           lightmap.rgb += ambientLight;
           lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;

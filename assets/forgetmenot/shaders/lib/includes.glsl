@@ -49,6 +49,8 @@ float linearizeDepth(float depth) {
 #define fmn_time (mod(frx_renderSeconds, 100000.0))
 #define fmn_rainFactor ((0.5 * frx_smoothedRainGradient + 0.5 * frx_smoothedThunderGradient) * frx_worldIsOverworld)
 
+const vec3 UNDERWATER_FOG_COLOR = vec3(0.0, 0.16, 0.09);
+
 #include forgetmenot:shaders/lib/constant_variables.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl
 #include forgetmenot:shaders/lib/functions/atmosphere.glsl

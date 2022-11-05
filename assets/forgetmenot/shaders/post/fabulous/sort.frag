@@ -282,27 +282,31 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    // vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
+
+    // vec3 jitterPos = setupSceneSpacePos(jitterCoord, min_depth);
+    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
+
+    vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, 0).rgb / 6.0;
+
     if(pbrData.g > 0.5) {
         float sunDotU = getSunVector().y;
 
         float waterFogDistance = distance(minSceneSpacePos, maxSceneSpacePos); // warning: destroys underwater translucent visibility
 
-        vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
-        //vec3 waterFogColor = translucent_color.rgb / vec3(frx_luminance(translucent_color.rgb));
+        //vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
+        vec3 waterFogColor = translucent_color.rgb * translucent_color.a;
         waterFogColor *= (clamp01(sunDotU) * 0.9  + 0.1) * (frx_smoothedEyeBrightness.y * 0.95 + 0.05);
         
         if(max_depth == 1.0) waterFogDistance *= 0.0;
         float fogDensity = 1.0 - exp2(-waterFogDistance * 0.5);
         float foggerDensity = 1.0 - exp2(-waterFogDistance * 1.5);
 
-        composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
+        composite = mix(composite, bloomyFogColor, foggerDensity);
+        composite = mix(composite, waterFogColor, fogDensity);
+        //composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
     }
-
-    vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
-
-    vec3 jitterPos = setupSceneSpacePos(jitterCoord, min_depth);
-    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
 
     vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
@@ -332,7 +336,7 @@ void main() {
                 getSkyColorDetailed(reflect(viewDir, microfacetNormal * frx_normalModelMatrix), reflect(minSceneSpacePos, microfacetNormal * frx_normalModelMatrix), 1.0),
                 clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater)
             );
-            //reflectColor = mix(reflectColor, vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y), frx_cameraInWater);
+            reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
             reflectance = vec3(0.0);
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
@@ -418,7 +422,7 @@ void main() {
                     vl = 0.0;
 
                     for(int i = 0; i < VL_SAMPLES; i++) {
-                        vlPos += traceDir / VL_SAMPLES * interleaved_gradient();
+                        vlPos += traceDir / VL_SAMPLES * interleaved_gradient(i);
 
                         // shadow
                         vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
@@ -466,7 +470,7 @@ void main() {
             vec3 fogScattering = getSkyColor(viewDir, 0.0, 1.0 * vl);
             //fogScattering = getFogScattering(viewDir, particleThickness(0.1));
             fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4), vec3(0.1, 0.05, 0.025), smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
-            fogScattering = mix(fogScattering, vec3(0.0, 0.5, 0.4) * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
+            fogScattering = mix(fogScattering, UNDERWATER_FOG_COLOR * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
             fogScattering *= (1.0 - fogTransmittance);
 
@@ -494,8 +498,7 @@ void main() {
             bloomyFogTransmittance = 1.0;
         }
 
-        vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, 0).rgb / 6.0;
-        composite = mix(bloomyFogColor, composite, bloomyFogTransmittance * 0.75 + 0.25);
+        composite = mix(bloomyFogColor, composite, bloomyFogTransmittance * 0.875 + 0.125);
         skyColor = mix(bloomyFogColor, skyColor, bloomyFogTransmittance * 0.75 + 0.25);
     #endif
 
