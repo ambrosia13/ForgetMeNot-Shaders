@@ -103,10 +103,10 @@ void frx_materialFragment() {
     fmn_isWater = 1;
 
     #if LUMI_PBR_API >= 8
-        pbr_f0 = 0.05;
-        pbr_roughness = 0.01;
-        pbr_isWater = true;
-        //pbr_builtinWater = true;
+        //pbr_f0 = 0.05;
+        //pbr_roughness = 0.01;
+        //pbr_isWater = true;
+        pbr_builtinWater = true;
     #endif
 
     #ifdef INTERNAL_MATERIALS

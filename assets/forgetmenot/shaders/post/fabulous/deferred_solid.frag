@@ -273,7 +273,7 @@ void main() {
 
                const int HELD_LIGHT_STEPS = 10;
 
-               vec3 heldLightPos = sceneSpaceToViewSpace(((minSceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0));
+               vec3 heldLightPos = sceneSpaceToViewSpace(((sceneSpacePos.xyz + vec3(0.1, 0.0, 0.1)) + frx_cameraPos - frx_eyePos) + vec3(-0.1, -1.5, 0.0));
 
                vec2 seed = vec2(fmn_time);
                heldLightPos += vec3(smoothHash(seed), smoothHash(seed - 100.0), smoothHash(seed + 100.0)) * 0.1;
