@@ -18,6 +18,8 @@
     "config.forgetmenot.desc.atmospheric_fog": "Fog that uses atmospheric scattering",
     "config.forgetmenot.name.border_fog": "Border Fog",
     "config.forgetmenot.desc.border_fog": "Fog that hides chunk borders",
+    "config.forgetmenot.name.bloomy_fog": "Fog Scattering",
+    "config.forgetmenot.desc.bloomy_fog": "Also known as bloomy fog. Simulates multiple scattering (blurring) of objects behind thick fog. Screen space only.",
 
     "config.forgetmenot.category.lighting": "Lighting",
 

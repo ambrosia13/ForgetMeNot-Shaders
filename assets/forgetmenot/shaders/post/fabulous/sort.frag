@@ -288,7 +288,9 @@ void main() {
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
 
-    vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, 0).rgb / 6.0;
+    #ifdef BLOOMY_FOG
+        vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, 0).rgb / 6.0;
+    #endif
 
     if(pbrData.g > 0.5) {
         float sunDotU = getSunVector().y;
@@ -303,7 +305,10 @@ void main() {
         float fogDensity = 1.0 - exp2(-waterFogDistance * 0.5);
         float foggerDensity = 1.0 - exp2(-waterFogDistance * 1.5);
 
-        composite = mix(composite, bloomyFogColor, foggerDensity);
+        #ifdef BLOOMY_FOG
+            composite = mix(composite, bloomyFogColor, foggerDensity);
+        #endif
+
         composite = mix(composite, waterFogColor, fogDensity);
         //composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
     }
@@ -320,7 +325,6 @@ void main() {
             vec3 screenPos = vec3(texcoord, min_depth);
             vec3 viewSpaceDir = fNormalize(setupViewSpacePos(texcoord, 1.0));
 
-    //rand3D((texcoord + frx_renderSeconds) * 2000.0)
             vec3 cosineDistribution = getBlueNoise();
             vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
             if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
@@ -488,7 +492,6 @@ void main() {
         }
     #endif
 
-    #define BLOOMY_FOG
     #ifdef BLOOMY_FOG
         bloomyFogTransmittance = mix(bloomyFogTransmittance, 0.0, floor(min_depth));
 

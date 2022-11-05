@@ -39,6 +39,11 @@
                     nameKey: "config.forgetmenot.name.border_fog",
                     descriptionKey: "config.forgetmenot.desc.border_fog"
                 },
+                bloomy_fog: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.bloomy_fog",
+                    descriptionKey: "config.forgetmenot.desc.bloomy_fog"
+                },
             }
         },
         {
