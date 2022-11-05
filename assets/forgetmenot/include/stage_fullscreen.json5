@@ -303,7 +303,6 @@
             fragmentSource: "forgetmenot:shaders/post/bloom/bloom_merge.frag",
             samplers: [
                 "u_color", 
-                "u_bright_color",
                 "u_bloom"
             ]
         },
@@ -475,7 +474,6 @@
                 framebuffer: "final",
                 samplerImages: [
                     "taa",
-                    "bright_color",
                     "bloom_upsample"
                 ],
             },

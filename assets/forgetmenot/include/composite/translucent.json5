@@ -3,7 +3,7 @@
         {
             name: "translucent_color",
             lod: 0,
-            internalFormat: "RGBA8F",
+            internalFormat: "RGBA8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
