@@ -190,8 +190,8 @@ void main() {
           if(frx_worldIsEnd == 1) {
                // Never thought I'd ever name a variable NdotPlanet
                float NdotPlanet = dot(normal, fNormalize(vec3(0.8, 0.3, -0.5)));
-               ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
-               ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.55), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+               ambientColor = mix(ambientColor, 2.0 * vec3(0.1, 0.2, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+               ambientColor = mix(ambientColor, 2.0 * vec3(0.5, 0.05, 0.85), smoothstep(0.0, 1.0, 1.0 - NdotPlanet));
 
                ambientColor = ambientColor * 0.75 + 0.25;
           }
@@ -222,23 +222,23 @@ void main() {
                     vec3 rayScreenMarch = rayScreen;
 
                     if(min_depth == max_depth && max_depth < 1.0 && (rtaoRayPos + rayDir).z < 0.0) {
-                    for(int j = 0; j < RTAO_STEPS; j++) {
-                         rayScreenMarch += rayScreenDir * stepLength * (interleaved_gradient(i + j) * 0.9 + 0.1);
+                         for(int j = 0; j < RTAO_STEPS; j++) {
+                              rayScreenMarch += rayScreenDir * stepLength * (interleaved_gradient(i + j) * 0.9 + 0.1);
 
-                         if(clamp01(rayScreenMarch) != rayScreenMarch) {
-                              break;
-                         } else {
-                              float depthQuery = texelFetch(u_depth_mipmaps, ivec2(rayScreenMarch.xy * frxu_size * 0.25), 2).r;
-
-                              if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.005) {
-                                   //gi += texture(u_previous_frame, rayScreenMarch.xy).rgb / RTAO_RAYS;
-                                   hit += 1.0 / RTAO_RAYS;
+                              if(clamp01(rayScreenMarch) != rayScreenMarch) {
                                    break;
-                              }
-                         }
+                              } else {
+                                   float depthQuery = texelFetch(u_depth_mipmaps, ivec2(rayScreenMarch.xy * frxu_size * 0.25), 2).r;
 
-                         stepLength *= 2.0;
-                    }
+                                   if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.005) {
+                                        //gi += texture(u_previous_frame, rayScreenMarch.xy).rgb / RTAO_RAYS;
+                                        hit += 1.0 / RTAO_RAYS;
+                                        break;
+                                   }
+                              }
+
+                              stepLength *= 2.0;
+                         }
                     }
                }
 

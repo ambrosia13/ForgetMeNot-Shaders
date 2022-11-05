@@ -496,7 +496,7 @@ void main() {
         bloomyFogTransmittance = mix(bloomyFogTransmittance, 0.0, floor(min_depth));
 
         if(frx_worldIsOverworld == 1) {
-            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
+            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, 0.5 + 0.5 * (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
         } else if(frx_worldIsEnd == 1) {
             bloomyFogTransmittance = 1.0;
         }

@@ -143,8 +143,8 @@ void frx_pipelineFragment() {
                 if(frx_worldIsEnd == 1) {
                     // Never thought I'd ever name a variable NdotPlanet
                     float NdotPlanet = dot(frx_fragNormal, fNormalize(vec3(0.8, 0.3, -0.5)));
-                    ambientColor = mix(ambientColor, vec3(0.0, 0.3, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
-                    ambientColor = mix(ambientColor, vec3(0.5, 0.05, 0.35), smoothstep(0.5, 1.0, 1.0 - NdotPlanet));
+                    ambientColor = mix(ambientColor, 2.0 * vec3(0.1, 0.2, 0.15), smoothstep(0.5, 1.0, NdotPlanet));
+                    ambientColor = mix(ambientColor, 2.0 * vec3(0.5, 0.05, 0.85), smoothstep(0.0, 1.0, 1.0 - NdotPlanet));
 
                     ambientColor = ambientColor * 0.75 + 0.25;
                 }

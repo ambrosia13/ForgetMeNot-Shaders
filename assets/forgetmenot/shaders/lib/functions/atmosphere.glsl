@@ -394,7 +394,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         viewDir.y += 0.4;
         viewDir = fNormalize(viewDir);
 
-        atmosphere += atmosphericScattering(viewDir, vec3(0.0), 2.0, 1.0, 1.0, 0.0);
+        atmosphere += atmosphericScattering(viewDir, vec3(0.0), 1.5, 1.0, 1.0, 0.0) * vec3(3.5, 1.5, 7.0);
 
         secondViewDir.yz = rotate2D(secondViewDir.yz, 0.7);
         secondViewDir.xy = rotate2D(secondViewDir.xy, -0.74);
