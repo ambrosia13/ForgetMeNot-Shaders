@@ -203,7 +203,7 @@ void main() {
 
                     float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
                     float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
-                    float phaseMie = max(0.0, henyeyGreenstein(LdotV, atmosphereG) + henyeyGreenstein(nLdotV, atmosphereG));
+                    float phaseMie = max(0.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG));
 
                     vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
 
@@ -288,7 +288,7 @@ void main() {
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
     vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
 
-    #ifdef BLOOMY_FOG
+    #if defined(BLOOMY_FOG) || defined(BLOOMY_WATER_FOG)
         vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, 0).rgb / 6.0;
     #endif
 
@@ -305,7 +305,7 @@ void main() {
         float fogDensity = 1.0 - exp2(-waterFogDistance * 0.5);
         float foggerDensity = 1.0 - exp2(-waterFogDistance * 1.5);
 
-        #ifdef BLOOMY_FOG
+        #ifdef BLOOMY_WATER_FOG
             composite = mix(composite, bloomyFogColor, foggerDensity);
         #endif
 

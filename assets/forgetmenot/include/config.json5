@@ -44,6 +44,11 @@
                     nameKey: "config.forgetmenot.name.bloomy_fog",
                     descriptionKey: "config.forgetmenot.desc.bloomy_fog"
                 },
+                bloomy_water_fog: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.bloomy_water_fog",
+                    descriptionKey: "config.forgetmenot.desc.bloomy_water_fog"
+                },
             }
         },
         {
@@ -89,6 +94,11 @@
                     default: false,
                     nameKey: "config.forgetmenot.name.film_grain",
                     descriptionKey: "config.forgetmenot.desc.film_grain"
+                },
+                visibility_grain: {
+                    default: false,
+                    nameKey: "config.forgetmenot.name.visibility_grain",
+                    descriptionKey: "config.forgetmenot.desc.visibility_grain"
                 },
                 vibrance: {
                     default: 1.0,

@@ -112,7 +112,7 @@ void main() {
 
                penumbraSize = blockers;
                penumbraSize = min(penumbraSize, 20.0 * (cascade));
-               penumbraSize = max(penumbraSize, 3.0);
+               penumbraSize = max(penumbraSize, 2.0);
 
                // SSS approximation, blur backface shadows
                penumbraSize = mix(penumbraSize, 8.0 * cascade, sssAmount * step(0.0, -NdotL));

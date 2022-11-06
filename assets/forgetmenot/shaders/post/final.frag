@@ -32,8 +32,12 @@ void main() {
     //finalColor = mix(finalColor * smoothstep(0.3, 0.9, 1.0 - pow(distance(texcoord, vec2(0.5)), 1.5)), finalColor, smoothstep(0.3, 0.7, l));
 
     #ifdef FILM_GRAIN
-    l = frx_luminance(finalColor);
-    finalColor *= 1.0 + (goldNoise3d().r * (0.5 - 0.4 * smoothstep(0.25, 0.75, l)));
+        l = frx_luminance(finalColor);
+        finalColor *= 1.0 + (goldNoise3d().r * (0.5 - 0.4 * smoothstep(0.25, 0.75, l)));
+    #endif
+
+    #ifdef VISIBILITY_GRAIN
+        finalColor += goldNoise3d().r * 0.3 * (1.0 - frx_luminance(finalColor)) * (1.0 - max(frx_smoothedEyeBrightness.x, frx_smoothedEyeBrightness.y));
     #endif
 
     vibrance(finalColor, VIBRANCE);

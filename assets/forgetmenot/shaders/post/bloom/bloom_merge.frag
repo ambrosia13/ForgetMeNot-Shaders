@@ -2,7 +2,6 @@
 
 uniform sampler2D u_color;
 uniform sampler2D u_bloom;
-uniform sampler2D u_depth;
 
 in vec2 texcoord;
 
@@ -19,5 +18,5 @@ void main() {
     bloomAmount = mix(bloomAmount, 0.5, fmn_rainFactor);
 
     //fragColor = mix(color, bloom, mix(bloomAmount, 1.0, frx_cameraInFluid));
-    fragColor = mix(color, bloom, clamp01(0.25 + 0.75 * frx_cameraInFluid));
+    fragColor = mix(color, bloom, mix(0.25 + 0.5 * smoothstep(0.0, 4.0, bloomLuminance), 1.0, frx_cameraInFluid));
 }

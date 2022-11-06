@@ -16,6 +16,7 @@ const vec3 kTotal = kRlh + kMie;
 
 const vec3 moonFlux = vec3(1.3, 1.7, 2.0) * 0.25;
 const float atmosphereG = 0.75;
+const float cloudsG = 0.5;
 
 vec3 scatter(vec3 coeff, float depth){
 	return coeff * depth;

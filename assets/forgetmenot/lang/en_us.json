@@ -20,6 +20,8 @@
     "config.forgetmenot.desc.border_fog": "Fog that hides chunk borders",
     "config.forgetmenot.name.bloomy_fog": "Fog Scattering",
     "config.forgetmenot.desc.bloomy_fog": "Also known as bloomy fog. Simulates multiple scattering (blurring) of objects behind thick fog. Screen space only.",
+    "config.forgetmenot.name.bloomy_water_fog": "Water Fog Scattering",
+    "config.forgetmenot.desc.bloomy_water_fog": "Whether fog scattering applies to water fog too.",
 
     "config.forgetmenot.category.lighting": "Lighting",
 
@@ -38,6 +40,8 @@
 
     "config.forgetmenot.name.film_grain": "Film Grain",
     "config.forgetmenot.desc.film_grain": "Adds a film grain noise effect to the screen.",
+    "config.forgetmenot.name.visibility_grain": "Visibility Grain",
+    "config.forgetmenot.desc.visibility_grain": "Adds grain to the screen to make dark areas brighter. Helps if you want to be able to see in caves without destroying immersion.",
     "config.forgetmenot.name.vibrance": "Vibrance",
     "config.forgetmenot.desc.vibrance": "Vibrance of the screen. Auto-adjusted for rain",
 
