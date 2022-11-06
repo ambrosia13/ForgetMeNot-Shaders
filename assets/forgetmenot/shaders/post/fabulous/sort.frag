@@ -346,7 +346,7 @@ void main() {
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
             if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
-            if(roughness * roughness < 0.5 && (reflect(minViewSpacePos, microfacetNormal) + viewSpaceReflectionDir * stepLength).z < 0.0) {
+            if((reflect(minViewSpacePos, microfacetNormal) + viewSpaceReflectionDir * stepLength).z < 0.0) {
                 for(int i = 0; i < SSR_STEPS; i++) {
                     screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.2 + 0.8);
 

@@ -2,6 +2,6 @@
 	"layers": [
 		{
 			"fragmentSource": "minecraft:shaders/material/stylize/endstone.frag"
-        }
+		}
 	]
 }
