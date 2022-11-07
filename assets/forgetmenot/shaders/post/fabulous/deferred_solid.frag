@@ -1,6 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_main_color;
+uniform sampler2D u_previous_color;
 uniform sampler2D u_translucent_depth;
 uniform sampler2D u_particles_depth;
 
@@ -200,7 +201,7 @@ void main() {
 
           #ifdef SSGI
           {
-               const int RTAO_RAYS = 10;
+               const int RTAO_RAYS = SSGI_QUALITY;
                const int RTAO_STEPS = 4;
 
                ambientLight = vec3(0.0);
@@ -217,7 +218,7 @@ void main() {
                for(int i = 0; i < RTAO_RAYS; i++) {
                     vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
                     vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
-                    float stepLength = 0.05 / RTAO_STEPS;
+                    float stepLength = 0.0625 / RTAO_STEPS;
 
                     vec3 rayScreenMarch = rayScreen;
 
@@ -231,7 +232,10 @@ void main() {
                                    float depthQuery = texelFetch(u_depth_mipmaps, ivec2(rayScreenMarch.xy * frxu_size * 0.25), 2).r;
 
                                    if(rayScreenMarch.z > depthQuery && abs(linearizeDepth(rayScreenMarch.z) - linearizeDepth(depthQuery)) < 0.005) {
-                                        //gi += texture(u_previous_frame, rayScreenMarch.xy).rgb / RTAO_RAYS;
+                                        vec3 prevTracePos = setupSceneSpacePos(rayScreenMarch.xy, rayScreenMarch.z);
+                                        rayScreenMarch = lastFrameSceneSpaceToScreenSpace(prevTracePos + frx_cameraPos - frx_lastCameraPos);
+
+                                        //gi += texture(u_previous_color, rayScreenMarch.xy).rgb / RTAO_RAYS;
                                         hit += 1.0 / RTAO_RAYS;
                                         break;
                                    }

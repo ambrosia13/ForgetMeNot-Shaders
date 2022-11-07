@@ -134,6 +134,7 @@
             fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
             samplers: [
                 "u_main_color",
+                "u_previous_color",
                 "u_translucent_depth",
                 "u_particles_depth",
                 
@@ -222,6 +223,7 @@
                 framebuffer: "deferred_solid",
                 samplerImages: [
                     "main_color",
+                    "sort",
                     "translucent_depth",
                     "particles_depth",
 
