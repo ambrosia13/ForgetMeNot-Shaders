@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/beacon",
+				"material": "frex:emissive"
+			}
+		]
+    }
+}

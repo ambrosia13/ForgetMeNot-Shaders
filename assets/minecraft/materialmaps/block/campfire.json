@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/campfire_fire",
+				"material": "frex:emissive"
+			}
+		]
+    }
+}

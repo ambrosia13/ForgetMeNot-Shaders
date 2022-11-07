@@ -1,0 +1,7 @@
+{
+	"layers": [
+		{
+			"fragmentSource": "minecraft:shaders/material/emission/saturation_glow.frag"
+		}
+	]
+}

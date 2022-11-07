@@ -2,7 +2,7 @@
 	"transform": true,
 	"layers": [
 		{
-			"fragmentSource": "minecraft:shaders/material/stylize/player.frag"
+			"fragmentSource": "minecraft:shaders/material/api_impl/player.frag"
 		}
 	]
 }

@@ -161,11 +161,11 @@ void frx_pipelineFragment() {
 
                 // handheld light
                 float heldLightFactor = 1.0 / (1.0 + pow(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos), 2.0));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, maxSceneSpacePos + frx_cameraPos));
-                heldLightFactor *= mix(clamp01(dot(-frx_fragNormal, fNormalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+                heldLightFactor *= mix(frx_isHand ? 0.0 : clamp01(dot(-frx_fragNormal, fNormalize((frx_vertex.xyz + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), frx_vertex.xyz + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
                 heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
                 heldLightFactor *= frx_heldLight.a + 1.0;
 
-                if(frx_isHand && frx_heldLight.rgb != vec3(1.0)) heldLightFactor = 1.0;
+                //if(frx_isHand && frx_heldLight.rgb != vec3(1.0)) heldLightFactor = frx_heldLight.a;
                 if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (2.2 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
 
                 lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * ao, frx_effectNightVision * frx_effectModifier);
