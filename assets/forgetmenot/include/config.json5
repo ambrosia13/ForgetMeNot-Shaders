@@ -169,6 +169,13 @@
                     nameKey: "config.forgetmenot.name.ssr_quality",
                     descriptionKey: "config.forgetmenot.desc.ssr_quality"
                 },
+                ssr_render_scale: {
+                    default: 0.75,
+                    min: 0.5,
+                    max: 1.0,
+                    nameKey: "config.forgetmenot.name.ssr_render_scale",
+                    descriptionKey: "config.forgetmenot.desc.ssr_render_scale"
+                },
                 vps_search_samples: {
                     default: 8,
                     min: 8,

@@ -66,6 +66,8 @@
     "config.forgetmenot.desc.ssgi_quality": "Number of rays per pixel to cast for the occlusion tests for RTAO",
     "config.forgetmenot.name.ssr_quality": "Reflection Quality",
     "config.forgetmenot.desc.ssr_quality": "Number of steps to use for the reflection raytrace",
+    "config.forgetmenot.name.ssr_render_scale": "Reflection Render Scale",
+    "config.forgetmenot.desc.ssr_render_scale": "Relative resolution that reflections are computed",
     "config.forgetmenot.name.vps_search_samples": "VPS Search Samples",
     "config.forgetmenot.desc.vps_search_samples": "Recommended to leave at default",
     "config.forgetmenot.name.shadow_filter_samples": "Shadow Filter Samples",

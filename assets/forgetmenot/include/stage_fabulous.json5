@@ -45,6 +45,28 @@
             ]
         },
         {
+            name: "reflection_coord",
+            lod: 0,
+            internalFormat: "RG8",
+            pixelFormat: "RG",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
             name: "sort",
             lod: 0,
             internalFormat: "RGBA16F",
@@ -102,6 +124,14 @@
             ]
         },
         {
+            name: "reflection_coord",
+            colorAttachments: [
+                {
+                    image: "reflection_coord", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
             name: "sort",
             colorAttachments: [
                 {
@@ -152,6 +182,17 @@
             ]
         },
         {
+            name: "reflection_coord",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_coord.frag",
+            samplers: [
+                "u_normal",
+                "u_pbr_data",
+
+                "u_depth_mipmaps",
+            ]
+        },
+        {
             name: "sort",
             vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
@@ -171,9 +212,8 @@
                 "u_pbr_data",
 
                 "u_previous_frame",
-                "u_composited_mips"
-                "u_depth_mipmaps",
-                "u_blue_noise",
+                "u_composited_mips",
+                "u_reflection_coord"
 
                 "u_shadow_map",
             ]
@@ -241,6 +281,17 @@
                 ]
             },
             {
+                name: "reflection_coord",
+                program: "reflection_coord",
+                framebuffer: "reflection_coord",
+                samplerImages: [
+                    "composite_normal",
+                    "pbr_data",
+
+                    "quarter_res_depth",
+                ]
+            },
+            {
                 name: "sort",
                 program: "sort",
                 framebuffer: "sort",
@@ -261,8 +312,7 @@
 
                     "bloom_downsample",
                     "bloom_upsample",
-                    "quarter_res_depth",
-                    "forgetmenot:textures/blue_noise.png",
+                    "reflection_coord",
                     
                     "shadow_map",
                 ]

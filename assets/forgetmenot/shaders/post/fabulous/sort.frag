@@ -19,6 +19,7 @@ uniform sampler2D u_previous_frame;
 uniform sampler2D u_composited_mips;
 uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_blue_noise;
+uniform sampler2D u_reflection_coord;
 
 uniform sampler2DArrayShadow u_shadow_map;
 
@@ -316,24 +317,9 @@ void main() {
     vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
         if(f0.r > 0.0) {
-            vec3 reflectionCoord;
-            bool ssrHit = false;
-
-            #define SSR_STEPS 64
-            const int depthLod = 2;
-
-            vec3 screenPos = vec3(texcoord, min_depth);
-            vec3 viewSpaceDir = fNormalize(setupViewSpacePos(texcoord, 1.0));
-
-            vec3 cosineDistribution = getBlueNoise();
+            vec3 cosineDistribution = goldNoise3d();
             vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
-            if(dot(viewDir, microfacetNormal) < 0.0) microfacetNormal = -microfacetNormal;
 
-            vec3 viewSpaceReflectionDir = reflect(viewSpaceDir, microfacetNormal);
-
-            vec3 screenSpaceReflectionDir = fNormalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);
-
-            float stepLength = 1.0 / SSR_STEPS;
 
             reflectColor = mix(
                 (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
@@ -342,60 +328,13 @@ void main() {
             );
             reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
-            reflectance = vec3(0.0);
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
-            if(reflectance.r > 0.999) reflectance = vec3(1.0);
 
-            if((reflect(minViewSpacePos, microfacetNormal) + viewSpaceReflectionDir * stepLength).z < 0.0) {
-                for(int i = 0; i < SSR_STEPS; i++) {
-                    screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.2 + 0.8);
-
-                    if(clamp01(screenPos.xy) != screenPos.xy) {
-                        break;
-                    } else {
-                        float depthQuery = texelFetch(u_depth_mipmaps, ivec2(screenPos.xy * frxu_size * 0.25), 2).r;
-                        // float ldepth = linearizeDepth(screenPos.z), lsample = linearizeDepth(depthQuery);
-
-                        if(depthQuery == 1.0) {
-                            //stepLength = 2.0 / SSR_STEPS;
-                            continue;
-                        }
-
-                        float lenience = max(abs((screenSpaceReflectionDir.z)) * 3.0, 0.02 / pow(length(minSceneSpacePos), 2.0));
-
-                        if(abs(lenience - (screenPos.z - depthQuery)) < lenience) {
-                            //reflectColor = texture(u_previous_frame, screenPos.xy).rgb;
-                            reflectionCoord = screenPos;
-                            ssrHit = true;
-
-                            float binaryStepLength = stepLength * 0.5;
-                            reflectionCoord -= screenSpaceReflectionDir * binaryStepLength;
-                            for(int i = 0; i < 4; i++) {
-                                reflectionCoord += sign(texelFetch(u_depth_mipmaps, ivec2(reflectionCoord.xy * frxu_size), 0).r - reflectionCoord.z) * screenSpaceReflectionDir * binaryStepLength;
-                                binaryStepLength *= 0.5;
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            //if(frx_luminance(reflectColor.rgb) > 5.5 && !ssrHit) reflectance = vec3(0.5);
-
-            vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
-            reflectionCoord = lastFrameSceneSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
-
-            if(ssrHit) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord.xy * frxu_size), 0).rgb;
+            vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
+            if(dot(reflectionCoord, reflectionCoord) > 0.001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
-
-            // if(frx_cameraInWater == 1) {
-            //     reflectance = vec3(0.0);
-
-            //     reflectColor = vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y);
-            // }
-
         }
+
         if((acos(dot(normal, -viewDir)) * (180 / PI) > 48.60172336679899) && frx_cameraInWater == 1 && pbrData.g > 0.5) {
             reflectance = vec3(1.0);
 
