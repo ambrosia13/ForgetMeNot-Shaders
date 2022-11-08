@@ -1,0 +1,14 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/daylight_detector_top",
+				"material": "minecraft:yellow_glow"
+			},
+			{
+				"sprite": "minecraft:block/daylight_detector_inverted_top",
+				"material": "minecraft:yellow_glow"
+			}
+		]
+    }
+}

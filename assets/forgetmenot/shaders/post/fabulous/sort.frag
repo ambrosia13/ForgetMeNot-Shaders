@@ -494,7 +494,7 @@ void main() {
 
     vec3 reflectColor;
     if(min_depth < 1.0) {
-        if(f0.r > 0.04) {
+        if(true) {
             vec3 reflectionCoord;
             bool ssrHit = false;
 
@@ -505,7 +505,7 @@ void main() {
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
             vec3 cosineDistribution = goldNoise3d();
-            vec3 roughNormal = normalize(normal + normalize(cosineDistribution) * roughness * (interleaved_gradient()));
+            vec3 roughNormal = normalize(normal + normalize(cosineDistribution) * roughness * (1.0));
 
             vec3 viewSpaceReflectionDir = reflect(viewDir, roughNormal);
             vec3 screenSpaceReflectionDir = normalize(viewSpaceToScreenSpace(minViewSpacePos + viewSpaceReflectionDir) - screenPos);

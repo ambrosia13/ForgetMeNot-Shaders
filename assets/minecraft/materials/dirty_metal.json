@@ -2,6 +2,6 @@
 	"layers": [
 		{
 			"fragmentSource": "minecraft:shaders/material/metals/dirty_metal.frag"
-        }
+		}
 	]
 }

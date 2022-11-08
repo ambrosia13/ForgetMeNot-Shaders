@@ -9,6 +9,10 @@ vec2 fmn_parallaxMapping(in vec2 texcoord, in float height) {
     return texcoord - p;
 }
 
+vec3 fmn_fNormalize(vec3 x) {
+	return normalize(x);
+}
+
 float fmn_hash1D(float p) {
     p = fract(p * .1031);
     p *= p + 33.33;

@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/brewing_stand",
+				"material": "minecraft:yellow_glow"
+			}
+		]
+    }
+}

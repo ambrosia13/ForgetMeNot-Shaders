@@ -113,7 +113,7 @@
         {
             name: "success_dir",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "RGBA32F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -135,7 +135,7 @@
         {
             name: "success_dir_copy",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "RGBA32F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

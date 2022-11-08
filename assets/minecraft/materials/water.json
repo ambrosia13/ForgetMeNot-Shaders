@@ -1,8 +1,8 @@
 {
 	"layers": [
 		{
-            "vertexSource": "minecraft:shaders/material/stylize/varying.vert",
-			"fragmentSource": "minecraft:shaders/material/stylize/water.frag"
-        }
+			"vertexSource": "minecraft:shaders/material/varying.vert",
+			"fragmentSource": "minecraft:shaders/material/api_impl/water.frag"
+		}
 	]
 }

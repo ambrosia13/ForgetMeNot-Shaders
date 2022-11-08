@@ -1,0 +1,7 @@
+{
+	"layers": [
+		{
+			"fragmentSource": "minecraft:shaders/material/emission/smooth_05_luminance.frag"
+		}
+	]
+}

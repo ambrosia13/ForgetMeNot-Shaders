@@ -1,0 +1,26 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/sculk_sensor_bottom",
+				"material": "canvas:luminance_glow"
+			},
+			{
+				"sprite": "minecraft:block/sculk_sensor_side",
+				"material": "canvas:luminance_glow"
+			},
+			{
+				"sprite": "minecraft:block/sculk_sensor_tendril_inactive",
+				"material": "canvas:luminance_glow"
+			},
+			{
+				"sprite": "minecraft:block/sculk_sensor_top",
+				"material": "canvas:luminance_glow"
+			},
+			{
+				"sprite": "minecraft:block/sculk_sensor_tendril_active",
+				"material": "frex:emissive"
+			}
+		]
+    }
+}

@@ -8,8 +8,8 @@ float endStoneNoise(in vec2 uv) {
 void frx_materialFragment() {
     #ifdef PBR_ENABLED
         frx_fragReflectance = 0.05;
-        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz) * 2.0;
-        uv = floor(uv * 16.0) / 16.0;
+        vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
+        uv = floor(uv * 16.0) / 8.0;
         float offset = 1e-2;
 
         float centerNoise = endStoneNoise(uv);
@@ -24,7 +24,7 @@ void frx_materialFragment() {
 
         frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
         //frx_fragNormal = clamp(frx_fragNormal, vec3(-1.0), vec3(1.0));
-        frx_fragNormal = normalize(frx_fragNormal);
+        frx_fragNormal = fmn_fNormalize(frx_fragNormal);
 
         if(frx_luminance(frx_fragColor.rgb) < 0.5) {
             frx_fragRoughness = 0.0;

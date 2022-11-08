@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/magenta_candle_lit",
+				"material": "minecraft:half_luminance_glow"
+			}
+		]
+    }
+}

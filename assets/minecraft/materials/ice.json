@@ -1,8 +1,8 @@
 {
 	"layers": [
 		{
-            "vertexSource": "minecraft:shaders/material/stylize/varying.vert",
+			"vertexSource": "minecraft:shaders/material/varying.vert",
 			"fragmentSource": "minecraft:shaders/material/stylize/ice.frag"
-        }
+		}
 	]
 }
