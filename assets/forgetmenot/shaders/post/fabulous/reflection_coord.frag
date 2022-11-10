@@ -6,13 +6,14 @@ uniform sampler2D u_depth_mipmaps;
 
 in vec2 texcoord;
 
-#define texcoord (texcoord*(1.0/SSR_RENDER_SCALE) + taaOffsets[frx_renderFrames % 8u]/frxu_size)
+#define texcoord (texcoord*(1.0/SSR_RENDER_SCALE))
 
 layout(location = 0) out vec4 fragColor;
 
 void main() {
      if(clamp01(texcoord) != texcoord) {
           discard;
+          return;
      }
 
      float depth = textureLod(u_depth_mipmaps, texcoord, 0).r;
@@ -23,6 +24,7 @@ void main() {
 
      if(depth == 1.0 || f0.r < 0.01) {
           discard;
+          return;
      }
 
      vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
@@ -34,18 +36,21 @@ void main() {
      vec3 reflectionCoord = vec3(0.0);
      bool ssrHit = false;
 
-     vec3 screenPos = vec3(texcoord, depth);
      vec3 viewSpaceDir = fNormalize(setupViewSpacePos(texcoord, 1.0));
+     vec3 viewNormal = frx_normalModelMatrix * normal;
+     
+     vec3 screenPos = vec3(texcoord, depth);
 
      vec3 cosineDistribution = goldNoise3d();
-     vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
+     vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness);
 
-     vec3 viewSpaceReflectionDir = reflect(viewSpaceDir, microfacetNormal);
+     vec3 viewSpaceReflectionDir = normalize(reflect(viewSpaceDir, viewNormal) + goldNoise3d() * roughness * roughness);
+     viewSpaceReflectionDir *= mix(-1.0, 1.0, step(0.0, dot(viewSpaceReflectionDir, viewNormal)));
 
      vec3 screenSpaceReflectionDir = fNormalize(viewSpaceToScreenSpace(viewSpacePos + viewSpaceReflectionDir) - screenPos);
 
      float stepLength = 1.0 / SSR_QUALITY;
-     
+
      if((reflect(viewSpacePos, microfacetNormal) + viewSpaceReflectionDir * stepLength).z < 0.0) {
           for(int i = 0; i < SSR_QUALITY; i++) {
                screenPos += screenSpaceReflectionDir * stepLength * (interleaved_gradient(i) * 0.2 + 0.8);

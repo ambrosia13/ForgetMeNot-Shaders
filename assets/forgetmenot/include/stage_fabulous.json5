@@ -47,7 +47,7 @@
         {
             name: "reflection_coord",
             lod: 0,
-            internalFormat: "RG8",
+            internalFormat: "RG16",
             pixelFormat: "RG",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

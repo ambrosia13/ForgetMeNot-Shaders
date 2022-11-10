@@ -319,11 +319,12 @@ void main() {
         if(f0.r > 0.0) {
             vec3 cosineDistribution = goldNoise3d();
             vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
-
+            vec3 rayDir = normalize(reflect(viewDir, normal) + goldNoise3d() * roughness * roughness);
+            rayDir *= mix(-1.0, 1.0, step(0.0, dot(rayDir, normal)));
 
             reflectColor = mix(
                 (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
-                getSkyColorDetailed(reflect(viewDir, microfacetNormal * frx_normalModelMatrix), reflect(minSceneSpacePos, microfacetNormal * frx_normalModelMatrix), 1.0),
+                getSkyColorDetailed(rayDir, reflect(minSceneSpacePos, microfacetNormal * frx_normalModelMatrix), 1.0),
                 clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater)
             );
             reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
@@ -331,7 +332,7 @@ void main() {
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
 
             vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
-            if(dot(reflectionCoord, reflectionCoord) > 0.001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
+            if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
         }
 

@@ -382,7 +382,7 @@ vec2 diskSampling(float i, float n, float phi){
             gold_noise(gl_FragCoord.xy, seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
-        return r;
+        return normalize(r);
     }
     vec3 goldNoise3d(float seed) {
         seed += mod(frx_renderSeconds, 10.0);
@@ -393,7 +393,7 @@ vec2 diskSampling(float i, float n, float phi){
             gold_noise(gl_FragCoord.xy, seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
-        return r;
+        return normalize(r);
     }
     vec3 goldNoise3d_noiseless(float seed) {
         vec3 r = vec3(
@@ -402,7 +402,7 @@ vec2 diskSampling(float i, float n, float phi){
             gold_noise(vec2(0.5), seed + 2.0)
         );
         r = (r) * 2.0 - 1.0;
-        return r;
+        return normalize(r);
     }
     float pseudoBlueNoise(in int seed) {
         return pseudoBlueNoise(gl_FragCoord.xy, seed);
