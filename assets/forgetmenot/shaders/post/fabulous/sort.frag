@@ -23,18 +23,28 @@ uniform sampler2D u_pbr_data;
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_blue_noise;
+<<<<<<< Updated upstream
 uniform sampler2D u_global_illumination_copy;
 uniform sampler2D u_success_dir_copy;
 uniform sampler2D u_processed_color;
+=======
+uniform sampler2D u_reflection_coord;
+uniform sampler2D u_diffuse;
+>>>>>>> Stashed changes
 
 uniform sampler2DArrayShadow u_shadow_map;
 
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
+<<<<<<< Updated upstream
 layout(location = 1) out vec4 globalIllumination;
 layout(location = 2) out vec4 successDir;
 layout(location = 3) out vec4 finalGI;
+=======
+layout(location = 1) out vec4 reflectionColor;
+layout(location = 2) out vec4 previousIndirect;
+>>>>>>> Stashed changes
 
 // vanilla fabulous blending
 
@@ -491,6 +501,7 @@ void main() {
         composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), fogDensity), waterFogColor, fogDensity);
     }
 
+<<<<<<< Updated upstream
 
     vec3 reflectColor;
     if(min_depth < 1.0) {
@@ -504,6 +515,11 @@ void main() {
             vec3 screenPos = vec3(texcoord, min_depth);
 
 //rand3D((texcoord + frx_renderSeconds) * 2000.0)
+=======
+    vec3 reflectance, reflectColor;
+    if(min_depth < 1.0 && false) {
+        if(true) {
+>>>>>>> Stashed changes
             vec3 cosineDistribution = goldNoise3d();
             vec3 roughNormal = normalize(normal + normalize(cosineDistribution) * roughness * (1.0));
 
@@ -560,10 +576,15 @@ void main() {
 
             }
 
+<<<<<<< Updated upstream
             vec3 rView = setupViewSpacePos(reflectionCoord.xy, reflectionCoord.z);
             reflectionCoord = lastFrameViewSpaceToScreenSpace(rView + frx_cameraPos - frx_lastCameraPos);
 
             if(ssrHit) reflectColor = texture(u_previous_frame, reflectionCoord.xy).rgb;
+=======
+            reflectionColor = texelFetch(u_reflection_coord, ivec2(texcoord * frxu_size), 0);
+            reflectColor = reflectionColor.rgb;
+>>>>>>> Stashed changes
             if(f0.r > 0.999) reflectColor *= (composite);
 
             reflectColor = mix(reflectColor.rgb, lastFrameSuccess.rgb, 0.999 * (1.0 - step(0.0001, (1.0 - frx_playerSpectator) + distance(frx_cameraPos, frx_lastCameraPos))));
@@ -677,6 +698,7 @@ void main() {
 
     // composite = vec3(getCloudNoise(minViewSpacePos.xz / minViewSpacePos.y, 0.5));
 
+<<<<<<< Updated upstream
     #ifdef RTAO
         float alpha = frx_luminance(mix(lastFrameRtao, rtao, 0.05));
     #else
@@ -689,4 +711,8 @@ void main() {
         globalIllumination = vec4(ssgi, hit);
         successDir = vec4(reflectColor, 1.0);
     #endif
+=======
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, doRefraction));
+    previousIndirect = texture(u_diffuse, texcoord);
+>>>>>>> Stashed changes
 }

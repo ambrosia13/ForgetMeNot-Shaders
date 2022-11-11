@@ -47,8 +47,79 @@
         {
             name: "global_illumination",
             lod: 0,
+<<<<<<< Updated upstream
             internalFormat: "RGBA32F",
             pixelFormat: "RGBA",
+=======
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "previous_reflection",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "diffuse",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "previous_diffuse",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGB",
+>>>>>>> Stashed changes
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
@@ -185,6 +256,7 @@
             name: "sort",
             colorAttachments: [
                 {
+<<<<<<< Updated upstream
                     image: "sort", clearColor: 0x00000000
                 },
                 {
@@ -195,6 +267,12 @@
                 },
                 {
                     image: "final_lighting", clearColor: 0x00000000
+=======
+                    image: "deferred_solid", clearColor: 0x00000000
+                },
+                {
+                    image: "diffuse", clearColor: 0x00000000
+>>>>>>> Stashed changes
                 }
             ]
         },
@@ -210,7 +288,17 @@
             name: "gi",
             colorAttachments: [
                 {
+<<<<<<< Updated upstream
                     image: "global_illumination", clearColor: 0x00000000
+=======
+                    image: "sort", clearColor: 0x00000000
+                },
+                {
+                    image: "previous_reflection", clearColor: 0x00000000
+                },
+                {
+                    image: "previous_diffuse", clearColor: 0x00000000
+>>>>>>> Stashed changes
                 }
             ]
         }
@@ -237,6 +325,47 @@
             ]
         },
         {
+<<<<<<< Updated upstream
+=======
+            name: "deferred_solid",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
+            samplers: [
+                "u_main_color",
+                "u_previous_color",
+                "u_translucent_depth",
+                "u_particles_depth",
+                
+                "u_solid_normal",
+                "u_pbr_data",
+                "u_material_data",
+                "u_light_data",
+
+                "u_depth_mipmaps",
+                "u_depth_no_player",
+                "u_blue_noise",
+
+                "u_shadow_map",
+                "u_shadow_tex",
+
+                "u_previous_color"
+            ]
+        },
+        {
+            name: "reflection_coord",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_coord.frag",
+            samplers: [
+                "u_normal",
+                "u_pbr_data",
+
+                "u_depth_mipmaps",
+                "u_previous_color",
+                "u_previous_reflection"
+            ]
+        },
+        {
+>>>>>>> Stashed changes
             name: "sort",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
@@ -260,11 +389,17 @@
                 "u_translucent_vertex_normal",
                 "u_pbr_data",
                 "u_previous_frame",
+<<<<<<< Updated upstream
                 "u_depth_mipmaps",
                 "u_blue_noise",
                 "u_global_illumination_copy",
                 "u_success_dir_copy",
                 "u_processed_color",
+=======
+                "u_composited_mips",
+                "u_reflection_coord",
+                "u_diffuse"
+>>>>>>> Stashed changes
 
                 "u_shadow_map"
             ]
@@ -316,6 +451,7 @@
                 ],
                 lod: 2
             },
+<<<<<<< Updated upstream
             // {
             //     name: "gi_copy",
             //     program: "copy",
@@ -324,6 +460,46 @@
             //         "sort"
             //     ]
             // }
+=======
+            {
+                name: "deferred_solid",
+                program: "deferred_solid",
+                framebuffer: "deferred_solid",
+                samplerImages: [
+                    "main_color",
+                    "taa",
+                    "translucent_depth",
+                    "particles_depth",
+
+                    "solid_normal",
+                    "pbr_data",
+                    "material_data",
+                    "light_data",
+
+                    "quarter_res_depth",
+                    "depth_no_player"
+                    "forgetmenot:textures/blue_noise.png",
+                    
+                    "shadow_map",
+                    "shadow_map",
+
+                    "previous_diffuse"
+                ]
+            },
+            {
+                name: "reflection_coord",
+                program: "reflection_coord",
+                framebuffer: "reflection_coord",
+                samplerImages: [
+                    "composite_normal",
+                    "pbr_data",
+
+                    "quarter_res_depth",
+                    "taa",
+                    "previous_reflection"
+                ]
+            },
+>>>>>>> Stashed changes
             {
                 name: "sort",
                 program: "sort",
@@ -347,12 +523,20 @@
                     "composite_normal",
                     "translucent_vertex_normal",
                     "pbr_data",
+<<<<<<< Updated upstream
                     "taa",
                     "quarter_res_depth",
                     "forgetmenot:textures/blue_noise.png",
                     "global_illumination_copy",
                     "success_dir_copy",
                     "bloom_upsample"
+=======
+
+                    "bloom_downsample",
+                    "bloom_upsample",
+                    "reflection_coord",
+                    "diffuse"
+>>>>>>> Stashed changes
                     
                     "shadow_map"
                 ]

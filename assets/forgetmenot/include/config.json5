@@ -132,6 +132,67 @@
                     nameKey: "config.forgetmenot.name.variable_penumbra_shadows",
                     descriptionKey: "config.forgetmenot.desc.variable_penumbra_shadows"
                 },
+<<<<<<< Updated upstream
+=======
+                vps_size_multiplier: {
+                    default: 1000,
+                    min: 100,
+                    max: 5000,
+                    nameKey: "config.forgetmenot.name.vps_size_multiplier",
+                    descriptionKey: "config.forgetmenot.desc.vps_size_multiplier"
+                },
+                bias_mult: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.bias_mult",
+                    descriptionKey: "config.forgetmenot.desc.bias_mult"
+                },
+                contact_shadows: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.contact_shadows",
+                    descriptionKey: "config.forgetmenot.desc.contact_shadows"
+                },
+            }
+        },
+        {
+            includeToken: "forgetmenot:performance",
+            categoryKey: "config.forgetmenot.category.performance",
+            elements: {
+                cloud_detail: {
+                    default: 7,
+                    min: 3,
+                    max: 15,
+                    nameKey: "config.forgetmenot.name.cloud_detail",
+                    descriptionKey: "config.forgetmenot.desc.cloud_detail"
+                },
+                held_light_occlusion_quality: {
+                    default: 10,
+                    min: 3,
+                    max: 20,
+                    nameKey: "config.forgetmenot.name.held_light_occlusion_quality",
+                    descriptionKey: "config.forgetmenot.desc.held_light_occlusion_quality"
+                },
+                ssgi_quality: {
+                    default: 10,
+                    min: 1,
+                    max: 24,
+                    nameKey: "config.forgetmenot.name.ssgi_quality",
+                    descriptionKey: "config.forgetmenot.desc.ssgi_quality"
+                },
+                ssr_quality: {
+                    default: 128,
+                    min: 8,
+                    max: 128,
+                    nameKey: "config.forgetmenot.name.ssr_quality",
+                    descriptionKey: "config.forgetmenot.desc.ssr_quality"
+                },
+                ssr_render_scale: {
+                    default: 1.0,
+                    min: 0.5,
+                    max: 1.0,
+                    nameKey: "config.forgetmenot.name.ssr_render_scale",
+                    descriptionKey: "config.forgetmenot.desc.ssr_render_scale"
+                },
+>>>>>>> Stashed changes
                 vps_search_samples: {
                     default: 8,
                     min: 8,
