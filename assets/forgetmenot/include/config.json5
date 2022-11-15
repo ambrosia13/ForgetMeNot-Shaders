@@ -142,7 +142,7 @@
             categoryKey: "config.forgetmenot.category.performance",
             elements: {
                 cloud_detail: {
-                    default: 7,
+                    default: 6,
                     min: 3,
                     max: 15,
                     nameKey: "config.forgetmenot.name.cloud_detail",

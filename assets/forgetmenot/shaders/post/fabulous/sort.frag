@@ -64,7 +64,7 @@ vec3 blend( vec3 dst, vec4 src ) {
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
     float noiseA = fbmHash(plane * 2.0, octaves, 0.001);
-    float noiseB = fbmHash(plane * 2.0 + 10.0, octaves, 0.001);
+    float noiseB = fbmHash(plane * 2.0 + 50.0, octaves, 0.001);
 
     float aLowerBound = 0.7 - 0.7 * fmn_rainFactor;
     float bLowerBound = 0.5 - 0.5 * fmn_rainFactor;
@@ -314,9 +314,10 @@ void main() {
         //composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
     }
 
+    float rainReflectionFactor = smoothstep(0.1, 0.5, fmn_rainFactor) * step(0.95, normal.y);
     vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
-        if(f0.r > 0.0) {
+        if(f0.r > 0.0 || rainReflectionFactor > 0.0) {
             vec3 cosineDistribution = goldNoise3d();
             vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
             vec3 rayDir = normalize(reflect(viewDir, normal) + goldNoise3d() * roughness * roughness);
@@ -330,6 +331,7 @@ void main() {
             reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
+            if(f0.r < 0.01) reflectance *= rainReflectionFactor;
 
             vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
             if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;

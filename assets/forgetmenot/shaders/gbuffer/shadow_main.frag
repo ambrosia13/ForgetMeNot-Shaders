@@ -48,6 +48,8 @@ void resolveMaterials() {
     // No reflections on default materials
     frx_fragReflectance = mix(0.0, frx_fragReflectance, step(0.0001, frx_fragReflectance - 0.04));
 
+    frx_fragRoughness = mix(frx_fragRoughness, 0.0, smoothstep(0.0, 0.5, fmn_rainFactor));
+
     // Hurt effect
     frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);
 
@@ -153,6 +155,7 @@ void frx_pipelineFragment() {
                 vec3 ambientLight = ambientColor * ao * ao;
 
                 float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
+                sunlightStrength *= 5.0;
 
                 lightmap += ambientLight;
                 lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;

@@ -44,9 +44,9 @@ float kleinNishina(float x, float e) {
 }
 
 float rayleighPhase(float x){
-    return 0.75 * (1.0 + x);
+    //return 0.75 * (1.0 + x);
     //return henyeyGreenstein(x, 0.0);
-	//return (3.0 / (16.0 * PI)) * (1.0 + x * x);
+	return (3.0 / (16.0 * PI)) * (1.0 + x * x);
 }
 float miePhase(float x, float g)
 {
@@ -100,7 +100,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     LdotU = smoothstep(0.0, 1.0, LdotU);
 
     float LdotV = clamp01(dot(sunVector, viewDir));
-    LdotV = mix(frx_smootherstep(0.0, 1.5, LdotV), LdotV, frx_smootherstep(0.0, 1.0, LdotV));
+    //LdotV = mix(frx_smootherstep(0.0, 1.5, LdotV), LdotV, frx_smootherstep(0.0, 1.0, LdotV));
 
     float lightOpticalDepth = particleThickness(LdotU);
 
@@ -115,7 +115,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
     vec3 rlhDayScatter = rayleigh * opticalDepth * 1.125;
     vec3 mieDayScatter = mie * particleThickness(upDot * upDot) * miePhase(LdotV, atmosphereG);
 
-    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.375;
+    vec3 scatterSun = rlhDayScatter * vec3(0.9, 1.0, 1.3) + mieDayScatter * 0.125;
     scatterSun += scatterSun * vlFactor * miePhase(LdotV, atmosphereG);
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
@@ -138,10 +138,10 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
             vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
             diskVisibility -= step(0.9999, dot(viewDir, fNormalize(vec3(rotation.x, sunVector.y, rotation.y))));
 
-            //diskVisibility *= 0.01;
+            diskVisibility *= 2.0;
         }
 
-        totalScatter += 1024.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
+        totalScatter += 750.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
     }
 
 

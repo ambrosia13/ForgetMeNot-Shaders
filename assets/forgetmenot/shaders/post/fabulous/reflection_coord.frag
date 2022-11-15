@@ -22,12 +22,13 @@ void main() {
      vec3 f0 = pbrData.rrr;
      float roughness = pbrData.b;
 
-     if(depth == 1.0 || f0.r < 0.01) {
+     vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
+
+     float rainReflectionFactor = smoothstep(0.1, 0.5, fmn_rainFactor) * step(0.95, normal.y);
+     if((depth == 1.0 || f0.r < 0.01) && rainReflectionFactor == 0.0) {
           discard;
           return;
      }
-
-     vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
 
      vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
 

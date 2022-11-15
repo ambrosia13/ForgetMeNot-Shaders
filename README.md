@@ -8,13 +8,13 @@ Immersive semi-realistic pipeline shader for Canvas. Early in development.
 
 Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
 
-## how to use
-1. Be sure you're on 1.18.2 or above. I can only offer support for the MC versions that Canvas actively supports.
+## how to use third-party shaders with canvas
+1. Be sure you're on 1.18.2 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
 2. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
-3. Get Canvas Renderer mod through either [Modrinth](https://modrinth.com/mod/canvas) (stable builds) or [GitHub](https://github.com/vram-guild/canvas/releases) (unstable builds). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
-4. Download Forget-me-not, either via the [Modrinth](https://modrinth.com/resourcepack/forgetmenot) or [GitHub Releases](https://github.com/Poisoned-Honey/ForgetMeNot-Shaders/releases).
-5. Launch your game, put Forget-me-not into your resource packs folder and activate the resource pack.
-6. Activate Forget-me-not in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
+3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
+4. Download your preferred pipeline shaderpack
+5. Launch your game, put your pipeline resource pack into your resource packs folder and enable the resource pack.
+6. Activate your pipeline in `Options / Video Settings / Canvas / Pipeline Options / Pipelines`
 
 ## troubleshooting
 - Experiencing shadow flickering? In `Options / Video Settings / Canvas / Debug`, set `Shadow Priming Strategy` to `TIERED` and `Disable Shadow Self-Occlusion` to true.
