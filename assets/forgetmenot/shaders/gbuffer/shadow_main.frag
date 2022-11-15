@@ -168,7 +168,7 @@ void frx_pipelineFragment() {
                 heldLightFactor *= frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, frx_vertex.xyz + frx_cameraPos));
                 heldLightFactor *= frx_heldLight.a + 1.0;
 
-                if(frx_isHand && frx_heldLight.rgb != vec3(1.0)) heldLightFactor = 0.0;
+                if(frx_isHand && frx_heldLight.a > 0.0) heldLightFactor = 0.0;
                 if(frx_heldLight.rgb != vec3(1.0)) lightmap = mixmax(lightmap, (pow(frx_heldLight.rgb * (2.2 + frx_heldLight.a), vec3(2.2)) * ao), heldLightFactor);
 
                 lightmap = mix(lightmap, (lightmap * 0.5 + 0.5) * ao, frx_effectNightVision * frx_effectModifier);
