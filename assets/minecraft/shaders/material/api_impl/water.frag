@@ -17,7 +17,7 @@ float waterHeightNoise(in vec2 uv) {
     //noise = max(noise, fmn_fbm2D(coord - 100.0, 3, -1.0));
     noise += (fmn_fbm2D(coord * vec2(8.0, 1.5), 2, 2.0) * 2.0 - 1.0) * 0.05;
 
-    return pow(noise * 0.5, 1.5) * (0.15);
+    return pow(noise * 0.5, 1.5) * (0.5) * clamp(dot(-frx_vertexNormal.xyz, normalize(frx_vertex.xyz)), 0.0, 1.0);
 
     // float amp = 0.5;
     // float offset = 1.0;

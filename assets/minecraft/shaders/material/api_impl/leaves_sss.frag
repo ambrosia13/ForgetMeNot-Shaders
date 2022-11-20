@@ -7,6 +7,7 @@ void frx_materialFragment() {
 
             #if FMN_PBR >= 3
                 fmn_isFoliage = 1;
+                fmn_isLeafBlock = 1;
             #endif
         #endif
     #endif

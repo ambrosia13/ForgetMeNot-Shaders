@@ -24,6 +24,7 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - Forget-me-not breaks, but all other pipelines work alright? Please grab your log in `.minecraft/logs/latest.log` and all contents of the `.minecraft/canvas_shader_debug/` folder. Additionally, a screenshot of the game with the F3 menu opened would really help. Once you have these, please either open a GitHub issue or let me know about it on Discord.
 
 ## cool features
+- seasons! be immersed in your world as the seasons change over time
 - HDR, bloom, and tone mapping
 - dramatic skies with atmospheric scattering, custom clouds, and crepuscular rays
 - water waves and reflections, as well as PBR support
@@ -32,9 +33,9 @@ Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other
 - advanced temporal anti-aliasing (TAA)
 
 ## credits
-- Normal and depth aware blur adapted from [Xordev's blur](https://github.com/XorDev/Ominous-Shaderpack/blob/main/shaders/lib/Blur.inc)
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
+- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things
 
 <!-- ## discord
 https://discord.gg/Zzn4jJapRH -->

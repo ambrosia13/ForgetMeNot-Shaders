@@ -63,6 +63,11 @@ vec3 blend( vec3 dst, vec4 src ) {
 }
 
 float sampleCumulusCloud(in vec2 plane, in int octaves) {
+    #ifdef CURL_NOISE
+        plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
+        //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
+    #endif
+
     float noiseA = fbmHash(plane * 2.0, octaves, 0.001);
     float noiseB = fbmHash(plane * 2.0 + 50.0, octaves, 0.001);
 
@@ -78,8 +83,13 @@ float sampleCumulusCloud(in vec2 plane, in int octaves) {
     //return smoothstep(0.5, 0.9, fbmHash(plane * 2.0, octaves, 0.001));
 }
 float sampleCirrusCloud(in vec2 plane, in int octaves) {
+    #ifdef CURL_NOISE
+        plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
+        //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
+    #endif
+
     plane *= 2.0;
-    float clouds = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.5, 1.5, fbmHash(plane * 0.5, octaves, 0.01));
+    float clouds = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.4, 1.5, fbmHash(plane * 0.5, octaves, 0.01));
     return clouds;
 }
 
@@ -191,14 +201,9 @@ void main() {
             if(viewDir.y > 0.0) {
                 if(frx_worldIsOverworld == 1) {
                     vec2 plane = jitteredViewDir.xz / (jitteredViewDir.y + 0.1 * length(jitteredViewDir.xz));
-                    plane *= 1.15;
+                    plane *= 1.;
 
                     plane += frx_cameraPos.xz / 150.0;
-
-                    #ifdef CURL_NOISE
-                        plane += 0.001 * curlNoise(plane * 6.0 + fmn_time / 20.0);
-                        //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
-                    #endif
 
                     plane += fmn_time / 100.0;
 
@@ -209,7 +214,7 @@ void main() {
                     vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
 
                     vec2 cirrusPlane = (plane - frx_cameraPos.xz / 150.0) + frx_cameraPos.xz / 1000.0;
-                    float cirrusClouds = sampleCirrusCloud(cirrusPlane + 10.0 + 0.3 * vec2(smoothHash(cirrusPlane), 0.0), 3) * (4.0 / 3.0);
+                    float cirrusClouds = sampleCirrusCloud(cirrusPlane, 3) * (4.0 / 3.0);
                     float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
                     vec3 scatteringCirrus = (1.0 - transmittanceCirrus) * mie;
 
@@ -240,7 +245,7 @@ void main() {
                         rayDirection = fNormalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
 
                         for(int i = 0; i < 1; i++) {
-                            planeMarch += rayDirection * stepLength * 2.0 * interleaved_gradient();
+                            planeMarch += rayDirection * stepLength * 1.0 * interleaved_gradient();
 
                             float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
                             lightRaysOpticalDepth += currentDensity * 10.0;

@@ -38,6 +38,28 @@ mat3 tbnMatrix() {
     );
 }
 void resolveMaterials() {
+    frx_fragColor /= frx_vertexColor;
+    vec4 vertexColor = frx_vertexColor;
+
+    #ifdef SEASONS
+        if(distance(frx_vertexColor.rgb, vec3(1.0)) > 0.01 && fmn_isFoliage == 1) {
+            vec3 seasonColor = getSeasonColor(vertexColor.rgb, fmn_isLeafBlock, frx_vertex.xyz + frx_cameraPos);
+
+            vertexColor.rgb = vec3(length(vertexColor.rgb));
+            vertexColor.rgb *= seasonColor;
+
+            vertexColor.rgb = mix(frx_vertexColor.rgb, vertexColor.rgb, float(fmn_isFoliage) * 0.5);
+        }
+
+        #ifdef FALLING_LEAVES
+            vec3 pixel = floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0;
+            pixel *= 4000.0;
+            frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(frx_vertex.xyz + frx_cameraPos), hash13(pixel)));
+        #endif
+    #endif
+
+    frx_fragColor *= vertexColor;
+
     mat3 tbn = tbnMatrix();
 
     frx_fragNormal = tbn * frx_fragNormal;
@@ -196,7 +218,8 @@ void frx_pipelineFragment() {
         color.rgb *= dot(frx_vertexNormal, direction) * 0.45 + 0.55;
     }
 
-    if(color.a < 0.01 && frx_renderTargetSolid && !frx_isGui) discard;
+    if(frx_fragColor.a == 0.0) discard;
+    color = max(color, vec4(0.005));
 
     //color.rgb = shadowBlurColor;
 

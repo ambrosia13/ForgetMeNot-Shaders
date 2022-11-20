@@ -52,7 +52,7 @@ void main() {
      {
           vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
 
-          skyIlluminance = frx_luminance(ambientLightColor * 6.0);
+          skyIlluminance = frx_luminance(ambientLightColor * 6.0) + frx_skyLightVector.y * frx_skyLightVector.y * 2.0;
 
           skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
      }

@@ -23,6 +23,6 @@ void frx_materialFragment() {
         float deltaX = (height2 - height1) * 1.0;
         float deltaY = (height4 - height3) * 1.0;
 
-        frx_fragNormal = fmn_fNormalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
+        if(frx_matCutout == 0) frx_fragNormal = fmn_fNormalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
     #endif
 }

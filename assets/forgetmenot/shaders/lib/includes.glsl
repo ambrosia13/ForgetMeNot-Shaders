@@ -6,6 +6,7 @@ uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
 #include forgetmenot:atmospherics
+#include forgetmenot:weather
 #include forgetmenot:shadows
 #include forgetmenot:lighting
 #include forgetmenot:post_processing

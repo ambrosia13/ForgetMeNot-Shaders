@@ -460,3 +460,69 @@ vec3 noise3d() {
 vec3 mixmax(in vec3 a, in vec3 b, in float x) {
     return mix(a, max(a, b), x);
 }
+
+vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
+    #ifdef SEASONS
+        float time = frx_worldDay + frx_worldTime;
+
+        #if STARTING_SEASON == SEASON_SUMMER
+            time += 6.0;
+        #elif STARTING_SEASON == SEASON_AUTUMN
+            time += 12.0;
+        #elif STARTING_SEASON == SEASON_WINTER
+            time += 18.0;
+        #endif
+
+        time = mod(time, 23.0);
+
+        #ifdef VARIED_TREE_COLOR
+            float noise = smoothstep(0.4, 0.7, smoothHash(worldCoord.xz * 0.01));
+        #else
+            float noise = 0.0;
+        #endif
+
+        float leaves = float(isLeafBlock);
+
+        vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noise);
+        vec3 seasonColor = vertexColor;
+        seasonColor = mix(seasonColor, mix(vec3(0.880,1.000,0.568), vec3(0.874,1.000,0.537) * 1.5, leaves), smoothstep(4.0, 5.0, time));   // summer
+        seasonColor = mix(seasonColor, mix(vec3(1.000,0.666,0.346), mix(vec3(1.000,0.480,0.105), vec3(1.000,0.341,0.158) * 1.5, noise), leaves), smoothstep(10.0, 11.0, time)); // autumn
+        seasonColor = mix(seasonColor, mix(vec3(0.828,1.000,0.844), vec3(1.000,0.874,0.912), leaves), smoothstep(16.0, 17.0, time)); // winter
+        seasonColor = mix(seasonColor, vertexColor, smoothstep(22.0, 23.0, time));             // spring
+
+        return seasonColor;
+    #else
+        return vertexColor;
+    #endif
+}
+float getLeavesFallingThreshold(vec3 worldCoord) {
+    #ifdef SEASONS
+        float time = frx_worldDay + frx_worldTime;
+
+        #if STARTING_SEASON == SEASON_SUMMER
+            time += 6.0;
+        #elif STARTING_SEASON == SEASON_AUTUMN
+            time += 12.0;
+        #elif STARTING_SEASON == SEASON_WINTER
+            time += 18.0;
+        #endif
+
+        time = mod(time, 23.0);
+
+        #ifdef VARIED_TREE_COLOR
+            float noise = smoothstep(0.4, 0.7, smoothHash(worldCoord.xz * 0.01 + 1000.0));
+        #else
+            float noise = 0.0;
+        #endif
+
+        float threshold = 2.0;
+        threshold = mix(threshold, 2.0, smoothstep(4.0, 5.0, time));   // summer
+        threshold = mix(threshold, mix(0.75, 0.5, noise), smoothstep(10.0, 11.0, time)); // autumn
+        threshold = mix(threshold, mix(0.5, 0.4, noise), smoothstep(16.0, 17.0, time)); // winter
+        threshold = mix(threshold, 2.0, smoothstep(22.0, 23.0, time));             // spring
+
+        return threshold;
+    #else
+        return 2.0;
+    #endif
+}

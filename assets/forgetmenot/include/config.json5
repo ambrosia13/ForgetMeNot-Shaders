@@ -52,6 +52,35 @@
             }
         },
         {
+            includeToken: "forgetmenot:weather",
+            categoryKey: "config.forgetmenot.category.weather",
+            elements: {
+                seasons: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.seasons",
+                    descriptionKey: "config.forgetmenot.desc.seasons"
+                },
+				starting_season: {
+					default: "spring",
+					choices: ["spring", "summer", "autumn", "winter"],
+					enum: true,
+					prefix: "season_",
+					nameKey: "config.forgetmenot.name.starting_season",
+					descriptionKey: "config.forgetmenot.desc.starting_season"
+				},
+                varied_tree_color: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.varied_tree_color",
+                    descriptionKey: "config.forgetmenot.desc.varied_tree_color"
+                },
+                falling_leaves: {
+                    default: true,
+                    nameKey: "config.forgetmenot.name.falling_leaves",
+                    descriptionKey: "config.forgetmenot.desc.falling_leaves"
+                },
+            }
+        },
+        {
             includeToken: "forgetmenot:lighting",
             categoryKey: "config.forgetmenot.category.lighting",
             elements: {

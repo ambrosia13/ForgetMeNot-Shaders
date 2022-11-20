@@ -23,6 +23,17 @@
     "config.forgetmenot.name.bloomy_water_fog": "Water Fog Scattering",
     "config.forgetmenot.desc.bloomy_water_fog": "Whether fog scattering applies to water fog too.",
 
+    "config.forgetmenot.category.weather": "Weather",
+
+    "config.forgetmenot.name.seasons": "Seasons",
+    "config.forgetmenot.desc.seasons": "Enables a magical season system, changing foliage color as time goes on",
+    "config.forgetmenot.name.starting_season": "Starting Season",
+    "config.forgetmenot.desc.starting_season": "The season the world starts on. Affects all other seasons.",
+    "config.forgetmenot.name.varied_tree_color": "Varied Tree Color",
+    "config.forgetmenot.desc.varied_tree_color": "Varies the tree color based on world position, adding patches of pink trees during spring and orange trees during autumn",
+    "config.forgetmenot.name.falling_leaves": "Falling Leaves",
+    "config.forgetmenot.desc.falling_leaves": "If enabled, trees will lose some leaves during autumn and winter, and grow them back in spring.",
+
     "config.forgetmenot.category.lighting": "Lighting",
 
     "config.forgetmenot.name.day_brightness": "Day Brightness",
