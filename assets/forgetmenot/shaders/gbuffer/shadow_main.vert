@@ -15,5 +15,5 @@ void frx_pipelineVertex() {
 
     shadowViewPos = (frx_shadowViewMatrix * vec4(frx_vertex.xyz, 1.0));
 
-    if(!frx_isGui || frx_isHand) gl_Position.xy += (taaOffsets[frx_renderFrames % 8u] * (1.0 / vec2(frx_viewWidth, frx_viewHeight))) * gl_Position.w;
+    if(!frx_isGui || frx_isHand) gl_Position.xy += (TAA_OFFSETS[frx_renderFrames % 8u] * (1.0 / vec2(frx_viewWidth, frx_viewHeight))) * gl_Position.w;
 }

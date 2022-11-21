@@ -2,6 +2,7 @@
 #include forgetmenot:shaders/lib/api/fmn_pbr.glsl 
 #include forgetmenot:debug
 
+// "fast" normalize functions
 vec2 fmn_fNormalize(in vec2 x) {
     float lengthSquared = dot(x, x);
     return x * inversesqrt(lengthSquared);

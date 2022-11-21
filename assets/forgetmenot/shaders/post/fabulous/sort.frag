@@ -152,7 +152,7 @@ void main() {
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
-    vec2 coordJittered = ((texcoord * 2.0 - 1.0) + taaOffsets[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
+    vec2 coordJittered = ((texcoord * 2.0 - 1.0) + TAA_OFFSETS[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
 
     vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
     vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
@@ -161,7 +161,7 @@ void main() {
     vec3 viewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
 
     vec2 clipPos = texcoord * 2.0 - 1.0;
-    clipPos += taaOffsets[frx_renderFrames % 8u] / (frxu_size);
+    clipPos += TAA_OFFSETS[frx_renderFrames % 8u] / (frxu_size);
     vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
     vec3 jitteredViewPos = setupSceneSpacePos(newTexcoordJittered, 1.0);
     vec3 jitteredViewDir = fNormalize(jitteredViewPos);
@@ -288,7 +288,7 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    // vec2 jitterCoord = texcoord + taaOffsets[frx_renderFrames % 8u] / frxu_size;
+    // vec2 jitterCoord = texcoord + TAA_OFFSETS[frx_renderFrames % 8u] / frxu_size;
 
     // vec3 jitterPos = setupSceneSpacePos(jitterCoord, min_depth);
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
