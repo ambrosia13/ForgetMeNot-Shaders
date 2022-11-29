@@ -46,6 +46,7 @@ const vec3 UNDERWATER_FOG_COLOR = vec3(0.0, 0.16, 0.09);
 #include forgetmenot:shaders/lib/functions/external.glsl
 #include forgetmenot:shaders/lib/functions/noise.glsl
 #include forgetmenot:shaders/lib/functions/utility.glsl
+#include forgetmenot:shaders/lib/functions/pbr_utils.glsl
 #include forgetmenot:shaders/lib/functions/atmosphere.glsl
 
 // FMN API

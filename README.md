@@ -9,7 +9,7 @@ Forget-me-not is licensed under the LGPL v3.0, so please make sure to read over 
 Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
 
 ## how to use third-party shaders with canvas
-1. Be sure you're on 1.18.2 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
+1. Be sure you're on 1.19.2 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
 2. Install [Fabric](https://fabricmc.net/) and get some cool mods that you like
 3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
 4. Download your preferred pipeline shaderpack

@@ -185,8 +185,8 @@ void main() {
 
           float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
 
-          vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
-          vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (3.0 + 1.0 * normal.y) * (upColor)), skyLight);
+          vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0) * 0.9 + 0.1;
+          vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * normal.y) * (upColor)), skyLight);
 
           if(frx_worldIsEnd == 1) {
                // Never thought I'd ever name a variable NdotPlanet
@@ -257,7 +257,7 @@ void main() {
           #endif
 
           float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
-          sunlightStrength *= 5.0;
+          sunlightStrength *= 10.0;
 
           lightmap.rgb += ambientLight;
           lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;

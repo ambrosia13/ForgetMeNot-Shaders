@@ -18,5 +18,5 @@ void main() {
     bloomAmount = mix(bloomAmount, 0.5, fmn_rainFactor);
 
     //fragColor = mix(color, bloom, mix(bloomAmount, 1.0, frx_cameraInFluid));
-    fragColor = mix(color, bloom, mix(0.25 + 0.5 * smoothstep(0.0, 4.0, bloomLuminance), 1.0, frx_cameraInFluid));
+    fragColor = mix(color, bloom, mix(0.25 + 0.5 * smoothstep(0.0, 8.0, bloomLuminance), 1.0, frx_cameraInFluid));
 }

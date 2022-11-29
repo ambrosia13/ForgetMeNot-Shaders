@@ -15,14 +15,16 @@ void main() {
 
     vec3 finalColor = color.rgb;
 
-    //finalColor = floor(finalColor * 16.0 + 0.5) / 16.0;
+    // finalColor *= vec3(0.95, 1.0, 0.7);
+    // finalColor = mix(finalColor, finalColor / length(finalColor) * pow(length(finalColor), 1.1), 1.0);
+    // saturation(finalColor, 0.8);
+
 
     float l = frx_luminance(finalColor);
-    vibrance(finalColor, sqrt(smoothstep(0.0, 0.35, l)));
+    vibrance(finalColor, sqrt(smoothstep(0.0, 0.25, l)));
 
     vibrance(finalColor, mix(1.0, tanh(l), fmn_rainFactor));
 
-    //finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
     finalColor = frx_toneMap(finalColor);
 
     finalColor = max(finalColor, vec3(0.0));

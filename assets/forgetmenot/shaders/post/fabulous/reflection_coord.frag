@@ -68,6 +68,7 @@ void main() {
                     }
 
                     float lenience = max(abs((screenSpaceReflectionDir.z)) * 3.0, 0.02 / pow(length(viewSpacePos), 2.0));
+                    //bool hit = linearizeDepth(screenPos.z) > linearizeDepth(depthQuery) && (linearizeDepth(depthQuery) > linearizeDepth(depth) || dot(viewSpaceDir, -viewNormal) < 0.1);
 
                     if(abs(lenience - (screenPos.z - depthQuery)) < lenience) {
                          reflectionCoord = screenPos;

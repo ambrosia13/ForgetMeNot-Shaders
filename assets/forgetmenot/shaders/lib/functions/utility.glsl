@@ -128,9 +128,8 @@ vec3 rand3D(vec2 st) {
     return normalize(hash32(st) * 2.0 - 1.0);
 }
 
-vec3 getReflectance(in vec3 f0, in float NdotV) {
-    NdotV = clamp01(NdotV);
-    return f0 + (1.0 - f0) * pow((1.0 - NdotV), 5.0);
+void saturation(inout vec3 color, in float amt) {
+    color = mix(vec3(frx_luminance(color)), color, amt);
 }
 
 // Thanks Belmu#4066 for helping me solve the issues with my variable penumbra shadows!

@@ -13,6 +13,7 @@ uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
 uniform sampler2D u_normal;
+uniform sampler2D u_flat_normal;
 uniform sampler2D u_pbr_data;
 
 uniform sampler2D u_previous_frame;
@@ -114,29 +115,38 @@ void main() {
     vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
 
-    vec4  particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
-    vec3 coords = vec3(texcoord, 0.0);
-    #define REFRACTION
-    #ifdef REFRACTION
-        // vec3 rViewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
-        // rViewDir = refract(rViewDir, texture(u_normal, texcoord).rgb * 2.0 - 1.0, 1.1);
-
-        float doRefraction = 0.0;
-        if(translucent_depth != particles_depth) doRefraction = 1.0;
-    #endif
-
-    //translucent_depth = texture(u_translucent_depth, coords.xy).r;
-    //particles_depth = texture(u_particles_depth, coords.xy).r;
-
     vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
+
     vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
     vec3 f0 = pbrData.rrr;
     float roughness = pbrData.b;
 
+
+    vec3 coords = vec3(texcoord, 0.0);
+    #ifndef REFRACTION
+        {
+            vec3 flatNormal = texture(u_flat_normal, texcoord).rgb * 2.0 - 1.0;
+            //flatNormal *= 0.8;
+            vec3 sceneSpacePos = setupSceneSpacePos(texcoord, particles_depth);
+            vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, translucent_depth);
+
+            vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
+            viewDir = refract(viewDir, normal - flatNormal, 1.0 / 1.33);
+
+            coords.xy = particles_depth != translucent_depth ? sceneSpaceToScreenSpace(sceneSpacePos + mix(4.0, 2.0, pbrData.g) * viewDir).xy : texcoord;
+        }
+    #endif
+
+    translucent_depth = texture(u_translucent_depth, coords.xy).r;
+    particles_depth = texture(u_particles_depth, coords.xy).r;
+
+    // vec4 translucent_color = texture(u_translucent_color, coords.xy);
+    vec4  particles_color = texture(u_particles_color, coords.xy);
+
     vec4  main_color = texture(u_main_color, coords.xy);
-    float main_depth = texture(u_main_depth, texcoord.xy).r;
+    float main_depth = texture(u_main_depth, coords.xy).r;
 
     vec4  entity_color = texture(u_entity_color, texcoord);
     float entity_depth = texture(u_entity_depth, texcoord).r;
@@ -166,9 +176,9 @@ void main() {
     vec3 jitteredViewPos = setupSceneSpacePos(newTexcoordJittered, 1.0);
     vec3 jitteredViewDir = fNormalize(jitteredViewPos);
 
-    if(pbrData.g > 0.5 && frx_cameraInWater == 1) {
+    if(min_depth < 1.0) {
         vec3 transNormal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-        jitteredViewDir = refract(jitteredViewDir, transNormal, 1.33);
+        jitteredViewDir = refract(jitteredViewDir, transNormal, pbrData.g > 0.5 && frx_cameraInWater == 1 ? (1.33) : (1.0 / 1.33));
     }
 
     vec3 tdata = getTimeOfDayFactors();
@@ -325,17 +335,24 @@ void main() {
         if(f0.r > 0.0 || rainReflectionFactor > 0.0) {
             vec3 cosineDistribution = goldNoise3d();
             vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
-            vec3 rayDir = normalize(reflect(viewDir, normal) + goldNoise3d() * roughness * roughness);
-            rayDir *= mix(-1.0, 1.0, step(0.0, dot(rayDir, normal)));
+            vec3 worldMicrofacetNormal = microfacetNormal * frx_normalModelMatrix;
+            vec3 reflectPos = reflect(minSceneSpacePos, worldMicrofacetNormal);
 
-            reflectColor = mix(
-                (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
-                getSkyColorDetailed(rayDir, reflect(minSceneSpacePos, microfacetNormal * frx_normalModelMatrix), 1.0),
-                clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater)
-            );
+            int skySamples = 1;
+            for(int i = 0; i < skySamples; i++) {
+                vec3 rayDir = normalize(reflect(viewDir, normal) + goldNoise3d(i) * roughness * roughness);
+                rayDir *= mix(-1.0, 1.0, step(0.0, dot(rayDir, normal)));
+
+                reflectColor += mix(
+                    (getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25,
+                    getSkyColorDetailed(rayDir, reflectPos, 1.0),
+                    clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater)
+                ) / skySamples;
+            }
+
             reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
-            reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)));
+            reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)), roughness * roughness);
             if(f0.r < 0.01) reflectance *= rainReflectionFactor;
 
             vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
@@ -402,6 +419,7 @@ void main() {
             fogAmount += 3.0 * smoothstep(0.0, -10.0, frx_cameraPos.y);
             fogAmount *= mix(1.0, 4.0, 1.0 - sqrt(sqrt(clamp01(getSunVector().y))));
             fogAmount *= mix(1.0, 0.1, sqrt(clamp01(getSunVector().y)));
+            fogAmount *= mix(1.0, 2.0, sqrt(clamp01(getMoonVector().y)));
 
             fogAmount += 5.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
@@ -443,13 +461,14 @@ void main() {
         bloomyFogTransmittance = mix(bloomyFogTransmittance, 0.0, floor(min_depth));
 
         if(frx_worldIsOverworld == 1) {
-            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, 0.5 + 0.5 * (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
+            //bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, 0.5 + 0.5 * (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
+            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, clamp01(floor(min_depth) * viewDir.y * viewDir.y - 0.2 * sqrt(getMoonVector().y)));
         } else if(frx_worldIsEnd == 1) {
             bloomyFogTransmittance = 1.0;
         }
 
-        composite = mix(bloomyFogColor, composite, bloomyFogTransmittance * 0.875 + 0.125);
-        skyColor = mix(bloomyFogColor, skyColor, bloomyFogTransmittance * 0.75 + 0.25);
+        composite = mix(bloomyFogColor, composite, clamp01(bloomyFogTransmittance * 0.7 + 0.3 + 0.1 * floor(min_depth)));
+        skyColor = mix(bloomyFogColor, skyColor, clamp01(bloomyFogTransmittance * 0.7 + 0.3 + 0.1 * floor(min_depth)));
     #endif
 
     #ifdef BORDER_FOG
@@ -467,5 +486,5 @@ void main() {
         composite = mix(composite, weather_color.rgb, weather_color.a);
     }
 
-    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, doRefraction));
+    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));
 }

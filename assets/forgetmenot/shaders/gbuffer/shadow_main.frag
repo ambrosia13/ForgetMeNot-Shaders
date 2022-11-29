@@ -231,7 +231,7 @@ void frx_pipelineFragment() {
 
     fragColor = color;
     fragNormal = vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-    tangentNormal = vec4((frx_fragNormal * tbnMatrix()) * 0.5 + 0.5, 1.0);
+    tangentNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
     pbrData = vec4(frx_fragReflectance, fmn_isWater, frx_fragRoughness, 1.0);
     materialData = vec4(frx_fragEmissive, 1.0 - float(frx_fragEnableDiffuse), fmn_sssAmount, 1.0);
     lightData = vec4(smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy), mix(frx_fragLight.z, 1.0, frx_matDisableAo), 1.0);

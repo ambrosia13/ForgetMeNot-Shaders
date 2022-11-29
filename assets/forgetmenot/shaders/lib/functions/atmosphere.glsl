@@ -14,7 +14,7 @@ const vec3 kRlh = (vec3(0.27, 0.5, 1.0) * 1e-5);
 const vec3 kMie = vec3(0.5e-6);
 const vec3 kTotal = kRlh + kMie;
 
-const vec3 moonFlux = vec3(1.3, 1.7, 2.0) * 0.25;
+const vec3 moonFlux = vec3(2.0, 2.0, 2.0) * 0.25;
 const float atmosphereG = 0.75;
 const float cloudsG = 0.5;
 
@@ -138,7 +138,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
             vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
             diskVisibility -= step(0.9999, dot(viewDir, fNormalize(vec3(rotation.x, sunVector.y, rotation.y))));
 
-            diskVisibility *= 2.0;
+            diskVisibility *= 0.1;
         }
 
         totalScatter += 750.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
