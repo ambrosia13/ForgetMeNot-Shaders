@@ -106,14 +106,13 @@ void main() {
             vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
             viewDir = refract(viewDir, normal - flatNormal, 1.0 / 1.33);
 
-            coords.xy = particles_depth != translucent_depth ? sceneSpaceToScreenSpace(sceneSpacePos + mix(4.0, 2.0, pbrData.g) * viewDir).xy : texcoord;
+            coords.xy = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePos + mix(4.0, 2.0, pbrData.g) * viewDir).xy, sign(particles_depth - translucent_depth));
         }
     #endif
 
     translucent_depth = texture(u_translucent_depth, coords.xy).r;
     particles_depth = texture(u_particles_depth, coords.xy).r;
 
-    // vec4 translucent_color = texture(u_translucent_color, coords.xy);
     vec4  particles_color = texture(u_particles_color, coords.xy);
 
     vec4  main_color = texture(u_main_color, coords.xy);
@@ -133,12 +132,13 @@ void main() {
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
-    vec2 coordJittered = ((texcoord * 2.0 - 1.0) + TAA_OFFSETS[frx_renderFrames % 8u] / (frxu_size)) * 0.5 + 0.5;
-
     vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
     vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
-    vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
-    vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
+
+    // Unused vars - uncomment when needed.
+    // vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
+    // vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
+
     vec3 viewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
 
     vec2 clipPos = texcoord * 2.0 - 1.0;
@@ -152,34 +152,12 @@ void main() {
         jitteredViewDir = refract(jitteredViewDir, transNormal, pbrData.g > 0.5 && frx_cameraInWater == 1 ? (1.33) : (1.0 / 1.33));
     }
 
-    vec3 tdata = getTimeOfDayFactors();
-
-    vec3 sunVector = getSunVector();
-    vec3 moonVector = getMoonVector();
-
-    vec3 ambientLightColor = vec3(0.0);
-    ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
-
-    float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
-
-    vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
-    skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
-    skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
-    skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
-
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     vec3 skyColor = texture(u_skybox, jitteredViewDir).rgb;
-
-    if(smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, length(maxSceneSpacePos)) > 0.0) {
-        //skyColor = getSkyColorDetailed(jitteredViewDir, jitteredViewPos, 1.0);
-
-        vec3 viewPos = maxSceneSpacePos;
-
-        main_color.rgb = mix(main_color.rgb, skyColor, floor(max_depth));
-    } 
+    main_color.rgb = mix(main_color.rgb, skyColor, floor(max_depth));
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending same as mojang (mostly)
@@ -258,6 +236,7 @@ void main() {
             if(f0.r < 0.01) reflectance *= rainReflectionFactor;
 
             vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
+
             if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
             if(f0.r > 0.999) reflectColor *= (composite);
         }
@@ -323,7 +302,7 @@ void main() {
             fogAmount = mix(fogAmount, 3.5, clamp01(0.5 - frx_smoothedEyeBrightness.y));
             fogAmount = mix(fogAmount, 6.5, smoothstep(0.0, -10.0, frx_cameraPos.y));
 
-            fogAmount += 5.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
+            fogAmount += 1.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
             //fogAmount *= 10.0;
 

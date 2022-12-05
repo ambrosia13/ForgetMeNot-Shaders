@@ -8,7 +8,7 @@
 // Very fast, almost free
 
 #define d0(x) (abs(x) + 1e-8)
-#define d02(x) (abs(x) + 1e-3)
+
 const vec3 kRlh = (vec3(0.27, 0.5, 1.0) * 1e-5);
 //const vec3 kRlh = (vec3(1.0, 0.7, 0.7) * 1e-5);
 const vec3 kMie = vec3(0.5e-6);
@@ -18,16 +18,15 @@ const vec3 moonFlux = vec3(2.0, 2.0, 2.0) * 0.25;
 const float atmosphereG = 0.75;
 const float cloudsG = 0.5;
 
-vec3 scatter(vec3 coeff, float depth){
+vec3 scatter(vec3 coeff, float depth) {
 	return coeff * depth;
 }
 
-vec3 absorb(vec3 coeff, float depth){
+vec3 absorb(vec3 coeff, float depth) {
 	return exp2(scatter(coeff, -depth));
 }
 
-float henyeyGreenstein(float x, float g)
-{
+float henyeyGreenstein(float x, float g) {
     float g2 = g * g;
     float x2 = x * x;
 
@@ -39,34 +38,20 @@ float henyeyGreenstein(float x, float g)
     return (a / b) * (c / d);
 }
 
-float kleinNishina(float x, float e) {
-    return e / (2.0 * PI * (e * (1.0 - x) + 1.0) * log(2.0 * e + 1.0));
-}
-
-float rayleighPhase(float x){
-    //return 0.75 * (1.0 + x);
-    //return henyeyGreenstein(x, 0.0);
+float rayleighPhase(float x) {
 	return (3.0 / (16.0 * PI)) * (1.0 + x * x);
 }
-float miePhase(float x, float g)
-{
-    //return kleinNishina(pow(x, 1.0 / mieAmount), SUN_ENERGY);
+float miePhase(float x, float g) {
  	return henyeyGreenstein(x, g);
 }
-float particleThickness(float depth){
+float particleThickness(float depth) {
    	float atmosphericDensity = 1.0;
 
     depth = depth * 2.0;
     depth = max(depth + 0.02, 0.02);
-    // depth = abs(depth);
-    // if(depth < 0.01) depth = 0.01;
     depth = 1.0 / (depth);
     
 	return 100000.0 * depth * atmosphericDensity;   
-}
-
-float particleThicknessConst(const float depth){
-	return 100000.0 / max(depth * 2.0 - 0.01, 0.01);   
 }
 
 vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float factor, in float sunBrightness, float drawSun, float vlFactor) {
@@ -89,7 +74,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
         float upDot = mix(pow(-viewDir.y, 1.0 / 1.5), viewDir.y, step(0.0, viewDir.y));
     #else
         // add padding to the atmosphere to hide the sky ground
-        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / 1.5) : viewDir.y);;
+        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : mix(pow(-viewDir.y, 1.0 / 1.5), viewDir.y, step(0.0, viewDir.y));
     #endif
     
     if(frx_worldIsEnd == 1) upDot *= 50.0;
@@ -207,15 +192,6 @@ vec3 endSecondAtmosphere(in vec3 viewSpacePos, in vec3 sunVector, in float facto
     // -------
 
     vec3 totalScatter = scatterSun * sunBrightness * factor;
-
-    if(frx_worldIsOverworld == 1) {
-        totalScatter += mix(1.0, 1.0, (LdotU * LdotU)) *
-        20.0 * scatter(mie, opticalDepth) * 
-        miePhase(frx_smootherstep(0.9995, 0.9997, LdotV), atmosphereG) * 
-        smoothstep(-0.0, 0.01, unmodifiedViewDir.y) *
-        frx_smootherstep(0.999, 0.9995, dot(viewDir, sunVector));
-    }
-
     vec3 totalAbsorb = absorbSun * factor;
 
     return totalScatter * totalAbsorb * LdotV;
@@ -439,19 +415,20 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 #ifdef INCLUDE_CLOUDS
     #ifndef VERTEX_SHADER
         float sampleCumulusCloud(in vec2 plane, in int octaves) {
+            float multiplier = ((octaves + 1.0) / octaves);
+
             #ifdef CURL_NOISE
                 plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
-                //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
             #endif
 
-            float noiseA = fbmHash(plane * 2.0, octaves, 0.001);
-            float noiseB = fbmHash(plane * 2.0 + 50.0, octaves, 0.001);
+            float noiseA = fbmHash(plane * 2.0, octaves, 0.0005);
+            float noiseB = fbmHash(plane * 2.0 + 500.0, octaves, -0.0005);
 
-            float aLowerBound = 0.7 - 0.7 * fmn_rainFactor;
-            float bLowerBound = 0.5 - 0.5 * fmn_rainFactor;
+            float aLowerBound = 0.7 * (1.0 - fmn_rainFactor);
+            float bLowerBound = 0.5 * (1.0 - fmn_rainFactor);
 
-            float a = smoothstep(aLowerBound, 0.9, noiseA) * ((octaves + 1.0) / octaves);
-            float b = smoothstep(bLowerBound, 0.9, noiseB) * ((octaves + 1.0) / octaves);
+            float a = smoothstep(aLowerBound, 0.9, noiseA) * multiplier;
+            float b = smoothstep(bLowerBound, 0.9, noiseB) * multiplier;
             float x = smoothHash(plane) * 0.5 + 0.5;
 
             return mix(a, b, x);
@@ -475,9 +452,9 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                 float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
                 vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
-                skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
-                skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
-                skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
+                // skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
+                // skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
+                // skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
 
                 if(viewDir.y > 0.0) {
                     if(frx_worldIsOverworld == 1) {
@@ -511,9 +488,9 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                     rayDirection *= mix(1.0, -1.0, 1.0 - frx_skyLightTransitionFactor);
 
                     float opticalDepth = cumulusCloudsDensity;
-                    float lightOpticalDepth = sampleCumulusCloud(plane + rayDirection * interleaved_gradient() * 0.5, CLOUD_DETAIL);
+                    float lightOpticalDepth = sampleCumulusCloud(plane + rayDirection * interleaved_gradient() * 0.25, CLOUD_DETAIL);
 
-                    float transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
+                    float transmittance = exp2(-opticalDepth * 2.0 * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
 
                     vec3 scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 3.0 * fmn_rainFactor))) * mie;
                     scattering *= (1.0 - transmittance);
@@ -525,8 +502,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 
                         rayDirection = fNormalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
 
-                        for(int i = 0; i < 1; i++) {
-                                planeMarch += rayDirection * stepLength * 1.0 * interleaved_gradient();
+                        for(int i = 0; i < 2; i++) {
+                                planeMarch += rayDirection * stepLength * 0.5 * interleaved_gradient();
 
                                 float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
                                 lightRaysOpticalDepth += currentDensity * 10.0;

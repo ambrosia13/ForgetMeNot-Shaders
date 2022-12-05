@@ -11,7 +11,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-     if(clamp01(texcoord) != texcoord) {
+     if((clamp01(texcoord) != texcoord)) {
           discard;
           return;
      }

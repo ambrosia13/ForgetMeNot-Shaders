@@ -14,6 +14,8 @@ uniform sampler2D u_depth_mipmaps;
 uniform sampler2D u_depth_no_player;
 uniform sampler2D u_blue_noise;
 
+uniform samplerCube u_skybox;
+
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
 
@@ -29,6 +31,9 @@ vec3 getBlueNoise() {
 }
 
 void main() {
+     vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0));
+     vec3 sunColor = getSkyColor(frx_skyLightVector);
+
      vec4 main_color = texture(u_main_color, texcoord);
      float translucent_depth = texture(u_translucent_depth, texcoord).r;
      float particles_depth = texture(u_particles_depth, texcoord).r;
@@ -50,11 +55,11 @@ void main() {
 
      vec3 skyLightColor; float skyIlluminance;
      {
-          vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
+          vec3 ambientLightColor = upColor * 2.0;
 
           skyIlluminance = frx_luminance(ambientLightColor * 6.0) + frx_skyLightVector.y * frx_skyLightVector.y * 2.0;
 
-          skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
+          skyLightColor = fNormalize(sunColor) * (skyIlluminance);
      }
 
      vec3 tdata = getTimeOfDayFactors();
@@ -185,7 +190,7 @@ void main() {
 
           float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
 
-          vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0) * 0.9 + 0.1;
+          //upColor = upColor * 0.9 + 0.1;
           vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * normal.y) * (upColor)), skyLight);
 
           if(frx_worldIsEnd == 1) {
@@ -262,7 +267,7 @@ void main() {
           sunlightStrength *= 10.0;
 
           lightmap.rgb += ambientLight;
-          lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
+          lightmap += skyIlluminance * sunlightStrength * lambertFactor * (sunColor) * shadowMap;
           
           lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, blockLight * blockLight);
 

@@ -1,6 +1,32 @@
 {
     images: [
         {
+            name: "skybox",
+            lod: 6,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            size: 512,
+            target: "TEXTURE_CUBE_MAP",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                },
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                },
+                {
+                    name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        }
+        {
             name: "quarter_res_depth",
             lod: 2,
             internalFormat: "R32F",
@@ -44,32 +70,6 @@
                 }
             ]
         },
-        {
-            name: "skybox",
-            lod: 6,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            size: 512,
-            target: "TEXTURE_CUBE_MAP",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                },
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                },
-                {
-                    name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        }
         {
             name: "reflection_coord",
             lod: 0,
@@ -118,6 +118,17 @@
 
     framebuffers: [
         {
+            name: "skybox",
+            colorAttachments: [
+                {image: "skybox", layer: 0, lod: 0},
+                {image: "skybox", layer: 1, lod: 0},
+                {image: "skybox", layer: 2, lod: 0},
+                {image: "skybox", layer: 3, lod: 0},
+                {image: "skybox", layer: 4, lod: 0},
+                {image: "skybox", layer: 5, lod: 0},
+            ]
+        },
+        {
             name: "depth_d0",
             colorAttachments: [
                 {
@@ -150,17 +161,6 @@
             ]
         },
         {
-            name: "skybox",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 0},
-                {image: "skybox", layer: 1, lod: 0},
-                {image: "skybox", layer: 2, lod: 0},
-                {image: "skybox", layer: 3, lod: 0},
-                {image: "skybox", layer: 4, lod: 0},
-                {image: "skybox", layer: 5, lod: 0},
-            ]
-        },
-        {
             name: "reflection_coord",
             colorAttachments: [
                 {
@@ -188,6 +188,13 @@
 
     programs: [
         {
+            name: "skybox",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/skybox.frag",
+            samplers: [
+            ]
+        },
+        {
             name: "depth_downsample",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
@@ -214,23 +221,10 @@
                 "u_depth_no_player",
                 "u_blue_noise",
 
+                "u_skybox",
+
                 "u_shadow_map",
                 "u_shadow_tex"
-            ]
-        },
-        {
-            name: "skybox",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/skybox.frag",
-            samplers: [
-            ]
-        },
-        {
-            name: "cube_downsample",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/cube_downsample.frag",
-            samplers: [
-                "u_cube"
             ]
         },
         {
@@ -290,6 +284,15 @@
     fabulous: {
         passes: [
             {
+                name: "skybox",
+                program: "skybox",
+                framebuffer: "skybox",
+                width: 512,
+                height: 512,
+                samplerImages: [
+                ]
+            },
+            {
                 name: "depth_d0",
                 program: "depth_downsample",
                 framebuffer: "depth_d0",
@@ -333,18 +336,11 @@
                     "quarter_res_depth",
                     "depth_no_player"
                     "forgetmenot:textures/blue_noise.png",
+
+                    "skybox",
                     
                     "shadow_map",
                     "shadow_map"
-                ]
-            },
-            {
-                name: "skybox",
-                program: "skybox",
-                framebuffer: "skybox",
-                width: 512,
-                height: 512,
-                samplerImages: [
                 ]
             },
             {
