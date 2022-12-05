@@ -28,27 +28,27 @@ const vec3[] FORWARD_VECS = vec3[] (
      vec3(0, 0, 1),
      vec3(0, 0, -1)
 );
-const vec3[] BITANGENT_VECS = vec3[] (
-     vec3(0, 0, 1),
-     vec3(0, 0, -1),
-     vec3(1, 0, 0),
-     vec3(1, 0, 0),
-     vec3(-1, 0, 0),
-     vec3(1, 0, 0)
-);
+
+
 
 void main() {
-     float clipX = texcoord.x * 2.0 - 1.0;
-     float clipY = texcoord.y * 2.0 - 1.0;
+     vec3[] BITANGENT_VECS = vec3[] (
+          cross(FORWARD_VECS[0], UP_VECS[0]),
+          cross(FORWARD_VECS[1], UP_VECS[1]),
+          cross(FORWARD_VECS[2], UP_VECS[2]),
+          cross(FORWARD_VECS[3], UP_VECS[3]),
+          cross(FORWARD_VECS[4], UP_VECS[4]),
+          cross(FORWARD_VECS[5], UP_VECS[5])
+     );
 
      // Credit to Bálint for helping a lot with the math involved here
      // Find their work @ https://balintcsala.com/
-     vec3 viewDir0 = normalize(FORWARD_VECS[0] - UP_VECS[0] * clipY - BITANGENT_VECS[0] * clipX);
-     vec3 viewDir1 = normalize(FORWARD_VECS[1] - UP_VECS[1] * clipY - BITANGENT_VECS[1] * clipX);
-     vec3 viewDir2 = normalize(FORWARD_VECS[2] + UP_VECS[2] * clipY + BITANGENT_VECS[2] * clipX);
-     vec3 viewDir3 = normalize(FORWARD_VECS[3] + UP_VECS[3] * clipY + BITANGENT_VECS[3] * clipX);
-     vec3 viewDir4 = normalize(FORWARD_VECS[4] - UP_VECS[4] * clipY - BITANGENT_VECS[4] * clipX);
-     vec3 viewDir5 = normalize(FORWARD_VECS[5] - UP_VECS[5] * clipY - BITANGENT_VECS[5] * clipX);
+     vec3 viewDir0 = normalize(FORWARD_VECS[0] - UP_VECS[0] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[0] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir1 = normalize(FORWARD_VECS[1] - UP_VECS[1] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[1] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir2 = normalize(FORWARD_VECS[2] + UP_VECS[2] * (texcoord.y * 2.0 - 1.0) + BITANGENT_VECS[2] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir3 = normalize(FORWARD_VECS[3] + UP_VECS[3] * (texcoord.y * 2.0 - 1.0) + BITANGENT_VECS[3] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir4 = normalize(FORWARD_VECS[4] - UP_VECS[4] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[4] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir5 = normalize(FORWARD_VECS[5] - UP_VECS[5] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[5] * (texcoord.x * 2.0 - 1.0));
 
      #ifdef CLOUDS
           color_0 = vec4(getClouds(viewDir0, getSkyColorDetailed(viewDir0, viewDir0, 1.0)), 1.0);
