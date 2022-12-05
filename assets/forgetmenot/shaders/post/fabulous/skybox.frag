@@ -1,0 +1,69 @@
+// Only include the cloud code if clouds are enabled.
+#define INCLUDE_CLOUDS
+
+#include forgetmenot:shaders/lib/includes.glsl 
+
+in vec2 texcoord;
+
+layout(location = 0) out vec4 color_0;
+layout(location = 1) out vec4 color_1;
+layout(location = 2) out vec4 color_2;
+layout(location = 3) out vec4 color_3;
+layout(location = 4) out vec4 color_4;
+layout(location = 5) out vec4 color_5;
+
+const vec3[] UP_VECS = vec3[] (
+     vec3(0, 1, 0),
+     vec3(0, 1, 0),
+     vec3(0, 0, 1),
+     vec3(0, 0, -1),
+     vec3(0, 1, 0),
+     vec3(0, 1, 0)
+);
+const vec3[] FORWARD_VECS = vec3[] (
+     vec3(1, 0, 0),
+     vec3(-1, 0, 0),
+     vec3(0, 1, 0),
+     vec3(0, -1, 0),
+     vec3(0, 0, 1),
+     vec3(0, 0, -1)
+);
+
+
+
+void main() {
+     vec3[] BITANGENT_VECS = vec3[] (
+          cross(FORWARD_VECS[0], UP_VECS[0]),
+          cross(FORWARD_VECS[1], UP_VECS[1]),
+          cross(FORWARD_VECS[2], UP_VECS[2]),
+          cross(FORWARD_VECS[3], UP_VECS[3]),
+          cross(FORWARD_VECS[4], UP_VECS[4]),
+          cross(FORWARD_VECS[5], UP_VECS[5])
+     );
+
+     // Credit to Bálint for helping a lot with the math involved here
+     // Find their work @ https://balintcsala.com/
+     vec3 viewDir0 = normalize(FORWARD_VECS[0] - UP_VECS[0] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[0] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir1 = normalize(FORWARD_VECS[1] - UP_VECS[1] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[1] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir2 = normalize(FORWARD_VECS[2] + UP_VECS[2] * (texcoord.y * 2.0 - 1.0) + BITANGENT_VECS[2] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir3 = normalize(FORWARD_VECS[3] + UP_VECS[3] * (texcoord.y * 2.0 - 1.0) + BITANGENT_VECS[3] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir4 = normalize(FORWARD_VECS[4] - UP_VECS[4] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[4] * (texcoord.x * 2.0 - 1.0));
+     vec3 viewDir5 = normalize(FORWARD_VECS[5] - UP_VECS[5] * (texcoord.y * 2.0 - 1.0) - BITANGENT_VECS[5] * (texcoord.x * 2.0 - 1.0));
+
+     #ifdef CLOUDS
+          color_0 = vec4(getClouds(viewDir0, getSkyColorDetailed(viewDir0, viewDir0, 1.0)), 1.0);
+          color_1 = vec4(getClouds(viewDir1, getSkyColorDetailed(viewDir1, viewDir1, 1.0)), 1.0);
+          color_2 = vec4(getClouds(viewDir2, getSkyColorDetailed(viewDir2, viewDir2, 1.0)), 1.0);
+          color_3 = vec4(getClouds(viewDir3, getSkyColorDetailed(viewDir3, viewDir3, 1.0)), 1.0);
+          color_4 = vec4(getClouds(viewDir4, getSkyColorDetailed(viewDir4, viewDir4, 1.0)), 1.0);
+          color_5 = vec4(getClouds(viewDir5, getSkyColorDetailed(viewDir5, viewDir5, 1.0)), 1.0);
+     #else
+          color_0 = vec4(getSkyColorDetailed(viewDir0, viewDir0, 1.0), 1.0);
+          color_1 = vec4(getSkyColorDetailed(viewDir1, viewDir1, 1.0), 1.0);
+          color_2 = vec4(getSkyColorDetailed(viewDir2, viewDir2, 1.0), 1.0);
+          color_3 = vec4(getSkyColorDetailed(viewDir3, viewDir3, 1.0), 1.0);
+          color_4 = vec4(getSkyColorDetailed(viewDir4, viewDir4, 1.0), 1.0);
+          color_5 = vec4(getSkyColorDetailed(viewDir5, viewDir5, 1.0), 1.0);
+     #endif
+
+}

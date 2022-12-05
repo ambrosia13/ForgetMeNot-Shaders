@@ -45,6 +45,32 @@
             ]
         },
         {
+            name: "skybox",
+            lod: 6,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            size: 512,
+            target: "TEXTURE_CUBE_MAP",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                },
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                },
+                {
+                    name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        }
+        {
             name: "reflection_coord",
             lod: 0,
             internalFormat: "RG16",
@@ -124,6 +150,17 @@
             ]
         },
         {
+            name: "skybox",
+            colorAttachments: [
+                {image: "skybox", layer: 0, lod: 0},
+                {image: "skybox", layer: 1, lod: 0},
+                {image: "skybox", layer: 2, lod: 0},
+                {image: "skybox", layer: 3, lod: 0},
+                {image: "skybox", layer: 4, lod: 0},
+                {image: "skybox", layer: 5, lod: 0},
+            ]
+        },
+        {
             name: "reflection_coord",
             colorAttachments: [
                 {
@@ -182,6 +219,21 @@
             ]
         },
         {
+            name: "skybox",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/skybox.frag",
+            samplers: [
+            ]
+        },
+        {
+            name: "cube_downsample",
+            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/cube_downsample.frag",
+            samplers: [
+                "u_cube"
+            ]
+        },
+        {
             name: "reflection_coord",
             vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_coord.frag",
@@ -207,6 +259,8 @@
                 "u_weather_depth",
                 "u_particles_color",
                 "u_particles_depth",
+
+                "u_skybox"
                 
                 "u_normal",
                 "u_flat_normal",
@@ -285,6 +339,15 @@
                 ]
             },
             {
+                name: "skybox",
+                program: "skybox",
+                framebuffer: "skybox",
+                width: 512,
+                height: 512,
+                samplerImages: [
+                ]
+            },
+            {
                 name: "reflection_coord",
                 program: "reflection_coord",
                 framebuffer: "reflection_coord",
@@ -310,6 +373,8 @@
                     "weather_depth",
                     "particles_color",
                     "particles_depth",
+
+                    "skybox",
 
                     "composite_normal",
                     "tangent_normal",

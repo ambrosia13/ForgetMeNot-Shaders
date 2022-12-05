@@ -126,17 +126,17 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
 
         if(sunVector == getMoonVector()) {
             diskVisibility = step(0.9999, dot(viewDir, sunVector));
-            int phase = (int(frx_worldDay) % 8) - 4;
+            // int phase = (int(frx_worldDay) % 8) - 4;
 
-            float rotateAmount = 10.0;
-            if(abs(phase) == 3) rotateAmount = 0.015;
-            if(abs(phase) == 2) rotateAmount = 0.01;
-            if(abs(phase) == 1) rotateAmount = 0.005;
-            if(phase == 0)  rotateAmount = 0.00;
-            rotateAmount *= sign(phase);
+            // float rotateAmount = 10.0;
+            // if(abs(phase) == 3) rotateAmount = 0.015;
+            // if(abs(phase) == 2) rotateAmount = 0.01;
+            // if(abs(phase) == 1) rotateAmount = 0.005;
+            // if(phase == 0)  rotateAmount = 0.00;
+            // rotateAmount *= sign(phase);
             
-            vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
-            diskVisibility -= step(0.9999, dot(viewDir, fNormalize(vec3(rotation.x, sunVector.y, rotation.y))));
+            // vec2 rotation = rotate2D(sunVector.xz, rotateAmount);
+            // diskVisibility -= step(0.9999, dot(viewDir, fNormalize(vec3(rotation.x, sunVector.y, rotation.y))));
 
             diskVisibility *= 0.1;
         }
@@ -372,7 +372,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
-
+    vec3 originalViewDir = viewDir;
     vec3 secondViewDir = viewDir;
 
     if(frx_worldIsOverworld == 1) {
@@ -402,11 +402,11 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         secondViewDir.y += 0.95;
         secondViewDir = fNormalize(secondViewDir);
         
-        atmosphere += endSecondAtmosphere(secondViewDir, fNormalize(vec3(1.0, 0.1, 0.2)), 1.0, 1.0);
+        atmosphere += endSecondAtmosphere(secondViewDir, fNormalize(vec3(1.0, 0.5, 0.2)), 1.0, 1.0);// * dot(secondViewDir, fNormalize(vec3(1.0, 0.6, 0.2)));
         if(secondViewDir.y < 0.0) {
-            atmosphere += vec3(0.09, 0.12, 0.03) * smoothstep(-0.0, 1.0, dot(fNormalize(vec3(1.0, 0.6, 0.2)), secondViewDir));
+            atmosphere += vec3(0.09, 0.12, 0.03) * smoothstep(0.95, 0.85, dot(originalViewDir, fNormalize(vec3(0.3, 0.25, -1.0))));
         } else if(viewDir.y < 0.0) {
-            atmosphere += vec3(0.01, 0.0, 0.01);
+            //atmosphere += vec3(0.01, 0.0, 0.01);
         }
 
         atmosphere *= 2.0;
@@ -430,8 +430,118 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 
         stars = (stars) * fNormalize(rand3D(floor(starPlane)) * 0.2 + 0.8);
 
-        atmosphere.rgb = mix(atmosphere.rgb + stars, atmosphere.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
+        atmosphere.rgb = mix(atmosphere.rgb + mix(1.0, 4.0, clamp01(rand1D(floor(starPlane + 100.0)))) * stars, atmosphere.rgb, clamp01(max(skyIlluminance * 2.0, frx_luminance(stars))));
     }
 
     return atmosphere;
 }
+
+#ifdef INCLUDE_CLOUDS
+    #ifndef VERTEX_SHADER
+        float sampleCumulusCloud(in vec2 plane, in int octaves) {
+            #ifdef CURL_NOISE
+                plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
+                //plane += 0.0045 * fbmCurl(plane * 6.0 + fmn_time / 20.0, 10);
+            #endif
+
+            float noiseA = fbmHash(plane * 2.0, octaves, 0.001);
+            float noiseB = fbmHash(plane * 2.0 + 50.0, octaves, 0.001);
+
+            float aLowerBound = 0.7 - 0.7 * fmn_rainFactor;
+            float bLowerBound = 0.5 - 0.5 * fmn_rainFactor;
+
+            float a = smoothstep(aLowerBound, 0.9, noiseA) * ((octaves + 1.0) / octaves);
+            float b = smoothstep(bLowerBound, 0.9, noiseB) * ((octaves + 1.0) / octaves);
+            float x = smoothHash(plane) * 0.5 + 0.5;
+
+            return mix(a, b, x);
+        }
+        float sampleCirrusCloud(in vec2 plane, in int octaves) {
+            #ifdef CURL_NOISE
+                plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
+            #endif
+
+            plane *= 2.0;
+            float clouds = fbmHash(plane * vec2(15.0, 3.0) + 17.0, octaves) * smoothstep(0.4, 1.5, fbmHash(plane * 0.5, octaves, 0.01));
+            return clouds;
+        }
+
+        vec3 getClouds(in vec3 viewDir, in vec3 skyColor) {
+            if(frx_worldIsOverworld == 1) {
+                vec3 tdata = getTimeOfDayFactors();
+                vec3 ambientLightColor = vec3(0.0);
+                ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
+
+                float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
+
+                vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
+                skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
+                skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
+                skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
+
+                if(viewDir.y > 0.0) {
+                    if(frx_worldIsOverworld == 1) {
+                    vec2 plane = viewDir.xz / (viewDir.y + 0.1 * length(viewDir.xz));
+                    plane *= 1.;
+
+                    plane += frx_cameraPos.xz / 150.0;
+
+                    plane += fmn_time / 100.0;
+
+                    float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
+                    float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
+                    float phaseMie = max(0.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG));
+
+                    vec3 mie = mix(phaseMie, 1.0, smoothstep(1.9, 0.1, phaseMie)) * skyLightColor;
+
+                    vec2 cirrusPlane = (plane - frx_cameraPos.xz / 150.0) + frx_cameraPos.xz / 1000.0;
+                    float cirrusClouds = sampleCirrusCloud(cirrusPlane, 3) * (4.0 / 3.0);
+                    float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
+                    vec3 scatteringCirrus = (1.0 - transmittanceCirrus) * mie;
+
+                    skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittanceCirrus + scatteringCirrus, smoothstep(0.0, 0.1, viewDir.y));
+
+                    float cumulusCloudsDensity = sampleCumulusCloud(plane, CLOUD_DETAIL);
+
+                    vec2 planeMarch = plane;
+                    float stepLength = 1.0;
+
+                    vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), (1.0 - frx_skyLightTransitionFactor));
+                    vec2 rayDirection = fNormalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y);
+                    rayDirection *= mix(1.0, -1.0, 1.0 - frx_skyLightTransitionFactor);
+
+                    float opticalDepth = cumulusCloudsDensity;
+                    float lightOpticalDepth = sampleCumulusCloud(plane + rayDirection * interleaved_gradient() * 0.5, CLOUD_DETAIL);
+
+                    float transmittance = exp2(-opticalDepth * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
+
+                    vec3 scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 3.0 * fmn_rainFactor))) * mie;
+                    scattering *= (1.0 - transmittance);
+
+                    skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittance + scattering, smoothstep(0.0, 0.05, viewDir.y));
+
+                    #ifdef CLOUD_LIGHT_RAYS
+                        float lightRaysOpticalDepth = 0.0;
+
+                        rayDirection = fNormalize(frx_skyLightVector.xz / frx_skyLightVector.y - viewDir.xz / viewDir.y);
+
+                        for(int i = 0; i < 1; i++) {
+                                planeMarch += rayDirection * stepLength * 1.0 * interleaved_gradient();
+
+                                float currentDensity = sampleCumulusCloud(planeMarch, CLOUD_DETAIL);
+                                lightRaysOpticalDepth += currentDensity * 10.0;
+                        }
+                        float lightRays = exp2(-lightRaysOpticalDepth * 50.0);
+                        lightRays *= smoothstep(0.4, 0.0, frx_skyLightVector.y) * (getTimeOfDayFactors().x);
+
+
+                        skyColor.rgb = mix(skyColor.rgb, skyColor.rgb + (0.25 * skyLightColor * henyeyGreenstein(LdotV, 0.75)) * lightRays, smoothstep(0.0, 0.1, viewDir.y));
+                    #endif
+                    }
+                }
+            }
+
+            return skyColor;
+        }
+    #endif
+#endif
