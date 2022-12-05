@@ -3,7 +3,7 @@
         {
             name: "particles_color",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "RGBA8",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",

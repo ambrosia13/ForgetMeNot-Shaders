@@ -46,7 +46,7 @@ void main() {
      vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness);
 
      vec3 viewSpaceReflectionDir = normalize(reflect(viewSpaceDir, viewNormal) + goldNoise3d() * roughness * roughness);
-     viewSpaceReflectionDir.y *= mix(-1.0, 1.0, step(0.0, dot(viewSpaceReflectionDir, viewNormal)));
+     viewSpaceReflectionDir *= mix(-1.0, 1.0, step(0.0, dot(viewSpaceReflectionDir, viewNormal)));
 
      vec3 screenSpaceReflectionDir = fNormalize(viewSpaceToScreenSpace(viewSpacePos + viewSpaceReflectionDir) - screenPos);
 

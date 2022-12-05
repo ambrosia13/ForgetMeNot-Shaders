@@ -145,7 +145,6 @@ vec3 mixmax(in vec3 a, in vec3 b, in float x) {
     return mix(a, max(a, b), x);
 }
 
-// Foliage and tree color depending on season.
 vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
     #ifdef SEASONS
         float time = frx_worldDay + frx_worldTime;
@@ -180,8 +179,6 @@ vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
         return vertexColor;
     #endif
 }
-
-// Threshold for leaves to be discarded based on season.
 float getLeavesFallingThreshold(vec3 worldCoord) {
     #ifdef SEASONS
         float time = frx_worldDay + frx_worldTime;
@@ -211,32 +208,5 @@ float getLeavesFallingThreshold(vec3 worldCoord) {
         return threshold;
     #else
         return 2.0;
-    #endif
-}
-
-// Season-dependent fog factor. To be added onto original fog factor.
-float getSeasonFogFactor() {
-    #ifdef SEASONS
-        float time = frx_worldDay + frx_worldTime;
-
-        #if STARTING_SEASON == SEASON_SUMMER
-            time += 6.0;
-        #elif STARTING_SEASON == SEASON_AUTUMN
-            time += 12.0;
-        #elif STARTING_SEASON == SEASON_WINTER
-            time += 18.0;
-        #endif
-
-        time = mod(time, 23.0);
-
-        float fog = 0.25;
-        fog = mix(fog, 0.0, smoothstep(4.0, 5.0, time));   // summer
-        fog = mix(fog, 0.25, smoothstep(10.0, 11.0, time)); // autumn
-        fog = mix(fog, 0.75, smoothstep(16.0, 17.0, time)); // winter
-        fog = mix(fog, 0.25, smoothstep(22.0, 23.0, time)); // spring
-
-        return fog * (1.0 - sqrt(max(0.0001, getSunVector().y)));
-    #else
-        return 0.0;
     #endif
 }
