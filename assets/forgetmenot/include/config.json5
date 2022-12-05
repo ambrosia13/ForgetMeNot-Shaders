@@ -185,7 +185,7 @@
                     descriptionKey: "config.forgetmenot.desc.held_light_occlusion_quality"
                 },
                 ssgi_quality: {
-                    default: 10,
+                    default: 8,
                     min: 1,
                     max: 24,
                     nameKey: "config.forgetmenot.name.ssgi_quality",

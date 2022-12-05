@@ -1,0 +1,22 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/crimson_stem",
+				"material": "minecraft:saturation_glow"
+			},
+			{
+				"sprite": "unity:block/crimson_stem_alt",
+				"material": "minecraft:saturation_glow"
+			},
+			{
+				"sprite": "unity:block/crimson_stem_alt2",
+				"material": "minecraft:saturation_glow"
+			},
+			{
+				"sprite": "unity:block/crimson_stem_alt3",
+				"material": "minecraft:saturation_glow"
+			}
+		]
+    }
+}

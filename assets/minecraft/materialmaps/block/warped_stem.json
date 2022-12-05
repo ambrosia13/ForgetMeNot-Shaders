@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/warped_stem",
+				"material": "minecraft:saturation_glow"
+			}
+		]
+    }
+}

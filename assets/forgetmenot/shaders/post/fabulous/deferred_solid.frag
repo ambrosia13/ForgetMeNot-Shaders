@@ -122,7 +122,7 @@ void main() {
           float cutoutBias = 0.00005 + 0.00005 * (1.0 - frx_skyLightVector.y) + 0.00005 * clamp01(1.0 - NdotL) + 0.0001 * (3 - cascade);
           
           #ifdef BIAS_MULT
-               float biasMult = 1.0 + 0.1 * max(0, 2 - cascade);
+               float biasMult = 1.05 + 0.2 * max(0, 2 - cascade);
           #else
                float biasMult = 1.0;
           #endif
@@ -195,6 +195,8 @@ void main() {
                ambientColor = mix(ambientColor, 2.0 * vec3(0.5, 0.05, 0.85), smoothstep(0.0, 1.0, 1.0 - NdotPlanet));
 
                ambientColor = ambientColor * 0.75 + 0.25;
+          } else if(frx_worldIsNether == 1) {
+               ambientColor = 2.0 * mix(vec3(1.5, 0.5, 0.25), upColor, 0.5 + 0.5 * normal.y);
           }
 
           vec3 ambientLight = ambientColor * ao * ao;
