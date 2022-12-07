@@ -24,7 +24,7 @@ void main() {
 
     // vec2 coord = depth != translucentDepth ? sceneSpaceToScreenSpace(sceneSpacePos + viewDir).xy : texcoord;
 
-    vec4 composite = texture(u_composite, texcoord);
+    vec4 composite = textureLod(u_composite, texcoord, 0);
     // composite = texture(u_composite, texcoord + 0.01 * (composite.a > 0.5 ? (normal.xz) : vec2(0.0)));
 
     // if(composite.a > 0.5) {
