@@ -13,9 +13,11 @@
         fragmentSource: "forgetmenot:shaders/gbuffer/shadow_main.frag",
         samplers: [
             "u_glint",
+            "u_skybox"
         ],
         samplerImages: [
             "minecraft:textures/misc/enchanted_item_glint.png",
+            "skybox"
         ]
     },
 

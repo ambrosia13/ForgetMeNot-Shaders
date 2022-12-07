@@ -31,9 +31,6 @@ vec3 getBlueNoise() {
 }
 
 void main() {
-     vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0));
-     vec3 sunColor = getSkyColor(frx_skyLightVector);
-
      vec4 main_color = texture(u_main_color, texcoord);
      float translucent_depth = texture(u_translucent_depth, texcoord).r;
      float particles_depth = texture(u_particles_depth, texcoord).r;
@@ -53,11 +50,15 @@ void main() {
 
      vec3 color = main_color.rgb;
 
+     // Clouds contribute to direct and indirect lighting
+     vec3 upColor = sampleCubemapFaces(u_skybox) * 0.35;
+     vec3 sunColor = textureLod(u_skybox, frx_skyLightVector, 3).rgb;
+
+
      vec3 skyLightColor; float skyIlluminance;
      {
-          vec3 ambientLightColor = upColor * 2.0;
-
-          skyIlluminance = frx_luminance(ambientLightColor * 6.0) + frx_skyLightVector.y * frx_skyLightVector.y * 2.0;
+          vec3 ambientLightColor = upColor;
+          skyIlluminance = frx_luminance(ambientLightColor * 12.0) + frx_skyLightVector.y * frx_skyLightVector.y * 2.0;
 
           skyLightColor = fNormalize(sunColor) * (skyIlluminance);
      }
@@ -191,7 +192,7 @@ void main() {
           float lambertFactor = mix(NdotL * 0.5 + 0.5, 1.0, disableDiffuse);
 
           //upColor = upColor * 0.9 + 0.1;
-          vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * normal.y) * (upColor)), skyLight);
+          vec3 ambientColor = mix(vec3(0.05), max(vec3(0.0), (2.0 + 1.0 * normal.y) * (upColor)), skyLight);
 
           if(frx_worldIsEnd == 1) {
                // Never thought I'd ever name a variable NdotPlanet
@@ -201,6 +202,7 @@ void main() {
 
                ambientColor = ambientColor * 0.75 + 0.25;
           } else if(frx_worldIsNether == 1) {
+               upColor = upColor * 1.8 + 0.2;
                ambientColor = 2.0 * mix(vec3(1.5, 0.5, 0.25), upColor, 0.5 + 0.5 * normal.y);
           }
 
@@ -223,7 +225,7 @@ void main() {
                vec3 unoccludedRayDir = fNormalize(viewNormal + goldNoise3d());
 
                for(int i = 0; i < RTAO_RAYS; i++) {
-                    vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
+                    vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i) - vec3(0.0, 1.0, 0.0) * frx_worldIsNether * (1.0 - blockLight));
                     vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
                     float stepLength = 0.0625 / RTAO_STEPS;
 
@@ -263,11 +265,11 @@ void main() {
           }
           #endif
 
-          float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
-          sunlightStrength *= 10.0;
+          float sunlightStrength = 0.0004;
+          sunlightStrength *= 5.0;
 
           lightmap.rgb += ambientLight;
-          lightmap += skyIlluminance * sunlightStrength * lambertFactor * (sunColor) * shadowMap;
+          lightmap += skyIlluminance * sunlightStrength * lambertFactor * sunColor * shadowMap;
           
           lightmap.rgb = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, blockLight * blockLight);
 

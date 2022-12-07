@@ -156,7 +156,7 @@ void main() {
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    vec3 skyColor = textureLod(u_skybox, jitteredViewDir, 6).rgb;
+    vec3 skyColor = textureLod(u_skybox, jitteredViewDir, 0).rgb;
     main_color.rgb = mix(main_color.rgb, skyColor, floor(max_depth));
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -225,8 +225,8 @@ void main() {
 
             float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater);
             if(reflectSkyFactor > 0.01) {
-                vec3 rayDir = normalize(reflect(viewDir, normal) + goldNoise3d() * roughness * roughness);
-                reflectColor = texture(u_skybox, rayDir).rgb;
+                vec3 rayDir = normalize(reflect(viewDir, normal));
+                reflectColor = textureLod(u_skybox, rayDir, 10.0 * sqrt(roughness)).rgb;
             }
             reflectColor = mix((getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25, reflectColor, reflectSkyFactor);
 

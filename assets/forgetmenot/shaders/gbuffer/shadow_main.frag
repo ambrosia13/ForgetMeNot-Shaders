@@ -1,6 +1,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_glint;
+uniform samplerCube u_skybox;
 
 in vec4 shadowViewPos;
 
@@ -154,15 +155,21 @@ void frx_pipelineFragment() {
             if(frx_renderTargetSolid && !frx_isHand) {
                 lightmap = vec3(1.0);
             } else {
-                vec3 ambientLightColor = vec3(0.0);
-                ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0)) * 2.0;
-
-                float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
                 float lambertFactor = NdotL * 0.5 + 0.5;
 
-                vec3 upColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0);
-                vec3 ambientColor = mix(vec3(0.05), max(vec3(0.1), (2.0 + 1.0 * frx_fragNormal.y) * (upColor)), frx_fragLight.y);
+                vec3 upColor = sampleCubemapFaces(u_skybox) * 0.35;
+                vec3 sunColor = textureLod(u_skybox, frx_skyLightVector, 3).rgb;
+
+                vec3 skyLightColor; float skyIlluminance;
+                {
+                    vec3 ambientLightColor = getSkyColor(vec3(0.0, 1.0, 0.0));
+                    skyIlluminance = frx_luminance(ambientLightColor * 12.0) + frx_skyLightVector.y * frx_skyLightVector.y * 2.0;
+
+                    skyLightColor = fNormalize(sunColor) * skyIlluminance;
+                }
+
+                vec3 ambientColor = mix(vec3(0.05), max(vec3(0.0), (2.0 + 1.0 * frx_fragNormal.y) * (upColor)), frx_fragLight.y);
 
                 if(frx_worldIsEnd == 1) {
                     // Never thought I'd ever name a variable NdotPlanet
@@ -171,16 +178,19 @@ void frx_pipelineFragment() {
                     ambientColor = mix(ambientColor, 2.0 * vec3(0.5, 0.05, 0.85), smoothstep(0.0, 1.0, 1.0 - NdotPlanet));
 
                     ambientColor = ambientColor * 0.75 + 0.25;
+                } else if(frx_worldIsNether == 1) {
+                    upColor = upColor * 1.8 + 0.2;
+                    ambientColor = 2.0 * mix(vec3(1.5, 0.5, 0.25), upColor, 0.5 + 0.5 * frx_fragNormal.y);
                 }
 
                 float ao = frx_fragLight.z;
                 vec3 ambientLight = ambientColor * ao * ao;
 
-                float sunlightStrength = 0.0004 - 0.0003 * fmn_rainFactor;
+                float sunlightStrength = 0.0004;
                 sunlightStrength *= 5.0;
 
                 lightmap += ambientLight;
-                lightmap += skyIlluminance * sunlightStrength * lambertFactor * (getSkyColor(frx_skyLightVector)) * shadowMap;
+                lightmap += skyIlluminance * sunlightStrength * lambertFactor * sunColor * shadowMap;
 
                 lightmap = mixmax(lightmap.rgb, vec3(6.0, 3.0, 1.2) * ao, frx_fragLight.x * frx_fragLight.x);
 

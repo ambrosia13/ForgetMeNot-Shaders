@@ -23,7 +23,7 @@ void main() {
     float l = frx_luminance(finalColor);
     vibrance(finalColor, sqrt(smoothstep(0.0, 0.25, l)));
 
-    vibrance(finalColor, mix(1.0, tanh(l), fmn_rainFactor));
+    //vibrance(finalColor, mix(1.0, tanh(l), fmn_rainFactor));
 
     finalColor = frx_toneMap(finalColor);
 

@@ -145,6 +145,24 @@ vec3 mixmax(in vec3 a, in vec3 b, in float x) {
     return mix(a, max(a, b), x);
 }
 
+vec3 sampleCubemapFaces(samplerCube u_cube) {
+     const vec3[] FORWARD_VECS = vec3[] (
+          vec3(1, 0, 0),
+          vec3(-1, 0, 0),
+          vec3(0, 1, 0),
+          vec3(0, -1, 0),
+          vec3(0, 0, 1),
+          vec3(0, 0, -1)
+     );
+
+     vec3 color = vec3(0.0);
+     for(int i = 0; i < 6; i++) {
+          color += textureLod(u_cube, FORWARD_VECS[i], 9).rgb / 6;
+     }
+
+     return color;
+}
+
 // Foliage and tree color depending on season.
 vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
     #ifdef SEASONS

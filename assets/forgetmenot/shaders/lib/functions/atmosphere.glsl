@@ -74,7 +74,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
         float upDot = mix(pow(-viewDir.y, 1.0 / 1.5), viewDir.y, step(0.0, viewDir.y));
     #else
         // add padding to the atmosphere to hide the sky ground
-        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : mix(pow(-viewDir.y, 1.0 / 1.5), viewDir.y, step(0.0, viewDir.y));
+        float upDot = frx_worldIsEnd == 0 ? mix(viewDir.y, 0.005, smoothstep(0.01, -0.0, viewDir.y)) : (viewDir.y < 0.0 ? pow(-viewDir.y, 1.0 / 1.5) : viewDir.y);;
     #endif
     
     if(frx_worldIsEnd == 1) upDot *= 50.0;
@@ -421,8 +421,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                 plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
             #endif
 
-            float noiseA = fbmHash(plane * 2.0, octaves, 0.0005);
-            float noiseB = fbmHash(plane * 2.0 + 500.0, octaves, -0.0005);
+            float noiseA = smoothHash(plane * 2.0) * 0.1 + fbmHash(plane * 2.0, octaves, 0.0005);
+            float noiseB = smoothHash(plane * 2.0 + 500.0) * 0.1 + fbmHash(plane * 2.0 + 500.0, octaves, -0.0005);
 
             float aLowerBound = 0.7 * (1.0 - fmn_rainFactor);
             float bLowerBound = 0.5 * (1.0 - fmn_rainFactor);
@@ -451,17 +451,14 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 
                 float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
-                vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0)) * (skyIlluminance);
-                // skyLightColor = mix(skyLightColor, fNormalize(getSkyColor(-frx_skyLightVector)) * (skyIlluminance), tdata.z * clamp01(dot(viewDir, -frx_skyLightVector)));
-                // skyLightColor = mix(skyLightColor, vec3(0.1, 0.075, 0.06), tdata.z * (1.0 - (smoothstep(0.5, 1.0, dot(viewDir, frx_skyLightVector)) + smoothstep(0.5, 1.0, dot(viewDir, -frx_skyLightVector)))));
-                // skyLightColor = mix(skyLightColor, skyLightColor * 0.5, tdata.z * (smoothstep(0.5, 1.0, dot(viewDir, getMoonVector()))));
+                vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, exp(-frx_skyLightVector.y * 7.0))) * (skyIlluminance);
+                saturation(skyLightColor, smoothstep(0.3, 0.2, getSunVector().y));
 
                 if(viewDir.y > 0.0) {
                     if(frx_worldIsOverworld == 1) {
                     vec2 plane = viewDir.xz / (viewDir.y + 0.1 * length(viewDir.xz));
-                    plane *= 1.;
 
-                    plane += frx_cameraPos.xz / 150.0;
+                    plane += frx_cameraPos.xz / 450.0;
 
                     plane += fmn_time / 100.0;
 
@@ -483,16 +480,16 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                     vec2 planeMarch = plane;
                     float stepLength = 1.0;
 
-                    vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), (1.0 - frx_skyLightTransitionFactor));
+                    vec3 skyLightVector = mix(frx_skyLightVector, vec3(0.0, 1.0, 0.0), 1.0);
                     vec2 rayDirection = fNormalize(skyLightVector.xz / skyLightVector.y - viewDir.xz / viewDir.y);
-                    rayDirection *= mix(1.0, -1.0, 1.0 - frx_skyLightTransitionFactor);
+                    // rayDirection *= mix(1.0, -1.0, 1.0 - frx_skyLightTransitionFactor);
 
                     float opticalDepth = cumulusCloudsDensity;
-                    float lightOpticalDepth = sampleCumulusCloud(plane + rayDirection * interleaved_gradient() * 0.25, CLOUD_DETAIL);
+                    float lightOpticalDepth = sampleCumulusCloud(plane + 0.1 * rayDirection * (interleaved_gradient() * 0.5 + 0.5), CLOUD_DETAIL);
 
-                    float transmittance = exp2(-opticalDepth * 2.0 * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
+                    float transmittance = exp2(-opticalDepth * 4.0 * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
 
-                    vec3 scattering = vec3(exp2(-lightOpticalDepth * (2.5 + 3.0 * fmn_rainFactor))) * mie;
+                    vec3 scattering = vec3(exp2(-lightOpticalDepth * (3.5 + 3.0 * fmn_rainFactor))) * mie;
                     scattering *= (1.0 - transmittance);
 
                     skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittance + scattering, smoothstep(0.0, 0.05, viewDir.y));
