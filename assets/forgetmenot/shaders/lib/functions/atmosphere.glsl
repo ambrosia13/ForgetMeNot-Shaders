@@ -126,7 +126,7 @@ vec3 atmosphericScattering(in vec3 viewSpacePos, in vec3 sunVector, in float fac
             diskVisibility *= 0.1;
         }
 
-        totalScatter += 750.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
+        totalScatter += 100.0 * drawSun * mix(80.0, 40.0, sqrt(LdotU)) * mie * opticalDepth * clamp01(diskVisibility);
     }
 
 
@@ -279,6 +279,8 @@ vec3 getSkyColor(in vec3 viewDir) {
 
     }
 
+    atmosphere *= mix(vec3(1.0), vec3(2.0, 1.0, 0.5), smoothstep(0.2, 0.1, frx_skyLightVector.y));
+
     return atmosphere;
 }
 vec3 getSkyColor(in vec3 viewDir, float drawSun) {
@@ -424,8 +426,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
             float noiseA = smoothHash(plane * 2.0) * 0.1 + fbmHash(plane * 2.0, octaves, 0.0005);
             float noiseB = smoothHash(plane * 2.0 + 500.0) * 0.1 + fbmHash(plane * 2.0 + 500.0, octaves, -0.0005);
 
-            float aLowerBound = 0.7 * (1.0 - fmn_rainFactor);
-            float bLowerBound = 0.5 * (1.0 - fmn_rainFactor);
+            float aLowerBound = (getSeasonCloudsFactor() + 0.3) * (1.0 - fmn_rainFactor);
+            float bLowerBound = (getSeasonCloudsFactor() + 0.1) * (1.0 - fmn_rainFactor);
 
             float a = smoothstep(aLowerBound, 0.9, noiseA) * multiplier;
             float b = smoothstep(bLowerBound, 0.9, noiseB) * multiplier;
@@ -435,7 +437,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         }
         float sampleCirrusCloud(in vec2 plane, in int octaves) {
             #ifdef CURL_NOISE
-                plane += 0.015 * curlNoise(plane * 1.0 + fmn_time / 100.0);
+                plane += 0.015 * curlNoise(plane + fmn_time / 100.0);
             #endif
 
             plane *= 2.0;
@@ -451,8 +453,9 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 
                 float skyIlluminance = frx_luminance(ambientLightColor * 6.0);
 
-                vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, exp(-frx_skyLightVector.y * 7.0))) * (skyIlluminance);
+                vec3 skyLightColor = fNormalize(getSkyColor(frx_skyLightVector, 0.0 * exp(-frx_skyLightVector.y * 7.0))) * (skyIlluminance);
                 saturation(skyLightColor, smoothstep(0.3, 0.2, getSunVector().y));
+                //skyLightColor *= mix(2.0, 1.0, clamp01(0.5 - fmn_rainFactor));
 
                 if(viewDir.y > 0.0) {
                     if(frx_worldIsOverworld == 1) {

@@ -294,15 +294,14 @@ void main() {
             if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
             fogDist /= 256.0;
 
-            float fogAmount = 0.6;
-            fogAmount = mix(fogAmount, 0.1, smoothstep(0.0, 0.3, getSunVector().y));
+            float fogAmount = 0.1;
+            // fogAmount = mix(fogAmount, 0.1, smoothstep(0.0, 0.3, getSunVector().y));
 
             fogAmount += getSeasonFogFactor();
+            fogAmount += 1.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
             fogAmount = mix(fogAmount, 3.5, clamp01(0.5 - frx_smoothedEyeBrightness.y));
             fogAmount = mix(fogAmount, 6.5, smoothstep(0.0, -10.0, frx_cameraPos.y));
-
-            fogAmount += 1.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
             //fogAmount *= 10.0;
 

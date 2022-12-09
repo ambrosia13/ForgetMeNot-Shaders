@@ -149,7 +149,7 @@ void main() {
                vec3 shadowRayDir = fNormalize(viewSpaceToScreenSpace(shadowRayViewPos + shadowRayViewDir) - shadowRayPos);
                
                // almost pixel perfect raytrace
-               float shadowRayStep = 0.01 - 0.005 * sssAmount;
+               float shadowRayStep = 0.01 - 0.0075 * sssAmount;
 
                float shadowRayDither = (getBlueNoise().x) * 0.3 + 0.7;
                if((sssAmount > 0.04 || NdotL > 0.0) && (shadowRayViewPos + shadowRayViewDir).z < 0.0) {
@@ -161,7 +161,7 @@ void main() {
                          } else {
                               float depthQuery = texture(u_particles_depth, shadowRayPos.xy).r;
 
-                              if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < (inShadowMap ? 0.00015 : 0.01)) {
+                              if(shadowRayPos.z > depthQuery && abs(linearizeDepth(shadowRayPos.z) - linearizeDepth(depthQuery)) < mix(mix(0.00015, 0.001, sssAmount), 0.01, length(sceneSpacePos) / frx_viewDistance)) {
                                    if(sssAmount < 0.04 || !inShadowMap)  {
                                         shadowMap *= 0.0;
                                         break;
@@ -265,8 +265,7 @@ void main() {
           }
           #endif
 
-          float sunlightStrength = 0.0004;
-          sunlightStrength *= 5.0;
+          float sunlightStrength = 0.015;
 
           lightmap.rgb += ambientLight;
           lightmap += skyIlluminance * sunlightStrength * lambertFactor * sunColor * shadowMap;

@@ -146,21 +146,24 @@ vec3 mixmax(in vec3 a, in vec3 b, in float x) {
 }
 
 vec3 sampleCubemapFaces(samplerCube u_cube) {
-     const vec3[] FORWARD_VECS = vec3[] (
-          vec3(1, 0, 0),
-          vec3(-1, 0, 0),
-          vec3(0, 1, 0),
-          vec3(0, -1, 0),
-          vec3(0, 0, 1),
-          vec3(0, 0, -1)
-     );
+    const vec3[] FORWARD_VECS = vec3[] (
+        vec3(1, 0, 0),
+        vec3(-1, 0, 0),
+        vec3(0, 1, 0),
+        vec3(0, -1, 0),
+        vec3(0, 0, 1),
+        vec3(0, 0, -1)
+    );
 
-     vec3 color = vec3(0.0);
-     for(int i = 0; i < 6; i++) {
-          color += textureLod(u_cube, FORWARD_VECS[i], 9).rgb / 6;
-     }
+    vec3 color = vec3(0.0);
+    color += textureLod(u_cube, FORWARD_VECS[0], 9).rgb * 0.1;
+    color += textureLod(u_cube, FORWARD_VECS[1], 9).rgb * 0.1;
+    color += textureLod(u_cube, FORWARD_VECS[2], 9).rgb * 0.5;
+    color += textureLod(u_cube, FORWARD_VECS[3], 9).rgb * 0.1;
+    color += textureLod(u_cube, FORWARD_VECS[4], 9).rgb * 0.1;
+    color += textureLod(u_cube, FORWARD_VECS[5], 9).rgb * 0.1;
 
-     return color;
+    return color;
 }
 
 // Foliage and tree color depending on season.
@@ -188,7 +191,7 @@ vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
 
         vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noise);
         vec3 seasonColor = vertexColor;
-        seasonColor = mix(seasonColor, mix(vec3(0.880,1.000,0.568), vec3(0.874,1.000,0.537) * 1.5, leaves), smoothstep(4.0, 5.0, time));   // summer
+        seasonColor = mix(seasonColor, vec3(0.9, 1.0, 0.4), smoothstep(4.0, 5.0, time));   // summer
         seasonColor = mix(seasonColor, mix(vec3(1.000,0.666,0.346), mix(vec3(1.000,0.480,0.105), vec3(1.000,0.341,0.158) * 1.5, noise), leaves), smoothstep(10.0, 11.0, time)); // autumn
         seasonColor = mix(seasonColor, mix(vec3(0.828,1.000,0.844), vec3(1.000,0.874,0.912), leaves), smoothstep(16.0, 17.0, time)); // winter
         seasonColor = mix(seasonColor, vertexColor, smoothstep(22.0, 23.0, time));             // spring
@@ -222,7 +225,7 @@ float getLeavesFallingThreshold(vec3 worldCoord) {
 
         float threshold = 2.0;
         threshold = mix(threshold, 2.0, smoothstep(4.0, 5.0, time));   // summer
-        threshold = mix(threshold, mix(0.75, 0.5, noise), smoothstep(10.0, 11.0, time)); // autumn
+        threshold = mix(threshold, mix(0.95, 0.9, noise), smoothstep(10.0, 11.0, time)); // autumn
         threshold = mix(threshold, mix(0.5, 0.4, noise), smoothstep(16.0, 17.0, time)); // winter
         threshold = mix(threshold, 2.0, smoothstep(22.0, 23.0, time));             // spring
 
@@ -256,5 +259,31 @@ float getSeasonFogFactor() {
         return fog * (1.0 - sqrt(max(0.0001, getSunVector().y)));
     #else
         return 0.0;
+    #endif
+}
+
+float getSeasonCloudsFactor() {
+    #ifdef SEASONS
+        float time = frx_worldDay + frx_worldTime;
+
+        #if STARTING_SEASON == SEASON_SUMMER
+            time += 6.0;
+        #elif STARTING_SEASON == SEASON_AUTUMN
+            time += 12.0;
+        #elif STARTING_SEASON == SEASON_WINTER
+            time += 18.0;
+        #endif
+
+        time = mod(time, 23.0);
+
+        float lowerBound = 0.4;
+        lowerBound = mix(lowerBound, 0.55, smoothstep(4.0, 5.0, time));   // summer
+        lowerBound = mix(lowerBound, 0.35, smoothstep(10.0, 11.0, time)); // autumn
+        lowerBound = mix(lowerBound, 0.2, smoothstep(16.0, 17.0, time)); // winter
+        lowerBound = mix(lowerBound, 0.4, smoothstep(22.0, 23.0, time)); // spring
+
+        return lowerBound;
+    #else
+        return 0.4;
     #endif
 }

@@ -54,8 +54,8 @@ void resolveMaterials() {
 
         #ifdef FALLING_LEAVES
             vec3 pixel = floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0;
-            pixel *= 4000.0;
-            frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(frx_vertex.xyz + frx_cameraPos), hash13(pixel)));
+            //pixel *= 4000.0;
+            frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(vec3(0.0)), hash13(pixel)));
         #endif
     #endif
 
@@ -186,8 +186,7 @@ void frx_pipelineFragment() {
                 float ao = frx_fragLight.z;
                 vec3 ambientLight = ambientColor * ao * ao;
 
-                float sunlightStrength = 0.0004;
-                sunlightStrength *= 5.0;
+                float sunlightStrength = 0.015;
 
                 lightmap += ambientLight;
                 lightmap += skyIlluminance * sunlightStrength * lambertFactor * sunColor * shadowMap;
