@@ -473,7 +473,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                     plane += frx_cameraPos.xz / 450.0;
 
                     plane += fmn_time / 100.0;
-
+                    plane += frx_worldDay + frx_worldTime;
+                    
                     float LdotV = clamp01(dot(frx_skyLightVector, viewDir));
                     float nLdotV = clamp01(dot(-frx_skyLightVector, viewDir)) * (1.0 - frx_skyLightTransitionFactor);
                     float phaseMie = max(0.0, henyeyGreenstein(LdotV, cloudsG) + henyeyGreenstein(nLdotV, cloudsG));
