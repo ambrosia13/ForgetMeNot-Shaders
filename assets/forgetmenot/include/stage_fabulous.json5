@@ -35,7 +35,7 @@
             target: "TEXTURE_2D",
             texParams: [
                 {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
+                    name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST"
                 }, 
                 {
                     name: "TEXTURE_MAG_FILTER", val: "LINEAR"
@@ -128,60 +128,6 @@
                 {image: "skybox", layer: 5, lod: 0},
             ]
         },
-        // {
-        //     name: "ambient_d1",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 1}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d2",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 2}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d3",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 3}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d4",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 4}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d5",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 5}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d6",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 6}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d7",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 7}
-        //     ]
-        // },     
-        // {
-        //     name: "ambient_d8",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 8}
-        //     ]
-        // },
-        // {
-        //     name: "ambient_d9",
-        //     colorAttachments: [
-        //         {image: "ambient", lod: 9}
-        //     ]
-        // },     
         {
             name: "skybox_d1",
             colorAttachments: [
@@ -345,6 +291,8 @@
             vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/skybox.frag",
             samplers: [
+                "u_cumulus_tex",
+                "u_cirrus_tex"
             ]
         },
         {
@@ -452,107 +400,10 @@
                 height: 512,
                 lod: 0,
                 samplerImages: [
+                    "forgetmenot:textures/cumulus_noise.png",
+                    "forgetmenot:textures/cirrus_noise.png"
                 ]
             },
-            // {
-            //     name: "ambient_d1",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d1",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 1,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d2",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d2",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 2,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d3",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d3",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 3,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d4",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d4",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 4,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d5",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d5",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 5,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d6",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d6",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 6,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d7",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d7",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 7,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d8",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d8",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 8,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
-            // {
-            //     name: "ambient_d9",
-            //     program: "bloom_downsample",
-            //     framebuffer: "ambient_d9",
-            //     width: 512,
-            //     height: 512,
-            //     lod: 9,
-            //     samplerImages: [
-            //         "ambient"
-            //     ]
-            // },
             {
                 name: "skybox_d1",
                 program: "skybox_downsample",

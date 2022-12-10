@@ -3,6 +3,9 @@
 
 #include forgetmenot:shaders/lib/includes.glsl 
 
+uniform sampler2D u_cumulus_tex;
+uniform sampler2D u_cirrus_tex;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 color_0;
@@ -60,12 +63,12 @@ void main() {
      #endif
 
      if(doClouds && frx_worldIsOverworld == 1) {
-          color_0 = vec4(getClouds(viewDir[0], getSkyColorDetailed(viewDir[0], viewDir[0], 1.0)), 1.0);
-          color_1 = vec4(getClouds(viewDir[1], getSkyColorDetailed(viewDir[1], viewDir[1], 1.0)), 1.0);
-          color_2 = vec4(getClouds(viewDir[2], getSkyColorDetailed(viewDir[2], viewDir[2], 1.0)), 1.0);
+          color_0 = vec4(getClouds(viewDir[0], getSkyColorDetailed(viewDir[0], viewDir[0], 1.0), u_cumulus_tex, u_cirrus_tex), 1.0);
+          color_1 = vec4(getClouds(viewDir[1], getSkyColorDetailed(viewDir[1], viewDir[1], 1.0), u_cumulus_tex, u_cirrus_tex), 1.0);
+          color_2 = vec4(getClouds(viewDir[2], getSkyColorDetailed(viewDir[2], viewDir[2], 1.0), u_cumulus_tex, u_cirrus_tex), 1.0);
           color_3 = vec4(getSkyColorDetailed(viewDir[3], viewDir[3], 1.0), 1.0); // Clouds never happen when facing downwards
-          color_4 = vec4(getClouds(viewDir[4], getSkyColorDetailed(viewDir[4], viewDir[4], 1.0)), 1.0);
-          color_5 = vec4(getClouds(viewDir[5], getSkyColorDetailed(viewDir[5], viewDir[5], 1.0)), 1.0);
+          color_4 = vec4(getClouds(viewDir[4], getSkyColorDetailed(viewDir[4], viewDir[4], 1.0), u_cumulus_tex, u_cirrus_tex), 1.0);
+          color_5 = vec4(getClouds(viewDir[5], getSkyColorDetailed(viewDir[5], viewDir[5], 1.0), u_cumulus_tex, u_cirrus_tex), 1.0);
      } else {
           color_0 = vec4(getSkyColorDetailed(viewDir[0], viewDir[0], 1.0), 1.0);
           color_1 = vec4(getSkyColorDetailed(viewDir[1], viewDir[1], 1.0), 1.0);
