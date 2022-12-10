@@ -1,4 +1,9 @@
-# Forget-Me-Not Shaders
+<div align="center">
+<h2>Forget-Me-Not Shaders</h2>
+<h4>Developed by Ambrosia</h4>
+</div align="center">
+
+****
 
 Immersive semi-realistic pipeline shader for Canvas. Early in development. ONLY works with Canvas Renderer mod, incompatible with Optifine, Iris, and Sodium! See `how to use` section for installation instructions. 
 
@@ -6,7 +11,6 @@ Forget-me-not is licensed under the LGPL v3.0, so please make sure to read over 
 
 **For now, Forget-me-not only reliably works with Nvidia and AMD Mesa graphics.**
 
-Icon by [jahan](https://www.instagram.com/jahan.artt/), go check out their other amazing works!
 
 ## how to use third-party shaders with canvas
 1. Be sure you're on 1.19.2 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
