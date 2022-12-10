@@ -393,7 +393,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
     vec3 viewPosCopy = viewPos;
 
     if(viewDir.y > 0.0 && secondViewDir.y > 0.0) {
-        viewPos.xy = rotate2D(viewPos.xy, -frx_skyAngleRadians);
+        // viewPos.xy = rotate2D(viewPos.xy, -frx_skyAngleRadians);
         viewPos.y = abs(viewPos.y);
         vec2 starPlane = viewPos.xz / (viewPos.y + length(viewPos.xz));
         starPlane *= 200.0;
