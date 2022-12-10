@@ -5,7 +5,7 @@
 
 Forget-me-not is a semi-realistic pipeline shader for the [Canvas](https://modrinth.com/mod/canvas) mod. It's designed to give the most authentic and immersive experience while sticking to "traditional" rendering methods to keep up good performance.
 
-Canvas is a client-side renderer mod that uses shaders for advanced rendering. The shader system is designed entirely differently from Optifine and Iris and as such, Forget-me-not won't work with any mod other than Canvas! See the `how to use` section for installation instructions. 
+Canvas is a client-side renderer mod that uses shaders for advanced rendering. The shader system is designed entirely differently from Optifine and Iris & Sodium and as such, Forget-me-not won't work with any of these mods! See the `how to use` section for installation instructions. 
 
 ## disclaimers
 

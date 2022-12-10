@@ -54,7 +54,7 @@ void resolveMaterials() {
 
         #ifdef FALLING_LEAVES
             vec3 pixel = floor(mod(frx_vertex.xyz + frx_cameraPos, 1000.0) * 16.0) / 16.0;
-            //pixel *= 4000.0;
+
             frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(vec3(0.0)), hash13(mod(pixel, 1000.0))));
         #endif
     #endif
@@ -71,7 +71,8 @@ void resolveMaterials() {
     // No reflections on default materials
     frx_fragReflectance = mix(0.0, frx_fragReflectance, step(0.0001, frx_fragReflectance - 0.04));
 
-    frx_fragRoughness = mix(frx_fragRoughness, 0.0, smoothstep(0.0, 0.5, fmn_rainFactor));
+    // Roughness goes to 0 when it's raining
+    frx_fragRoughness = mix(frx_fragRoughness, 0.0, frx_fragLight.y * smoothstep(0.0, 0.5, fmn_rainFactor));
 
     // Hurt effect
     frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);
