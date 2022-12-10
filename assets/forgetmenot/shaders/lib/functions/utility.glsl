@@ -114,7 +114,12 @@ vec4 fNormalize(in vec4 x) {
 vec2 rotate2D(vec2 uv, float angle) {
 	float s = sin(angle);
 	float c = cos(angle);
-	mat2 mat = mat2(c, s, -s, c);
+
+	mat2 mat = mat2(
+         c, s,
+        -s, c
+    );
+    
 	return mat * uv;
 }
 

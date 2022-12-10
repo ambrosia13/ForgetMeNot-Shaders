@@ -46,12 +46,12 @@ void main() {
      {
           vec3 a = fNormalize(vec3(texcoord - 0.5, 0.5));
           
-          viewDir[0] = vec3(a.z, -a.y, -a.x);
-          viewDir[1] = vec3(-a.z, -a.y, a.x);
-          viewDir[2] = vec3(a.x, a.z, a.y);
-          viewDir[3] = -viewDir[2];
-          viewDir[4] = vec3(a.x, -a.y, a.z);
-          viewDir[5] = -vec3(a.x, a.y, a.z);
+          viewDir[0] = vec3( a.z, -a.y, -a.x);
+          viewDir[1] = vec3(-a.z, -a.y,  a.x);
+          viewDir[2] = vec3( a.x,  a.z,  a.y);
+          viewDir[3] = vec3( a.x, -a.z, -a.y);
+          viewDir[4] = vec3( a.x, -a.y,  a.z);
+          viewDir[5] = vec3(-a.x, -a.y, -a.z);
      }
 
      bool doClouds = false;
