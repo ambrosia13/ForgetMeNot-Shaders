@@ -53,9 +53,9 @@ void resolveMaterials() {
         }
 
         #ifdef FALLING_LEAVES
-            vec3 pixel = floor((frx_vertex.xyz + frx_cameraPos) * 16.0) / 16.0;
+            vec3 pixel = floor(mod(frx_vertex.xyz + frx_cameraPos, 1000.0) * 16.0) / 16.0;
             //pixel *= 4000.0;
-            frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(vec3(0.0)), hash13(pixel)));
+            frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(vec3(0.0)), hash13(mod(pixel, 1000.0))));
         #endif
     #endif
 
