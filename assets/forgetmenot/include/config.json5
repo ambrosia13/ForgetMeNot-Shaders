@@ -24,11 +24,6 @@
                     nameKey: "config.forgetmenot.name.cloud_light_rays",
                     descriptionKey: "config.forgetmenot.desc.cloud_light_rays"
                 },
-                volumetric_lighting: {
-                    default: false,
-                    nameKey: "config.forgetmenot.name.volumetric_lighting",
-                    descriptionKey: "config.forgetmenot.desc.volumetric_lighting"
-                },
                 atmospheric_fog: {
                     default: true,
                     nameKey: "config.forgetmenot.name.atmospheric_fog",

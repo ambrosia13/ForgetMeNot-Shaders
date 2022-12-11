@@ -20,8 +20,8 @@ void frx_materialFragment() {
         float height3 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv3))).rgb);
         float height4 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv4))).rgb);
 
-        float deltaX = (height2 - height1) * 5.0;
-        float deltaY = (height4 - height3) * 5.0;
+        float deltaX = (height2 - height1) * 1.0;
+        float deltaY = (height4 - height3) * 1.0;
 
         frx_fragNormal = fmn_fNormalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
     #endif

@@ -1,0 +1,10 @@
+{
+	"defaultMap": {
+		"spriteMap": [
+			{
+				"sprite": "minecraft:block/farmland_moist",
+				"material": "minecraft:varying_roughness"
+			}
+		]
+    }
+}

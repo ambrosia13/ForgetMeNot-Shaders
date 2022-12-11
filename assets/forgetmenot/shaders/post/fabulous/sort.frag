@@ -259,55 +259,17 @@ void main() {
     #ifdef ATMOSPHERIC_FOG
         float fogTransmittance = 1.0;
         if(frx_worldIsOverworld == 1) {
-            float vl = 0.0;
-
-            #ifdef VOLUMETRIC_LIGHTING
-                const int VL_SAMPLES = 8;
-
-                vec3 vlPos = minSceneSpacePos;
-                vec3 traceDir = -vlPos;
-                
-                if(min_depth < 1.0) {
-                    vl = 0.0;
-
-                    for(int i = 0; i < VL_SAMPLES; i++) {
-                        vlPos += traceDir / VL_SAMPLES * interleaved_gradient(i);
-
-                        // shadow
-                        vec4 shadowViewPos = frx_shadowViewMatrix * vec4(vlPos, 1.0);
-                        int cascade = selectShadowCascade(shadowViewPos);
-                        vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
-                        vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
-
-                        float shadowFactor;
-                        shadowFactor = texture(u_shadow_map, vec4(shadowScreenPos.xy, cascade, shadowScreenPos.z));
-
-                        vl += (shadowFactor / VL_SAMPLES) * tanh(distance(minSceneSpacePos, vlPos) / 16.0);
-
-                    }
-
-                    // composite *= vl;
-                }
-            #endif
-
             float fogDist = blockDist;
             if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
             fogDist /= 256.0;
 
             float fogAmount = 0.1;
-            // fogAmount = mix(fogAmount, 0.1, smoothstep(0.0, 0.3, getSunVector().y));
 
             fogAmount += getSeasonFogFactor();
             fogAmount += 1.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
 
             fogAmount = mix(fogAmount, 3.5, clamp01(0.5 - frx_smoothedEyeBrightness.y));
             fogAmount = mix(fogAmount, 6.5, smoothstep(0.0, -10.0, frx_cameraPos.y));
-
-            //fogAmount *= 10.0;
-
-            #ifdef VOLUMETRIC_LIGHTING
-                fogAmount *= 0.1;
-            #endif
 
             fogTransmittance = exp(-fogDist * (3.0 - 2.0 * frx_skyLightVector.y) * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
@@ -316,8 +278,8 @@ void main() {
             fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
-            vec3 fogScattering = getSkyColor(viewDir, 0.0, 1.0 * vl);
-            //fogScattering = getFogScattering(viewDir, particleThickness(0.1));
+            vec3 fogScattering = getSkyColor(viewDir, 0.0);
+
             fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4) * 0.25, vec3(0.1, 0.05, 0.025) * 0.5, smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
             fogScattering = mix(fogScattering, UNDERWATER_FOG_COLOR * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
             
