@@ -27,6 +27,10 @@
 
     "config.forgetmenot.name.seasons": "Seasons",
     "config.forgetmenot.desc.seasons": "Enables a magical season system, changing foliage color as time goes on",
+    "config.forgetmenot.name.season_length": "Season Length",
+    "config.forgetmenot.desc.season_length": "Length in days of each season.",
+    "config.forgetmenot.name.transition_length": "Season Transition Length",
+    "config.forgetmenot.desc.transition_length": "Length in days of the transition period between seasons.",
     "config.forgetmenot.name.starting_season": "Starting Season",
     "config.forgetmenot.desc.starting_season": "The season the world starts on. Affects all other seasons.",
     "config.forgetmenot.name.varied_tree_color": "Varied Tree Color",

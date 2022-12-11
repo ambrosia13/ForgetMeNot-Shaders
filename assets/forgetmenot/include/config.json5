@@ -60,6 +60,20 @@
                     nameKey: "config.forgetmenot.name.seasons",
                     descriptionKey: "config.forgetmenot.desc.seasons"
                 },
+                season_length: {
+                    default: 10,
+                    min: 1,
+                    max: 100,
+                    nameKey: "config.forgetmenot.name.season_length",
+                    descriptionKey: "config.forgetmenot.desc.season_length"
+                },
+                transition_length: {
+                    default: 5,
+                    min: 1,
+                    max: 40,
+                    nameKey: "config.forgetmenot.name.transition_length",
+                    descriptionKey: "config.forgetmenot.desc.transition_length"
+                },
 				starting_season: {
 					default: "spring",
 					choices: ["spring", "summer", "autumn", "winter"],
