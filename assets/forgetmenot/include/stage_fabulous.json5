@@ -368,12 +368,11 @@
                 "u_normal",
                 "u_flat_normal",
                 "u_pbr_data",
+                "u_light_data",
 
                 "u_previous_frame",
                 "u_composited_mips",
                 "u_reflection_coord"
-
-                "u_shadow_map",
             ]
         },
         {
@@ -586,12 +585,11 @@
                     "composite_normal",
                     "tangent_normal",
                     "pbr_data",
+                    "light_data",
 
                     "bloom_downsample",
                     "bloom_upsample",
                     "reflection_coord",
-                    
-                    "shadow_map",
                 ]
             },
             {

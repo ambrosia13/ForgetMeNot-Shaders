@@ -171,6 +171,11 @@ vec3 sampleCubemapFaces(samplerCube u_cube) {
     return color;
 }
 
+float getRainReflectionFactor(in vec3 normal, in float skyLight) {
+    float rainReflectionFactor = smoothstep(0.1, 0.5, fmn_rainFactor) * step(0.95, normal.y) * smoothstep(0.95, 1.0, skyLight);
+    return rainReflectionFactor;
+}
+
 vec4 getSeasonFactors(out float time) {
     time = frx_worldDay + frx_worldTime;
 
@@ -190,6 +195,10 @@ vec4 getSeasonFactors(out float time) {
     float toSpring = smoothstep(SEASON_LENGTH * 4.0 + TRANSITION_LENGTH * 3.0, SEASON_LENGTH * 4.0 + TRANSITION_LENGTH * 4.0, time);
 
     return vec4(toSummer, toAutumn, toWinter, toSpring);
+}
+vec4 getSeasonFactors() {
+    float time;
+    return getSeasonFactors(time);
 }
 
 // Foliage and tree color depending on season.

@@ -42,6 +42,8 @@ void resolveMaterials() {
     frx_fragColor /= frx_vertexColor;
     vec4 vertexColor = frx_vertexColor;
 
+    vec3 pixel = floor(mod(frx_vertex.xyz + frx_cameraPos, 1000.0) * 16.0) / 16.0;
+
     #ifdef SEASONS
         if(distance(frx_vertexColor.rgb, vec3(1.0)) > 0.01 && fmn_isFoliage == 1) {
             vec3 seasonColor = getSeasonColor(vertexColor.rgb, fmn_isLeafBlock, frx_vertex.xyz + frx_cameraPos);
@@ -53,8 +55,6 @@ void resolveMaterials() {
         }
 
         #ifdef FALLING_LEAVES
-            vec3 pixel = floor(mod(frx_vertex.xyz + frx_cameraPos, 1000.0) * 16.0) / 16.0;
-
             frx_fragColor.a *= mix(1.0, 0.0, fmn_isLeafBlock * step(getLeavesFallingThreshold(vec3(0.0)), hash13(mod(pixel, 1000.0))));
         #endif
     #endif
@@ -72,7 +72,13 @@ void resolveMaterials() {
     frx_fragReflectance = mix(0.0, frx_fragReflectance, step(0.0001, frx_fragReflectance - 0.04));
 
     // Roughness goes to 0 when it's raining
-    frx_fragRoughness = mix(frx_fragRoughness, 0.0, frx_fragLight.y * smoothstep(0.0, 0.5, fmn_rainFactor));
+    float rainReflectionFactor = getRainReflectionFactor(frx_fragNormal, frx_fragLight.y + 1.0 / 16.0);
+    float noise = fbmHash(pixel.xz * 0.5, 3, 0.0);
+    noise += (hash13(mod(pixel, 1000.0)) * 2.0 - 1.0) * 0.1;
+    noise = pow(noise, 1.0 / (1.5 + 0.5 * frx_smoothedThunderGradient));
+    
+    frx_fragRoughness = mix(frx_fragRoughness, 0.0, clamp01(noise * rainReflectionFactor + frx_smoothedThunderGradient * 0.1));
+    frx_fragReflectance = mix(frx_fragReflectance, 0.025, noise * rainReflectionFactor);
 
     // Hurt effect
     frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), 0.5 * frx_matHurt);

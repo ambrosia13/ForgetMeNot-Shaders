@@ -17,14 +17,11 @@ uniform samplerCube u_skybox;
 uniform sampler2D u_normal;
 uniform sampler2D u_flat_normal;
 uniform sampler2D u_pbr_data;
+uniform sampler2D u_light_data;
 
 uniform sampler2D u_previous_frame;
 uniform sampler2D u_composited_mips;
-uniform sampler2D u_depth_mipmaps;
-uniform sampler2D u_blue_noise;
 uniform sampler2D u_reflection_coord;
-
-uniform sampler2DArrayShadow u_shadow_map;
 
 in vec2 texcoord;
 
@@ -63,19 +60,6 @@ void try_insert(vec4 color, float depth) {
 
 vec3 blend( vec3 dst, vec4 src ) {
     return mix(dst, src.rgb, src.a);
-}
-
-vec3 getBlueNoise() {
-    ivec2 coord = ivec2(gl_FragCoord.xy + frx_renderFrames % 1000u * 100u);
-    vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
-    
-    return fNormalize(r) * 2.0 - 1.0;
-}
-vec3 getBlueNoise(float offset) {
-    ivec2 coord = ivec2(rotate2D(texcoord, offset) * frxu_size + frx_renderFrames * 100u);
-    vec3 r = texelFetch(u_blue_noise, coord % 256, 0).rgb;
-    
-    return fNormalize(r) * 2.0 - 1.0;
 }
 
 void main() {
@@ -214,7 +198,9 @@ void main() {
         //composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
     }
 
-    float rainReflectionFactor = smoothstep(0.1, 0.5, fmn_rainFactor) * step(0.95, normal.y) * 0.0;
+    float skyLight = texture(u_light_data, texcoord).y;
+    float rainReflectionFactor = getRainReflectionFactor(normal, skyLight);
+
     vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
         if(f0.r > 0.0 || rainReflectionFactor > 0.0) {
@@ -223,7 +209,7 @@ void main() {
             vec3 worldMicrofacetNormal = microfacetNormal * frx_normalModelMatrix;
             vec3 reflectPos = reflect(minSceneSpacePos, worldMicrofacetNormal);
 
-            float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater);
+            float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + skyLight) - frx_cameraInWater);
             if(reflectSkyFactor > 0.01) {
                 vec3 rayDir = normalize(reflect(viewDir, normal));
                 reflectColor = textureLod(u_skybox, rayDir, 10.0 * sqrt(roughness)).rgb;
@@ -275,7 +261,7 @@ void main() {
             //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
 
             bloomyFogTransmittance = fogTransmittance;
-            fogTransmittance = mix(fogTransmittance, 1.0, floor(min_depth));
+            fogTransmittance = mix(fogTransmittance, 0.5 + 0.5 * fogTransmittance, floor(min_depth));
             if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
 
             vec3 fogScattering = getSkyColor(viewDir, 0.0);
@@ -327,7 +313,7 @@ void main() {
     #endif
 
     if(weather_depth < min_depth) {
-        composite = mix(composite, weather_color.rgb, weather_color.a);
+        composite = mix(composite, weather_color.rgb, weather_color.a * 0.5);
     }
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));

@@ -287,7 +287,7 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
     vec3 atmosphere;
     vec3 tdata = getTimeOfDayFactors();
 
-    float vlFactor = mix(0.0, 1.0, fmn_rainFactor);
+    float vlFactor = 0.0;//mix(0.0, 1.0, fmn_rainFactor);
 
     if(frx_worldIsNether == 1) {
         return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
@@ -305,34 +305,8 @@ vec3 getSkyColor(in vec3 viewDir, float drawSun) {
             atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun, vlFactor) * moonFlux;
         }
 
-        atmosphere = mix(atmosphere, min(mix(atmosphere, vec3(frx_luminance(atmosphere)), 0.5), atmosphere * 0.15 + 0.15), fmn_rainFactor);
-    }
-
-    if(frx_worldIsEnd == 1) {
-
-    }
-
-    return atmosphere + 2.0 * frx_skyFlashStrength;
-}
-vec3 getSkyColor(in vec3 viewDir, float drawSun, float vlFactor) {
-    vec3 atmosphere;
-    vec3 tdata = getTimeOfDayFactors();
-
-    if(frx_worldIsNether == 1) {
-        return pow(frx_fogColor.rgb * 2.0, vec3(2.2));
-    }
-
-    if(frx_worldIsOverworld == 1) {
-        drawSun *= mix(1.0, 0.0, fmn_rainFactor);
-
-        if(1.0 - tdata.y > 0.0) {
-            vec3 sunVector = getSunVector();
-            atmosphere += atmosphericScattering(viewDir, sunVector,  1.0 - tdata.y, DAY_BRIGHTNESS, drawSun, vlFactor) * mix(vec3(1.0, 0.9, 1.2), vec3(1.0), sunVector.y);
-        }
-        if(1.0 - tdata.x > 0.0) {
-            vec3 moonVector = getMoonVector();
-            atmosphere += atmosphericScattering(viewDir, moonVector, 1.0 - tdata.x, NIGHT_BRIGHTNESS, drawSun, vlFactor) * moonFlux;
-        }
+        vec4 factors = getSeasonFactors();
+        saturation(atmosphere, (1.0 - factors.z + factors.w) * 0.5 + 0.5);
 
         atmosphere = mix(atmosphere, min(mix(atmosphere, vec3(frx_luminance(atmosphere)), 0.5), atmosphere * 0.15 + 0.15), fmn_rainFactor);
     }
@@ -510,7 +484,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
                 planeMarch += rayDirection * stepLength * interleaved_gradient();
                 lightRaysOpticalDepth += sampleCumulusCloud(cumulusTex, planeMarch) * 10.0;
             }
-            
+
             float lightRays = exp2(-lightRaysOpticalDepth * 50.0);
             lightRays *= smoothstep(0.4, 0.0, frx_skyLightVector.y) * (getTimeOfDayFactors().x);
 
