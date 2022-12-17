@@ -205,13 +205,12 @@ void main() {
     if(min_depth < 1.0) {
         if(f0.r > 0.0 || rainReflectionFactor > 0.0) {
             vec3 cosineDistribution = goldNoise3d();
-            vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
-            vec3 worldMicrofacetNormal = microfacetNormal * frx_normalModelMatrix;
-            vec3 reflectPos = reflect(minSceneSpacePos, worldMicrofacetNormal);
+            vec3 worldMicrofacetNormal = fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
 
-            float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + skyLight) - frx_cameraInWater);
+            vec3 rayDir = normalize(reflect(viewDir, normal));
+
+            float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater);
             if(reflectSkyFactor > 0.01) {
-                vec3 rayDir = normalize(reflect(viewDir, normal));
                 reflectColor = textureLod(u_skybox, rayDir, 10.0 * sqrt(roughness)).rgb;
             }
             reflectColor = mix((getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25, reflectColor, reflectSkyFactor);
@@ -221,9 +220,19 @@ void main() {
             reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)), roughness * roughness);
             if(f0.r < 0.01) reflectance *= rainReflectionFactor;
 
-            vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
+            #if REFLECTIONS == REFLECTIONS_FANCY
+                vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
 
-            if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
+                if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
+            #elif REFLECTIONS == REFLECTIONS_FAST
+                vec3 reflectionCoord = (reflect(setupCleanSceneSpacePos(texcoord, translucent_depth), worldMicrofacetNormal));
+
+                // Have to reproject...
+                //vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
+                reflectionCoord = cleanLastFrameSceneSpaceToScreenSpace(reflectionCoord + frx_cameraPos - frx_lastCameraPos);
+
+                if(clamp01(reflectionCoord) == reflectionCoord) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord.xy * frxu_size), 0).rgb;
+            #endif
             if(f0.r > 0.999) reflectColor *= (composite);
         }
 

@@ -391,13 +391,12 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 #if defined CLOUDS && !defined VERTEX_SHADER
     float sampleCumulusCloud(in sampler2D noiseTex, in vec2 plane) {
         plane *= 0.15;
-        vec2 secondPlane = rotate2D(plane + 100.5, PI / 4.0);
+        vec2 originalPlane = plane;
 
-        plane.x = mix(fract(plane.x), 1.0 - fract(plane.x), mod(floor(plane.x), 2.0));
-        plane.y = mix(fract(plane.y), 1.0 - fract(plane.y), mod(floor(plane.y), 2.0));
+        vec2 secondPlane = rotate2D(plane * 1.0 + 100.5, PI / 4.0);
 
-        secondPlane.x = mix(fract(secondPlane.x), 1.0 - fract(secondPlane.x), mod(floor(secondPlane.x), 2.0));
-        secondPlane.y = mix(fract(secondPlane.y), 1.0 - fract(secondPlane.y), mod(floor(secondPlane.y), 2.0));
+        plane = mix(fract(plane), 1.0 - fract(plane), mod(floor(plane), 2.0));
+        secondPlane = mix(fract(secondPlane), 1.0 - fract(secondPlane), mod(floor(secondPlane), 2.0));
 
         float noiseA = texture(noiseTex, plane).r;
         float noiseB = texture(noiseTex, secondPlane).r;
@@ -407,12 +406,12 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
 
         float a = smoothstep(aLowerBound, 0.9, noiseA);
         float b = smoothstep(bLowerBound, 0.9, noiseB);
-        float x = smoothHash(plane) * 0.5 + 0.5;
+        float x = smoothHash(originalPlane) * 0.5 + 0.5;
 
         return mix(a, b, x);
     }
     float sampleCirrusCloud(in sampler2D noiseTex, in vec2 plane) {
-        plane *= 0.15;
+        plane *= vec2(0.15, 0.25);
         vec2 secondPlane = rotate2D(plane + 100.5, PI / 4.0);
 
         plane.x = mix(fract(plane.x), 1.0 - fract(plane.x), mod(floor(plane.x), 2.0));
@@ -452,7 +451,7 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         {
             vec2 cirrusPlane = plane;
             float cirrusClouds = sampleCirrusCloud(cirrusTex, cirrusPlane);
-            float transmittanceCirrus = exp2(-cirrusClouds * 4.0);
+            float transmittanceCirrus = exp2(-cirrusClouds * 6.0);
             vec3 scatteringCirrus = (1.0 - transmittanceCirrus) * mie;
 
             skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittanceCirrus + scatteringCirrus, smoothstep(0.0, 0.1, viewDir.y));
@@ -466,8 +465,8 @@ vec3 getSkyColorDetailed(in vec3 viewDir, in vec3 viewPos, in float drawSun) {
         float opticalDepth = sampleCumulusCloud(cumulusTex, plane);
         float lightOpticalDepth = sampleCumulusCloud(cumulusTex, plane + 0.1 * rayDirection * (interleaved_gradient() * 0.5 + 0.5));
 
-        float transmittance = exp2(-opticalDepth * 4.0 * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
-        vec3 scattering = vec3(exp2(-lightOpticalDepth * (3.5 + 3.0 * fmn_rainFactor))) * mie;
+        float transmittance = exp2(-opticalDepth * 8.0 * mix(4.0, 16.0, smoothstep(0.8, 1.0, dot(viewDir, abs(frx_skyLightVector)))));
+        vec3 scattering = vec3(exp2(-lightOpticalDepth * (4.0 + 3.0 * fmn_rainFactor))) * mie;
         scattering *= (1.0 - transmittance);
 
         skyColor.rgb = mix(skyColor.rgb, skyColor.rgb * transmittance + scattering, smoothstep(0.0, 0.05, viewDir.y));

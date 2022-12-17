@@ -117,6 +117,14 @@
                     nameKey: "config.forgetmenot.name.raytraced_handheld_light_occlusion",
                     descriptionKey: "config.forgetmenot.desc.raytraced_handheld_light_occlusion"
                 },
+				reflections: {
+					default: "fancy",
+					choices: ["off", "fast", "fancy"],
+					enum: true,
+					prefix: "reflections_",
+					nameKey: "config.forgetmenot.name.reflections",
+					descriptionKey: "config.forgetmenot.desc.reflections"
+				},
                 ssgi: {
                     default: true,
                     nameKey: "config.forgetmenot.name.ssgi",

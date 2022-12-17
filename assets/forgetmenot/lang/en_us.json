@@ -48,6 +48,8 @@
     "config.forgetmenot.desc.skylight_leak_fix": "Blends the shadow map with the sky lightmap, removing some shadows but preventing incorrect sunlight in caves",
     "config.forgetmenot.name.raytraced_handheld_light_occlusion": "Raytraced Handheld Light Occlusion",
     "config.forgetmenot.desc.raytraced_handheld_light_occlusion": "Does a quick screen space raytrace to find shadows for handheld light. Works best in 3rd person",
+    "config.forgetmenot.name.reflections": "Terrain Reflections",
+    "config.forgetmenot.desc.reflections": "Enables reflections in screen space. Fast reflections use an inaccurate method for cheap reflections, fancy reflections raytraces them.",
     "config.forgetmenot.name.ssgi": "Raytraced Ambient Occlusion",
     "config.forgetmenot.desc.ssgi": "Raytraced occlusion checks for high quality ambient lighting, very slow",
 

@@ -11,10 +11,14 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-     if((clamp01(texcoord) != texcoord)) {
-          discard;
-          return;
-     }
+     #if REFLECTIONS == REFLECTIONS_FANCY
+          if((clamp01(texcoord) != texcoord)) {
+     #endif
+               discard;
+               return;
+     #if REFLECTIONS == REFLECTIONS_FANCY
+          }
+     #endif
 
      float depth = textureLod(u_depth_mipmaps, texcoord, 0).r;
 

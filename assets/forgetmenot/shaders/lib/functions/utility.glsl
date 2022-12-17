@@ -63,6 +63,10 @@ vec3 lastFrameSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
     vec4 temp = frx_lastViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
     return (temp.xyz / temp.w) * 0.5 + 0.5;
 }
+vec3 cleanLastFrameSceneSpaceToScreenSpace(in vec3 sceneSpacePos) {
+    vec4 temp = frx_lastCleanViewProjectionMatrix * vec4(sceneSpacePos, 1.0);
+    return (temp.xyz / temp.w) * 0.5 + 0.5;
+}
 vec3 sceneSpaceToViewSpace(in vec3 sceneSpacePos) {
     // There's probably a faster way to do this but this is rarely needed
     vec3 screenPos = sceneSpaceToScreenSpace(sceneSpacePos);
@@ -197,7 +201,7 @@ vec4 getSeasonFactors(out float time) {
     return vec4(toSummer, toAutumn, toWinter, toSpring);
 }
 vec4 getSeasonFactors() {
-    float time;
+    float time; // Sometimes we just don't care about time
     return getSeasonFactors(time);
 }
 

@@ -40,6 +40,16 @@ void main() {
      vec4 materialData = texture(u_material_data, texcoord);
      vec3 light = texture(u_light_data, texcoord).rgb;
 
+     bool isMetal = pbrData.r > 0.99;
+
+     float emission = materialData.r;
+     float disableDiffuse = materialData.g;
+     float sssAmount = materialData.b;
+
+     float blockLight = light.r;
+     float skyLight = mix(light.g, 1.0, 1.0 - frx_worldIsOverworld);
+     vec3 ao = light.bbb;
+
      float max_depth = max(translucent_depth, particles_depth);
      float min_depth = min(translucent_depth, particles_depth);
 
@@ -64,16 +74,6 @@ void main() {
      }
 
      vec3 tdata = getTimeOfDayFactors();
-
-     bool isMetal = pbrData.r > 0.99;
-
-     float emission = materialData.r;
-     float disableDiffuse = materialData.g;
-     float sssAmount = materialData.b;
-
-     float blockLight = light.r;
-     float skyLight = mix(light.g, 1.0, 1.0 - frx_worldIsOverworld);
-     vec3 ao = light.bbb;
 
      bool doDeferredLighting = frx_worldIsEnd + frx_worldIsNether + frx_worldIsOverworld >= 1;
      #ifdef ALL_DIMENSIONS_OVERWORLD
@@ -202,7 +202,7 @@ void main() {
 
                ambientColor = ambientColor * 0.75 + 0.25;
           } else if(frx_worldIsNether == 1) {
-               upColor = upColor * 1.8 + 0.2;
+               upColor = upColor * 2.5 + 0.3;
                ambientColor = 2.0 * mix(vec3(1.5, 0.5, 0.25), upColor, 0.5 + 0.5 * normal.y);
           }
 
@@ -225,7 +225,7 @@ void main() {
                vec3 unoccludedRayDir = fNormalize(viewNormal + goldNoise3d());
 
                for(int i = 0; i < RTAO_RAYS; i++) {
-                    vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i) - vec3(0.0, 1.0, 0.0) * frx_worldIsNether * (1.0 - blockLight));
+                    vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
                     vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
                     float stepLength = 0.0625 / RTAO_STEPS;
 

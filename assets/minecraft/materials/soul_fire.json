@@ -1,0 +1,7 @@
+{
+	"layers": [
+		{
+			"fragmentSource": "minecraft:shaders/material/emission/soul_fire.frag"
+		}
+	]
+}
