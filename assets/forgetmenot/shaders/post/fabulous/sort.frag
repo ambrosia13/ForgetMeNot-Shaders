@@ -100,6 +100,7 @@ void main() {
     vec4  particles_color = texture(u_particles_color, coords.xy);
 
     vec4  main_color = texture(u_main_color, coords.xy);
+    main_color.a = 1.0;
     float main_depth = texture(u_main_depth, coords.xy).r;
 
     vec4  entity_color = texture(u_entity_color, texcoord);

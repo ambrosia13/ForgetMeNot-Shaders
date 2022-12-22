@@ -222,10 +222,8 @@ void main() {
                vec3 rtaoRayPos = maxViewSpacePos;
                vec3 rayScreen = vec3(texcoord, max_depth);
 
-               vec3 unoccludedRayDir = fNormalize(viewNormal + goldNoise3d());
-
                for(int i = 0; i < RTAO_RAYS; i++) {
-                    vec3 rayDir = fNormalize(viewNormal + goldNoise3d(i));
+                    vec3 rayDir = generateCosineVector(viewNormal);
                     vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rtaoRayPos + rayDir) - rayScreen);
                     float stepLength = 0.0625 / RTAO_STEPS;
 

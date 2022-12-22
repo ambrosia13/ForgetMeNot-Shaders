@@ -141,15 +141,6 @@ void saturation(inout vec3 color, in float amt) {
     color = mix(vec3(frx_luminance(color)), color, amt);
 }
 
-// Thanks Belmu#4066 for helping me solve the issues with my variable penumbra shadows!
-vec2 sincos(float x) {
-    return vec2(sin(x), cos(x));
-}
-vec2 diskSampling(float i, float n, float phi){
-    float theta = (i + phi) / n; 
-    return sincos(theta * TAU * n * 1.618033988749894) * theta;
-}
-
 vec3 mixmax(in vec3 a, in vec3 b, in float x) {
     return mix(a, max(a, b), x);
 }
@@ -311,3 +302,5 @@ float getSeasonCloudsFactor() {
         return 0.4;
     #endif
 }
+
+bool raytrace();

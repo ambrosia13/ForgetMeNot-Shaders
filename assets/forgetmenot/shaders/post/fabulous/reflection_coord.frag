@@ -49,8 +49,7 @@ void main() {
      vec3 cosineDistribution = goldNoise3d();
      vec3 microfacetNormal = frx_normalModelMatrix * fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness);
 
-     vec3 viewSpaceReflectionDir = normalize(reflect(viewSpaceDir, viewNormal) + goldNoise3d() * roughness * roughness);
-     viewSpaceReflectionDir.y *= mix(-1.0, 1.0, step(0.0, dot(viewSpaceReflectionDir, viewNormal)));
+     vec3 viewSpaceReflectionDir = generateCosineVector(reflect(viewSpaceDir, viewNormal), roughness * roughness);
 
      vec3 screenSpaceReflectionDir = fNormalize(viewSpaceToScreenSpace(viewSpacePos + viewSpaceReflectionDir) - screenPos);
 
@@ -97,5 +96,5 @@ void main() {
           }
      }
 
-     fragColor = vec4(0.0);
+     fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

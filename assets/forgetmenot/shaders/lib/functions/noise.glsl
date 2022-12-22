@@ -110,6 +110,54 @@ vec2 fbmCurl(in vec2 plane, in int octaves) {
         r = (r) * 2.0 - 1.0;
         return normalize(r);
     }
+
+    // Thanks Belmu#4066 for helping me solve the issues with my variable penumbra shadows!
+    vec2 sincos(float x) {
+        return vec2(sin(x), cos(x));
+    }
+    vec2 diskSampling(float i, float n, float phi){
+        float theta = (i + phi) / n; 
+        return sincos(theta * TAU * n * 1.618033988749894) * theta;
+    }
+
+
+    // -----------------------------------------------------------------------------------------------
+    // From belmu#4066
+    // Noise distribution: https://www.pcg-random.org/
+    void pcg(inout uint seed) {
+        uint state = seed * 747796405u + 2891336453u;
+        uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+        seed = (word >> 22u) ^ word;
+    }
+
+    uint rngState = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+    float randF() { pcg(rngState); return float(rngState) / float(0xffffffffu); }
+
+    // From Jessie
+    vec3 generateUnitVector(vec2 xy) {
+        xy.x *= TAU; xy.y = 2.0 * xy.y - 1.0;
+        return vec3(sincos(xy.x) * sqrt(1.0 - xy.y * xy.y), xy.y);
+    }
+
+    vec3 generateCosineVector(vec3 vector, vec2 xy) {
+        return normalize(vector + generateUnitVector(xy));
+    }
+    // -----------------------------------------------------------------------------------------------
+
+    vec3 generateCosineVector(vec3 vector) {
+        return normalize(
+            vector + 
+            generateUnitVector(
+                vec2(
+                        randF(), randF()
+                )
+            )
+        );
+    }
+    vec3 generateCosineVector(vec3 vector, float roughness) {
+        return mix(vector, generateCosineVector(vector), roughness);
+    }
+
 #else
     vec3 goldNoise3d(float seed) {
         vec3 r = vec3(
