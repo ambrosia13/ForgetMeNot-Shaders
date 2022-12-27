@@ -29,6 +29,7 @@ bool isModdedDimension() {
           vec3 rayScreenPos = viewSpaceToScreenSpace(rayPos);
           vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreenPos);
 
+          // Naive raytracer
           /*
           float stepSize = 1.0 / steps;
           const int sampleLod = 0;
@@ -49,6 +50,7 @@ bool isModdedDimension() {
           }
           */
 
+          // Hi-z raytracer
           // /*
           float stepSize = 30.0 / max(frxu_size.x, frxu_size.y);
 
