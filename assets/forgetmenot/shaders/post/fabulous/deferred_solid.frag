@@ -43,9 +43,9 @@ void main() {
 
      uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
      vec4 unpackedX, unpackedY, unpackedZ;
-     unpackedX = unpackUnormArb(samplePacked.x, uvec4( 9u,  9u,  9u,  5u));
-     unpackedY = unpackUnormArb(samplePacked.y, uvec4(10u, 10u, 10u,  2u));
-     unpackedZ = unpackUnormArb(samplePacked.z, uvec4(14u, 14u,  2u,  2u));
+     unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
+     unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);
+     unpackedZ = unpackUnormArb(samplePacked.z, BITS_Z);
 
      vec3 normal = normalize(unpackedX.xyz * 2.0 - 1.0);
 
@@ -55,7 +55,7 @@ void main() {
 
      float f0 = unpackedZ.x * unpackedZ.x;
      float roughness = unpackedZ.y * unpackedZ.y;
-     float sssAmount = unpackedX.w;
+     float sssAmount = (unpackedX.w - 0.02) * (1.02 / 1.0);
 
      float disableDiffuse = step(0.5, unpackedY.w);
      float matCutout = step(0.5, unpackedZ.z);

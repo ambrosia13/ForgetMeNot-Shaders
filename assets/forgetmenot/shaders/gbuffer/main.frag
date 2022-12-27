@@ -133,14 +133,14 @@ void frx_pipelineFragment() {
           );
      }
 
-     vec4 dataX = vec4(frx_fragNormal.xyz * 0.5 + 0.5, fmn_sssAmount);
-     uint packedX = packUnormArb(dataX, uvec4(9u, 9u, 9u, 5u));
+     vec4 dataX = vec4(frx_fragNormal.xyz * 0.5 + 0.5, max(0.02, fmn_sssAmount));
+     uint packedX = packUnormArb(dataX, BITS_X);
 
      vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), frx_matDisableDiffuse);
-     uint packedY = packUnormArb(dataY, uvec4(10u, 10u, 10u, 2u));
+     uint packedY = packUnormArb(dataY, BITS_Y);
 
      vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, frx_matCutout, 1.0);
-     uint packedZ = packUnormArb(dataZ, uvec4(14u, 14u, 2u, 2u));
+     uint packedZ = packUnormArb(dataZ, BITS_Z);
 
      vec3 packedFinal = uintBitsToFloat(uvec3(packedX, packedY, packedZ));
 
