@@ -1,17 +1,3 @@
-#include frex:shaders/api/header.glsl
-
-#include frex:shaders/api/fog.glsl
-#ifndef VERTEX_SHADER
-#include frex:shaders/api/fragment.glsl
-#else
-#include frex:shaders/api/vertex.glsl 
-#endif
-#include frex:shaders/api/material.glsl
-#include frex:shaders/api/player.glsl
-#include frex:shaders/api/sampler.glsl
-#include frex:shaders/api/view.glsl
-#include frex:shaders/api/world.glsl
-
 // Version number. Will increment when new material flags are added.
 #define FMN_PBR 3
 
@@ -26,7 +12,7 @@ int fmn_isWater = 0;
 // Other pipelines may implement fmn_sssAmount in their own way.
 // Defaults to 1.0 when diffuse shading is disabled.
 // Version 1 feature.
-float fmn_sssAmount = float(frx_matDisableDiffuse);
+float fmn_sssAmount = 0.0;
 
 // Flag for whether this material is a player. 
 // Version 2 feature.

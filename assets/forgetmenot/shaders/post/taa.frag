@@ -1,3 +1,4 @@
+#define INCLUDE_SPACES
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_color;
@@ -9,21 +10,18 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
+// tone map and inverse tone map your color texture reads 
+// to prevent bright regions from being fuzzy due to TAA
 vec3 toneMap(in vec3 color) {
-    color = color / (color + 1.0);
-    //color = pow(color, vec3(1.0 / 2.2));
-
-    return color;
+    return color / (color + 1.0);
 }
 vec3 inverseToneMap(in vec3 color) {
-    //color = pow(color, vec3(2.2));
-    color = -color / (color - 1.0);
-
-    return color;
+    return -color / (color - 1.0);
 }
 
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
 // Code by Belmu#4066
+// Slightly modified
 vec3 clipAABB(vec3 prevColor, vec3 minColor, vec3 maxColor) {
     vec3 pClip = 0.5 * (maxColor + minColor); // Center
     vec3 eClip = 0.5 * (maxColor - minColor); // Size
@@ -49,7 +47,7 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
     return clipAABB(prevColor, minColor, maxColor);
 }
 
-// Reference from BSL Shaders
+// Blend factor referenced from BSL Shaders
 float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
     vec2 velocity = (currentCoord - previousCoord) * frxu_size;
 
@@ -60,31 +58,34 @@ float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
 }
 
 void main() {
-    vec4 color;
-    vec4 previousColor;
-    
-    float handDepth = texture(u_hand_depth, texcoord).r;
+    #ifdef TAA
+        vec4 color;
+        vec4 previousColor;
+        
+        float handDepth = texture(u_hand_depth, texcoord).r;
 
-    color = texture(u_color, texcoord);
-    color.rgb = toneMap(color.rgb);
-    
-    vec3 viewPos = setupSceneSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
-    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
-    previousColor = texture(u_previous_frame, lastScreenPos.xy);
-    previousColor.rgb = toneMap(previousColor.rgb);
+        color = texture(u_color, texcoord);
+        color.rgb = toneMap(color.rgb);
+        
+        // how to do temporal reprojection in 3 easy steps
+        vec3 viewPos = setupSceneSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
+        vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+        vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
 
-    //color = mix(color, previousColor, 0.9 * floor(handDepth));
+        previousColor = texture(u_previous_frame, lastScreenPos.xy);
+        previousColor.rgb = toneMap(previousColor.rgb);
 
-    vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
+        vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
 
-    #ifdef NO_CLIP
-        color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
+        #ifdef NO_CLIP
+            color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
+        #else
+            color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+        #endif
+
+        color.rgb = inverseToneMap(color.rgb);
+        fragColor = max(vec4(1.0 / 65536.0), color);
     #else
-        color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+        fragColor = texture(u_color, texcoord);
     #endif
-
-    color.rgb = inverseToneMap(color.rgb);
-
-    fragColor = max(vec4(1.0 / 65536.0), color);
 }

@@ -3,7 +3,29 @@
         {
             name: "taa",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "pre_bloom_copy",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -118,6 +140,14 @@
             colorAttachments: [
                 {
                     image: "taa"
+                }
+            ]
+        },
+        {
+            name: "pre_bloom_copy",
+            colorAttachments: [
+                {
+                    image: "pre_bloom_copy"
                 }
             ]
         },
@@ -258,9 +288,17 @@
             fragmentSource: "forgetmenot:shaders/post/taa.frag",
             samplers: [
                 "u_color",
-                "u_previous_frame"
-                "u_depth"
+                "u_previous_frame",
+                "u_depth",
                 "u_hand_depth"
+            ]
+        },
+        {
+            name: "pre_bloom_copy",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
+            samplers: [
+                "u_color"
             ]
         },
         {
@@ -268,8 +306,7 @@
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/bloom/bright_color.frag",
             samplers: [
-                "u_color",
-                "u_emissive"
+                "u_color"
             ]
         },
         {
@@ -296,8 +333,7 @@
                 "u_color",
                 "u_prior"
             ]
-        },
-        {
+        },        {
             name: "bloom_merge",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/bloom/bloom_merge.frag",
@@ -308,7 +344,7 @@
         },
         {
             name: "final",
-            vertexSource: "forgetmenot:shaders/post/final_frame.vert",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/final.frag",
             samplers: [
                 "u_color"
@@ -324,18 +360,28 @@
                 framebuffer: "taa",
                 samplerImages: [
                     "main_color",
-                    "bright_color",
+                    "pre_bloom_copy",
                     "translucent_depth",
                     "main_depth"
                 ]
+            },
+            {
+                name: "pre_bloom_copy",
+                program: "pre_bloom_copy",
+                framebuffer: "pre_bloom_copy",
+                samplerImages: [
+                    "taa"
+                ],
             },
             {
                 name: "bright_color",
                 program: "bright_color",
                 framebuffer: "bright_color",
                 samplerImages: [
-                    "taa",
-                ]
+                    "taa"
+                ],
+                lod: 0,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d0",
@@ -343,7 +389,8 @@
                 framebuffer: "bloom_d0",
                 samplerImages: [
                     "bright_color"
-                ]
+                ],
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d1",
@@ -352,7 +399,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 1
+                lod: 1,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d2",
@@ -361,7 +409,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 2
+                lod: 2,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d3",
@@ -370,7 +419,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 3
+                lod: 3,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d4",
@@ -379,7 +429,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 4
+                lod: 4,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d5",
@@ -388,7 +439,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 5
+                lod: 5,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_d6",
@@ -397,7 +449,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 6
+                lod: 6,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u6",
@@ -406,7 +459,8 @@
                 samplerImages: [
                     "bloom_downsample"
                 ],
-                lod: 6
+                lod: 6,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u5",
@@ -416,7 +470,8 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 5
+                lod: 5,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u4",
@@ -426,7 +481,8 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 4
+                lod: 4,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u3",
@@ -436,7 +492,8 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 3
+                lod: 3,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u2",
@@ -446,7 +503,8 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 2
+                lod: 2,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u1",
@@ -456,7 +514,8 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 1
+                lod: 1,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_u0",
@@ -466,14 +525,15 @@
                     "bloom_downsample",
                     "bloom_upsample"
                 ],
-                lod: 0
+                lod: 0,
+                toggleConfig: "enable_bloom"
             },
             {
                 name: "bloom_merge",
                 program: "bloom_merge",
                 framebuffer: "final",
                 samplerImages: [
-                    "taa",
+                    "pre_bloom_copy",
                     "bloom_upsample"
                 ],
             },

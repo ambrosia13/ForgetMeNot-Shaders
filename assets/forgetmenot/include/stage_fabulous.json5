@@ -1,34 +1,8 @@
 {
     images: [
         {
-            name: "skybox",
-            lod: 9,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            size: 512,
-            target: "TEXTURE_CUBE_MAP",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
-                },
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                },
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                },
-                {
-                    name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "quarter_res_depth",
-            lod: 2,
+            name: "depth_mips",
+            lod: 7,
             internalFormat: "R32F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
@@ -38,7 +12,7 @@
                     name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST"
                 }, 
                 {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                    name: "TEXTURE_MAG_FILTER", val: "NEAREST_MIPMAP_NEAREST"
                 },
                 {
                     name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
@@ -51,30 +25,8 @@
         {
             name: "deferred_solid",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "reflection_coord",
-            lod: 0,
-            internalFormat: "RG16",
-            pixelFormat: "RG",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
@@ -95,7 +47,51 @@
         {
             name: "sort",
             lod: 0,
-            internalFormat: "RGBA16F",
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "sort_copy",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "resolve",
+            lod: 0,
+            internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
@@ -118,138 +114,36 @@
 
     framebuffers: [
         {
-            name: "skybox",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 0},
-                {image: "skybox", layer: 1, lod: 0},
-                {image: "skybox", layer: 2, lod: 0},
-                {image: "skybox", layer: 3, lod: 0},
-                {image: "skybox", layer: 4, lod: 0},
-                {image: "skybox", layer: 5, lod: 0},
-            ]
+            name: "depth_mips_0",
+            colorAttachments: [{image: "depth_mips", lod: 0}]
         },
         {
-            name: "skybox_d1",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 1},
-                {image: "skybox", layer: 1, lod: 1},
-                {image: "skybox", layer: 2, lod: 1},
-                {image: "skybox", layer: 3, lod: 1},
-                {image: "skybox", layer: 4, lod: 1},
-                {image: "skybox", layer: 5, lod: 1},
-            ]
+            name: "depth_mips_1",
+            colorAttachments: [{image: "depth_mips", lod: 1}]
         },
         {
-            name: "skybox_d2",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 2},
-                {image: "skybox", layer: 1, lod: 2},
-                {image: "skybox", layer: 2, lod: 2},
-                {image: "skybox", layer: 3, lod: 2},
-                {image: "skybox", layer: 4, lod: 2},
-                {image: "skybox", layer: 5, lod: 2},
-            ]
+            name: "depth_mips_2",
+            colorAttachments: [{image: "depth_mips", lod: 2}]
         },
         {
-            name: "skybox_d3",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 3},
-                {image: "skybox", layer: 1, lod: 3},
-                {image: "skybox", layer: 2, lod: 3},
-                {image: "skybox", layer: 3, lod: 3},
-                {image: "skybox", layer: 4, lod: 3},
-                {image: "skybox", layer: 5, lod: 3},
-            ]
+            name: "depth_mips_3",
+            colorAttachments: [{image: "depth_mips", lod: 3}]
         },
         {
-            name: "skybox_d4",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 4},
-                {image: "skybox", layer: 1, lod: 4},
-                {image: "skybox", layer: 2, lod: 4},
-                {image: "skybox", layer: 3, lod: 4},
-                {image: "skybox", layer: 4, lod: 4},
-                {image: "skybox", layer: 5, lod: 4},
-            ]
+            name: "depth_mips_4",
+            colorAttachments: [{image: "depth_mips", lod: 4}]
         },
         {
-            name: "skybox_d5",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 5},
-                {image: "skybox", layer: 1, lod: 5},
-                {image: "skybox", layer: 2, lod: 5},
-                {image: "skybox", layer: 3, lod: 5},
-                {image: "skybox", layer: 4, lod: 5},
-                {image: "skybox", layer: 5, lod: 5},
-            ]
+            name: "depth_mips_5",
+            colorAttachments: [{image: "depth_mips", lod: 5}]
         },
         {
-            name: "skybox_d6",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 6},
-                {image: "skybox", layer: 1, lod: 6},
-                {image: "skybox", layer: 2, lod: 6},
-                {image: "skybox", layer: 3, lod: 6},
-                {image: "skybox", layer: 4, lod: 6},
-                {image: "skybox", layer: 5, lod: 6},
-            ]
+            name: "depth_mips_6",
+            colorAttachments: [{image: "depth_mips", lod: 6}]
         },
         {
-            name: "skybox_d7",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 7},
-                {image: "skybox", layer: 1, lod: 7},
-                {image: "skybox", layer: 2, lod: 7},
-                {image: "skybox", layer: 3, lod: 7},
-                {image: "skybox", layer: 4, lod: 7},
-                {image: "skybox", layer: 5, lod: 7},
-            ]
-        },
-        {
-            name: "skybox_d8",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 8},
-                {image: "skybox", layer: 1, lod: 8},
-                {image: "skybox", layer: 2, lod: 8},
-                {image: "skybox", layer: 3, lod: 8},
-                {image: "skybox", layer: 4, lod: 8},
-                {image: "skybox", layer: 5, lod: 8},
-            ]
-        },
-        {
-            name: "skybox_d9",
-            colorAttachments: [
-                {image: "skybox", layer: 0, lod: 9},
-                {image: "skybox", layer: 1, lod: 9},
-                {image: "skybox", layer: 2, lod: 9},
-                {image: "skybox", layer: 3, lod: 9},
-                {image: "skybox", layer: 4, lod: 9},
-                {image: "skybox", layer: 5, lod: 9},
-            ]
-        },
-        {
-            name: "depth_d0",
-            colorAttachments: [
-                {
-                    image: "quarter_res_depth"
-                }
-            ]
-        },
-        {
-            name: "depth_d1",
-            colorAttachments: [
-                {
-                    image: "quarter_res_depth", lod: 1
-                }
-            ]
-        },
-        {
-            name: "depth_d2",
-            colorAttachments: [
-                {
-                    image: "quarter_res_depth", lod: 2
-                }
-            ]
+            name: "depth_mips_7",
+            colorAttachments: [{image: "depth_mips", lod: 7}]
         },
         {
             name: "deferred_solid",
@@ -260,18 +154,26 @@
             ]
         },
         {
-            name: "reflection_coord",
-            colorAttachments: [
-                {
-                    image: "reflection_coord", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
             name: "sort",
             colorAttachments: [
                 {
                     image: "sort", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "sort_copy",
+            colorAttachments: [
+                {
+                    image: "sort_copy", clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "resolve",
+            colorAttachments: [
+                {
+                    image: "resolve", clearColor: 0x00000000
                 }
             ]
         },
@@ -287,23 +189,6 @@
 
     programs: [
         {
-            name: "skybox",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/skybox.frag",
-            samplers: [
-                "u_cumulus_tex",
-                "u_cirrus_tex"
-            ]
-        },
-        {
-            name: "skybox_downsample",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/skybox_downsample.frag",
-            samplers: [
-                "u_cube"
-            ]
-        },
-        {
             name: "depth_downsample",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
@@ -313,43 +198,23 @@
         },
         {
             name: "deferred_solid",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
             samplers: [
-                "u_main_color",
-                "u_previous_color",
-                "u_translucent_depth",
-                "u_particles_depth",
-                
-                "u_solid_normal",
-                "u_pbr_data",
-                "u_material_data",
-                "u_light_data",
-
-                "u_depth_mipmaps",
-                "u_depth_no_player",
-                "u_blue_noise",
-
-                "u_skybox",
+                "u_color",
+                "u_data",
+                "u_depth",
 
                 "u_shadow_map",
-                "u_shadow_tex"
-            ]
-        },
-        {
-            name: "reflection_coord",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/reflection_coord.frag",
-            samplers: [
-                "u_normal",
-                "u_pbr_data",
+                "u_shadow_tex",
 
-                "u_depth_mipmaps",
+                "u_skybox",
+                "u_transmittance"
             ]
         },
         {
             name: "sort",
-            vertexSource: "forgetmenot:shaders/post/fabulous/sort_vertex.vert",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
             samplers: [
                 "u_main_color",
@@ -360,19 +225,25 @@
                 "u_entity_depth",
                 "u_weather_color",
                 "u_weather_depth",
+                "u_clouds_color",
+                "u_clouds_depth",
                 "u_particles_color",
                 "u_particles_depth",
-
-                "u_skybox"
                 
-                "u_normal",
-                "u_flat_normal",
-                "u_pbr_data",
-                "u_light_data",
-
-                "u_previous_frame",
-                "u_composited_mips",
-                "u_reflection_coord"
+                "u_previous_color",
+                "u_skybox",
+                "u_data",
+                "u_depths"
+            ]
+        },
+        {
+            name: "resolve",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/resolve.frag",
+            samplers: [
+                "u_current",
+                "u_previous",
+                "u_depth"
             ]
         },
         {
@@ -380,11 +251,7 @@
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
             samplers: [
-                "u_composite",
-                "u_depth",
-                "u_translucent_depth",
-                "u_normal",
-                "u_flat_normal"
+                "u_composite"
             ]
         }
     ],
@@ -392,141 +259,76 @@
     fabulous: {
         passes: [
             {
-                name: "skybox",
-                program: "skybox",
-                framebuffer: "skybox",
-                width: 512,
-                height: 512,
-                lod: 0,
-                samplerImages: [
-                    "forgetmenot:textures/cumulus_noise.png",
-                    "forgetmenot:textures/cirrus_noise.png"
-                ]
-            },
-            {
-                name: "skybox_d1",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d1",
-                width: 512,
-                height: 512,
-                lod: 1,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d2",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d2",
-                width: 512,
-                height: 512,
-                lod: 2,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d3",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d3",
-                width: 512,
-                height: 512,
-                lod: 3,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d4",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d4",
-                width: 512,
-                height: 512,
-                lod: 4,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d5",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d5",
-                width: 512,
-                height: 512,
-                lod: 5,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d6",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d6",
-                width: 512,
-                height: 512,
-                lod: 6,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d7",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d7",
-                width: 512,
-                height: 512,
-                lod: 7,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d8",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d8",
-                width: 512,
-                height: 512,
-                lod: 8,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "skybox_d9",
-                program: "skybox_downsample",
-                framebuffer: "skybox_d9",
-                width: 512,
-                height: 512,
-                lod: 9,
-                samplerImages: [
-                    "skybox"
-                ]
-            },
-            {
-                name: "depth_d0",
-                program: "depth_downsample",
-                framebuffer: "depth_d0",
+                name: "depth_mips_0",
+                program: "copy",
+                framebuffer: "depth_mips_0",
                 samplerImages: [
                     "translucent_depth"
-                ]
+                ],
+                lod: 0
             },
             {
-                name: "depth_d1",
+                name: "depth_mips_1",
                 program: "depth_downsample",
-                framebuffer: "depth_d1",
+                framebuffer: "depth_mips_1",
                 samplerImages: [
-                    "quarter_res_depth"
+                    "depth_mips"
                 ],
                 lod: 1
             },
             {
-                name: "depth_d2",
+                name: "depth_mips_2",
                 program: "depth_downsample",
-                framebuffer: "depth_d2",
+                framebuffer: "depth_mips_2",
                 samplerImages: [
-                    "quarter_res_depth"
+                    "depth_mips"
                 ],
                 lod: 2
+            },
+            {
+                name: "depth_mips_3",
+                program: "depth_downsample",
+                framebuffer: "depth_mips_3",
+                samplerImages: [
+                    "depth_mips"
+                ],
+                lod: 3
+            },
+            {
+                name: "depth_mips_4",
+                program: "depth_downsample",
+                framebuffer: "depth_mips_4",
+                samplerImages: [
+                    "depth_mips"
+                ],
+                lod: 4
+            },
+            {
+                name: "depth_mips_5",
+                program: "depth_downsample",
+                framebuffer: "depth_mips_5",
+                samplerImages: [
+                    "depth_mips"
+                ],
+                lod: 5
+            },
+            {
+                name: "depth_mips_6",
+                program: "depth_downsample",
+                framebuffer: "depth_mips_6",
+                samplerImages: [
+                    "depth_mips"
+                ],
+                lod: 6
+            },
+            {
+                name: "depth_mips_7",
+                program: "depth_downsample",
+                framebuffer: "depth_mips_7",
+                samplerImages: [
+                    "depth_mips"
+                ],
+                lod: 7
             },
             {
                 name: "deferred_solid",
@@ -534,34 +336,14 @@
                 framebuffer: "deferred_solid",
                 samplerImages: [
                     "main_color",
-                    "sort",
-                    "translucent_depth",
+                    "main_data",
                     "particles_depth",
 
-                    "solid_normal",
-                    "pbr_data",
-                    "material_data",
-                    "light_data",
-
-                    "quarter_res_depth",
-                    "depth_no_player"
-                    "forgetmenot:textures/blue_noise.png",
+                    "shadow_map",
+                    "shadow_map",
 
                     "skybox",
-                    
-                    "shadow_map",
-                    "shadow_map"
-                ]
-            },
-            {
-                name: "reflection_coord",
-                program: "reflection_coord",
-                framebuffer: "reflection_coord",
-                samplerImages: [
-                    "composite_normal",
-                    "pbr_data",
-
-                    "quarter_res_depth",
+                    "transmittance_lut"
                 ]
             },
             {
@@ -577,19 +359,25 @@
                     "entity_depth",
                     "weather_color",
                     "weather_depth",
+                    "clouds_color",
+                    "clouds_depth",
                     "particles_color",
                     "particles_depth",
 
+                    "resolve",
                     "skybox",
-
-                    "composite_normal",
-                    "tangent_normal",
-                    "pbr_data",
-                    "light_data",
-
-                    "bloom_downsample",
-                    "bloom_upsample",
-                    "reflection_coord",
+                    "all_data",
+                    "depth_mips"
+                ]
+            },
+            {
+                name: "resolve",
+                program: "resolve",
+                framebuffer: "resolve",
+                samplerImages: [
+                    "sort",
+                    "sort_copy",
+                    "translucent_depth",
                 ]
             },
             {
@@ -597,11 +385,15 @@
                 program: "copy",
                 framebuffer: "copy_to_main",
                 samplerImages: [
-                    "sort",
-                    "quarter_res_depth",
-                    "particles_depth"
-                    "composite_normal",
-                    "tangent_normal"
+                    "resolve"
+                ]
+            },
+            {
+                name: "sort_copy",
+                program: "copy",
+                framebuffer: "sort_copy",
+                samplerImages: [
+                    "sort"
                 ]
             }
         ]

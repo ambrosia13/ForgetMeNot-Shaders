@@ -1,5 +1,11 @@
+#define INCLUDE_SPACES
+#define INCLUDE_PACKING
+#define INCLUDE_PBR
+#define INCLUDE_NOISE
+#define INCLUDE_IGN
+#define INCLUDE_LDEPTH
+#define INCLUDE_RAYTRACER
 #include forgetmenot:shaders/lib/includes.glsl 
-#include canvas:shaders/pipeline/shadow.glsl
 
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
@@ -9,25 +15,21 @@ uniform sampler2D u_entity_color;
 uniform sampler2D u_entity_depth;
 uniform sampler2D u_weather_color;
 uniform sampler2D u_weather_depth;
+uniform sampler2D u_clouds_color;
+uniform sampler2D u_clouds_depth;
 uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
+uniform sampler2D u_previous_color;
 uniform samplerCube u_skybox;
-
-uniform sampler2D u_normal;
-uniform sampler2D u_flat_normal;
-uniform sampler2D u_pbr_data;
-uniform sampler2D u_light_data;
-
-uniform sampler2D u_previous_frame;
-uniform sampler2D u_composited_mips;
-uniform sampler2D u_reflection_coord;
+uniform sampler2D u_data;
+uniform sampler2D u_depths;
 
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
-// vanilla fabulous blending
+// this is the exact same as vanilla fabulous blending
 
 #define NUM_LAYERS 6
 
@@ -59,10 +61,11 @@ void try_insert(vec4 color, float depth) {
 }
 
 vec3 blend( vec3 dst, vec4 src ) {
-    return mix(dst, src.rgb, src.a);
+    return ( dst * ( 1.0 - src.a ) ) + src.rgb;
 }
 
 void main() {
+    init();
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // sample things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,45 +73,22 @@ void main() {
     vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
     float translucent_depth = texture(u_translucent_depth, texcoord).r;
 
-    float particles_depth = texture(u_particles_depth, texcoord).r;
-
-    vec3 normal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-
-    vec3 pbrData = texture(u_pbr_data, texcoord).rgb;
-    vec3 f0 = pbrData.rrr;
-    float roughness = pbrData.b;
-
-
-    vec3 coords = vec3(texcoord, 0.0);
-    #ifndef REFRACTION
-        {
-            vec3 flatNormal = texture(u_flat_normal, texcoord).rgb * 2.0 - 1.0;
-            //flatNormal *= 0.8;
-            vec3 sceneSpacePos = setupSceneSpacePos(texcoord, particles_depth);
-            vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, translucent_depth);
-
-            vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
-            viewDir = refract(viewDir, normal - flatNormal, 1.0 / 1.33);
-
-            coords.xy = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePos + mix(4.0, 2.0, pbrData.g) * viewDir).xy, sign(particles_depth - translucent_depth));
-        }
-    #endif
-
-    translucent_depth = texture(u_translucent_depth, coords.xy).r;
-    particles_depth = texture(u_particles_depth, coords.xy).r;
-
-    vec4  particles_color = texture(u_particles_color, coords.xy);
-
-    vec4  main_color = texture(u_main_color, coords.xy);
-    main_color.a = 1.0;
-    float main_depth = texture(u_main_depth, coords.xy).r;
-
-    vec4  entity_color = texture(u_entity_color, texcoord);
+    vec4 main_color = texture(u_main_color, texcoord);
+    float main_depth = texture(u_main_depth, texcoord).r;
+    
+    vec4 entity_color = texture(u_entity_color, texcoord);
     float entity_depth = texture(u_entity_depth, texcoord).r;
 
-    vec4  weather_color = texture(u_weather_color, texcoord);
+    vec4 weather_color = texture(u_weather_color, texcoord);
     weather_color.rgb = pow(weather_color.rgb, vec3(2.2));
     float weather_depth = texture(u_weather_depth, texcoord).r;
+
+    vec4 clouds_color = texture(u_clouds_color, texcoord);
+    clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
+    float clouds_depth = texture(u_clouds_depth, texcoord).r;
+
+    vec4 particles_color = texture(u_particles_color, texcoord);
+    float particles_depth = texture(u_particles_depth, texcoord).r;
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // common things
@@ -117,213 +97,88 @@ void main() {
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
-    vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
-    vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
+    vec3 viewDir = getViewDir();
 
-    // Unused vars - uncomment when needed.
-    // vec3 maxViewSpacePos = setupViewSpacePos(texcoord, max_depth);
-    // vec3 minViewSpacePos = setupViewSpacePos(texcoord, min_depth);
-
-    vec3 viewDir = fNormalize(setupSceneSpacePos(texcoord, 1.0));
-
-    vec2 clipPos = texcoord * 2.0 - 1.0;
-    clipPos += TAA_OFFSETS[frx_renderFrames % 8u] / (frxu_size);
-    vec2 newTexcoordJittered = clipPos * 0.5 + 0.5;
-    vec3 jitteredViewPos = setupSceneSpacePos(newTexcoordJittered, 1.0);
-    vec3 jitteredViewDir = fNormalize(jitteredViewPos);
-
-    if(min_depth < 1.0) {
-        vec3 transNormal = texture(u_normal, texcoord).rgb * 2.0 - 1.0;
-        jitteredViewDir = refract(jitteredViewDir, transNormal, pbrData.g > 0.5 && frx_cameraInWater == 1 ? (1.33) : (1.0 / 1.33));
-    }
+    // see utility.glsl
+    // vec3(dayFactor, nightFactor, sunsetFactor)
+    vec3 tdata = getTimeOfDayFactors();
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    vec3 skyColor = textureLod(u_skybox, jitteredViewDir, 0).rgb;
-    main_color.rgb = mix(main_color.rgb, skyColor, floor(max_depth));
+    // cloud fade into distance
+    // I always hated how horrible the cloud fog looks in vanilla
+    vec3 cloudPos = setupSceneSpacePos(texcoord, clouds_depth);
+    clouds_color.a = mix(clouds_color.a, 0.0, frx_smootherstep(192.0, 320.0, length(cloudPos.xz)));
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending same as mojang (mostly)
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    
     color_layers[0] = main_color;
     depth_layers[0] = main_depth;
     active_layers = 1;
 
     try_insert(translucent_color, translucent_depth);
     try_insert(entity_color, entity_depth);
-    //try_insert(weather_color, weather_depth);
+    try_insert(weather_color, weather_depth);
     try_insert(particles_color, particles_depth);
-    //if(clouds_depth < max_depth) color_layers[0].rgb = mix(color_layers[0].rgb, clouds_color.rgb, clouds_color.a);
+    //try_insert(clouds_color, clouds_depth);
 
     vec3 composite = color_layers[0].rgb;
     for (int ii = 1; ii < active_layers; ++ii) {
         composite = blend(composite, color_layers[ii]);
     }
 
+    if(clouds_depth < min_depth) composite.rgb = mix(composite.rgb, clouds_color.rgb, clouds_color.a);
+
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    // vec2 jitterCoord = texcoord + TAA_OFFSETS[frx_renderFrames % 8u] / frxu_size;
-
-    // vec3 jitterPos = setupSceneSpacePos(jitterCoord, min_depth);
-    vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(minSceneSpacePos + positionDifference);
-
-    #if defined(BLOOMY_FOG) || defined(BLOOMY_WATER_FOG)
-        const int BLOOMY_FOG_LOD = 3;
-        vec3 bloomyFogColor = textureLod(u_composited_mips, lastScreenPos.xy, BLOOMY_FOG_LOD).rgb / mix(4.0, 3.0, clamp01(clamp01(0.5 - frx_smoothedEyeBrightness.y)));
-    #endif
-
-    if(pbrData.g > 0.5) {
-        float sunDotU = getSunVector().y;
-
-        float waterFogDistance = distance(minSceneSpacePos, maxSceneSpacePos); // warning: destroys underwater translucent visibility
-
-        //vec3 waterFogColor = vec3(0.0, 0.16, 0.09)  * max(0.25, sunDotU);
-        vec3 waterFogColor = translucent_color.rgb * translucent_color.a;
-        waterFogColor *= (clamp01(sunDotU) * 0.9  + 0.1) * (frx_smoothedEyeBrightness.y * 0.95 + 0.05);
-        
-        if(max_depth == 1.0) waterFogDistance *= 0.0;
-        float fogDensity = 1.0 - exp2(-waterFogDistance * 0.5);
-        float foggerDensity = 1.0 - exp2(-waterFogDistance * 1.5);
-
-        #ifdef BLOOMY_WATER_FOG
-            composite = mix(composite, bloomyFogColor, foggerDensity);
-        #endif
-
-        composite = mix(composite, waterFogColor, fogDensity);
-        //composite = mix(composite * mix(vec3(1.0), vec3(0.36, 1.0, 0.81), foggerDensity), waterFogColor, fogDensity);
-    }
-
-    float skyLight = texture(u_light_data, texcoord).y;
-    float rainReflectionFactor = getRainReflectionFactor(normal, skyLight);
-
-    vec3 reflectance, reflectColor;
     if(min_depth < 1.0) {
-        if(f0.r > 0.0 || rainReflectionFactor > 0.0) {
-            vec3 cosineDistribution = goldNoise3d();
-            vec3 worldMicrofacetNormal = fNormalize(normal + fNormalize(cosineDistribution) * roughness * roughness * (interleaved_gradient()));
+        uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
+        vec4 unpackedX, unpackedY, unpackedZ;
+        unpackedX = unpackUnormArb(samplePacked.x, uvec4( 9u,  9u,  9u,  5u));
+        unpackedY = unpackUnormArb(samplePacked.y, uvec4(10u, 10u, 10u,  2u));
+        unpackedZ = unpackUnormArb(samplePacked.z, uvec4(14u, 14u,  2u,  2u));
 
-            vec3 rayDir = normalize(reflect(viewDir, normal));
+        vec3 normal = normalize(unpackedX.xyz * 2.0 - 1.0);
 
-            float reflectSkyFactor = clamp01(clamp01(frx_worldIsEnd + frx_smoothedEyeBrightness.y) - frx_cameraInWater);
-            if(reflectSkyFactor > 0.01) {
-                reflectColor = textureLod(u_skybox, rayDir, 10.0 * sqrt(roughness)).rgb;
-            }
-            reflectColor = mix((getFogScattering(viewDir, 750000.0 - 500000.0 * frx_skyLightVector.y)) * 0.25, reflectColor, reflectSkyFactor);
+        float blockLight = unpackedY.x * unpackedY.x;
+        float skyLight = unpackedY.y;
+        float vanillaAo = unpackedY.z * unpackedY.z;
 
-            reflectColor = mix(reflectColor, UNDERWATER_FOG_COLOR * max(0.1, frx_skyLightVector.y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
-            
-            reflectance = getReflectance(f0, clamp01(dot(normal, -viewDir)), roughness * roughness);
-            if(f0.r < 0.01) reflectance *= rainReflectionFactor;
+        float f0 = unpackedZ.x * unpackedZ.x;
+        float roughness = unpackedZ.y * unpackedZ.y;
+        float sssAmount = unpackedX.w;
 
-            #if REFLECTIONS == REFLECTIONS_FANCY
-                vec2 reflectionCoord = texelFetch(u_reflection_coord, ivec2(gl_FragCoord.xy * SSR_RENDER_SCALE), 0).rg;
+        float disableDiffuse = step(0.5, unpackedY.w);
+        float matCutout = step(0.5, unpackedZ.z);
 
-                if(dot(reflectionCoord, reflectionCoord) > 0.00001) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord * frxu_size), 0).rgb;
-            #elif REFLECTIONS == REFLECTIONS_FAST
-                vec3 reflectionCoord = (reflect(setupCleanSceneSpacePos(texcoord, translucent_depth), worldMicrofacetNormal));
 
-                // Have to reproject...
-                //vec3 rView = setupSceneSpacePos(reflectionCoord.xy, reflectionCoord.z);
-                reflectionCoord = cleanLastFrameSceneSpaceToScreenSpace(reflectionCoord + frx_cameraPos - frx_lastCameraPos);
+        vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
-                if(clamp01(reflectionCoord) == reflectionCoord) reflectColor = texelFetch(u_previous_frame, ivec2(reflectionCoord.xy * frxu_size), 0).rgb;
-            #endif
-            if(f0.r > 0.999) reflectColor *= (composite);
+
+        vec3 reflectColor = vec3(0.0);
+        vec3 reflectDir = reflect(viewDir, normal);
+        vec3 hitPos;
+        bool hit = false;
+
+        if(roughness < 0.5) {
+            hit = raytrace(viewSpacePos, frx_normalModelMatrix * reflectDir, 40, u_translucent_depth, hitPos);
+        }
+        
+        if(hit) {
+            reflectColor = texture(u_previous_color, hitPos.xy).rgb;
+        } else {
+            reflectColor = textureLod(u_skybox, reflectDir, 9.0 * roughness).rgb;
         }
 
-        if((acos(dot(normal, -viewDir)) * (180 / PI) > 48.60172336679899) && frx_cameraInWater == 1 && pbrData.g > 0.5) {
-            reflectance = vec3(1.0);
 
-            //reflectColor = vec3(0.0, 0.5, 0.4) * max(0.1, frx_skyLightVector.y);
-            composite = vec3(1.0, 0.0, 0.0);
-        }
-
-        composite = mix(composite, reflectColor, reflectance);
+        composite = mix(composite, reflectColor, getReflectance(vec3(f0), dot(-normal, viewDir), roughness));
         //composite = normal;
-    }
-
-    float blockDist = min(frx_viewDistance, length(minSceneSpacePos));
-    float sunDotU = getSunVector().y;
-
-    float bloomyFogTransmittance = 1.0;
-    #ifdef ATMOSPHERIC_FOG
-        float fogTransmittance = 1.0;
-        if(frx_worldIsOverworld == 1) {
-            float fogDist = blockDist;
-            if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
-            fogDist /= 256.0;
-
-            float fogAmount = 0.1;
-
-            fogAmount += getSeasonFogFactor();
-            fogAmount += 1.0 * fmn_rainFactor * frx_smoothedEyeBrightness.y;
-
-            fogAmount = mix(fogAmount, 3.5, clamp01(0.5 - frx_smoothedEyeBrightness.y));
-            fogAmount = mix(fogAmount, 6.5, smoothstep(0.0, -10.0, frx_cameraPos.y));
-
-            fogTransmittance = exp(-fogDist * (3.0 - 2.0 * frx_skyLightVector.y) * (fogAmount + 0.3 * (1.0 - frx_smoothedEyeBrightness.y - frx_worldIsEnd) + 30.0 * frx_cameraInFluid));
-            //fogTransmittance = mix(0.0, fogTransmittance, step(0.5, texcoord.x));
-
-            bloomyFogTransmittance = fogTransmittance;
-            fogTransmittance = mix(fogTransmittance, 0.5 + 0.5 * fogTransmittance, floor(min_depth));
-            if(frx_cameraInFluid == 1 && min_depth == 1.0) fogTransmittance = 0.0;
-
-            vec3 fogScattering = getSkyColor(viewDir, 0.0);
-
-            fogScattering = mix(fogScattering, mix(vec3(0.1, 0.2, 0.4) * 0.25, vec3(0.1, 0.05, 0.025) * 0.5, smoothstep(0.0, -10.0, frx_cameraPos.y)), 1.0 - frx_smoothedEyeBrightness.y);
-            fogScattering = mix(fogScattering, UNDERWATER_FOG_COLOR * max(0.1, getSunVector().y) * max(0.1, frx_smoothedEyeBrightness.y), frx_cameraInWater);
-            
-            fogScattering *= (1.0 - fogTransmittance);
-
-            composite = composite * fogTransmittance + fogScattering;
-        } else if(frx_worldIsNether == 1) {
-            float fogDist = blockDist;
-            if(frx_cameraInFluid == 0) fogDist = max(0.0, fogDist - 10.0);
-            fogDist /= 64.0;
-
-            fogTransmittance = exp(-fogDist);
-            bloomyFogTransmittance = fogTransmittance;
-            vec3 fogScattering = pow(frx_fogColor.rgb * 2.0, vec3(2.2)) * (1.0 - fogTransmittance);
-
-            composite = composite * fogTransmittance + fogScattering;
-        }
-    #endif
-
-    #ifdef BLOOMY_FOG
-        bloomyFogTransmittance = mix(bloomyFogTransmittance, 0.0, clamp01(floor(min_depth)));
-
-        if(frx_worldIsOverworld == 1) {
-            //bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, 0.5 + 0.5 * (1.0 - fmn_rainFactor) * frx_smoothedEyeBrightness.y * smoothstep(0.0, 0.3, viewDir.y));
-            bloomyFogTransmittance = mix(bloomyFogTransmittance, 1.0, clamp01(floor(min_depth) * exp(-viewDir.y * 15.0) - 0.2 * sqrt(getMoonVector().y) + 0.9 * sqrt(getSunVector().y)));
-        } else if(frx_worldIsEnd == 1) {
-            bloomyFogTransmittance = 1.0;
-        }
-
-        //bloomyFogTransmittance = smoothstep(0.0, 1.0, bloomyFogTransmittance);
-
-        composite = mix(bloomyFogColor, composite, clamp01(bloomyFogTransmittance * 0.7 + 0.3 + 0.1 * floor(min_depth)));
-        skyColor = mix(bloomyFogColor, skyColor, clamp01(bloomyFogTransmittance * 0.7 + 0.3 + 0.1 * floor(min_depth)));
-    #endif
-
-    #ifdef BORDER_FOG
-        if(min_depth < 1.0 && frx_cameraInFluid == 0) composite = mix(composite, skyColor, smoothstep(frx_viewDistance - 48.0, frx_viewDistance - 24.0, blockDist));
-    #endif
-
-    #ifdef frx_darknessEffectFactor
-        float sinTime = sin(fmn_time);
-        float timeFactor = sinTime * sinTime * sinTime * sinTime * sinTime * sinTime;
-        float darknessFactor = max(0.0, (frx_darknessEffectFactor) * 0.75 + 0.25);
-        composite = mix(composite, vec3(0.0), (smoothstep(0.0, 20.0 * darknessFactor, blockDist)) * frx_effectDarkness * clamp01(-(frx_luminance(frx_vanillaClearColor) - 1.0)));
-    #endif
-
-    if(weather_depth < min_depth) {
-        composite = mix(composite, weather_color.rgb, weather_color.a * 0.5);
     }
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));

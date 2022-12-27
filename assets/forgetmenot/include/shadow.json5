@@ -1,42 +1,42 @@
 {
-    // https://github.com/vram-guild/canvas/blob/1.17/src/main/resources/assets/canvas/pipeline/skyshadow.json5
-    images: [
-        {
-            name: "shadow_map",
-            size: 2048,
-            internalFormat: "DEPTH_COMPONENT32",
-            pixelFormat: "DEPTH_COMPONENT",
-            pixelDataType: "FLOAT",
-            target: "TEXTURE_2D_ARRAY",
-            depth: 4,
-            texParams: [
-                {name: "TEXTURE_MIN_FILTER", val: "LINEAR"},
-                {name: "TEXTURE_MAG_FILTER", val: "LINEAR"},
-                {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"},
-                {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"},
-                {name: "TEXTURE_COMPARE_MODE", val: "COMPARE_REF_TO_TEXTURE"},
-                {name: "TEXTURE_COMPARE_FUNC", val: "LEQUAL"}
-            ]
-        }
-    ],
-    framebuffers: [
-        {
-            name: "shadow",
-            depthAttachment: {
-                image: "shadow_map",
-                clearDepth: 1.0
-            },
-        }
-    ],
-    skyShadows: {
-        framebuffer: "shadow",
-        allowEntities: true,
-        allowParticles: true,
-        supportForwardRender: true,
-		vertexSource: "forgetmenot:shaders/gbuffer/shadow.vert",
-		fragmentSource: "forgetmenot:shaders/gbuffer/shadow.frag",
-        offsetSlopeFactor: 1.1,
-        offsetBiasUnits: 4.0,
-        cascadeRadius: [48, 16, 8]
-    }
+     // https://github.com/vram-guild/canvas/blob/1.17/src/main/resources/assets/canvas/pipeline/skyshadow.json5
+     images: [
+          {
+               name: "shadow_map",
+               size: 1024,
+               internalFormat: "DEPTH_COMPONENT32",
+               pixelFormat: "DEPTH_COMPONENT",
+               pixelDataType: "FLOAT",
+               target: "TEXTURE_2D_ARRAY",
+               depth: 4,
+               texParams: [
+                    {name: "TEXTURE_MIN_FILTER", val: "LINEAR"},
+                    {name: "TEXTURE_MAG_FILTER", val: "LINEAR"},
+                    {name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"},
+                    {name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"},
+                    {name: "TEXTURE_COMPARE_MODE", val: "COMPARE_REF_TO_TEXTURE"},
+                    {name: "TEXTURE_COMPARE_FUNC", val: "LEQUAL"}
+               ]
+          }
+     ],
+     framebuffers: [
+          {
+               name: "shadow",
+               depthAttachment: {
+                    image: "shadow_map",
+                    clearDepth: 1.0
+               },
+          }
+     ],
+     skyShadows: {
+          framebuffer: "shadow",
+          allowEntities: true,
+          allowParticles: true,
+          supportForwardRender: true,
+          vertexSource: "forgetmenot:shaders/gbuffer/shadow.vert",
+          fragmentSource: "forgetmenot:shaders/gbuffer/shadow.frag",
+          offsetSlopeFactor: 1.1,
+          offsetBiasUnits: 4.0,
+          cascadeRadius: [48, 16, 8]
+     }
 }

@@ -1,53 +1,68 @@
 // --------------------------------------------------------------------------------------------------------
-// Universal header file - includes all frex api vars and utility functions
+
+/*
+ * Copyright (C) 2022 Ambrosia
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+// --------------------------------------------------------------------------------------------------------
 // #include forgetmenot:shaders/lib/includes.glsl 
 // --------------------------------------------------------------------------------------------------------
+
+// Forget-me-not uses an "optional include" system to minimize shader compile time. Several macros are 
+// available to be defined to include certain parts of the code.
+#define INCLUDE_GENERAL_UTIL
 
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
-// FREX API includes
-#include forgetmenot:shaders/lib/api_includes.glsl 
-
-// From lumi lights by spiralhalo
-float linearizeDepth(float depth) {
-	float nearZ = 0.0001 * (32. * 16.) / frx_viewDistance;
-	const float farZ = 1.0;
-	return 2.0 * (nearZ * farZ) / (farZ + nearZ - (depth * 2.0 - 1.0) * (farZ - nearZ));
-}
-
-// Global defines
-#define fmn_time (mod(frx_renderSeconds, 100000.0))
-#define fmn_rainFactor ((0.5 * frx_smoothedRainGradient + 0.5 * frx_smoothedThunderGradient) * frx_worldIsOverworld)
-
 // Offsets from Chocapic13 shaders
 const vec2 TAA_OFFSETS[8] = vec2[8](
-    vec2( 0.125,-0.375),
-    vec2(-0.125, 0.375),
-    vec2( 0.625, 0.125),
-    vec2( 0.375,-0.625),
-    vec2(-0.625, 0.625),
-    vec2(-0.875,-0.125),
-    vec2( 0.375,-0.875),
-    vec2( 0.875, 0.875)
+     vec2( 0.125,-0.375),
+     vec2(-0.125, 0.375),
+     vec2( 0.625, 0.125),
+     vec2( 0.375,-0.625),
+     vec2(-0.625, 0.625),
+     vec2(-0.875,-0.125),
+     vec2( 0.375,-0.875),
+     vec2( 0.875, 0.875)
 );
-const vec3 UNDERWATER_FOG_COLOR = vec3(0.0, 0.16, 0.09);
 
 // Config includes
-#include forgetmenot:atmospherics
-#include forgetmenot:weather
-#include forgetmenot:shadows
-#include forgetmenot:lighting
-#include forgetmenot:post_processing
-#include forgetmenot:performance
-#include forgetmenot:debug
+#include forgetmenot:general
+#include forgetmenot:seasons
+#include forgetmenot:misc
 
-// File includes
-#include forgetmenot:shaders/lib/functions/external.glsl
-#include forgetmenot:shaders/lib/functions/noise.glsl
-#include forgetmenot:shaders/lib/functions/utility.glsl
-#include forgetmenot:shaders/lib/functions/pbr_utils.glsl
-#include forgetmenot:shaders/lib/functions/atmosphere.glsl
+// General GLSL code
+#include forgetmenot:shaders/lib/util/utility.glsl
 
-// FMN API
-#include forgetmenot:shaders/lib/api/fmn_pbr.glsl
+// Canvas specific code
+#include forgetmenot:shaders/lib/api_includes.glsl
+#include forgetmenot:shaders/lib/util/space.glsl
+
+// Forget-me-not specific code
+#ifdef INCLUDE_GBUFFER
+#endif
+#include forgetmenot:shaders/lib/util/external/external.glsl
+#include forgetmenot:shaders/lib/util/noise.glsl
+#include forgetmenot:shaders/lib/util/general.glsl
+#include forgetmenot:shaders/lib/util/seasons.glsl
+#include forgetmenot:shaders/lib/util/cubemap.glsl
+
+#include forgetmenot:shaders/lib/util/external/sky.glsl
+
+#include forgetmenot:shaders/lib/util/pipeline.glsl

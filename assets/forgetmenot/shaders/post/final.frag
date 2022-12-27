@@ -1,48 +1,36 @@
+#define INCLUDE_NOISE
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_color;
-uniform sampler2D u_exposure;
 
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    //#define texcoord (floor(texcoord * (0.05 * frxu_size)) / (0.05 * frxu_size))
+    vec3 color = texture(u_color, texcoord).rgb;
 
-    vec3 color;
-    color = texture(u_color, texcoord).rgb;
+    #ifdef CHROMATIC_ABBERATION
+        color.r = texture(u_color, texcoord + vec2(1.0 / frxu_size.x, 0.0)).r;
+        color.b = texture(u_color, texcoord - vec2(1.0 / frxu_size.x, 0.0)).b;
+    #endif
+
+    #ifdef LSD_MODE
+        vec2 noise = vec2(snoise(texcoord * 10.0 + frx_renderSeconds * 0.1), snoise(texcoord * 10.0 + 1000.0 - frx_renderSeconds * 0.1)) * 0.005;
+
+        #define texcoord (texcoord+noise)
+        color.r = frx_sample13(u_color, texcoord + 0.01 * vec2(sin(frx_renderSeconds), cos(frx_renderSeconds)), 1.0 / frxu_size).r;
+        color.g = frx_sample13(u_color, texcoord + 0.01 * vec2(2.0 * -sin(frx_renderSeconds + 50.0), cos(frx_renderSeconds + 50.0)), 1.0 / frxu_size).g;
+        color.b = frx_sample13(u_color, texcoord + 0.01 * vec2(sin(frx_renderSeconds - 50.0), 2.0 * -cos(frx_renderSeconds - 50.0)), 1.0 / frxu_size).b;
+    #endif
 
     vec3 finalColor = color.rgb;
-
-    // finalColor *= vec3(0.95, 1.0, 0.7);
-    // finalColor = mix(finalColor, finalColor / length(finalColor) * pow(length(finalColor), 1.1), 1.0);
-    // saturation(finalColor, 0.8);
-
-
     float l = frx_luminance(finalColor);
-    vibrance(finalColor, sqrt(smoothstep(0.0, 0.25, l)));
-
-    //vibrance(finalColor, mix(1.0, tanh(l), fmn_rainFactor));
 
     finalColor = frx_toneMap(finalColor);
 
-    finalColor = max(finalColor, vec3(0.0));
+    // finally, back into srgb
     finalColor = pow(finalColor, vec3(1.0 / 2.2));
 
-
-    //finalColor = mix(finalColor * smoothstep(0.3, 0.9, 1.0 - pow(distance(texcoord, vec2(0.5)), 1.5)), finalColor, smoothstep(0.3, 0.7, l));
-
-    #ifdef FILM_GRAIN
-        l = frx_luminance(finalColor);
-        finalColor *= 1.0 + (goldNoise3d().r * (0.5 - 0.4 * smoothstep(0.25, 0.75, l)));
-    #endif
-
-    #ifdef VISIBILITY_GRAIN
-        finalColor += goldNoise3d().r * 0.3 * (1.0 - frx_luminance(finalColor)) * (1.0 - max(frx_smoothedEyeBrightness.x, frx_smoothedEyeBrightness.y));
-    #endif
-
-    vibrance(finalColor, VIBRANCE);
-
-    fragColor = vec4(clamp01(finalColor), 1.0);
+    fragColor = vec4(clamp01(finalColor + randF() * 0.01 - 0.005), 1.0);
 }

@@ -108,7 +108,7 @@ void frx_materialFragment() {
         pbr_builtinWater = true;
     #endif
 
-    #ifdef INTERNAL_MATERIALS
+    #ifndef INTERNAL_MATERIALS
         frx_fragColor = vec4(vec3(0.0, 0.64, 0.36), 0.5);
     #else 
 
