@@ -27,6 +27,20 @@ bool isModdedDimension() {
 }
 
 #ifdef INCLUDE_RAYTRACER
+    vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
+        vec4 p = vec4(pos_cs, 1.);
+        vec4 n = vec4(dir_cs, 0.);
+        n*=.1;
+
+        vec4 X = (projMat * (p + n));
+        vec4 Y = (projMat * p);
+
+        return normalize(
+            vec3(frxu_size, 1.0) *
+            ((X.xyz / X.w) - (Y.xyz / Y.w))
+        );
+    }
+
     const uint power_of_two = 2u;
     const uint last_level = 6u;
 
@@ -100,23 +114,8 @@ bool isModdedDimension() {
             z <= 0.0;
     }
 
-    vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
-        vec4 p = vec4(pos_cs, 1.);
-        vec4 n = vec4(dir_cs, 0.);
-        n*=.1;
-
-        vec4 X = (projMat * (p + n));
-        vec4 Y = (projMat * p);
-
-        return normalize(
-            vec3(frxu_size, 1.0) *
-            ((X.xyz / X.w) - (Y.xyz / Y.w))
-        );
-    }
-
-
      bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths, out vec3 hitPos) {
-          pos_win.z -= max(0.0, dir_ws.z * 4.0);
+          pos_win.z -= max(0.0, dir_ws.z * 2.0);
           pos_win.z -= 1.0 / 1000000.0;
 
           float dir_ws_xy_length = length(dir_ws.xy);
@@ -147,6 +146,11 @@ bool isModdedDimension() {
                z += dist_xy * (dir_ws.z / dir_ws_xy_length);
 
                if(z >= lower_depth) {
+                    if(level == 0u) {
+                         hitPos.xy = (vec2(prev_texel) + vec2(0.5)) / frxu_size;
+                         hitPos.z = prev_z >= lower_depth ? prev_z : lower_depth;
+                         return hitPos.z < 1.0;
+                    }
                     float mul = (lower_depth - prev_z) / (z - prev_z);
                     dist_xy *= mul;
 
@@ -154,15 +158,8 @@ bool isModdedDimension() {
 
                     inner = fract(diff);
                     texel = prev_texel + uvec2(ivec2(floor(diff)));
-                    float corrected_z = lower_depth;
 
-                    if(level == 0u) {
-                         hitPos.xy = vec2(prev_texel) / frxu_size;
-                         hitPos.z = prev_z >= lower_depth ? prev_z : corrected_z;
-                         return hitPos.z < 1.0;
-                    }
-
-                    z = corrected_z;
+                    z = lower_depth;
                }
           }
 
