@@ -4,15 +4,15 @@
             name: "depth_mips",
             lod: 7,
             internalFormat: "R32F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
             target: "TEXTURE_2D",
             texParams: [
                 {
                     name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST"
                 }, 
                 {
-                    name: "TEXTURE_MAG_FILTER", val: "NEAREST_MIPMAP_NEAREST"
+                    name: "TEXTURE_MAG_FILTER", val: "NEAREST"
                 },
                 {
                     name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"

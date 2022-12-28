@@ -23,6 +23,31 @@
                pcg(rngState); 
                return float(rngState) / float(0xffffffffu); 
           }
+
+          // From Jessie
+          vec3 generateUnitVector(vec2 xy) {
+               xy.x *= TAU; xy.y = 2.0 * xy.y - 1.0;
+               return vec3(sincos(xy.x) * sqrt(1.0 - xy.y * xy.y), xy.y);
+          }
+
+          vec3 generateCosineVector(vec3 vector, vec2 xy) {
+               return normalize(vector + generateUnitVector(xy));
+          }
+          // -----------------------------------------------------------------------------------------------
+
+          vec3 generateCosineVector(vec3 vector) {
+               return normalize(
+                    vector + 
+                    generateUnitVector(
+                         vec2(
+                              randF(), randF()
+                         )
+                    )
+               );
+          }
+          vec3 generateCosineVector(vec3 vector, float roughness) {
+               return mix(vector, generateCosineVector(vector), roughness);
+          }
      #endif
 
      // Smooth noise function

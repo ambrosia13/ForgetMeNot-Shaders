@@ -17,7 +17,7 @@ float waterHeightNoise(in vec2 uv) {
     //noise = max(noise, fmn_fbm2D(coord - 100.0, 3, -1.0));
     noise += (fmn_fbm2D(coord * vec2(8.0, 1.5), 2, 2.0) * 2.0 - 1.0) * 0.05;
 
-    return pow(noise * 0.5, 1.5) * (0.5) * clamp(dot(-frx_vertexNormal.xyz, normalize(frx_vertex.xyz)), 0.0, 1.0);
+    return pow(noise * 0.5, 1.5) * mix(0.0, 0.5, dot(frx_vertexNormal.xyz, fmn_fNormalize(frx_vertex.xyz)));
 
     // float amp = 0.5;
     // float offset = 1.0;
@@ -100,6 +100,7 @@ void frx_materialFragment() {
     #endif
 
     fmn_isWater = 1;
+    fmn_sssAmount = 1.0;
 
     #if LUMI_PBR_API >= 8
         //pbr_f0 = 0.05;
@@ -108,8 +109,8 @@ void frx_materialFragment() {
         pbr_builtinWater = true;
     #endif
 
-    #ifndef INTERNAL_MATERIALS
-        frx_fragColor = vec4(vec3(0.0, 0.64, 0.36), 0.5);
+    #ifdef INTERNAL_MATERIALS
+        frx_fragColor = vec4(vec3(0.0, 0.25, 0.25), 0.5);
     #else 
 
     #endif

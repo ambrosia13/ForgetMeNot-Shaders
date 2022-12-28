@@ -16,7 +16,7 @@ void main() {
     #endif
 
     #ifdef LSD_MODE
-        vec2 noise = vec2(snoise(texcoord * 10.0 + frx_renderSeconds * 0.1), snoise(texcoord * 10.0 + 1000.0 - frx_renderSeconds * 0.1)) * 0.005;
+        vec2 noise = vec2(smoothHash(texcoord * 30.0 + frx_renderSeconds * 0.1), smoothHash(texcoord * 30.0 + 1000.0 - frx_renderSeconds * 0.1)) * 0.005;
 
         #define texcoord (texcoord+noise)
         color.r = frx_sample13(u_color, texcoord + 0.01 * vec2(sin(frx_renderSeconds), cos(frx_renderSeconds)), 1.0 / frxu_size).r;
@@ -30,7 +30,7 @@ void main() {
     finalColor = frx_toneMap(finalColor);
 
     // finally, back into srgb
-    finalColor = pow(finalColor, vec3(1.0 / 2.2));
+    finalColor = pow(finalColor, vec3(1.0 / 2.4));
 
     fragColor = vec4(clamp01(finalColor + randF() * 0.01 - 0.005), 1.0);
 }

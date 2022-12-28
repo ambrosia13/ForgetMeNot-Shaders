@@ -90,12 +90,34 @@ void main() {
     vec4 particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
+    uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
+    vec4 unpackedX, unpackedY, unpackedZ;
+    unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
+    unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);
+    unpackedZ = unpackUnormArb(samplePacked.z, BITS_Z);
+
+    vec3 normal = normalize(clamp01(unpackedX.xyz) * 2.0 - 1.0);//normalize(cross(dFdx(sceneSpacePos), dFdy(sceneSpacePos)));
+
+    float blockLight = unpackedY.x * unpackedY.x;
+    float skyLight = unpackedY.y;
+    float vanillaAo = unpackedY.z * unpackedY.z;
+
+    float f0 = unpackedZ.x * unpackedZ.x;
+    float roughness = unpackedZ.y * unpackedZ.y;
+    float sssAmount = unpackedZ.z;
+
+    float disableDiffuse = step(0.5, unpackedY.w);
+    float isWater = step(0.5, unpackedX.w);
+
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // common things
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     float max_depth = max(max(translucent_depth, particles_depth), main_depth);
     float min_depth = min(min(translucent_depth, particles_depth), main_depth);
+
+    vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
+    vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
 
     vec3 viewDir = getViewDir();
 
@@ -112,6 +134,9 @@ void main() {
     vec3 cloudPos = setupSceneSpacePos(texcoord, clouds_depth);
     clouds_color.a = mix(clouds_color.a, 0.0, frx_smootherstep(192.0, 320.0, length(cloudPos.xz)));
 
+    // Disable fabulous blending for water
+    translucent_color.a = mix(translucent_color.a, 0.0, step(0.5, isWater));
+
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // fabulous blending same as mojang (mostly)
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -120,6 +145,7 @@ void main() {
     depth_layers[0] = main_depth;
     active_layers = 1;
 
+    // translucent_color.a = mix(translucent_color.a, 1.0, step(0.001, translucent_color.a));
     try_insert(translucent_color, translucent_depth);
     try_insert(entity_color, entity_depth);
     try_insert(weather_color, weather_depth);
@@ -137,48 +163,54 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    bool doUnderwaterFog = frx_cameraInWater == 0 ? isWater > 0.5 : true;
+    float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
+
+    if(doUnderwaterFog) {
+        const float WATER_DIRT_AMOUNT = 0.5;
+
+        vec3 waterFogColor = mix(translucent_color.rgb, vec3(0.0, 0.25, 0.25), frx_cameraInWater);
+
+        composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
+        composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
+    }
+
     if(min_depth < 1.0) {
-        uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
-        vec4 unpackedX, unpackedY, unpackedZ;
-        unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
-        unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);
-        unpackedZ = unpackUnormArb(samplePacked.z, BITS_Z);
-
-        vec3 normal = normalize(unpackedX.xyz * 2.0 - 1.0);
-
-        float blockLight = unpackedY.x * unpackedY.x;
-        float skyLight = unpackedY.y;
-        float vanillaAo = unpackedY.z * unpackedY.z;
-
-        float f0 = unpackedZ.x * unpackedZ.x;
-        float roughness = unpackedZ.y * unpackedZ.y;
-        float sssAmount = (unpackedX.w - 0.02) * (1.02 / 1.0);
-
-        float disableDiffuse = step(0.5, unpackedY.w);
-        float matCutout = step(0.5, unpackedZ.z);
-
-
         vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
-
         vec3 reflectColor = vec3(0.0);
-        vec3 reflectDir = reflect(viewDir, normal);
+        vec3 cleanReflectDir = reflect(viewDir, normal);
+        vec3 reflectDir = generateCosineVector(cleanReflectDir, roughness);
         vec3 hitPos;
         bool hit = false;
 
         if(roughness < 0.5) {
-            hit = raytrace(viewSpacePos, frx_normalModelMatrix * reflectDir, 40, u_translucent_depth, hitPos);
+            vec3 pos_ws = vec3(texcoord.xy * (frxu_size.xy), min_depth);
+            vec3 dir_ws = cam_dir_to_win(viewSpacePos, frx_normalModelMatrix * reflectDir, frx_projectionMatrix);
+            hit = raytrace(
+                pos_ws,
+                dir_ws,
+                40,
+                u_depths,
+                hitPos
+            );
+        }
+
+        {
+            // Reflection reprojection
+            vec3 hitPosScene = setupSceneSpacePos(hitPos);
+            hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene);
         }
         
         if(hit) {
-            reflectColor = texture(u_previous_color, hitPos.xy).rgb;
+            reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
         } else {
-            reflectColor = textureLod(u_skybox, reflectDir, 9.0 * roughness).rgb;
+            reflectColor = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness)).rgb;
         }
 
-
-        composite = mix(composite, reflectColor, getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness));
-        //composite = normal;
+        vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
+        if(f0 > 0.999) composite *= reflectColor;
+        else composite = mix(composite, reflectColor, reflectance);
     }
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));

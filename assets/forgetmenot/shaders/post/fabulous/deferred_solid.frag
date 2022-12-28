@@ -55,10 +55,15 @@ void main() {
 
      float f0 = unpackedZ.x * unpackedZ.x;
      float roughness = unpackedZ.y * unpackedZ.y;
-     float sssAmount = (unpackedX.w - 0.02) * (1.02 / 1.0);
+     float sssAmount = unpackedZ.z;
 
      float disableDiffuse = step(0.5, unpackedY.w);
-     float matCutout = step(0.5, unpackedZ.z);
+     float isWater = step(0.5, unpackedX.w);
+
+     if(f0 > 0.999) {
+          fragColor = vec4(color, 1.0);
+          return;
+     }
 
      float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);
      

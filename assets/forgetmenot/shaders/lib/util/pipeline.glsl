@@ -4,7 +4,7 @@
 
 const uvec4 BITS_X = uvec4(9u, 9u, 9u, 5u);
 const uvec4 BITS_Y = uvec4(10u, 10u, 10u, 2u);
-const uvec4 BITS_Z = uvec4(14u, 14u, 2u, 2u);
+const uvec4 BITS_Z = uvec4(14u, 14u, 4u, 0u);
 
 #ifdef FRAGMENT_SHADER
      bool shouldReprojectFrame() {
@@ -27,76 +27,154 @@ bool isModdedDimension() {
 }
 
 #ifdef INCLUDE_RAYTRACER
+
+const uint levels = 8u;
+const uint last_level = levels - 1u;
+
+uint cell_size(uint level) { return 1u << level; }
+float cell_size_f(uint level) { return float(cell_size(level)); }
+uint cell_mask(uint level) { return cell_size(level) - 1u; }
+
+float position_in_cell(uint texel, float inner, uint level) {
+	return float(texel & cell_mask(level)) + inner;
+}
+
+float dist_negative(uint texel, float inner, uint level) {
+	return position_in_cell(texel, inner, level);
+}
+
+float dist_positive(uint texel, float inner, uint level) {
+	return cell_size_f(level) - dist_negative(texel, inner, level);
+}
+
+float dist_to_axis(uint texel0, float inner0, uint level, float dir0) {
+	return dir0 > 0 ?
+		dist_positive(texel0, inner0, level) :
+		dist_negative(texel0, inner0, level);
+}
+
+float next_cell_common(inout uvec2 texel, inout vec2 inner, vec2 dir, uint level) {
+	vec2 dists_to_axis = vec2(
+		dist_to_axis(texel.x, inner.x, level, dir.x),
+		dist_to_axis(texel.y, inner.y, level, dir.y)
+	);
+	vec2 diagonal_dists = dists_to_axis / abs(dir);
+
+	vec2 dir_signs = sign(dir);
+
+	if(diagonal_dists.x < diagonal_dists.y) {
+		texel.x -= texel.x & cell_mask(level);
+
+		if(dir_signs.x > 0.0) {
+			texel.x += cell_size(level);
+			inner.x = 0.0;
+		} else {
+			texel.x -= 1u;
+			inner.x = 1.0;
+		}
+
+		float y = inner.y + dir.y * diagonal_dists.x;
+		inner.y = fract(y);
+		texel.y += uint(int(floor(y)));
+		return diagonal_dists.x;
+	} else {
+		texel.y -= texel.y & cell_mask(level);
+
+		if(dir_signs.y > 0.0) {
+			texel.y += cell_size(level);
+			inner.y = 0.0;
+		} else {
+			texel.y -= 1u;
+			inner.y = 1.0;
+		}
+
+		float x = inner.x + dir.x * diagonal_dists.y;
+		inner.x = fract(x);
+		texel.x += uint(int(floor(x)));
+		return diagonal_dists.y;
+	}
+}
+
+bool is_out_of_fb(uvec2 texel, float z) {
+	return
+		any(greaterThanEqual(texel, uvec2(frxu_size))) ||
+		z <= 0.0;
+}
+
+vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
+	vec4 p = vec4(pos_cs, 1.);
+	vec4 n = vec4(dir_cs, 0.);
+	n*=.1;
+
+	vec4 X = (mat4(projMat) * (p + n));
+	vec4 Y = (mat4(projMat) * p);
+
+	vec3 r = normalize(
+		vec3(
+			frxu_size,
+			1.0//gl_DepthRange.diff
+		) * (
+			(X.xyz / X.w)
+			-
+			(Y.xyz / Y.w)
+		)
+	);
+
+	return vec3(r);
+}
+
      // DISCLAIMER: this raytracer only half works.
      // rayPos and rayDir should be in view space.
-     bool raytrace(in vec3 rayPos, in vec3 rayDir, in int steps, in sampler2D depths, out vec3 hitPos) {
-          vec3 rayScreenPos = viewSpaceToScreenSpace(rayPos);
-          vec3 rayScreenDir = fNormalize(viewSpaceToScreenSpace(rayPos + rayDir) - rayScreenPos);
+     bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths, out vec3 hitPos) {
+          pos_win.z -= max(0.0, dir_ws.z * 8.0);
+          //pos_win.z -= 1.0 / 1000000.0;
 
-          // Naive raytracer
-          /*
-          float stepSize = 1.0 / steps;
-          const int sampleLod = 0;
+          float dir_ws_xy_length = length(dir_ws.xy);
+          vec2 dir_xy = dir_ws.xy / dir_ws_xy_length;
 
-          for(int i = 0; i < steps; i++) {
-               rayScreenPos += rayScreenDir * stepSize;
+          uvec2 texel = uvec2(pos_win.xy);
+          vec2 inner = vec2(fract(pos_win.xy));
+          float z = pos_win.z;
 
-               if(clamp01(rayScreenPos.xy) != rayScreenPos.xy) {
+          while(true) {
+               if(steps == 0 || is_out_of_fb(texel, z)) {
                     break;
-               } else {
-                    float depthQuery = texelFetch(depths, ivec2(rayScreenPos.xy * frxu_size / exp2(sampleLod)), sampleLod).r;
+               }
+               --steps;
 
-                    if(rayScreenPos.z > depthQuery) {
-                         hitPos = rayScreenPos;
+               uint level = last_level;
+               float lower_depth = texelFetch(depths, ivec2(texel >> last_level), int(last_level)).r;
+
+               while(z >= lower_depth && level > 0u) {
+                    --level;
+                    lower_depth = texelFetch(depths, ivec2(texel >> level), int(level)).r;
+               }
+
+               uvec2 prev_texel = texel;
+               vec2 prev_inner = inner;
+               float prev_z = z;
+               float dist_xy = next_cell_common(texel, inner, dir_xy, level);
+               z += dist_xy * (dir_ws.z / dir_ws_xy_length);
+
+               if(z >= lower_depth) {
+                    float mul = (lower_depth - prev_z) / (z - prev_z);
+                    dist_xy *= mul;
+
+                    vec2 diff = prev_inner + dist_xy * dir_xy;
+
+                    inner = fract(diff);
+                    texel = prev_texel + uvec2(ivec2(floor(diff)));
+                    float corrected_z = lower_depth;
+
+                    if(level == 0u && lower_depth < 1.0) {
+                         hitPos.xy = vec2(prev_texel) / frxu_size;
+                         hitPos.z = prev_z;
                          return true;
                     }
+
+                    z = corrected_z;
                }
           }
-          */
-
-          // Hi-z raytracer
-          // /*
-          float stepSize = 30.0 / max(frxu_size.x, frxu_size.y);
-
-          const int startLod = 7;
-          int lod = startLod;
-
-          for(int i = 0; i < steps; i++) {
-               // Select the step size to move over to the next texel at the current lod.
-               float lodMult = (exp2(lod));
-               vec3 rayStep = rayScreenDir * stepSize * lodMult * interleavedGradient(i);
-
-               // Step the ray forward.
-               rayScreenPos += rayStep;
-
-               // The ray is out of bounds
-               if(clamp01(rayScreenPos.xy) != rayScreenPos.xy) {
-                    if(lod > 0) {
-                         // Step back and check lower lod to get a perfect cutoff
-                         rayScreenPos -= rayStep;
-                         lod--;
-                         continue;
-                    }
-
-                    break;
-               } else {
-                    float depthQuery = texelFetch(depths, ivec2(rayScreenPos.xy * frxu_size / lodMult), lod).r;
-
-                    if(rayScreenPos.z > depthQuery && depthQuery < 1.0) {
-                         // If there's an intersection at the current lod, check lower lod.
-                         if(lod > 0) {
-                              rayScreenPos -= rayStep;
-                              lod--;
-                              continue;
-                         }
-
-                         // If we're back at lod = 0, we found an intersection.
-                         hitPos = rayScreenPos;
-                         return true;
-                    }
-               }
-          }
-          // */
 
           // No intersection found
           return false;
@@ -171,7 +249,7 @@ bool isModdedDimension() {
 
           // Ambient lighting
           {
-               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (2.0 + normal.y);
+               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (3.0 + normal.y);
                ambientLighting = mix(vec3(0.025), ambientLighting, skyLight);
 
                ambientLighting += 2.0 * pow2(blockLight * 1.5) * vec3(2.0, 0.98, 0.32);

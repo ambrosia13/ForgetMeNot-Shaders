@@ -109,6 +109,8 @@ void frx_pipelineFragment() {
      vec4 color = frx_fragColor;
 
      // A non-vanilla dimension is loaded, we don't want to touch lighting.
+     //frx_fragRoughness = 0.0001;
+     //frx_fragReflectance = 0.5;
      if(isModdedDimension()) {
           color.rgb *= lightmap;
           color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
@@ -133,13 +135,13 @@ void frx_pipelineFragment() {
           );
      }
 
-     vec4 dataX = vec4(frx_fragNormal.xyz * 0.5 + 0.5, max(0.02, fmn_sssAmount));
+     vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
      uint packedX = packUnormArb(dataX, BITS_X);
 
      vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), frx_matDisableDiffuse);
      uint packedY = packUnormArb(dataY, BITS_Y);
 
-     vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, frx_matCutout, 1.0);
+     vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);
      uint packedZ = packUnormArb(dataZ, BITS_Z);
 
      vec3 packedFinal = uintBitsToFloat(uvec3(packedX, packedY, packedZ));
