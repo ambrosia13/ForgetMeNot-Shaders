@@ -78,6 +78,7 @@ void main() {
                f0,
                roughness,
                sssAmount,
+               isWater,
                u_skybox,
                u_transmittance,
                u_shadow_map,

@@ -114,7 +114,7 @@ void frx_pipelineFragment() {
      if(isModdedDimension()) {
           color.rgb *= lightmap;
           color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
-     } else if(!frx_renderTargetSolid) {
+     } else if((!frx_renderTargetSolid || frx_isHand)) {
           // Non-solid lighting, in vanilla dimensions only.
           color.rgb = basicLighting(
                color.rgb,
@@ -126,6 +126,7 @@ void frx_pipelineFragment() {
                pow2(frx_fragReflectance),
                pow2(frx_fragRoughness),
                fmn_sssAmount,
+               float(fmn_isWater),
                u_skybox,
                u_transmittance,
                frxs_shadowMap,

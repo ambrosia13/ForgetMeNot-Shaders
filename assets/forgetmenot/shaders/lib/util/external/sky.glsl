@@ -41,6 +41,14 @@
           
           return scale*num/denom;
      }
+     float getMiePhase(float cosTheta, float g) {
+          const float scale = 3.0 / (8.0 * PI);
+          
+          float num = (1.0 - g * g) * (1.0 + cosTheta * cosTheta);
+          float denom = (2.0 + g * g) * pow((1.0 + g * g - 2.0 * g * cosTheta), 1.5);
+          
+          return scale*num/denom;
+     }
 
      float getRayleighPhase(float cosTheta) {
           const float k = 0.05968310365;

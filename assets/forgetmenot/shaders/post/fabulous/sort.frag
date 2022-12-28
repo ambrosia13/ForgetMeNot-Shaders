@@ -5,6 +5,8 @@
 #define INCLUDE_IGN
 #define INCLUDE_LDEPTH
 #define INCLUDE_RAYTRACER
+#define INCLUDE_SKY
+#define INCLUDE_CUBEMAPS
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_main_color;
@@ -169,7 +171,9 @@ void main() {
     if(doUnderwaterFog) {
         const float WATER_DIRT_AMOUNT = 0.5;
 
-        vec3 waterFogColor = mix(translucent_color.rgb, vec3(0.0, 0.25, 0.25), frx_cameraInWater);
+        vec3 underwaterFogColor = vec3(0.0, 0.16, 0.25) * smoothstep(0.0, 0.2, frx_skyLightVector.y);
+        underwaterFogColor *= (1.0 + 4.0 * getMiePhase(dot(viewDir, frx_skyLightVector), 0.75) * frx_skyLightVector.y);
+        vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
         composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
         composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
@@ -183,6 +187,8 @@ void main() {
         vec3 reflectDir = generateCosineVector(cleanReflectDir, roughness);
         vec3 hitPos;
         bool hit = false;
+
+        vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
 
         if(roughness < 0.5) {
             vec3 pos_ws = vec3(texcoord.xy * (frxu_size.xy), min_depth);
@@ -205,10 +211,12 @@ void main() {
         if(hit) {
             reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
         } else {
-            reflectColor = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness)).rgb;
+            vec4 skybox = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness));
+
+            reflectColor = skybox.rgb;
+            // reflectance = mix(reflectance, vec3(1.0), skybox.a);
         }
 
-        vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
         if(f0 > 0.999) composite *= reflectColor;
         else composite = mix(composite, reflectColor, reflectance);
     }

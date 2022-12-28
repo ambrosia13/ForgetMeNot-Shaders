@@ -193,6 +193,7 @@ vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
           in float f0,
           in float roughness,
           in float sssAmount,
+          in float isWater,
           in samplerCube skybox,
           in sampler2D transmittanceLut,
           in sampler2DArrayShadow shadowMap,
@@ -267,6 +268,7 @@ vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
           }
 
           totalLighting += directLighting + ambientLighting;
+          totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
           vec3 color = albedo * mix(totalLighting, vec3(1.0), emission);
           return color;
