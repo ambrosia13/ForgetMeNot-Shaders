@@ -122,19 +122,11 @@ void main() {
     vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
 
     vec3 viewDir = getViewDir();
-
-    // see utility.glsl
-    // vec3(dayFactor, nightFactor, sunsetFactor)
     vec3 tdata = getTimeOfDayFactors();
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // cloud fade into distance
-    // I always hated how horrible the cloud fog looks in vanilla
-    vec3 cloudPos = setupSceneSpacePos(texcoord, clouds_depth);
-    clouds_color.a = mix(clouds_color.a, 0.0, frx_smootherstep(192.0, 320.0, length(cloudPos.xz)));
 
     // Disable fabulous blending for water
     translucent_color.a = mix(translucent_color.a, 0.0, step(0.5, isWater));
@@ -159,23 +151,30 @@ void main() {
         composite = blend(composite, color_layers[ii]);
     }
 
-    if(clouds_depth < min_depth) composite.rgb = mix(composite.rgb, clouds_color.rgb, clouds_color.a);
-
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    bool doUnderwaterFog = frx_cameraInWater == 0 ? isWater > 0.5 : true;
-    float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
+    bool doUnderwaterFog = isWater > 0.5 || frx_cameraInWater == 1;//frx_cameraInWater == 0 ? isWater > 0.5 : true;
 
     if(doUnderwaterFog) {
+        // These should eventually be configurable
         const float WATER_DIRT_AMOUNT = 0.5;
+        const vec3 WATER_COLOR = vec3(0.0, 0.16, 0.25);
 
-        vec3 underwaterFogColor = vec3(0.0, 0.16, 0.25) * smoothstep(0.0, 0.2, frx_skyLightVector.y);
-        underwaterFogColor *= (1.0 + 4.0 * getMiePhase(dot(viewDir, frx_skyLightVector), 0.75) * frx_skyLightVector.y);
+        float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
+
+        float sunLightFactor = linearstep(0.0, 0.2, frx_skyLightVector.y);
+
+        vec3 underwaterFogColor = WATER_COLOR * sunLightFactor;
+        underwaterFogColor *= (1.0 + 3.0 * getMiePhase(dot(viewDir, frx_skyLightVector), 0.75) * sunLightFactor);
+
         vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
-        composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
+        // Water absorption
+        composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
+        
+        // Water scattering
         composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
     }
 
@@ -183,12 +182,13 @@ void main() {
         vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
         vec3 reflectColor = vec3(0.0);
+        vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
+
         vec3 cleanReflectDir = reflect(viewDir, normal);
         vec3 reflectDir = generateCosineVector(cleanReflectDir, roughness);
+        
         vec3 hitPos;
         bool hit = false;
-
-        vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
 
         if(roughness < 0.5) {
             vec3 pos_ws = vec3(texcoord.xy * (frxu_size.xy), min_depth);
@@ -200,9 +200,7 @@ void main() {
                 u_depths,
                 hitPos
             );
-        }
 
-        {
             // Reflection reprojection
             vec3 hitPosScene = setupSceneSpacePos(hitPos);
             hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene);
@@ -214,11 +212,20 @@ void main() {
             vec4 skybox = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness));
 
             reflectColor = skybox.rgb;
-            // reflectance = mix(reflectance, vec3(1.0), skybox.a);
         }
 
-        if(f0 > 0.999) composite *= reflectColor;
-        else composite = mix(composite, reflectColor, reflectance);
+        composite *= mix(vec3(1.0), reflectColor, step(0.999, f0));
+        composite = mix(composite, reflectColor, reflectance * step(f0, 0.999));
+    }
+
+    {
+        // cloud fade into distance
+        // I always hated how horrible the cloud fog looks in vanilla
+        vec3 cloudPos = setupSceneSpacePos(texcoord, clouds_depth);
+        clouds_color.a = mix(clouds_color.a, 0.0, frx_smootherstep(192.0, 320.0, length(cloudPos.xz)));
+
+        // Blend clouds in at the end
+        composite.rgb = mix(composite.rgb, clouds_color.rgb, clouds_color.a * step(clouds_depth - min_depth, 0.0));
     }
 
     fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));

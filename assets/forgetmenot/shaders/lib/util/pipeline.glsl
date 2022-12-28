@@ -4,7 +4,7 @@
 
 const uvec4 BITS_X = uvec4(9u, 9u, 9u, 5u);
 const uvec4 BITS_Y = uvec4(10u, 10u, 10u, 2u);
-const uvec4 BITS_Z = uvec4(14u, 14u, 4u, 0u);
+const uvec4 BITS_Z = uvec4(14u, 12u, 4u, 2u);
 
 #ifdef FRAGMENT_SHADER
      bool shouldReprojectFrame() {
@@ -242,6 +242,8 @@ vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
                     vec2 offset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
                     shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + offset, cascade, shadowScreenPos.z)) / shadowMapSamples;
                }
+
+               shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
                vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + 40.0 * vec3(0.0, (0.000001 * (sceneSpacePos.y + frx_cameraPos.y) - 0.000065), 0.0), frx_skyLightVector);
                directLighting = 4.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;

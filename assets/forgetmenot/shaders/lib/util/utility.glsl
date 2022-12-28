@@ -66,6 +66,19 @@
           return FMN_POW_4;
      }
 
+     float linearstep(float a, float b, float x) {
+          return clamp01((x - a) / (b - a));
+     }
+     vec2 linearstep(vec2 a, vec2 b, vec2 x) {
+          return clamp01((x - a) / (b - a));
+     }
+     vec3 linearstep(vec3 a, vec3 b, vec3 x) {
+          return clamp01((x - a) / (b - a));
+     }
+     vec4 linearstep(vec4 a, vec4 b, vec4 x) {
+          return clamp01((x - a) / (b - a));
+     }
+
      // Angle should be in radians
      vec2 rotate2D(vec2 uv, float angle) {
           float s = sin(angle);
