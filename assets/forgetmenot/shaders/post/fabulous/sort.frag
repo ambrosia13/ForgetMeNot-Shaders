@@ -191,8 +191,13 @@ void main() {
         bool hit = false;
 
         if(roughness < 0.5) {
-            vec3 pos_ws = vec3(texcoord.xy * (frxu_size.xy), min_depth);
-            vec3 dir_ws = cam_dir_to_win(viewSpacePos, frx_normalModelMatrix * reflectDir, frx_projectionMatrix);
+            vec3 pos_ws = vec3(gl_FragCoord.xy, min_depth);
+            vec3 dir_ws = normalize(
+                (
+                    viewSpaceToScreenSpace(viewSpacePos + frx_normalModelMatrix * reflectDir) -
+                    vec3(texcoord, min_depth)
+                ) * vec3(frxu_size, 1.0)
+            );
             hit = raytrace(
                 pos_ws,
                 dir_ws,
