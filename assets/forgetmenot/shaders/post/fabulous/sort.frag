@@ -155,12 +155,10 @@ void main() {
     // other stuff
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    bool doUnderwaterFog = isWater > 0.5 || frx_cameraInWater == 1;//frx_cameraInWater == 0 ? isWater > 0.5 : true;
-
-    if(doUnderwaterFog) {
+    if(isWater > 0.5 || frx_cameraInWater == 1) {
         // These should eventually be configurable
-        const float WATER_DIRT_AMOUNT = 0.5;
-        const vec3 WATER_COLOR = vec3(0.0, 0.16, 0.25);
+        const float WATER_DIRT_AMOUNT = 0.2;
+        const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
         float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
 
@@ -198,7 +196,7 @@ void main() {
                     vec3(texcoord, min_depth)
                 ) * vec3(frxu_size, 1.0)
             );
-            
+
             hit = raytrace(
                 pos_ws,
                 dir_ws,

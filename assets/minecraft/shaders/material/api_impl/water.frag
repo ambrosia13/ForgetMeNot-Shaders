@@ -110,7 +110,7 @@ void frx_materialFragment() {
     #endif
 
     #ifdef INTERNAL_MATERIALS
-        frx_fragColor = vec4(vec3(0.0, 0.16, 0.25), 0.5);
+        frx_fragColor = vec4(vec3(0.0, 0.20, 0.25), 0.5);
     #else 
 
     #endif
