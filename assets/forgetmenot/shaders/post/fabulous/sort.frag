@@ -198,6 +198,7 @@ void main() {
                     vec3(texcoord, min_depth)
                 ) * vec3(frxu_size, 1.0)
             );
+            
             hit = raytrace(
                 pos_ws,
                 dir_ws,
