@@ -61,9 +61,7 @@ bool isModdedDimension() {
      }
 
      float dist_to_axis(uint texel0, float inner0, uint level, float dir0) {
-          return dir0 > 0 ?
-               dist_positive(texel0, inner0, level) :
-               dist_negative(texel0, inner0, level);
+          return mix(dist_negative(texel0, inner0, level), dist_positive(texel0, inner0, level), step(0.0, dir0));
      }
 
      float next_cell_common(inout uvec2 texel, inout vec2 inner, vec2 dir, uint level) {

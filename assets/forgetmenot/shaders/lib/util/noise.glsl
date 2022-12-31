@@ -52,27 +52,26 @@
 
      // Smooth noise function
      float smoothHash(in vec2 st) {
-          vec2 p = floor(st);
+          // "Value Noise" from Inigo Quilez
+          // https://www.shadertoy.com/view/lsf3WH
+          vec2 i = floor(st);
           vec2 f = fract(st);
                
-          float n = p.x + p.y*57.0;
+          vec2 u = f*f*(3.0-2.0*f);
 
-          float a =  hash12(vec2(n + 0.0)) * 2.0 - 1.0;
-          float b =  hash12(vec2(n + 1.0)) * 2.0 - 1.0;
-          float c = hash12(vec2(n + 57.0)) * 2.0 - 1.0;
-          float d = hash12(vec2(n + 58.0)) * 2.0 - 1.0;
-          
-          vec2 f2 = f * f;
-          vec2 f3 = f2 * f;
-          
-          vec2 t = 3.0 * f2 - 2.0 * f3;
-          
-          float u = t.x;
-          float v = t.y;
-
-          float noise = a + (b - a) * u +(c - a) * v + (a - b + d - c) * u * v;
-
-          return noise;
+          return mix(
+               mix(
+                    hash12(i + vec2(0.0,0.0)), 
+                    hash12(i + vec2(1.0,0.0)),
+                    u.x
+               ),
+               mix(
+                    hash12(i + vec2(0.0,1.0)), 
+                    hash12(i + vec2(1.0,1.0)),
+                    u.x
+               ),
+               u.y
+          ) * 2.0 - 1.0;
      }
 
      // Precalculated rotation matrix to make things a tiny bit faster.

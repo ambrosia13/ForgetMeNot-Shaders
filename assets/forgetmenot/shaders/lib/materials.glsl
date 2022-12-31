@@ -24,6 +24,13 @@ vec2 fmn_parallaxMapping(in vec2 texcoord, in float height) {
      return texcoord - p;
 }
 
+float fmn_hash12(vec2 p) {
+     vec3 p3  = fract(vec3(p.xyx) * 0.1031);
+     p3 += dot(p3, p3.yzx + 33.33);
+     return fract((p3.x + p3.y) * p3.z);
+}
+
+
 float fmn_hash1D(float p) {
      p = fract(p * .1031);
      p *= p + 33.33;
@@ -44,28 +51,26 @@ vec2 fmn_rotate2D(vec2 uv, float angle) {
 }
 
 float fmn_noise2D(in vec2 st) {
-     vec2 p = floor(st);
+     // "Value Noise" from Inigo Quilez
+     // https://www.shadertoy.com/view/lsf3WH
+     vec2 i = floor(st);
      vec2 f = fract(st);
           
-     float n = p.x + p.y*57.0;
+     vec2 u = f*f*(3.0-2.0*f);
 
-     float a =  fmn_hash1D((n + 0.0)) * 2.0 - 1.0;
-     float b =  fmn_hash1D((n + 1.0)) * 2.0 - 1.0;
-     float c = fmn_hash1D((n + 57.0)) * 2.0 - 1.0;
-     float d = fmn_hash1D((n + 58.0)) * 2.0 - 1.0;
-     
-     vec2 f2 = f * f;
-     vec2 f3 = f2 * f;
-     
-     vec2 t = 3.0 * f2 - 2.0 * f3;
-     
-     float u = t.x;
-     float v = t.y;
-
-     float noise = a + (b - a) * u +(c - a) * v + (a - b + d - c) * u * v;
-// float noise = mix(a, b, f.x) + (c - a) * f.y * (1.0 - f.x) + (d - b) * f.x * f.y;
-
-return noise;
+     return mix(
+          mix(
+               fmn_hash12(i + vec2(0.0,0.0)), 
+               fmn_hash12(i + vec2(1.0,0.0)),
+               u.x
+          ),
+          mix(
+               fmn_hash12(i + vec2(0.0,1.0)), 
+               fmn_hash12(i + vec2(1.0,1.0)),
+               u.x
+          ),
+          u.y
+     ) * 2.0 - 1.0;
 }
 
 // Precalculated rotation matrix to make things a tiny bit faster.

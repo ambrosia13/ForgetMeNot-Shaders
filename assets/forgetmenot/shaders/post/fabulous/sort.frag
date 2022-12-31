@@ -156,8 +156,10 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     if(isWater > 0.5 || frx_cameraInWater == 1) {
+        //composite *= 0.5;
+
         // These should eventually be configurable
-        const float WATER_DIRT_AMOUNT = 0.2;
+        const float WATER_DIRT_AMOUNT = 0.1;
         const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
         float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
@@ -170,7 +172,7 @@ void main() {
         vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
         // Water absorption
-        composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
+        composite *= mix(fNormalize(waterFogColor), vec3(0.5), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
         
         // Water scattering
         composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
@@ -215,7 +217,7 @@ void main() {
         } else {
             vec4 skybox = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness));
 
-            reflectColor = skybox.rgb;
+            reflectColor = skybox.rgb * skyLight;
         }
 
         composite *= mix(vec3(1.0), reflectColor, step(0.999, f0));

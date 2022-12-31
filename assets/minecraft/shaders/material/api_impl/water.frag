@@ -25,29 +25,29 @@ float waterHeightNoise(in vec2 uv) {
 
     // mat2 rotationMatrix = mat2(cos(PI / 16.0), sin(PI / 16.0), -sin(PI / 16.0), cos(PI / 16.0));
     
-    // // for(int i = 0; i < 10; i++) {
-    // //     // // noise += amp * exp2(sin(uv.x + uv.y) * sin((uv.x + 2.0 * uv.y) * 0.5) - 1.0);
-    // //     // // uv = 1.0 * (uv) + mod(frx_renderSeconds * 0.1, 1000.0);
-    // //     // // uv *= 2.0;
-    // //     // // amp *= 0.5;
-    // //     // // uv += offset * 0.5 * i;
-    // //     // float n = sin(dot(uv.xy, fmn_hash2D(float(i)) * 2.0 - 1.0));
-    // //     // noise += amp * exp(n);
+    // for(int i = 0; i < 10; i++) {
+    //     // // noise += amp * exp2(sin(uv.x + uv.y) * sin((uv.x + 2.0 * uv.y) * 0.5) - 1.0);
+    //     // // uv = 1.0 * (uv) + mod(frx_renderSeconds * 0.1, 1000.0);
+    //     // // uv *= 2.0;
+    //     // // amp *= 0.5;
+    //     // // uv += offset * 0.5 * i;
+    //     // float n = sin(dot(uv.xy, fmn_hash2D(float(i)) * 2.0 - 1.0));
+    //     // noise += amp * exp(n);
 
-    // //     // uv = rotationMatrix * uv * 2.0;
-    // //     // amp *= 0.5;
-    // //     // uv += offset * i;
-    // //     uv = rotationMatrix * uv;
-    // //     noise += amp * sin(uv.x);
-    // //     amp *= 0.5;
-    // // }
-    // for(int i = 0; i < 20; i++) {
-    //     uv = fmn_rotate2D(uv, fmn_hash1D(i));
-    //     noise += amp * pow(sin(uv.x), 2.0);
-    //     uv *= 2.0;
-    //     uv += frx_renderSeconds * amp * 4.0;
+    //     // uv = rotationMatrix * uv * 2.0;
+    //     // amp *= 0.5;
+    //     // uv += offset * i;
+    //     uv = rotationMatrix * uv;
+    //     noise += amp * (sin(uv.x) * sin(uv.y));
     //     amp *= 0.5;
     // }
+    // // for(int i = 0; i < 5; i++) {
+    // //     uv = fmn_rotate2D(uv, fmn_hash1D(i));
+    // //     noise += amp * pow(sin(uv.x), 2.0);
+    // //     uv *= 2.0;
+    // //     uv += frx_renderSeconds * amp * 4.0;
+    // //     amp *= 0.5;
+    // // }
 
     // return noise * 0.05;
 }
@@ -83,8 +83,8 @@ void frx_materialFragment() {
             float height3 = waterHeightNoise(uv + vec2(0.0, offset));
             //float height4 = waterHeightNoise(uv - vec2(0.0, offset));
 
-            float deltaX = ((-centerNoise + height1) / (offset * 0.5)) * wavesStrength;
-            float deltaY = ((-centerNoise + height3) / (offset * 0.5)) * wavesStrength;
+            float deltaX = ((centerNoise - height1) / (offset * 0.5)) * wavesStrength;
+            float deltaY = ((centerNoise - height3) / (offset * 0.5)) * wavesStrength;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             

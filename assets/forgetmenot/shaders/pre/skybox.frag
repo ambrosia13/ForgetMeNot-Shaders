@@ -4,6 +4,8 @@
 
 #define INCLUDE_SKY
 #define INCLUDE_CUBEMAPS
+#define INCLUDE_NOISE
+#define INCLUDE_IGN
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_sky;
@@ -46,7 +48,47 @@ vec3 getValFromSkyLUT(vec3 rayDir, vec3 sunDir, sampler2D skyLut) {
      return texture(skyLut, uv).rgb;
 }
 
+float sampleCumulusNoise(in vec2 plane) {
+     return smoothstep(0.5, 0.9, fbmHash(plane, 6, 0.05));
+}
+vec3 getClouds(in vec3 viewDir, in vec3 skyColor) {
+     if(viewDir.y < 0.0) return skyColor;
+     // return vec3(1.0);
+
+     vec2 plane = viewDir.xz / (viewDir.y + 0.1 * length(viewDir.xz));
+     plane *= 2.0;
+
+     vec2 rayDirection = fNormalize(getSunVector().xz / abs(getSunVector().y) - viewDir.xz / viewDir.y);
+     rayDirection = mix(rayDirection, fNormalize(getMoonVector().xz / abs(getMoonVector().y) - viewDir.xz / viewDir.y), linearstep(0.0, 0.2, getMoonVector().y));
+
+     vec3 cumulusPos = skyViewPos + vec3(0.0, 0.0005, 0.0) * (1.0 + 1.0 * dot(plane, getSunVector().xz));
+
+
+     float noise = sampleCumulusNoise(plane);
+
+     float transmittance = exp(-noise * 2.0);
+     
+     vec3 scattering = getValFromTLUT(u_transmittance, cumulusPos, getSunVector());
+     scattering += getValFromTLUT(u_transmittance, cumulusPos, getMoonVector()) * moonFlux;
+     scattering *= 2.0;
+
+     float lightOpticalDepth;
+     
+     for(int i = 0; i < 1; i++) {
+          plane += rayDirection * 1.0 * interleavedGradient(i);
+          lightOpticalDepth += sampleCumulusNoise(plane) / 1.0;
+     }
+     scattering *= exp(-lightOpticalDepth * 2.0) + getMiePhase(dot(viewDir, frx_skyLightVector), 0.8) + getMiePhase(dot(viewDir, -frx_skyLightVector), 0.8);
+
+     scattering *= 1.0 - transmittance;
+     return mix(skyColor * transmittance + scattering, skyColor, linearstep(0.2, 0.0, viewDir.y));
+}
+
 void main() {
+     if(frx_renderFrames % 3u != 0u) {
+          discard;
+     }
+
      vec3 viewDirs[6] = vec3[6] (
           vec3(0.0),
           vec3(0.0),
@@ -83,10 +125,10 @@ void main() {
           (getValFromSkyLUT(viewDirs[5], moonVector, u_sky_night) + (rayIntersectSphere(skyViewPos, viewDirs[5], groundRadiusMM) >= 0.0 ? vec3(0.0) : 4.0 * sunBrightness * step(0.9997, dot(viewDirs[5], moonVector)) * moonFlux * getValFromTLUT(u_transmittance, skyViewPos, moonVector))) * 20.0
      );
 
-     fragColor0 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[0]) + max(vec3(0.0), nightColor[0])), step(0.9997, dot(viewDirs[0], sunVector)) + step(0.9997, dot(viewDirs[0], moonVector)));
-     fragColor1 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[1]) + max(vec3(0.0), nightColor[1])), step(0.9997, dot(viewDirs[1], sunVector)) + step(0.9997, dot(viewDirs[1], moonVector)));
-     fragColor2 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[2]) + max(vec3(0.0), nightColor[2])), step(0.9997, dot(viewDirs[2], sunVector)) + step(0.9997, dot(viewDirs[2], moonVector)));
-     fragColor3 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[3]) + max(vec3(0.0), nightColor[3])), step(0.9997, dot(viewDirs[3], sunVector)) + step(0.9997, dot(viewDirs[3], moonVector)));
-     fragColor4 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[4]) + max(vec3(0.0), nightColor[4])), step(0.9997, dot(viewDirs[4], sunVector)) + step(0.9997, dot(viewDirs[4], moonVector)));
-     fragColor5 = vec4(blueHourMultiplier * (max(vec3(0.0), dayColor[5]) + max(vec3(0.0), nightColor[5])), step(0.9997, dot(viewDirs[5], sunVector)) + step(0.9997, dot(viewDirs[5], moonVector)));
+     fragColor0 = vec4(getClouds(viewDirs[0], blueHourMultiplier * (max(vec3(0.0), dayColor[0]) + max(vec3(0.0), nightColor[0]))), step(0.9997, dot(viewDirs[0], sunVector)) + step(0.9997, dot(viewDirs[0], moonVector)));
+     fragColor1 = vec4(getClouds(viewDirs[1], blueHourMultiplier * (max(vec3(0.0), dayColor[1]) + max(vec3(0.0), nightColor[1]))), step(0.9997, dot(viewDirs[1], sunVector)) + step(0.9997, dot(viewDirs[1], moonVector)));
+     fragColor2 = vec4(getClouds(viewDirs[2], blueHourMultiplier * (max(vec3(0.0), dayColor[2]) + max(vec3(0.0), nightColor[2]))), step(0.9997, dot(viewDirs[2], sunVector)) + step(0.9997, dot(viewDirs[2], moonVector)));
+     fragColor3 = vec4(getClouds(viewDirs[3], blueHourMultiplier * (max(vec3(0.0), dayColor[3]) + max(vec3(0.0), nightColor[3]))), step(0.9997, dot(viewDirs[3], sunVector)) + step(0.9997, dot(viewDirs[3], moonVector)));
+     fragColor4 = vec4(getClouds(viewDirs[4], blueHourMultiplier * (max(vec3(0.0), dayColor[4]) + max(vec3(0.0), nightColor[4]))), step(0.9997, dot(viewDirs[4], sunVector)) + step(0.9997, dot(viewDirs[4], moonVector)));
+     fragColor5 = vec4(getClouds(viewDirs[5], blueHourMultiplier * (max(vec3(0.0), dayColor[5]) + max(vec3(0.0), nightColor[5]))), step(0.9997, dot(viewDirs[5], sunVector)) + step(0.9997, dot(viewDirs[5], moonVector)));
 }

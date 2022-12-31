@@ -66,17 +66,27 @@
           return FMN_POW_4;
      }
 
+     #define FMN_LINSTEP (clamp01((x - a) / (b - a)))
      float linearstep(float a, float b, float x) {
-          return clamp01((x - a) / (b - a));
+          return FMN_LINSTEP;
+     }
+     vec2 linearstep(float a, float b, vec2 x) {
+          return FMN_LINSTEP;
+     }
+     vec3 linearstep(float a, float b, vec3 x) {
+          return FMN_LINSTEP;
+     }
+     vec4 linearstep(float a, float b, vec4 x) {
+          return FMN_LINSTEP;
      }
      vec2 linearstep(vec2 a, vec2 b, vec2 x) {
-          return clamp01((x - a) / (b - a));
+          return FMN_LINSTEP;
      }
      vec3 linearstep(vec3 a, vec3 b, vec3 x) {
-          return clamp01((x - a) / (b - a));
+          return FMN_LINSTEP;
      }
      vec4 linearstep(vec4 a, vec4 b, vec4 x) {
-          return clamp01((x - a) / (b - a));
+          return FMN_LINSTEP;
      }
 
      // Angle should be in radians
