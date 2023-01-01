@@ -234,5 +234,5 @@ void main() {
         composite.rgb = mix(composite.rgb, clouds_color.rgb, clouds_color.a * step(clouds_depth - min_depth, 0.0));
     }
 
-    fragColor = max(vec4(1.0 / 65536.0), vec4(composite, 1.0));
+    fragColor = composite.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
 }

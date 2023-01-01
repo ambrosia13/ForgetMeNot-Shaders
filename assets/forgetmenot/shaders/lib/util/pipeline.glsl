@@ -6,6 +6,9 @@ const uvec4 BITS_X = uvec4(9u, 9u, 9u, 5u);
 const uvec4 BITS_Y = uvec4(10u, 10u, 10u, 2u);
 const uvec4 BITS_Z = uvec4(14u, 12u, 4u, 2u);
 
+// For converting some assignments into MADs
+const vec2 FMN_MASK = vec2(1.0, 0.0);
+
 #ifdef FRAGMENT_SHADER
      bool shouldReprojectFrame() {
           #ifdef REPROJECTION_RENDERING

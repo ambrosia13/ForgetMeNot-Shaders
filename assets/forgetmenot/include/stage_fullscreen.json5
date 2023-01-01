@@ -23,28 +23,6 @@
             ]
         },
         {
-            name: "pre_bloom_copy",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
             name: "bright_color",
             lod: 0,
             internalFormat: "R11F_G11F_B10F",
@@ -140,14 +118,6 @@
             colorAttachments: [
                 {
                     image: "taa"
-                }
-            ]
-        },
-        {
-            name: "pre_bloom_copy",
-            colorAttachments: [
-                {
-                    image: "pre_bloom_copy"
                 }
             ]
         },
@@ -294,14 +264,6 @@
             ]
         },
         {
-            name: "pre_bloom_copy",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/bloom/pre_bloom_copy.frag",
-            samplers: [
-                "u_color"
-            ]
-        },
-        {
             name: "bright_color",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/bloom/bright_color.frag",
@@ -360,18 +322,10 @@
                 framebuffer: "taa",
                 samplerImages: [
                     "main_color",
-                    "pre_bloom_copy",
+                    "bright_color",
                     "translucent_depth",
                     "main_depth"
                 ]
-            },
-            {
-                name: "pre_bloom_copy",
-                program: "pre_bloom_copy",
-                framebuffer: "pre_bloom_copy",
-                samplerImages: [
-                    "taa"
-                ],
             },
             {
                 name: "bright_color",
@@ -533,7 +487,7 @@
                 program: "bloom_merge",
                 framebuffer: "final",
                 samplerImages: [
-                    "pre_bloom_copy",
+                    "taa",
                     "bloom_upsample"
                 ],
             },

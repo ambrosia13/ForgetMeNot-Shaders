@@ -92,7 +92,7 @@ void main() {
           );
      } else {
           color = textureLod(u_skybox, viewDir, 0).rgb;
-     }     
+     }
 
-     fragColor = vec4(color, 1.0);
+     fragColor = color.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
 }

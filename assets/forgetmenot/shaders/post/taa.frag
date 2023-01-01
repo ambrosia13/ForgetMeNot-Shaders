@@ -84,7 +84,7 @@ void main() {
         #endif
 
         color.rgb = inverseToneMap(color.rgb);
-        fragColor = max(vec4(1.0 / 65536.0), color);
+        fragColor = color;
     #else
         fragColor = texture(u_color, texcoord);
     #endif

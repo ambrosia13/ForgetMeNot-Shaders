@@ -30,7 +30,7 @@ void main() {
     finalColor = frx_toneMap(finalColor);
 
     // finally, back into srgb
-    finalColor = pow(finalColor, vec3(1.0 / 2.4));
+    finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)) + randF() * 0.01 - 0.005);
 
-    fragColor = vec4(clamp01(finalColor + randF() * 0.01 - 0.005), 1.0);
+    fragColor = finalColor.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
 }
