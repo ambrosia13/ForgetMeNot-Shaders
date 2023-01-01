@@ -1,5 +1,3 @@
-#include frex:shaders/api/vertex.glsl
-#include frex:shaders/api/material.glsl
 #include forgetmenot:shaders/lib/includes.glsl 
 
 void frx_pipelineVertex() {
