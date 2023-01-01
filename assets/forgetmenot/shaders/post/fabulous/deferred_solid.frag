@@ -24,15 +24,19 @@ layout(location = 0) out vec4 fragColor;
 
 void main() {
      init();
-     
+
+     // Sample everything first, use them later to give the GPU time to read the textures
+     // packedSampleFloat is sampling an RGB32F image so we put the most distance between the sample and the usage
+     vec3 packedSampleFloat = texture(u_data, texcoord).xyz;
+     float depth = texture(u_depth, texcoord).r;
+     vec3 color = texture(u_color, texcoord).rgb;
+
      vec3 viewDir = getViewDir();
      vec3 sunVector = getSunVector();
      vec3 moonVector = getMoonVector();
 
-     float depth = texture(u_depth, texcoord).r;
      vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
 
-     vec3 color = texture(u_color, texcoord).rgb;
      if(isModdedDimension()) {
           color = mix(color, pow(color, vec3(2.2)), floor(depth));
           fragColor = vec4(color, 1.0);
@@ -41,11 +45,11 @@ void main() {
 
      float emission = clamp01(frx_luminance(color) - 1.0);
 
-     uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
+     uvec3 packedSample = floatBitsToUint(packedSampleFloat);
      vec4 unpackedX, unpackedY, unpackedZ;
-     unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
-     unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);
-     unpackedZ = unpackUnormArb(samplePacked.z, BITS_Z);
+     unpackedX = unpackUnormArb(packedSample.x, BITS_X);
+     unpackedY = unpackUnormArb(packedSample.y, BITS_Y);
+     unpackedZ = unpackUnormArb(packedSample.z, BITS_Z);
 
      vec3 normal = normalize(unpackedX.xyz * 2.0 - 1.0);
 
