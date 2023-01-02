@@ -234,16 +234,16 @@ bool isModdedDimension() {
                shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
                vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + 40.0 * vec3(0.0, (0.000001 * (sceneSpacePos.y + frx_cameraPos.y) - 0.000065), 0.0), frx_skyLightVector);
-               directLighting = 4.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+               directLighting = 8.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
                if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
           }
 
           // Ambient lighting
           {
-               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (3.0 + normal.y);
+               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y);
                ambientLighting = mix(vec3(0.025), ambientLighting, skyLight);
 
-               ambientLighting += 2.0 * pow2(blockLight * 1.5) * vec3(2.0, 0.98, 0.32);
+               ambientLighting += 2.0 * blockLight * vec3(1.3, 1.0, 0.7);
                
                // handheld light
                {

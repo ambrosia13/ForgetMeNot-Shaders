@@ -66,7 +66,22 @@
           return FMN_POW_4;
      }
 
-     #define FMN_LINSTEP (clamp01((x - a) / (b - a)))
+     #define FMN_RCP (1.0 / x)
+     float rcp(float x) {
+          return FMN_RCP;
+     }
+     vec2 rcp(vec2 x) {
+          return FMN_RCP;
+     }
+     vec3 rcp(vec3 x) {
+          return FMN_RCP;
+     }
+     vec4 rcp(vec4 x) {
+          return FMN_RCP;
+     }
+
+     #define FMN_LINSTEP (clamp01((x - a) * rcp(b - a)))
+     #define FMN_LINSTEP_FROM_ZERO (clamp01(x * rcp(b)))
      float linearstep(float a, float b, float x) {
           return FMN_LINSTEP;
      }
@@ -88,6 +103,27 @@
      vec4 linearstep(vec4 a, vec4 b, vec4 x) {
           return FMN_LINSTEP;
      }
+     float linearstepFrom0(float b, float x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec2 linearstepFrom0(float b, vec2 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec3 linearstepFrom0(float b, vec3 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec4 linearstepFrom0(float b, vec4 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec2 linearstepFrom0(vec2 b, vec2 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec3 linearstepFrom0(vec3 b, vec3 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
+     vec4 linearstepFrom0(vec4 b, vec4 x) {
+          return FMN_LINSTEP_FROM_ZERO;
+     }
 
      // Angle should be in radians
      vec2 rotate2D(vec2 uv, float angle) {
@@ -96,4 +132,5 @@
           mat2 mat = mat2(c, s, -s, c);
           return mat * uv;
      }
+
 #endif

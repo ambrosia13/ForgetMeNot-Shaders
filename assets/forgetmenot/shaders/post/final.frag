@@ -2,6 +2,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_color;
+uniform sampler2D u_exposure;
 
 in vec2 texcoord;
 
@@ -25,7 +26,8 @@ void main() {
     #endif
 
     vec3 finalColor = color.rgb;
-    float l = frx_luminance(finalColor);
+    //float ev100 = log2(avgLuminance * 100.0 / 12.5);
+    finalColor *= 0.5 / clamp(texelFetch(u_exposure, ivec2(0), 0).r, 0.1, 1.5);
 
     finalColor = frx_toneMap(finalColor);
 

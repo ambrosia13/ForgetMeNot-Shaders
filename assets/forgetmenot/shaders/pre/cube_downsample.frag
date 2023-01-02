@@ -24,10 +24,10 @@ void main() {
 
      getCubemapViewDirs(texcoord, viewDirs);
 
-     fragColor0 = textureLod(u_cube, viewDirs[0], max(0, frxu_lod - 1));
-     fragColor1 = textureLod(u_cube, viewDirs[1], max(0, frxu_lod - 1));
-     fragColor2 = textureLod(u_cube, viewDirs[2], max(0, frxu_lod - 1));
-     fragColor3 = textureLod(u_cube, viewDirs[3], max(0, frxu_lod - 1));
-     fragColor4 = textureLod(u_cube, viewDirs[4], max(0, frxu_lod - 1));
-     fragColor5 = textureLod(u_cube, viewDirs[5], max(0, frxu_lod - 1));
+     fragColor0 = textureLod(u_cube, viewDirs[0], frxu_lod - 1);
+     fragColor1 = textureLod(u_cube, viewDirs[1], frxu_lod - 1);
+     fragColor2 = textureLod(u_cube, viewDirs[2], frxu_lod - 1);
+     fragColor3 = textureLod(u_cube, viewDirs[3], frxu_lod - 1);
+     fragColor4 = textureLod(u_cube, viewDirs[4], frxu_lod - 1);
+     fragColor5 = textureLod(u_cube, viewDirs[5], frxu_lod - 1);
 }

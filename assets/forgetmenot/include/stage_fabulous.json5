@@ -204,6 +204,7 @@
                 "u_color",
                 "u_data",
                 "u_depth",
+                "u_depth_mips",
 
                 "u_shadow_map",
                 "u_shadow_tex",
@@ -338,6 +339,7 @@
                     "main_color",
                     "main_data",
                     "particles_depth",
+                    "depth_mips"
 
                     "shadow_map",
                     "shadow_map",

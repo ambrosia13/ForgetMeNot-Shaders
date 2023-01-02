@@ -57,7 +57,29 @@
           vec2 i = floor(st);
           vec2 f = fract(st);
                
-          vec2 u = f*f*(3.0-2.0*f);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+
+          return mix(
+               mix(
+                    hash12(i + vec2(0.0,0.0)), 
+                    hash12(i + vec2(1.0,0.0)),
+                    u.x
+               ),
+               mix(
+                    hash12(i + vec2(0.0,1.0)), 
+                    hash12(i + vec2(1.0,1.0)),
+                    u.x
+               ),
+               u.y
+          );
+     }
+     float smoothHashBlocky(in vec2 st) {
+          // "Value Noise" from Inigo Quilez
+          // https://www.shadertoy.com/view/lsf3WH
+          vec2 i = floor(st);
+          vec2 f = fract(st);
+               
+          vec2 u = smoothstep(0.3, 0.7, f);
 
           return mix(
                mix(
@@ -81,19 +103,22 @@
      );
 
      // FBM Hash noise that accepts a time parameter
-     float fbmHash(vec2 uv, int octaves, float t) {
+     float fbmHash(vec2 uv, int octaves, float lacunarity, float t) {
           float noise = 0.01;
           float amp = 0.5;
 
           for (int i = 0; i < octaves; i++) {
-               noise += amp * (smoothHash(uv) * 0.5 + 0.5);
-               uv = ROTATE_30_DEGREES * uv * 2.0 + mod(frx_renderSeconds * t, 1000.0);
+               noise += amp * (smoothHash(uv));
+               uv = ROTATE_30_DEGREES * uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
                amp *= 0.5;
           }
 
-          return noise * (octaves + 1) / octaves;
+          return noise * (octaves + 1.0) / octaves;
      }
      float fbmHash(vec2 uv, int octaves) {
-          return fbmHash(uv, octaves, 0.0);
+          return fbmHash(uv, octaves, 2.0, 0.0);
+     }
+     float fbmHash(vec2 uv, int octaves, float t) {
+          return fbmHash(uv, octaves, 2.0, t);
      }
 #endif

@@ -97,8 +97,34 @@
                ]
           },
           {
+               name: "clouds",
+               lod: 0,
+               internalFormat: "RG8",
+               pixelFormat: "RG",
+               pixelDataType: "UNSIGNED_BYTE",
+               size: 512,
+               target: "TEXTURE_CUBE_MAP",
+               texParams: [
+                    {
+                         name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+                    },
+                    {
+                         name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                    },
+                    {
+                         name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                    },
+                    {
+                         name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                    },
+                    {
+                         name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
+                    }
+               ]
+          },
+          {
                name: "skybox",
-               lod: 9,
+               lod: 10,
                internalFormat: "R11F_G11F_B10F",
                pixelFormat: "RGBA",
                pixelDataType: "UNSIGNED_BYTE",
@@ -150,6 +176,17 @@
                     {
                          image: "sky_lut_night", lod: 0
                     }
+               ]
+          },
+          {
+               name: "clouds",
+               colorAttachments: [
+                    {image: "clouds", layer: 0},
+                    {image: "clouds", layer: 1},
+                    {image: "clouds", layer: 2},
+                    {image: "clouds", layer: 3},
+                    {image: "clouds", layer: 4},
+                    {image: "clouds", layer: 5},
                ]
           },
           {
@@ -262,6 +299,17 @@
                     {image: "skybox", layer: 5, lod: 9},
                ]
           },
+          {
+               name: "skybox_d10",
+               colorAttachments: [
+                    {image: "skybox", layer: 0, lod: 10},
+                    {image: "skybox", layer: 1, lod: 10},
+                    {image: "skybox", layer: 2, lod: 10},
+                    {image: "skybox", layer: 3, lod: 10},
+                    {image: "skybox", layer: 4, lod: 10},
+                    {image: "skybox", layer: 5, lod: 10},
+               ]
+          },
      ],
 
      programs: [
@@ -291,13 +339,21 @@
                ]
           },
           {
+               name: "clouds",
+               vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+               fragmentSource: "forgetmenot:shaders/pre/clouds.frag",
+               samplers: [
+               ]
+          },
+          {
                name: "skybox",
                vertexSource: "forgetmenot:shaders/post/frame_full.vert",
                fragmentSource: "forgetmenot:shaders/pre/skybox.frag",
                samplers: [
                     "u_sky",
-                    "u_sky_night"
-                    "u_transmittance"
+                    "u_sky_night",
+                    "u_transmittance",
+                    "u_clouds"
                ]
           },
           {
@@ -374,6 +430,15 @@
                     ]
                },
                {
+                    name: "clouds",
+                    program: "clouds",
+                    framebuffer: "clouds",
+                    width: 512,
+                    height: 512,
+                    samplerImages: [
+                    ]
+               },
+               {
                     name: "skybox",
                     program: "skybox",
                     framebuffer: "skybox",
@@ -381,8 +446,9 @@
                     height: 1024,
                     samplerImages: [
                          "sky_lut",
-                         "sky_lut_night"
-                         "transmittance_lut"
+                         "sky_lut_night",
+                         "transmittance_lut",
+                         "clouds"
                     ]
                },
                {
@@ -471,6 +537,16 @@
                     framebuffer: "skybox_d9",
                     width: 2,
                     height: 2,
+                    samplerImages: [
+                         "skybox"
+                    ]
+               },
+               {
+                    name: "skybox_d10",
+                    program: "cube_downsample",
+                    framebuffer: "skybox_d10",
+                    width: 1,
+                    height: 1,
                     samplerImages: [
                          "skybox"
                     ]

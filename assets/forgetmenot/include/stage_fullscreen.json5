@@ -46,17 +46,63 @@
         },
         {
             name: "bloom_downsample",
-            lod: 6,
+            lod: 9,
             internalFormat: "R11F_G11F_B10F",
             pixelFormat: "RGBA",
             pixelDataType: "UNSIGNED_BYTE",
             target: "TEXTURE_2D",
             texParams: [
                 {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
                 }, 
                 {
                     name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "exposure",
+            size: 1,
+            lod: 0,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+                },
+                {
+                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+                }, 
+                {
+                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+                }
+            ]
+        },
+        {
+            name: "exposure_copy",
+            size: 1,
+            lod: 0,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                {
+                    name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+                }, 
+                {
+                    name: "TEXTURE_MAG_FILTER", val: "NEAREST"
                 },
                 {
                     name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
@@ -75,7 +121,7 @@
             target: "TEXTURE_2D",
             texParams: [
                 {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"
+                    name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
                 }, 
                 {
                     name: "TEXTURE_MAG_FILTER", val: "LINEAR"
@@ -186,6 +232,46 @@
             ]
         },
         {
+            name: "bloom_d7",
+            colorAttachments: [
+                {
+                    image: "bloom_downsample", lod: 7
+                }
+            ]
+        },
+        {
+            name: "bloom_d8",
+            colorAttachments: [
+                {
+                    image: "bloom_downsample", lod: 8
+                }
+            ]
+        },
+        {
+            name: "bloom_d9",
+            colorAttachments: [
+                {
+                    image: "bloom_downsample", lod: 9
+                }
+            ]
+        },
+        {
+            name: "exposure",
+            colorAttachments: [
+                {
+                    image: "exposure"
+                }
+            ]
+        },
+        {
+            name: "exposure_copy",
+            colorAttachments: [
+                {
+                    image: "exposure_copy"
+                }
+            ]
+        },
+        {
             name: "bloom_u6",
             colorAttachments: [
                 {
@@ -280,6 +366,15 @@
             ]
         },
         {
+            name: "exposure",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/exposure.frag",
+            samplers: [
+                "u_color",
+                "u_previous"
+            ]
+        },
+        {
             name: "bloom_upsample_first",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/bloom/bloom_upsample_first.frag",
@@ -306,10 +401,11 @@
         },
         {
             name: "final",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            vertexSource: "forgetmenot:shaders/post/final_frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/final.frag",
             samplers: [
-                "u_color"
+                "u_color",
+                "u_exposure"
             ]
         },
     ],
@@ -407,6 +503,59 @@
                 toggleConfig: "enable_bloom"
             },
             {
+                name: "bloom_d7",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d7",
+                samplerImages: [
+                    "bloom_downsample"
+                ],
+                lod: 7,
+                toggleConfig: "enable_bloom"
+            },
+            {
+                name: "bloom_d8",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d8",
+                samplerImages: [
+                    "bloom_downsample"
+                ],
+                lod: 8,
+                toggleConfig: "enable_bloom"
+            },
+            {
+                name: "bloom_d9",
+                program: "bloom_downsample",
+                framebuffer: "bloom_d9",
+                samplerImages: [
+                    "bloom_downsample"
+                ],
+                lod: 9,
+                toggleConfig: "enable_bloom"
+            },
+            {
+                name: "exposure",
+                program: "exposure",
+                framebuffer: "exposure",
+                samplerImages: [
+                    "bloom_downsample",
+                    "exposure_copy"
+                ],
+                width: 1,
+                height: 1,
+                toggleConfig: "enable_bloom"
+            },
+            {
+                name: "exposure_copy",
+                program: "copy",
+                framebuffer: "exposure_copy",
+                samplerImages: [
+                    "exposure"
+                ],
+                width: 1,
+                height: 1,
+                toggleConfig: "enable_bloom"
+            },
+            {
                 name: "bloom_u6",
                 program: "bloom_upsample_first",
                 framebuffer: "bloom_u6",
@@ -496,7 +645,8 @@
                 program: "final",
                 framebuffer: "copy_to_main",
                 samplerImages: [
-                    "final"
+                    "final",
+                    "exposure"
                 ],
             },
         ]

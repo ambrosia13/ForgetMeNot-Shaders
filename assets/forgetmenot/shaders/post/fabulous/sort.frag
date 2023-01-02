@@ -162,12 +162,14 @@ void main() {
         const float WATER_DIRT_AMOUNT = 0.1;
         const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
-        float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), frx_cameraInWater);
+        float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), float(frx_cameraInWater));
+        waterFogDistance = max(waterFogDistance, 0.01);
 
         float sunLightFactor = linearstep(0.0, 0.2, frx_skyLightVector.y);
 
         vec3 underwaterFogColor = WATER_COLOR * sunLightFactor;
         underwaterFogColor *= (1.0 + 3.0 * getMiePhase(dot(viewDir, frx_skyLightVector), 0.75) * sunLightFactor);
+        underwaterFogColor = max(underwaterFogColor, vec3(0.01));
 
         vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
@@ -178,7 +180,7 @@ void main() {
         composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
     }
 
-    if(min_depth < 1.0) {
+    if(min_depth < 1.0 && roughness < 1.0) {
         vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
         vec3 reflectColor = vec3(0.0);

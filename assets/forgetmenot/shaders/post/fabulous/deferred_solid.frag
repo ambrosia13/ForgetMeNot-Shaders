@@ -6,11 +6,13 @@
 #define INCLUDE_CUBEMAPS
 #define INCLUDE_PACKING
 #define INCLUDE_LIGHTING
+#define INCLUDE_RAYTRACER
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_color;
 uniform sampler2D u_data;
 uniform sampler2D u_depth;
+uniform sampler2D u_depth_mips;
 
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
