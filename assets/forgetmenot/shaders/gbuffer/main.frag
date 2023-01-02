@@ -58,7 +58,9 @@ void resolveMaterials() {
           }
 
           #ifdef ENABLE_BLOOM
-               frx_fragColor.rgb *= 1.0 + EMISSION * frx_fragEmissive;
+               float emissiveBoost = frx_isHand ? EMISSION * 0.5 : EMISSION;
+
+               frx_fragColor.rgb *= 1.0 + emissiveBoost * frx_fragEmissive;
                frx_fragColor.rgb += frx_fragColor.rgb * 1.0 * EMISSION * frx_fragEmissive;
           #endif
 
