@@ -102,7 +102,8 @@
                internalFormat: "RG8",
                pixelFormat: "RG",
                pixelDataType: "UNSIGNED_BYTE",
-               size: 512,
+               width: 512,
+               height: 512,
                target: "TEXTURE_CUBE_MAP",
                texParams: [
                     {

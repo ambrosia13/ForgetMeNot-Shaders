@@ -10,14 +10,14 @@ void frx_materialFragment() {
         frx_fragReflectance = 0.05;
         vec2 uv = frx_faceUv(frx_vertex.xyz + frx_cameraPos, frx_vertexNormal.xyz);
         uv = floor(uv * 16.0) / 8.0;
-        float offset = 1e-2;
+        float sampleOffset = 1e-2;
 
         float centerNoise = endStoneNoise(uv);
 
-        float height1 = endStoneNoise(uv + vec2(offset, 0.0));
-        // float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
-        float height3 = endStoneNoise(uv + vec2(0.0, offset));
-        // float height4 = waterHeightNoise(uv - vec2(0.0, offset));
+        float height1 = endStoneNoise(uv + vec2(sampleOffset, 0.0));
+        // float height2 = waterHeightNoise(uv - vec2(sampleOffset, 0.0));
+        float height3 = endStoneNoise(uv + vec2(0.0, sampleOffset));
+        // float height4 = waterHeightNoise(uv - vec2(0.0, sampleOffset));
 
         float deltaX = (centerNoise - height1) * 0.5;
         float deltaY = (centerNoise - height3) * 0.5;

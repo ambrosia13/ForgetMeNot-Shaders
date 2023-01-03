@@ -6,7 +6,7 @@
      // Minimal code changes; modified for my use case. Original Shadertoy code released under the MIT License.
      // --------------------------------------------------------------------------------------------------------
 
-     const vec3 moonFlux = vec3(0.005, 0.0075, 0.009) * 1.5;
+     const vec3 moonFlux = vec3(0.005, 0.0075, 0.009);
 
      // Units are in megameters.
      const float groundRadiusMM = 6.360;

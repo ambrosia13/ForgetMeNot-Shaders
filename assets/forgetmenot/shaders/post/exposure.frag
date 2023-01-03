@@ -36,5 +36,5 @@ void main() {
           mixFactor = 0.99;
      }
 
-     avgLuminance = mix(avgLuminance, prevLuminance, 0.99);
+     avgLuminance = max(0.0, mix(avgLuminance, prevLuminance, 0.99));
 }

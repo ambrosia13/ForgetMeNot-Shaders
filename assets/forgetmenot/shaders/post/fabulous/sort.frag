@@ -177,7 +177,7 @@ void main() {
         composite *= mix(fNormalize(waterFogColor), vec3(0.5), exp(-waterFogDistance * mix(0.5, 1.0, float(frx_cameraInWater))));
         
         // Water scattering
-        composite = mix(waterFogColor, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT) * 0.99 + 0.01);
+        composite = mix(waterFogColor, composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT + 0.4 * frx_cameraInWater)) * 0.99 + 0.01);
     }
 
     if(min_depth < 1.0 && roughness < 1.0) {

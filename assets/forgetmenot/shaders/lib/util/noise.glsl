@@ -54,7 +54,7 @@
      float smoothHash(in vec2 st) {
           // "Value Noise" from Inigo Quilez
           // https://www.shadertoy.com/view/lsf3WH
-          vec2 i = floor(st);
+          vec2 i = (floor(st));
           vec2 f = fract(st);
                
           vec2 u = f * f * (3.0 - 2.0 * f);

@@ -212,8 +212,8 @@ bool isModdedDimension() {
                
                if(doPcss) {
                     for(int i = 0; i < shadowMapSamples; i++) {
-                         vec2 offset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i + shadowMapSamples)) * TAU) * (10.0 * cascade);
-                         vec2 sampleCoord = shadowScreenPos.xy + offset / SHADOW_MAP_SIZE;
+                         vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i + shadowMapSamples)) * TAU) * (10.0 * cascade);
+                         vec2 sampleCoord = shadowScreenPos.xy + sampleOffset / SHADOW_MAP_SIZE;
 
                          float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
                          float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * mix(mix(mix(0.5, 1.0, step(0.5, cascadeF)), 2.0, step(1.5, cascadeF)), 3.0, step(2.5, cascadeF));
@@ -227,9 +227,10 @@ bool isModdedDimension() {
                penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(normal, frx_skyLightVector)) * 0.5 + 0.5));
 
                for(int i = 0; i < shadowMapSamples; i++) {
-                    vec2 offset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
-                    shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + offset, cascade, shadowScreenPos.z)) / shadowMapSamples;
+                    vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
+                    shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
                }
+               shadowFactor *= skyLight;
 
                shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
@@ -243,7 +244,7 @@ bool isModdedDimension() {
                ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y);
                ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
-               ambientLighting += 2.0 * blockLight * vec3(1.3, 1.0, 0.7);
+               ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
                
                // handheld light
                {

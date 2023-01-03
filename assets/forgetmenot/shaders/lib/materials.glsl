@@ -51,9 +51,10 @@ vec2 fmn_rotate2D(vec2 uv, float angle) {
 }
 
 float fmn_noise2D(in vec2 st) {
+     //return 0.0;
      // "Value Noise" from Inigo Quilez
      // https://www.shadertoy.com/view/lsf3WH
-     vec2 i = floor(st);
+     vec2 i = mod289(floor(st));
      vec2 f = fract(st);
           
      vec2 u = f*f*(3.0-2.0*f);

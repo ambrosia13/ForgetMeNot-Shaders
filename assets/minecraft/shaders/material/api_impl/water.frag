@@ -20,7 +20,7 @@ float waterHeightNoise(in vec2 uv) {
     return pow(noise * 0.5, 1.5) * mix(0.0, 0.5, dot(frx_vertexNormal.xyz, fmn_fNormalize(frx_vertex.xyz)));
 
     // float amp = 0.5;
-    // float offset = 1.0;
+    // float sampleOffset = 1.0;
     // float noise;
 
     // mat2 rotationMatrix = mat2(cos(PI / 16.0), sin(PI / 16.0), -sin(PI / 16.0), cos(PI / 16.0));
@@ -30,13 +30,13 @@ float waterHeightNoise(in vec2 uv) {
     //     // // uv = 1.0 * (uv) + mod(frx_renderSeconds * 0.1, 1000.0);
     //     // // uv *= 2.0;
     //     // // amp *= 0.5;
-    //     // // uv += offset * 0.5 * i;
+    //     // // uv += sampleOffset * 0.5 * i;
     //     // float n = sin(dot(uv.xy, fmn_hash2D(float(i)) * 2.0 - 1.0));
     //     // noise += amp * exp(n);
 
     //     // uv = rotationMatrix * uv * 2.0;
     //     // amp *= 0.5;
-    //     // uv += offset * i;
+    //     // uv += sampleOffset * i;
     //     uv = rotationMatrix * uv;
     //     noise += amp * (sin(uv.x) * sin(uv.y));
     //     amp *= 0.5;
@@ -74,17 +74,17 @@ void frx_materialFragment() {
 
     #ifdef PBR_ENABLED
         #ifndef SIMPLE_WATER
-            float offset = 1e-2;
+            float sampleOffset = 1e-2;
             float wavesStrength = mix(0.05, 0.75, frx_fragLight.y);
             //centerNoise *= wavesStrength;
 
-            float height1 = waterHeightNoise(uv + vec2(offset, 0.0));
-            //float height2 = waterHeightNoise(uv - vec2(offset, 0.0));
-            float height3 = waterHeightNoise(uv + vec2(0.0, offset));
-            //float height4 = waterHeightNoise(uv - vec2(0.0, offset));
+            float height1 = waterHeightNoise(uv + vec2(sampleOffset, 0.0));
+            //float height2 = waterHeightNoise(uv - vec2(sampleOffset, 0.0));
+            float height3 = waterHeightNoise(uv + vec2(0.0, sampleOffset));
+            //float height4 = waterHeightNoise(uv - vec2(0.0, sampleOffset));
 
-            float deltaX = ((centerNoise - height1) / (offset * 0.5)) * wavesStrength;
-            float deltaY = ((centerNoise - height3) / (offset * 0.5)) * wavesStrength;
+            float deltaX = ((centerNoise - height1) / (sampleOffset * 0.5)) * wavesStrength;
+            float deltaY = ((centerNoise - height3) / (sampleOffset * 0.5)) * wavesStrength;
 
             frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
             

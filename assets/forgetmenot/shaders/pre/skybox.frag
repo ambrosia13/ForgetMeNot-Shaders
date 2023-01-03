@@ -63,8 +63,9 @@ vec3 getSkyColor(in vec3 viewDir, const in float sunBrightness) {
      vec3 dayColor = (2.0 * getValFromSkyLUT(viewDir, sunVector, u_sky) + sunBrightness * step(0.9997, dot(viewDir, sunVector)) * intersectedPlanet * sunTransmittance) * 20.0;
      vec3 nightColor = (getValFromSkyLUT(viewDir, moonVector, u_sky_night) + 4.0 * sunBrightness * step(0.9997, dot(viewDir, moonVector)) * intersectedPlanet * moonTransmittance) * 20.0;
 
-     return blueHourMultiplier * (dayColor + nightColor);
+     return 2.0 * blueHourMultiplier * (dayColor + nightColor);
 }
+
 vec3 getClouds(in vec3 viewDir, in vec3 skyColor) {
      vec2 cloudsSample = sqrt(texture(u_clouds, viewDir).rg);
 
@@ -78,8 +79,8 @@ vec3 getClouds(in vec3 viewDir, in vec3 skyColor) {
      vec3 scatteringColor = getValFromTLUT(u_transmittance, cumulusPos, sunVector) + moonFlux * getValFromTLUT(u_transmittance, cumulusPos, moonVector);
      vec3 ambientColor = getSkyColor(vec3(0.0, 1.0, 0.0), 0.0) * 0.5;
 
-     vec3 scattering = 4.0 * scatteringColor * mix(cloudsSample.g, 1.0, getMiePhase(dot(viewDir, frx_skyLightVector), 0.7) + getMiePhase(dot(viewDir, -frx_skyLightVector), 0.7)) + ambientColor;
-     float transmittance = linearstep(0.0, 1.0, cloudsSample.r);
+     vec3 scattering = 8.0 * scatteringColor * mix(cloudsSample.g, 1.0, getMiePhase(dot(viewDir, frx_skyLightVector), 0.7) + getMiePhase(dot(viewDir, -frx_skyLightVector), 0.7)) + ambientColor;
+     float transmittance = cloudsSample.r;
 
      return mix(scattering, skyColor, transmittance);
 }
@@ -100,10 +101,10 @@ void main() {
      );
      getCubemapViewDirs(texcoord, viewDirs);
 
-     fragColor0 = vec4(getClouds(viewDirs[0], getSkyColor(viewDirs[0], 1.0)), 1.0);
-     fragColor1 = vec4(getClouds(viewDirs[1], getSkyColor(viewDirs[1], 1.0)), 1.0);
-     fragColor2 = vec4(getClouds(viewDirs[2], getSkyColor(viewDirs[2], 1.0)), 1.0);
-     fragColor3 = vec4(getClouds(viewDirs[3], getSkyColor(viewDirs[3], 1.0)), 1.0);
-     fragColor4 = vec4(getClouds(viewDirs[4], getSkyColor(viewDirs[4], 1.0)), 1.0);
-     fragColor5 = vec4(getClouds(viewDirs[5], getSkyColor(viewDirs[5], 1.0)), 1.0);
+     fragColor0 = vec4(getClouds(viewDirs[0], getSkyColor(viewDirs[0], 8.0)), 1.0);
+     fragColor1 = vec4(getClouds(viewDirs[1], getSkyColor(viewDirs[1], 8.0)), 1.0);
+     fragColor2 = vec4(getClouds(viewDirs[2], getSkyColor(viewDirs[2], 8.0)), 1.0);
+     fragColor3 = vec4(getClouds(viewDirs[3], getSkyColor(viewDirs[3], 8.0)), 1.0);
+     fragColor4 = vec4(getClouds(viewDirs[4], getSkyColor(viewDirs[4], 8.0)), 1.0);
+     fragColor5 = vec4(getClouds(viewDirs[5], getSkyColor(viewDirs[5], 8.0)), 1.0);
 }

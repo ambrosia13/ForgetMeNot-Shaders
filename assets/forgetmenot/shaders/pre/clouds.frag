@@ -47,7 +47,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
      
      float scattering;
 
-     float lightOpticalDepth;
+     float lightOpticalDepth = 0.0;
      
      const int STEPS = 10;
      for(int i = 0; i < STEPS; i++) {

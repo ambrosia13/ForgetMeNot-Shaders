@@ -28,12 +28,12 @@ void frx_materialFragment() {
 
         uv = frx_normalizeMappedUV(frx_texcoord);
         vec2 uv1, uv2, uv3, uv4;
-        vec2 offset = vec2(1.0 / 16.0, 0.0);
+        vec2 sampleOffset = vec2(1.0 / 16.0, 0.0);
 
-        uv1 = uv + offset.xy;
-        uv2 = uv - offset.xy;
-        uv3 = uv + offset.yx;
-        uv4 = uv - offset.yx;
+        uv1 = uv + sampleOffset.xy;
+        uv2 = uv - sampleOffset.xy;
+        uv3 = uv + sampleOffset.yx;
+        uv4 = uv - sampleOffset.yx;
 
 
         float height1 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0).rgb);
