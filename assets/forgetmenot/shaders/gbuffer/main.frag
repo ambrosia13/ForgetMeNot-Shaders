@@ -141,7 +141,7 @@ void frx_pipelineFragment() {
      vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
      uint packedX = packUnormArb(dataX, BITS_X);
 
-     vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
+     vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 1.0);
      uint packedY = packUnormArb(dataY, BITS_Y);
 
      vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);

@@ -25,9 +25,11 @@ void main() {
         color.b = frx_sample13(u_color, texcoord + 0.01 * vec2(sin(frx_renderSeconds - 50.0), 2.0 * -cos(frx_renderSeconds - 50.0)), 1.0 / frxu_size).b;
     #endif
 
+    float exposure = texelFetch(u_exposure, ivec2(0), 0).r;
+
     vec3 finalColor = color.rgb;
     //float ev100 = log2(avgLuminance * 100.0 / 12.5);
-    finalColor *= 0.5 / clamp(texelFetch(u_exposure, ivec2(0), 0).r, 0.1, 1.5);
+    finalColor *= 0.5 / clamp(exposure, 0.1, 1.5);
 
     finalColor = frx_toneMap(finalColor);
 

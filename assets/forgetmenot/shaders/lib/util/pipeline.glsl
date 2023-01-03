@@ -241,7 +241,7 @@ bool isModdedDimension() {
 
           // Ambient lighting
           {
-               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y);
+               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y) * 0.75;
                ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
                ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
