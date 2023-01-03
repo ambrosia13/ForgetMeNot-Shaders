@@ -19,8 +19,8 @@ uniform sampler2D u_transmittance;
 uniform sampler2D u_glint;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec4 fragCompositeData;
-layout(location = 2) out vec4 fragData;
+layout(location = 1) out uvec4 fragCompositeData;
+layout(location = 2) out uvec4 fragData;
 
 bool isInventory;
 vec3 gamma;
@@ -141,19 +141,19 @@ void frx_pipelineFragment() {
      vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
      uint packedX = packUnormArb(dataX, BITS_X);
 
-     vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 1.0);
+     vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
      uint packedY = packUnormArb(dataY, BITS_Y);
 
      vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);
      uint packedZ = packUnormArb(dataZ, BITS_Z);
 
-     vec3 packedFinal = uintBitsToFloat(uvec3(packedX, packedY, packedZ));
+     uvec3 packedFinal = (uvec3(packedX, packedY, packedZ));
 
      if(color.a < 0.0001) discard;
      color = max(color, vec4(0.0005));
 
      fragColor = color;
-     fragCompositeData = vec4(packedFinal, 1.0);
-     fragData = vec4(packedFinal, 1.0);
+     fragCompositeData = uvec4(packedFinal, 1u);
+     fragData = uvec4(packedFinal, 1u);
      gl_FragDepth = gl_FragCoord.z;
 }

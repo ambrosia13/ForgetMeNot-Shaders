@@ -24,7 +24,7 @@ uniform sampler2D u_particles_depth;
 
 uniform sampler2D u_previous_color;
 uniform samplerCube u_skybox;
-uniform sampler2D u_data;
+uniform usampler2D u_data;
 uniform sampler2D u_depths;
 
 in vec2 texcoord;
@@ -92,7 +92,7 @@ void main() {
     vec4 particles_color = texture(u_particles_color, texcoord);
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
-    uvec3 samplePacked = floatBitsToUint(texture(u_data, texcoord).xyz);
+    uvec3 samplePacked = texture(u_data, texcoord).xyz;
     vec4 unpackedX, unpackedY, unpackedZ;
     unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
     unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);

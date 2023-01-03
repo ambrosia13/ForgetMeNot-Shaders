@@ -66,9 +66,9 @@
         {
             name: "all_data",
             lod: 0,
-            internalFormat: "RGB32F",
-            pixelFormat: "RGB",
-            pixelDataType: "UNSIGNED_BYTE",
+            internalFormat: "RGB32UI",
+            pixelFormat: "RGB_INTEGER",
+            pixelDataType: "UNSIGNED_INT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
@@ -80,9 +80,9 @@
         {
             name: "main_data",
             lod: 0,
-            internalFormat: "RGB32F",
-            pixelFormat: "RGB",
-            pixelDataType: "UNSIGNED_BYTE",
+            internalFormat: "RGB32UI",
+            pixelFormat: "RGB_INTEGER",
+            pixelDataType: "UNSIGNED_INT",
             target: "TEXTURE_2D",
             texParams: [
                 {name: "TEXTURE_MIN_FILTER", val: "NEAREST"},

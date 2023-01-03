@@ -10,7 +10,7 @@
 #include forgetmenot:shaders/lib/includes.glsl 
 
 uniform sampler2D u_color;
-uniform sampler2D u_data;
+uniform usampler2D u_data;
 uniform sampler2D u_depth;
 uniform sampler2D u_depth_mips;
 
@@ -28,8 +28,8 @@ void main() {
      init();
 
      // Sample everything first, use them later to give the GPU time to read the textures
-     // packedSampleFloat is sampling an RGB32F image so we put the most distance between the sample and the usage
-     vec3 packedSampleFloat = texture(u_data, texcoord).xyz;
+     // packedSample is sampling an RGB32UI image so we put the most distance between the sample and the usage
+     uvec3 packedSample = texture(u_data, texcoord).xyz;
      float depth = texture(u_depth, texcoord).r;
      vec3 color = texture(u_color, texcoord).rgb;
 
@@ -47,7 +47,6 @@ void main() {
 
      float emission = clamp01(frx_luminance(color) - 1.0);
 
-     uvec3 packedSample = floatBitsToUint(packedSampleFloat);
      vec4 unpackedX, unpackedY, unpackedZ;
      unpackedX = unpackUnormArb(packedSample.x, BITS_X);
      unpackedY = unpackUnormArb(packedSample.y, BITS_Y);
