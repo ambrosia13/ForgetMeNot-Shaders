@@ -93,6 +93,20 @@ void main() {
     float particles_depth = texture(u_particles_depth, texcoord).r;
 
     uvec3 samplePacked = texture(u_data, texcoord).xyz;
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // common things
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    float max_depth = max(max(translucent_depth, particles_depth), main_depth);
+    float min_depth = min(min(translucent_depth, particles_depth), main_depth);
+
+    vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
+    vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
+
+    vec3 viewDir = getViewDir();
+    vec3 tdata = getTimeOfDayFactors();
+
     vec4 unpackedX, unpackedY, unpackedZ;
     unpackedX = unpackUnormArb(samplePacked.x, BITS_X);
     unpackedY = unpackUnormArb(samplePacked.y, BITS_Y);
@@ -110,19 +124,6 @@ void main() {
 
     float disableDiffuse = step(0.5, unpackedY.w);
     float isWater = step(0.5, unpackedX.w);
-
-    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // common things
-    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    float max_depth = max(max(translucent_depth, particles_depth), main_depth);
-    float min_depth = min(min(translucent_depth, particles_depth), main_depth);
-
-    vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
-    vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
-
-    vec3 viewDir = getViewDir();
-    vec3 tdata = getTimeOfDayFactors();
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending

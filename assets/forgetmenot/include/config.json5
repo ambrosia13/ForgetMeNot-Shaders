@@ -10,7 +10,7 @@
                     descriptionKey: "config.forgetmenot.desc.enable_bloom"
                 },
                 emission: {
-                    default: 3.0,
+                    default: 1.0,
                     min: 0.0,
                     max: 20.0,
                     nameKey: "config.forgetmenot.name.emission",

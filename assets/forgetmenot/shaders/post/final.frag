@@ -37,4 +37,5 @@ void main() {
     finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)) + randF() * 0.01 - 0.005);
 
     fragColor = finalColor.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
+    // fragColor = vec4(pow3(1.0 - (distance(texcoord, vec2(0.5)))));
 }

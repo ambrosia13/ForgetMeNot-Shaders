@@ -9,15 +9,14 @@ const uvec4 BITS_Z = uvec4(14u, 12u, 4u, 2u);
 // For converting some assignments into MADs
 const vec2 FMN_MASK = vec2(1.0, 0.0);
 
+bool shouldReprojectFrame() {
+     #ifdef REPROJECTION_RENDERING
+          return frx_renderFrames % 2u == 0u;
+     #else
+          return false;
+     #endif
+}
 #ifdef FRAGMENT_SHADER
-     bool shouldReprojectFrame() {
-          #ifdef REPROJECTION_RENDERING
-               return frx_renderFrames % 2u == 0u;
-          #else
-               return false;
-          #endif
-     }
-
      void init() {
           if(shouldReprojectFrame()) {
                discard;

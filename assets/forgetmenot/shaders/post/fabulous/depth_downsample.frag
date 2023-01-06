@@ -7,6 +7,8 @@ in vec2 texcoord;
 layout(location = 0) out float fragColor;
 
 void main() {
+     init();
+     
      ivec2 pos = ivec2(gl_FragCoord.xy) << 1;//ivec2(texcoord * frxu_size) << 1;
 
      float mn = 1.0;

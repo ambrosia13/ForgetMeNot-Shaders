@@ -58,7 +58,7 @@ void resolveMaterials() {
           }
 
           #ifdef ENABLE_BLOOM
-               float emissiveBoost = frx_isHand ? EMISSION * 0.25 : EMISSION * 0.5;
+               float emissiveBoost = frx_isHand ? EMISSION * 0.5 : EMISSION;
 
                frx_fragColor.rgb *= 1.0 + emissiveBoost * frx_fragEmissive;
                frx_fragColor.rgb += frx_fragColor.rgb * 1.0 * EMISSION * frx_fragEmissive;
@@ -106,54 +106,57 @@ void resolveMaterials() {
 }
 
 void frx_pipelineFragment() {
-     resolveMaterials();
+     if(!shouldReprojectFrame() || frx_isGui) {
+          resolveMaterials();
 
-     vec4 color = frx_fragColor;
+          vec4 color = frx_fragColor;
 
-     // A non-vanilla dimension is loaded, we don't want to touch lighting.
-     //frx_fragRoughness = 0.0001;
-     //frx_fragReflectance = 0.5;
-     if(isModdedDimension()) {
-          color.rgb *= lightmap;
-          color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
-     } else if((!frx_renderTargetSolid || frx_isHand)) {
-          // Non-solid lighting, in vanilla dimensions only.
-          color.rgb = basicLighting(
-               color.rgb,
-               frx_vertex.xyz,
-               frx_fragNormal,
-               frx_fragLight.x,
-               frx_fragLight.y,
-               frx_fragLight.z,
-               pow2(frx_fragReflectance),
-               pow2(frx_fragRoughness),
-               fmn_sssAmount,
-               float(fmn_isWater),
-               u_skybox,
-               u_transmittance,
-               frxs_shadowMap,
-               frxs_shadowMapTexture,
-               false,
-               4
-          );
+          // A non-vanilla dimension is loaded, we don't want to touch lighting.
+          //frx_fragRoughness = 0.0001;
+          //frx_fragReflectance = 0.5;
+          if(isModdedDimension()) {
+               color.rgb *= lightmap;
+               color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
+          } else if((!frx_renderTargetSolid || frx_isHand)) {
+               // Non-solid lighting, in vanilla dimensions only.
+               color.rgb = basicLighting(
+                    color.rgb,
+                    frx_vertex.xyz,
+                    frx_fragNormal,
+                    frx_fragLight.x,
+                    frx_fragLight.y,
+                    frx_fragLight.z,
+                    pow2(frx_fragReflectance),
+                    pow2(frx_fragRoughness),
+                    fmn_sssAmount,
+                    float(fmn_isWater),
+                    u_skybox,
+                    u_transmittance,
+                    frxs_shadowMap,
+                    frxs_shadowMapTexture,
+                    false,
+                    4
+               );
+          }
+
+          vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
+          uint packedX = packUnormArb(dataX, BITS_X);
+
+          vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
+          uint packedY = packUnormArb(dataY, BITS_Y);
+
+          vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);
+          uint packedZ = packUnormArb(dataZ, BITS_Z);
+
+          uvec3 packedFinal = (uvec3(packedX, packedY, packedZ));
+
+          if(color.a < 0.0001) discard;
+          color = max(color, vec4(0.0005));
+
+          fragColor = color;
+          fragCompositeData = uvec4(packedFinal, 1u);
+          fragData = uvec4(packedFinal, 1u);
      }
 
-     vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
-     uint packedX = packUnormArb(dataX, BITS_X);
-
-     vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
-     uint packedY = packUnormArb(dataY, BITS_Y);
-
-     vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);
-     uint packedZ = packUnormArb(dataZ, BITS_Z);
-
-     uvec3 packedFinal = (uvec3(packedX, packedY, packedZ));
-
-     if(color.a < 0.0001) discard;
-     color = max(color, vec4(0.0005));
-
-     fragColor = color;
-     fragCompositeData = uvec4(packedFinal, 1u);
-     fragData = uvec4(packedFinal, 1u);
      gl_FragDepth = gl_FragCoord.z;
 }
