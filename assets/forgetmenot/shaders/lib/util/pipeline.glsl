@@ -32,7 +32,6 @@ bool isModdedDimension() {
      vec3 cam_dir_to_win(vec3 pos_cs, vec3 dir_cs, mat4 projMat) {
           vec4 p = vec4(pos_cs, 1.);
           vec4 n = vec4(dir_cs, 0.);
-          //n*=.1;
 
           vec4 X = (projMat * (p + n));
           vec4 Y = (projMat * p);
@@ -44,7 +43,7 @@ bool isModdedDimension() {
      }
 
      const uint power_of_two = 2u;
-     const uint last_level = 6u;
+     const uint last_level = 8u;
 
      uint cell_size(uint level) { return 1u << level; }
      float cell_size_f(uint level) { return float(cell_size(level)); }
@@ -66,7 +65,7 @@ bool isModdedDimension() {
           return mix(dist_negative(texel0, inner0, level), dist_positive(texel0, inner0, level), step(0.0, dir0));
      }
 
-     float next_cell_common(inout uvec2 texel, inout vec2 inner, vec2 dir, uint level) {
+     float next_cell(inout uvec2 texel, inout vec2 inner, vec2 dir, uint level) {
           vec2 dists_to_axis = vec2(
                dist_to_axis(texel.x, inner.x, level, dir.x),
                dist_to_axis(texel.y, inner.y, level, dir.y)
@@ -142,7 +141,7 @@ bool isModdedDimension() {
                uvec2 prev_texel = texel;
                vec2 prev_inner = inner;
                float prev_z = z;
-               float dist_xy = next_cell_common(texel, inner, dir_xy, level);
+               float dist_xy = next_cell(texel, inner, dir_xy, level);
                z += dist_xy * (dir_ws.z / dir_ws_xy_length);
 
                if(z >= lower_depth) {

@@ -2,7 +2,7 @@
     images: [
         {
             name: "depth_mips",
-            lod: 7,
+            lod: 8,
             internalFormat: "R32F",
             pixelFormat: "RED",
             pixelDataType: "FLOAT",
@@ -118,32 +118,20 @@
             colorAttachments: [{image: "depth_mips", lod: 0}]
         },
         {
-            name: "depth_mips_1",
-            colorAttachments: [{image: "depth_mips", lod: 1}]
-        },
-        {
             name: "depth_mips_2",
             colorAttachments: [{image: "depth_mips", lod: 2}]
-        },
-        {
-            name: "depth_mips_3",
-            colorAttachments: [{image: "depth_mips", lod: 3}]
         },
         {
             name: "depth_mips_4",
             colorAttachments: [{image: "depth_mips", lod: 4}]
         },
         {
-            name: "depth_mips_5",
-            colorAttachments: [{image: "depth_mips", lod: 5}]
-        },
-        {
             name: "depth_mips_6",
             colorAttachments: [{image: "depth_mips", lod: 6}]
         },
         {
-            name: "depth_mips_7",
-            colorAttachments: [{image: "depth_mips", lod: 7}]
+            name: "depth_mips_8",
+            colorAttachments: [{image: "depth_mips", lod: 8}]
         },
         {
             name: "deferred_solid",
@@ -271,15 +259,6 @@
                 lod: 0
             },
             {
-                name: "depth_mips_1",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_1",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 1
-            },
-            {
                 name: "depth_mips_2",
                 program: "depth_downsample",
                 framebuffer: "depth_mips_2",
@@ -287,15 +266,6 @@
                     "depth_mips"
                 ],
                 lod: 2
-            },
-            {
-                name: "depth_mips_3",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_3",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 3
             },
             {
                 name: "depth_mips_4",
@@ -307,15 +277,6 @@
                 lod: 4
             },
             {
-                name: "depth_mips_5",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_5",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 5
-            },
-            {
                 name: "depth_mips_6",
                 program: "depth_downsample",
                 framebuffer: "depth_mips_6",
@@ -325,13 +286,13 @@
                 lod: 6
             },
             {
-                name: "depth_mips_7",
+                name: "depth_mips_8",
                 program: "depth_downsample",
-                framebuffer: "depth_mips_7",
+                framebuffer: "depth_mips_8",
                 samplerImages: [
                     "depth_mips"
                 ],
-                lod: 7
+                lod: 8
             },
             {
                 name: "deferred_solid",
