@@ -149,7 +149,7 @@ bool isModdedDimension() {
                     if(level == 0u) {
                          hitPos.xy = (vec2(prev_texel) + vec2(0.5)) / frxu_size;
                          hitPos.z = prev_z >= lower_depth ? prev_z : lower_depth;
-                         return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < 0.5;
+                         return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < 1.0;
                     }
                     float mul = (lower_depth - prev_z) / (z - prev_z);
                     dist_xy *= mul;
@@ -234,13 +234,13 @@ bool isModdedDimension() {
                shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
                vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + 40.0 * vec3(0.0, (0.000001 * (sceneSpacePos.y + frx_cameraPos.y) - 0.000065), 0.0), frx_skyLightVector);
-               directLighting = 8.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+               directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
                if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
           }
 
           // Ambient lighting
           {
-               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y) * 0.75;
+               ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y) * 0.5;
                ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
                ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);

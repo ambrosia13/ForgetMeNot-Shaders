@@ -21,12 +21,11 @@
           );
 
           vec4 color = vec4(0.0);
-          color += textureLod(cubemap, FORWARD_VECS[0], 9) * 0.1;
-          color += textureLod(cubemap, FORWARD_VECS[1], 9) * 0.1;
-          color += textureLod(cubemap, FORWARD_VECS[2], 9) * 0.5;
-          color += textureLod(cubemap, FORWARD_VECS[3], 9) * 0.1;
-          color += textureLod(cubemap, FORWARD_VECS[4], 9) * 0.1;
-          color += textureLod(cubemap, FORWARD_VECS[5], 9) * 0.1;
+          color += textureLod(cubemap, normalize(FORWARD_VECS[0] + vec3(0.0, 1.0, 0.0)), 9) * 0.166;
+          color += textureLod(cubemap, normalize(FORWARD_VECS[1] + vec3(0.0, 1.0, 0.0)), 9) * 0.166;
+          color += textureLod(cubemap, normalize(FORWARD_VECS[2] + vec3(0.0, 1.0, 0.0)), 9) * 0.5;
+          color += textureLod(cubemap, normalize(FORWARD_VECS[4] + vec3(0.0, 1.0, 0.0)), 9) * 0.166;
+          color += textureLod(cubemap, normalize(FORWARD_VECS[5] + vec3(0.0, 1.0, 0.0)), 9) * 0.166;
 
           return color;
      }

@@ -41,5 +41,5 @@ void main() {
           mixFactor = 0.99;
      }
 
-     avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, 1.0 / min(100u, frx_renderFrames + 1u)));
+     avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, 1.0 / min(60u, frx_renderFrames + 1u)));
 }

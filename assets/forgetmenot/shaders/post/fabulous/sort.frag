@@ -210,7 +210,7 @@ void main() {
                 40,
                 u_depths,
                 hitPos
-            ) && linearizeDepth(hitPos.z) > linearizeDepth(min_depth);
+            );
 
             // Reflection reprojection
             vec3 hitPosScene = setupSceneSpacePos(hitPos);
