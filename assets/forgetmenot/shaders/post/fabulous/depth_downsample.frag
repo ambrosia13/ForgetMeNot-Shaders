@@ -1,20 +1,27 @@
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/includes.glsl
 
-uniform sampler2D u_color;
+uniform sampler2D u_depth_mips;
 
-in vec2 texcoord;
-
-layout(location = 0) out float fragColor;
+layout(location = 0) out float out_minDepth;
 
 void main() {
      init();
      
-     ivec2 pos = ivec2(gl_FragCoord.xy) << 1;//ivec2(texcoord * frxu_size) << 1;
+     const int power_of_two = 2;
+     const int cell_size = 1 << power_of_two;
 
-     float mn = 1.0;
-     mn = min(mn, texelFetch(u_color, pos + ivec2(0, 0), frxu_lod - 1).r);
-     mn = min(mn, texelFetch(u_color, pos + ivec2(1, 0), frxu_lod - 1).r);
-     mn = min(mn, texelFetch(u_color, pos + ivec2(1, 1), frxu_lod - 1).r);
-     mn = min(mn, texelFetch(u_color, pos + ivec2(0, 1), frxu_lod - 1).r);
-     fragColor = mn;
+     float minDepth = 1.0;
+
+     for(int x = 0; x < cell_size; ++x) {
+          for(int y = 0; y < cell_size; ++y) {
+               ivec2 pos = ivec2(gl_FragCoord.xy) << power_of_two;
+               pos += ivec2(x, y);
+               minDepth = min(
+                    minDepth,
+                    texelFetch(u_depth_mips, pos, frxu_lod - power_of_two).r
+               );
+          }
+     }
+
+     out_minDepth = minDepth;
 }
