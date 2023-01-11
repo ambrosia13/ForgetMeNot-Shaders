@@ -149,7 +149,7 @@ bool isModdedDimension() {
                     if(level == 0u) {
                          hitPos.xy = (vec2(prev_texel) + vec2(0.5)) / frxu_size;
                          hitPos.z = prev_z >= lower_depth ? prev_z : lower_depth;
-                         return hitPos.z < 1.0;
+                         return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < 0.5;
                     }
                     float mul = (lower_depth - prev_z) / (z - prev_z);
                     dist_xy *= mul;

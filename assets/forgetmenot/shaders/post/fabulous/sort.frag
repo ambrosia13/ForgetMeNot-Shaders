@@ -130,7 +130,7 @@ void main() {
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // pre fabulous blending
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    
     // Disable fabulous blending for water
     translucent_color.a = mix(translucent_color.a, 0.0, step(0.5, isWater));
 
@@ -210,7 +210,7 @@ void main() {
                 40,
                 u_depths,
                 hitPos
-            );
+            ) && linearizeDepth(hitPos.z) > linearizeDepth(min_depth);
 
             // Reflection reprojection
             vec3 hitPosScene = setupSceneSpacePos(hitPos);
