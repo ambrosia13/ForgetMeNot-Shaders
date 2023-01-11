@@ -36,10 +36,10 @@ void frx_materialFragment() {
         uv4 = uv - sampleOffset.yx;
 
 
-        float height1 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0).rgb);
-        float height2 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv2)), 0).rgb);
-        float height3 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0).rgb);
-        float height4 = frx_luminance(texture(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0).rgb);
+        float height1 = frx_luminance(textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0).rgb);
+        float height2 = frx_luminance(textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv2)), 0).rgb);
+        float height3 = frx_luminance(textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0).rgb);
+        float height4 = frx_luminance(textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0).rgb);
 
         float deltaX = (height2 - height1) * 1.0;
         float deltaY = (height4 - height3) * 1.0;

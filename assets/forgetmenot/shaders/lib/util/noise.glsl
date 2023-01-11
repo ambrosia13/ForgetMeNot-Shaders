@@ -35,18 +35,18 @@
           }
           // -----------------------------------------------------------------------------------------------
 
-          vec3 generateCosineVector(vec3 vector) {
+          vec3 generateCosineVector(vec3 vector, float roughness) {
                return normalize(
                     vector + 
-                    generateUnitVector(
+                    roughness * generateUnitVector(
                          vec2(
                               randF(), randF()
                          )
                     )
                );
           }
-          vec3 generateCosineVector(vec3 vector, float roughness) {
-               return mix(vector, generateCosineVector(vector), roughness);
+          vec3 generateCosineVector(vec3 vector) {
+               return generateCosineVector(vector, 1.0);
           }
      #endif
 

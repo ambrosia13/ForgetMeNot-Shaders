@@ -114,4 +114,82 @@
           uv /= msLUTRes;
           return texture(tex, uv).rgb;
      }
+
+     // Calculates the actual sky-view! It's a lat-long map (or maybe altitude-azimuth is the better term),
+     // but the latitude/altitude is non-linear to get more resolution near the horizon.
+     const int numScatteringSteps = 32;
+     vec3 raymarchScattering(
+          vec3 pos, 
+          vec3 rayDir, 
+          vec3 sunDir,
+          float tMax,
+          float numSteps,
+          sampler2D transmittanceLut,
+          sampler2D multiscatteringLut
+     ) {
+          float cosTheta = dot(rayDir, sunDir);
+          
+          float miePhaseValue = getMiePhase(cosTheta);
+          float rayleighPhaseValue = getRayleighPhase(-cosTheta);
+          
+          vec3 lum = vec3(0.0);
+          vec3 transmittance = vec3(1.0);
+          float t = 0.0;
+          for (float i = 0.0; i < numSteps; i += 1.0) {
+               float newT = ((i + 0.3)/numSteps)*tMax;
+               float dt = newT - t;
+               t = newT;
+               
+               vec3 newPos = pos + t * rayDir;
+               
+               vec3 rayleighScattering, extinction;
+               float mieScattering;
+               getScatteringValues(newPos, rayleighScattering, mieScattering, extinction);
+               
+               vec3 sampleTransmittance = exp(-dt*extinction);
+
+               vec3 sunTransmittance = getValFromTLUT(transmittanceLut, newPos, sunDir);
+               vec3 psiMS = getValFromMultiScattLUT(multiscatteringLut, newPos, sunDir);
+               
+               vec3 rayleighInScattering = rayleighScattering*(rayleighPhaseValue*sunTransmittance + psiMS);
+               vec3 mieInScattering = mieScattering*(miePhaseValue*sunTransmittance + psiMS);
+               vec3 inScattering = (rayleighInScattering + mieInScattering);
+
+               // Integrated scattering within path segment.
+               vec3 scatteringIntegral = (inScattering - inScattering * sampleTransmittance) / extinction;
+
+               lum += scatteringIntegral*transmittance;
+               
+               transmittance *= sampleTransmittance;
+          }
+          return lum;
+     }
+
+     vec3 getValFromSkyLUT(vec3 rayDir, vec3 sunDir, sampler2D skyLut) {
+          float height = length(skyViewPos);
+          vec3 up = skyViewPos * rcp(height);
+          
+          float horizonAngle = safeacos(sqrt(height * height - groundRadiusMM * groundRadiusMM) / height);
+          float altitudeAngle = horizonAngle - acos(dot(rayDir, up)); // Between -PI/2 and PI/2
+          float azimuthAngle; // Between 0 and 2*PI
+          if (abs(altitudeAngle) > (HALF_PI - .0001)) {
+               // Looking nearly straight up or down.
+               azimuthAngle = 0.0;
+          } else {
+               vec3 right = cross(sunDir, up);
+               vec3 forward = cross(up, right);
+               
+               vec3 projectedDir = normalize(rayDir - up*(dot(rayDir, up)));
+               float sinTheta = dot(projectedDir, right);
+               float cosTheta = dot(projectedDir, forward);
+               azimuthAngle = atan(sinTheta, cosTheta) + PI;
+          }
+          
+          // Non-linear mapping of altitude angle. See Section 5.3 of the paper.
+          float v = 0.5 + 0.5*sign(altitudeAngle)*sqrt(abs(altitudeAngle)*2.0/PI);
+          vec2 uv = vec2(azimuthAngle / (TAU), v);
+          
+          return texture(skyLut, uv).rgb;
+     }
+
 #endif

@@ -204,7 +204,7 @@
                 "u_color",
                 "u_data",
                 "u_depth",
-                "u_depth_mips",
+                "u_depths",
 
                 "u_shadow_map",
                 "u_shadow_tex",
@@ -234,7 +234,9 @@
                 "u_previous_color",
                 "u_skybox",
                 "u_data",
-                "u_depths"
+                "u_depths",
+
+                "u_sky_lut"
             ]
         },
         {
@@ -369,7 +371,9 @@
                     "resolve",
                     "skybox",
                     "all_data",
-                    "depth_mips"
+                    "depth_mips",
+
+                    "sky_lut"
                 ]
             },
             {

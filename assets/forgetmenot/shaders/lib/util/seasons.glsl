@@ -1,8 +1,4 @@
 #ifdef INCLUDE_SEASONS
-     #ifndef INCLUDE_NOISE
-          #error ("Noise needs to be included with seasons.")
-     #endif
-
      vec4 getSeasonFactors(out float time) {
           time = frx_worldDay + frx_worldTime;
 
@@ -44,7 +40,7 @@
                #else
                     float noise = 0.0;
                #endif
-
+               
                float leaves = float(isLeafBlock);
 
                vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noise);

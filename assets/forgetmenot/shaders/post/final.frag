@@ -28,13 +28,13 @@ void main() {
     float exposure = texelFetch(u_exposure, ivec2(0), 0).r;
 
     vec3 finalColor = color.rgb;
-    //float ev100 = log2(avgLuminance * 100.0 / 12.5);
+    //float ev100 = log2(exposure * 100.0 / 12.5);
     finalColor *= 0.5 / clamp(exposure, 0.1, 1.5);
 
     finalColor = frx_toneMap(finalColor);
 
     // finally, back into srgb
-    finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)) + randF() * 0.01 - 0.005);
+    finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)) + randF() * 0.02 - 0.01);
 
     fragColor = finalColor.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
     // fragColor = vec4(pow3(1.0 - (distance(texcoord, vec2(0.5)))));

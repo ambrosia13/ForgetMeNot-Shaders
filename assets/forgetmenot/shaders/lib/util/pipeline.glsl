@@ -248,8 +248,13 @@ bool isModdedDimension() {
                // handheld light
                {
                     float heldLightFactor = 1.0 / (1.0 + pow2(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos)));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+
                     heldLightFactor *= mix(clamp01(dot(-normal, fNormalize((sceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
-                    //heldLightFactor *= frx_smootherstep(frx_heldLight.a * 15.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+
+                    #ifdef frx_isHand
+                         heldLightFactor = mix(heldLightFactor, 0.1, float(frx_isHand));
+                    #endif
+
                     heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);
                     ambientLighting += pow(frx_heldLight.rgb * (1.0 + frx_heldLight.a), vec3(2.2)) * heldLightFactor;
                }

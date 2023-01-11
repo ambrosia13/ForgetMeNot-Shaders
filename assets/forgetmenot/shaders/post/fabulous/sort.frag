@@ -27,6 +27,8 @@ uniform samplerCube u_skybox;
 uniform usampler2D u_data;
 uniform sampler2D u_depths;
 
+uniform sampler2D u_sky_lut;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -225,6 +227,23 @@ void main() {
 
         composite *= mix(vec3(1.0), reflectColor, step(0.999, f0));
         composite = mix(composite, reflectColor, reflectance * step(f0, 0.999));
+    }
+
+    {
+        if(min_depth < 1.0 && frx_cameraInWater == 0) {
+            // vec3 fogScattering = raymarchScattering(skyViewPos, viewDir, getSunVector(), length(minSceneSpacePos) * 0.001, float(numScatteringSteps), u_transmittance, u_multiscattering) * 20.0;
+            // fogScattering += moonFlux * raymarchScattering(skyViewPos, viewDir, getMoonVector(), length(minSceneSpacePos) * 0.001, float(numScatteringSteps), u_transmittance, u_multiscattering) * 20.0;
+            float blockDistance = rcp(inversesqrt(dot(minSceneSpacePos, minSceneSpacePos)));
+
+            float fogDensity = 0.001;
+            fogDensity = mix(fogDensity, 0.003, linearstep(0.5, 0.0, frx_skyLightVector.y));
+
+            float fogTransmittance = exp2(-blockDistance * fogDensity);
+            // vec3 fogScattering = getValFromSkyLUT;
+
+
+            //composite = mix(fogScattering, composite, fogTransmittance);
+        }
     }
 
     {

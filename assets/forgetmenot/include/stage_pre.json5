@@ -99,7 +99,7 @@
           {
                name: "clouds",
                lod: 0,
-               internalFormat: "RG8",
+               internalFormat: "RG16",
                pixelFormat: "RG",
                pixelDataType: "UNSIGNED_BYTE",
                width: 512,
@@ -541,17 +541,7 @@
                     samplerImages: [
                          "skybox"
                     ]
-               },
-               {
-                    name: "skybox_d10",
-                    program: "cube_downsample",
-                    framebuffer: "skybox_d10",
-                    width: 1,
-                    height: 1,
-                    samplerImages: [
-                         "skybox"
-                    ]
-               },
+               }
           ]
      },
 }
