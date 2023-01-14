@@ -220,7 +220,7 @@ void main() {
         if(hit) {
             reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
         } else {
-            vec4 skybox = textureLod(u_skybox, cleanReflectDir, 9.0 / inversesqrt(roughness));
+            vec4 skybox = textureLod(u_skybox, cleanReflectDir, 9.0 * rcp(inversesqrt(roughness)));
 
             reflectColor = skybox.rgb * skyLight;
         }
