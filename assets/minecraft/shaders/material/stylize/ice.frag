@@ -48,7 +48,7 @@ void frx_materialFragment() {
     #endif
 
     #ifdef INTERNAL_MATERIALS
-        //frx_fragColor.rgb *= 0.5;
+        //frx_fragColor.rgb *= 0.75;
     #endif
 
     #if LUMI_PBR_API >= 8
