@@ -1,66 +1,66 @@
 {
-    options: [
-        {
-            includeToken: "forgetmenot:general",
-            categoryKey: "config.forgetmenot.category.general",
-            elements: {
-                enable_bloom: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.enable_bloom",
-                    descriptionKey: "config.forgetmenot.desc.enable_bloom"
-                },
-                emission: {
-                    default: 1.0,
-                    min: 0.0,
-                    max: 20.0,
-                    nameKey: "config.forgetmenot.name.emission",
-                    descriptionKey: "config.forgetmenot.desc.emission"
-                },
-                handheld_light: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.handheld_light",
-                    descriptionKey: "config.forgetmenot.desc.handheld_light"
-                },
-                taa: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.taa",
-                    descriptionKey: "config.forgetmenot.desc.taa"
-                },
-                fog: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.fog",
-                    descriptionKey: "config.forgetmenot.desc.fog"
-                },
-                rain_fog: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.rain_fog",
-                    descriptionKey: "config.forgetmenot.desc.rain_fog"
-                },
-            }
-        },
-        {
-            includeToken: "forgetmenot:seasons",
-            categoryKey: "config.forgetmenot.category.seasons",
-            elements: {
-                seasons: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.seasons",
-                    descriptionKey: "config.forgetmenot.desc.seasons"
-                },
-                season_length: {
-                    default: 10,
-                    min: 1,
-                    max: 100,
-                    nameKey: "config.forgetmenot.name.season_length",
-                    descriptionKey: "config.forgetmenot.desc.season_length"
-                },
-                transition_length: {
-                    default: 5,
-                    min: 1,
-                    max: 40,
-                    nameKey: "config.forgetmenot.name.transition_length",
-                    descriptionKey: "config.forgetmenot.desc.transition_length"
-                },
+	options: [
+		{
+			includeToken: "forgetmenot:general",
+			categoryKey: "config.forgetmenot.category.general",
+			elements: {
+				enable_bloom: {
+					default: true,
+					nameKey: "config.forgetmenot.name.enable_bloom",
+					descriptionKey: "config.forgetmenot.desc.enable_bloom"
+				},
+				emission: {
+					default: 1.0,
+					min: 0.0,
+					max: 20.0,
+					nameKey: "config.forgetmenot.name.emission",
+					descriptionKey: "config.forgetmenot.desc.emission"
+				},
+				handheld_light: {
+					default: true,
+					nameKey: "config.forgetmenot.name.handheld_light",
+					descriptionKey: "config.forgetmenot.desc.handheld_light"
+				},
+				taa: {
+					default: true,
+					nameKey: "config.forgetmenot.name.taa",
+					descriptionKey: "config.forgetmenot.desc.taa"
+				},
+				fog: {
+					default: true,
+					nameKey: "config.forgetmenot.name.fog",
+					descriptionKey: "config.forgetmenot.desc.fog"
+				},
+				rain_fog: {
+					default: true,
+					nameKey: "config.forgetmenot.name.rain_fog",
+					descriptionKey: "config.forgetmenot.desc.rain_fog"
+				},
+			}
+		},
+		{
+			includeToken: "forgetmenot:seasons",
+			categoryKey: "config.forgetmenot.category.seasons",
+			elements: {
+				seasons: {
+					default: true,
+					nameKey: "config.forgetmenot.name.seasons",
+					descriptionKey: "config.forgetmenot.desc.seasons"
+				},
+				season_length: {
+					default: 10,
+					min: 1,
+					max: 100,
+					nameKey: "config.forgetmenot.name.season_length",
+					descriptionKey: "config.forgetmenot.desc.season_length"
+				},
+				transition_length: {
+					default: 5,
+					min: 1,
+					max: 40,
+					nameKey: "config.forgetmenot.name.transition_length",
+					descriptionKey: "config.forgetmenot.desc.transition_length"
+				},
 				starting_season: {
 					default: "spring",
 					choices: ["spring", "summer", "autumn", "winter"],
@@ -69,28 +69,28 @@
 					nameKey: "config.forgetmenot.name.starting_season",
 					descriptionKey: "config.forgetmenot.desc.starting_season"
 				},
-                varied_tree_color: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.varied_tree_color",
-                    descriptionKey: "config.forgetmenot.desc.varied_tree_color"
-                },
-                falling_leaves: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.falling_leaves",
-                    descriptionKey: "config.forgetmenot.desc.falling_leaves"
-                },            
-            }
-        },
-        {
-            includeToken: "forgetmenot:misc",
-            categoryKey: "config.forgetmenot.category.misc",
-            elements: {
-                internal_materials: {
-                    default: true,
-                    nameKey: "config.forgetmenot.name.internal_materials",
-                    descriptionKey: "config.forgetmenot.desc.internal_materials"
-                },            
-            }
-        }
-    ]
+				varied_tree_color: {
+					default: true,
+					nameKey: "config.forgetmenot.name.varied_tree_color",
+					descriptionKey: "config.forgetmenot.desc.varied_tree_color"
+				},
+				falling_leaves: {
+					default: true,
+					nameKey: "config.forgetmenot.name.falling_leaves",
+					descriptionKey: "config.forgetmenot.desc.falling_leaves"
+				},			
+			}
+		},
+		{
+			includeToken: "forgetmenot:misc",
+			categoryKey: "config.forgetmenot.category.misc",
+			elements: {
+				internal_materials: {
+					default: true,
+					nameKey: "config.forgetmenot.name.internal_materials",
+					descriptionKey: "config.forgetmenot.desc.internal_materials"
+				},			
+			}
+		}
+	]
 }

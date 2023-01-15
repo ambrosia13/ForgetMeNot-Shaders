@@ -1,368 +1,368 @@
 {
-    images: [
-        {
-            name: "depth_mips",
-            lod: 8,
-            internalFormat: "R32F",
-            pixelFormat: "RED",
-            pixelDataType: "FLOAT",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "NEAREST"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "deferred_solid",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "sort",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "sort_copy",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-        {
-            name: "resolve",
-            lod: 0,
-            internalFormat: "R11F_G11F_B10F",
-            pixelFormat: "RGBA",
-            pixelDataType: "UNSIGNED_BYTE",
-            target: "TEXTURE_2D",
-            texParams: [
-                {
-                    name: "TEXTURE_MIN_FILTER", val: "LINEAR"
-                }, 
-                {
-                    name: "TEXTURE_MAG_FILTER", val: "LINEAR"
-                },
-                {
-                    name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
-                }, 
-                {
-                    name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
-                }
-            ]
-        },
-    ],
+	images: [
+		{
+			name: "depth_mips",
+			lod: 8,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "deferred_solid",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "sort",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "sort_copy",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "resolve",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+	],
 
-    framebuffers: [
-        {
-            name: "depth_mips_0",
-            colorAttachments: [{image: "depth_mips", lod: 0}]
-        },
-        {
-            name: "depth_mips_2",
-            colorAttachments: [{image: "depth_mips", lod: 2}]
-        },
-        {
-            name: "depth_mips_4",
-            colorAttachments: [{image: "depth_mips", lod: 4}]
-        },
-        {
-            name: "depth_mips_6",
-            colorAttachments: [{image: "depth_mips", lod: 6}]
-        },
-        {
-            name: "depth_mips_8",
-            colorAttachments: [{image: "depth_mips", lod: 8}]
-        },
-        {
-            name: "deferred_solid",
-            colorAttachments: [
-                {
-                    image: "deferred_solid", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "sort",
-            colorAttachments: [
-                {
-                    image: "sort", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "sort_copy",
-            colorAttachments: [
-                {
-                    image: "sort_copy", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "resolve",
-            colorAttachments: [
-                {
-                    image: "resolve", clearColor: 0x00000000
-                }
-            ]
-        },
-        {
-            name: "copy_to_main",
-            colorAttachments: [
-                {
-                    image: "main_color", clearColor: 0x00000000
-                }
-            ]
-        }
-    ],
+	framebuffers: [
+		{
+			name: "depth_mips_0",
+			colorAttachments: [{image: "depth_mips", lod: 0}]
+		},
+		{
+			name: "depth_mips_2",
+			colorAttachments: [{image: "depth_mips", lod: 2}]
+		},
+		{
+			name: "depth_mips_4",
+			colorAttachments: [{image: "depth_mips", lod: 4}]
+		},
+		{
+			name: "depth_mips_6",
+			colorAttachments: [{image: "depth_mips", lod: 6}]
+		},
+		{
+			name: "depth_mips_8",
+			colorAttachments: [{image: "depth_mips", lod: 8}]
+		},
+		{
+			name: "deferred_solid",
+			colorAttachments: [
+				{
+					image: "deferred_solid", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "sort",
+			colorAttachments: [
+				{
+					image: "sort", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "sort_copy",
+			colorAttachments: [
+				{
+					image: "sort_copy", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "resolve",
+			colorAttachments: [
+				{
+					image: "resolve", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "copy_to_main",
+			colorAttachments: [
+				{
+					image: "main_color", clearColor: 0x00000000
+				}
+			]
+		}
+	],
 
-    programs: [
-        {
-            name: "depth_downsample",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
-            samplers: [
-                "u_depth"
-            ]
-        },
-        {
-            name: "deferred_solid",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
-            samplers: [
-                "u_color",
-                "u_data",
-                "u_depth",
-                "u_depths",
+	programs: [
+		{
+			name: "depth_downsample",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
+			samplers: [
+				"u_depth"
+			]
+		},
+		{
+			name: "deferred_solid",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
+			samplers: [
+				"u_color",
+				"u_data",
+				"u_depth",
+				"u_depths",
 
-                "u_shadow_map",
-                "u_shadow_tex",
+				"u_shadow_map",
+				"u_shadow_tex",
 
-                "u_skybox",
-                "u_transmittance"
-            ]
-        },
-        {
-            name: "sort",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
-            samplers: [
-                "u_main_color",
-                "u_main_depth",
-                "u_translucent_color",
-                "u_translucent_depth",
-                "u_entity_color",
-                "u_entity_depth",
-                "u_weather_color",
-                "u_weather_depth",
-                "u_clouds_color",
-                "u_clouds_depth",
-                "u_particles_color",
-                "u_particles_depth",
-                
-                "u_previous_color",
-                "u_skybox",
-                "u_data",
-                "u_depths",
+				"u_skybox",
+				"u_transmittance"
+			]
+		},
+		{
+			name: "sort",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
+			samplers: [
+				"u_main_color",
+				"u_main_depth",
+				"u_translucent_color",
+				"u_translucent_depth",
+				"u_entity_color",
+				"u_entity_depth",
+				"u_weather_color",
+				"u_weather_depth",
+				"u_clouds_color",
+				"u_clouds_depth",
+				"u_particles_color",
+				"u_particles_depth",
+				
+				"u_previous_color",
+				"u_skybox",
+				"u_data",
+				"u_depths",
 
-                "u_sky_lut"
-            ]
-        },
-        {
-            name: "resolve",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/resolve.frag",
-            samplers: [
-                "u_current",
-                "u_previous",
-                "u_depth"
-            ]
-        },
-        {
-            name: "copy",
-            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-            fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
-            samplers: [
-                "u_composite"
-            ]
-        }
-    ],
+				"u_sky_lut"
+			]
+		},
+		{
+			name: "resolve",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/resolve.frag",
+			samplers: [
+				"u_current",
+				"u_previous",
+				"u_depth"
+			]
+		},
+		{
+			name: "copy",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
+			samplers: [
+				"u_composite"
+			]
+		}
+	],
 
-    fabulous: {
-        passes: [
-            {
-                name: "depth_mips_0",
-                program: "copy",
-                framebuffer: "depth_mips_0",
-                samplerImages: [
-                    "translucent_depth"
-                ],
-                lod: 0
-            },
-            {
-                name: "depth_mips_2",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_2",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 2
-            },
-            {
-                name: "depth_mips_4",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_4",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 4
-            },
-            {
-                name: "depth_mips_6",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_6",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 6
-            },
-            {
-                name: "depth_mips_8",
-                program: "depth_downsample",
-                framebuffer: "depth_mips_8",
-                samplerImages: [
-                    "depth_mips"
-                ],
-                lod: 8
-            },
-            {
-                name: "deferred_solid",
-                program: "deferred_solid",
-                framebuffer: "deferred_solid",
-                samplerImages: [
-                    "main_color",
-                    "main_data",
-                    "particles_depth",
-                    "depth_mips"
+	fabulous: {
+		passes: [
+			{
+				name: "depth_mips_0",
+				program: "copy",
+				framebuffer: "depth_mips_0",
+				samplerImages: [
+					"translucent_depth"
+				],
+				lod: 0
+			},
+			{
+				name: "depth_mips_2",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_2",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 2
+			},
+			{
+				name: "depth_mips_4",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_4",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 4
+			},
+			{
+				name: "depth_mips_6",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_6",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 6
+			},
+			{
+				name: "depth_mips_8",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_8",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 8
+			},
+			{
+				name: "deferred_solid",
+				program: "deferred_solid",
+				framebuffer: "deferred_solid",
+				samplerImages: [
+					"main_color",
+					"main_data",
+					"particles_depth",
+					"depth_mips"
 
-                    "shadow_map",
-                    "shadow_map",
+					"shadow_map",
+					"shadow_map",
 
-                    "skybox",
-                    "transmittance_lut"
-                ]
-            },
-            {
-                name: "sort",
-                program: "sort",
-                framebuffer: "sort",
-                samplerImages: [
-                    "deferred_solid",
-                    "main_depth",
-                    "translucent_color",
-                    "translucent_depth",
-                    "entity_color",
-                    "entity_depth",
-                    "weather_color",
-                    "weather_depth",
-                    "clouds_color",
-                    "clouds_depth",
-                    "particles_color",
-                    "particles_depth",
+					"skybox",
+					"transmittance_lut"
+				]
+			},
+			{
+				name: "sort",
+				program: "sort",
+				framebuffer: "sort",
+				samplerImages: [
+					"deferred_solid",
+					"main_depth",
+					"translucent_color",
+					"translucent_depth",
+					"entity_color",
+					"entity_depth",
+					"weather_color",
+					"weather_depth",
+					"clouds_color",
+					"clouds_depth",
+					"particles_color",
+					"particles_depth",
 
-                    "resolve",
-                    "skybox",
-                    "all_data",
-                    "depth_mips",
+					"resolve",
+					"skybox",
+					"all_data",
+					"depth_mips",
 
-                    "sky_lut"
-                ]
-            },
-            {
-                name: "resolve",
-                program: "resolve",
-                framebuffer: "resolve",
-                samplerImages: [
-                    "sort",
-                    "sort_copy",
-                    "translucent_depth",
-                ]
-            },
-            {
-                name: "copy",
-                program: "copy",
-                framebuffer: "copy_to_main",
-                samplerImages: [
-                    "resolve"
-                ]
-            },
-            {
-                name: "sort_copy",
-                program: "copy",
-                framebuffer: "sort_copy",
-                samplerImages: [
-                    "sort"
-                ]
-            }
-        ]
-    }
+					"sky_lut"
+				]
+			},
+			{
+				name: "resolve",
+				program: "resolve",
+				framebuffer: "resolve",
+				samplerImages: [
+					"sort",
+					"sort_copy",
+					"translucent_depth",
+				]
+			},
+			{
+				name: "copy",
+				program: "copy",
+				framebuffer: "copy_to_main",
+				samplerImages: [
+					"resolve"
+				]
+			},
+			{
+				name: "sort_copy",
+				program: "copy",
+				framebuffer: "sort_copy",
+				samplerImages: [
+					"sort"
+				]
+			}
+		]
+	}
 }

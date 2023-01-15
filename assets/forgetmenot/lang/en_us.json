@@ -1,24 +1,24 @@
 {
-    "pipeline.forgetmenot.name": "Forget-Me-Not Shaders",
-    "pipeline.forgetmenot.desc": "Immersive shaders for Canvas",
+	"pipeline.forgetmenot.name": "Forget-Me-Not Shaders",
+	"pipeline.forgetmenot.desc": "Immersive shaders for Canvas",
 
-    "config.forgetmenot.category.general": "General",
+	"config.forgetmenot.category.general": "General",
 
-    "config.forgetmenot.name.rtao": "Ray Traced Ambient Occlusion",
-    "config.forgetmenot.desc.rtao": "Performs an expensive raytrace to determine high quality ambient lighting, darkening corners.",
-    "config.forgetmenot.name.emission": "Emission Brightness",
-    "config.forgetmenot.desc.emission": "The brightness of emissive objects. Increases the brightness of bloom.",
-    "config.forgetmenot.name.handheld_light": "Handheld Light",
-    "config.forgetmenot.desc.handheld_light": "Handheld light handled by the shader. Only works for the player.",
-    "config.forgetmenot.name.taa": "Temporal Anti Aliasing",
-    "config.forgetmenot.desc.taa": "Uses data across different frames to smartly remove most aliasing from the image.",
-    "config.forgetmenot.name.fog": "Fog",
-    "config.forgetmenot.desc.fog": "Regular vanilla fog.",
-    "config.forgetmenot.name.rain_fog": "Rain Fog",
-    "config.forgetmenot.desc.rain_fog": "Subtle exponential fog during rain.",
+	"config.forgetmenot.name.rtao": "Ray Traced Ambient Occlusion",
+	"config.forgetmenot.desc.rtao": "Performs an expensive raytrace to determine high quality ambient lighting, darkening corners.",
+	"config.forgetmenot.name.emission": "Emission Brightness",
+	"config.forgetmenot.desc.emission": "The brightness of emissive objects. Increases the brightness of bloom.",
+	"config.forgetmenot.name.handheld_light": "Handheld Light",
+	"config.forgetmenot.desc.handheld_light": "Handheld light handled by the shader. Only works for the player.",
+	"config.forgetmenot.name.taa": "Temporal Anti Aliasing",
+	"config.forgetmenot.desc.taa": "Uses data across different frames to smartly remove most aliasing from the image.",
+	"config.forgetmenot.name.fog": "Fog",
+	"config.forgetmenot.desc.fog": "Regular vanilla fog.",
+	"config.forgetmenot.name.rain_fog": "Rain Fog",
+	"config.forgetmenot.desc.rain_fog": "Subtle exponential fog during rain.",
 
-    "config.forgetmenot.category.bloom": "Bloom",
+	"config.forgetmenot.category.bloom": "Bloom",
 
-    "config.forgetmenot.name.enable_bloom": "Enable Bloom",
-    "config.forgetmenot.desc.enable_bloom": "Allows bright colors to bleed onto other colors. Mild performance impact."
+	"config.forgetmenot.name.enable_bloom": "Enable Bloom",
+	"config.forgetmenot.desc.enable_bloom": "Allows bright colors to bleed onto other colors. Mild performance impact."
 }
