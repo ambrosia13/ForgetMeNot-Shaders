@@ -45,6 +45,7 @@ void autoGenNormal() {
 	vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0);
 	vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0);
 
+	// Cursed way to make sure we don't sample invalid pixels.
 	sample1 = mix(sample1, sample2, step(sample1.a, 0.0001));
 	sample2 = mix(sample2, sample1, step(sample2.a, 0.0001));
 	sample3 = mix(sample3, sample4, step(sample3.a, 0.0001));
@@ -58,7 +59,7 @@ void autoGenNormal() {
 	float deltaX = (height2 - height1) * 2.0 * fmn_autoGenNormalStrength;
 	float deltaY = (height4 - height3) * 2.0 * fmn_autoGenNormalStrength;
 
-	frx_fragNormal = fNormalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
+	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
 
 void resolveMaterials() {
@@ -89,6 +90,7 @@ void resolveMaterials() {
 	autoGenNormal();
 	//frx_fragNormal = abs(frx_fragNormal);
 	frx_fragNormal = tbn * fNormalize(frx_fragNormal);
+	//frx_fragNormal = mix(frx_fragNormal, -frx_fragNormal, 1.0 - step(0.0, dot(frx_vertexNormal.xyz, frx_fragNormal)));
 	if(frx_isHand) {
 		// Fix hand normals
 		frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
@@ -183,7 +185,7 @@ void frx_pipelineFragment() {
 		if(color.a < 0.0001) discard;
 		color = max(color, vec4(0.0005));
 
-		fragColor = color;
+		fragColor = color;//vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
 		fragCompositeData = uvec4(packedFinal, 1u);
 		fragData = uvec4(packedFinal, 1u);
 	}

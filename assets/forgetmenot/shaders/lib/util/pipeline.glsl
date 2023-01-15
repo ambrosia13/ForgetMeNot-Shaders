@@ -2,7 +2,7 @@
 // Pipeline internals.
 // --------------------------------------------------------------------------------------------------------
 
-const uvec4 BITS_X = uvec4(9u, 9u, 9u, 5u);
+const uvec4 BITS_X = uvec4(10u, 10u, 10u, 2u);
 const uvec4 BITS_Y = uvec4(10u, 10u, 10u, 2u);
 const uvec4 BITS_Z = uvec4(14u, 12u, 4u, 2u);
 

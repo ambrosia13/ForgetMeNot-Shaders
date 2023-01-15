@@ -16,10 +16,11 @@ void frx_materialFragment() {
 		//frx_fragColor.rgb *= vec3(1.75, 0.4, 0.05) * 1.5;
 		frx_fragColor.rgb *= vec3(2.0, 1.5, 1.0);
 	#endif
-	//frx_fragColor.rgb *= 10.0;
-	//frx_fragColor.rgb *= 1.0;
 
-	//frx_fragEmissive = frx_luminance(frx_fragColor.rgb);
+	#ifdef PBR_ENABLED
+		fmn_autoGenNormalStrength = 0.5;
+	#endif
+
 	frx_fragEmissive = 1.0;
 	frx_fragEnableDiffuse = false;
 	frx_fragEnableAo = false;

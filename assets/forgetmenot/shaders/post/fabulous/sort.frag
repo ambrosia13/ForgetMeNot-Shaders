@@ -185,32 +185,39 @@ void main() {
 
 	if(min_depth < 1.0 && roughness < 1.0) {
 		vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
+		vec3 flatNormal = fNormalize(cross(dFdx(minSceneSpacePos), dFdy(minSceneSpacePos)));
 
 		vec3 reflectColor = vec3(0.0);
 		vec3 reflectance = getReflectance(vec3(f0), clamp01(dot(-normal, viewDir)), roughness);
 
 		vec3 cleanReflectDir = reflect(viewDir, normal);
+		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, flatNormal), step(dot(cleanReflectDir, flatNormal), 0.0));
+
 		vec3 reflectDir = generateCosineVector(cleanReflectDir, roughness);
 		
 		vec3 hitPos;
 		bool hit = false;
 
 		if(roughness < 0.5) {
+			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
+
 			vec3 pos_ws = vec3(gl_FragCoord.xy, min_depth);
 			vec3 dir_ws = normalize(
 				(
-					viewSpaceToScreenSpace(viewSpacePos + frx_normalModelMatrix * reflectDir) -
+					viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) -
 					vec3(texcoord, min_depth)
 				) * vec3(frxu_size, 1.0)
 			);
 
-			hit = raytrace(
-				pos_ws,
-				dir_ws,
-				40,
-				u_depths,
-				hitPos
-			);
+			if((viewSpacePos + viewReflectDir).z < 0.0) {
+				hit = raytrace(
+					pos_ws,
+					dir_ws,
+					40,
+					u_depths,
+					hitPos
+				);
+			}
 
 			// Reflection reprojection
 			vec3 hitPosScene = setupSceneSpacePos(hitPos);

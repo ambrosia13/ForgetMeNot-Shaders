@@ -9,5 +9,7 @@ void frx_materialFragment() {
 		//if(!frx_isGui) frx_fragColor.rgb *= mix(1.0, 3.0, step(0.05, saturation));
 
 		frx_fragRoughness = 1.0 - 0.7 * step(0.05, saturation);
+
+		fmn_autoGenNormalStrength = 0.5;
 	#endif
 }
