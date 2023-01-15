@@ -95,8 +95,9 @@ void frx_materialFragment() {
                             
         #endif
 
-        frx_fragReflectance = 0.05;
+        frx_fragReflectance = 0.1;
         frx_fragRoughness = 0.01;
+        // fmn_autoGenNormalStrength = 0.5;//smoothstep(0.0, 0.5, dot(-frx_vertexNormal.xyz, fmn_fNormalize(frx_vertex.xyz)));
     #endif
 
     fmn_isWater = 1;

@@ -28,14 +28,52 @@ mat3 tbn;
 
 vec3 lightmap;
 
+void autoGenNormal() {
+     if(fmn_autoGenNormalStrength < 0.001 || frx_fragNormal != vec3(0.0, 0.0, 1.0) || fmn_isPlayer == 1) return;
+
+     vec2 uv = frx_normalizeMappedUV(frx_texcoord);
+     vec2 uv1, uv2, uv3, uv4;
+     vec2 sampleOffset = vec2(1.0 / 16.0, 0.0);
+
+     uv1 = uv + sampleOffset.xy;
+     uv2 = uv - sampleOffset.xy;
+     uv3 = uv + sampleOffset.yx;
+     uv4 = uv - sampleOffset.yx;
+
+     vec4 sample1 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0);
+     vec4 sample2 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv2)), 0);
+     vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0);
+     vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0);
+
+     sample1 = mix(sample1, sample2, step(sample1.a, 0.0001));
+     sample2 = mix(sample2, sample1, step(sample2.a, 0.0001));
+     sample3 = mix(sample3, sample4, step(sample3.a, 0.0001));
+     sample4 = mix(sample4, sample3, step(sample4.a, 0.0001));
+
+     float height1 = frx_luminance(sample1.rgb * sample1.a);
+     float height2 = frx_luminance(sample2.rgb * sample2.a);
+     float height3 = frx_luminance(sample3.rgb * sample3.a);
+     float height4 = frx_luminance(sample4.rgb * sample4.a);
+
+     float deltaX = (height2 - height1) * 2.0 * fmn_autoGenNormalStrength;
+     float deltaY = (height4 - height3) * 2.0 * fmn_autoGenNormalStrength;
+
+     frx_fragNormal = fNormalize(vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY)));
+}
+
 void resolveMaterials() {
      isInventory = frx_isGui && !frx_isHand;
      gamma = vec3(isInventory ? 1.0 : 2.2);
+     tbn = mat3(
+          frx_vertexTangent.xyz, 
+          cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
+          frx_vertexNormal.xyz
+     );
 
      lightmap = vec3(1.0);
 
      #ifdef SEASONS
-          vec3 worldSpacePos = mod(frx_vertex.xyz + frx_cameraPos.xyz, vec3(10000.0));
+          vec3 worldSpacePos = mod(frx_vertex.xyz + frx_cameraPos.xyz, vec3(5000.0));
           worldSpacePos = floor(worldSpacePos * 16.0) / 16.0;
 
           vec3 rcpVertexColor = 1.0 / frx_vertexColor.rgb;
@@ -46,8 +84,18 @@ void resolveMaterials() {
 
      // Put color into linear color space
      frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
-     
+
+     // Put normal from tangent space to world space
+     autoGenNormal();
+     //frx_fragNormal = abs(frx_fragNormal);
+     frx_fragNormal = tbn * fNormalize(frx_fragNormal);
+     if(frx_isHand) {
+          // Fix hand normals
+          frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
+     }
+
      if(!isInventory) {
+          // If the current dimension is non-vanilla, use MC's lightmap.
           if(isModdedDimension()) {
                lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;
                lightmap *= mix(frx_vertexLight.z, 1.0, frx_matDisableAo);
@@ -83,24 +131,6 @@ void resolveMaterials() {
      // Fix up lightmap values
      frx_fragLight.xy = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
      frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
-
-     #ifdef PBR_ENABLED
-          // Convert tangent space frx_fragNormal to world space
-          tbn = mat3(
-               frx_vertexTangent.xyz, 
-               cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
-               frx_vertexNormal.xyz
-          );
-
-          frx_fragNormal = tbn * frx_fragNormal;
-          if(frx_isHand) {
-               // Fix hand normals
-               frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
-          }
-     #else
-          // safeguard - shouldn't really be necessary
-          #define frx_fragNormal frx_vertexNormal
-     #endif
 
      fmn_sssAmount = max(fmn_sssAmount, float(frx_matDisableDiffuse));
 }

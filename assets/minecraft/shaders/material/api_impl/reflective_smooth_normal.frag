@@ -2,9 +2,9 @@
 
 void frx_materialFragment() {
     #ifdef PBR_ENABLED
-        #if FMN_PBR >= 1
-            fmn_sssAmount = 0.75;
-        #endif
+        frx_fragReflectance = 0.05;
+        frx_fragRoughness = 0.01;
+
+        fmn_autoGenNormalStrength = 0.75;
     #endif
-    frx_fragEnableDiffuse = false;
 }

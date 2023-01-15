@@ -2,7 +2,9 @@
 
 void frx_materialFragment() {
      #ifdef PBR_ENABLED
-          fmn_isPlayer = 1;
-          fmn_autoGenNormalStrength = 0.0;
+          frx_fragReflectance = 1.0;
+          frx_fragRoughness = 0.3;
+
+          fmn_autoGenNormalStrength = 0.75;
      #endif
 }

@@ -1,7 +1,0 @@
-{
-	"layers": [
-		{
-			"fragmentSource": "minecraft:shaders/material/dielectrics/reflective.frag"
-		}
-	]
-}
