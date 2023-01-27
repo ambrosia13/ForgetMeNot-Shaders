@@ -86,7 +86,7 @@ void frx_materialFragment() {
 			float deltaX = ((centerNoise - height1) / (sampleOffset * 0.5)) * wavesStrength;
 			float deltaY = ((centerNoise - height3) / (sampleOffset * 0.5)) * wavesStrength;
 
-			frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
+			//frx_fragNormal = vec3(deltaX, deltaY, 1.0 - (deltaX * deltaX + deltaY * deltaY));
 			
 			frx_fragNormal = fmn_fNormalize(frx_fragNormal);
 		#else
@@ -97,7 +97,7 @@ void frx_materialFragment() {
 
 		frx_fragReflectance = 0.1;
 		frx_fragRoughness = 0.01;
-		// fmn_autoGenNormalStrength = 0.5;//smoothstep(0.0, 0.5, dot(-frx_vertexNormal.xyz, fmn_fNormalize(frx_vertex.xyz)));
+		fmn_autoGenNormalStrength = 0.5;//smoothstep(0.0, 0.5, dot(-frx_vertexNormal.xyz, fmn_fNormalize(frx_vertex.xyz)));
 	#endif
 
 	fmn_isWater = 1;

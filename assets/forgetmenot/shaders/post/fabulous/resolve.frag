@@ -18,7 +18,8 @@ void main() {
 		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
 
 		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(sceneSpacePos + positionDifference);
+		vec2 sampleCoord = mix(lastScreenPos.xy, texcoord, abs(sign(clamp01(lastScreenPos.xy) - lastScreenPos.xy)));
 
-		fragColor = texture(u_previous, mix(lastScreenPos.xy, texcoord, abs(sign(clamp01(lastScreenPos.xy) - lastScreenPos.xy))));
+		fragColor = texture(u_previous, sampleCoord);
 	}
 }

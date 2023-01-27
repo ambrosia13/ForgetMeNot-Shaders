@@ -50,7 +50,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
 	const int cumulusOctaves = 8;
 	float noise = sampleCumulusNoise(plane, cumulusOctaves);
 
-	float transmittance = exp2(-noise * 5.0);
+	float transmittance = exp2(-noise * 10.0);
 	
 	float scattering;
 

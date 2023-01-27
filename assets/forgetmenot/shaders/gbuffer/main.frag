@@ -20,7 +20,8 @@ uniform sampler2D u_glint;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out uvec4 fragCompositeData;
-layout(location = 2) out uvec4 fragData;
+layout(location = 2) out vec4 vertexCompositeNormal;
+layout(location = 3) out uvec4 fragData;
 
 bool isInventory;
 vec3 gamma;
@@ -33,6 +34,8 @@ void autoGenNormal() {
 
 	vec2 uv = frx_normalizeMappedUV(frx_texcoord);
 	vec2 uv1, uv2, uv3, uv4;
+
+	
 	vec2 sampleOffset = vec2(1.0 / 16.0, 0.0);
 
 	uv1 = uv + sampleOffset.xy;
@@ -56,8 +59,8 @@ void autoGenNormal() {
 	float height3 = frx_luminance(sample3.rgb * sample3.a);
 	float height4 = frx_luminance(sample4.rgb * sample4.a);
 
-	float deltaX = (height2 - height1) * 2.0 * fmn_autoGenNormalStrength;
-	float deltaY = (height4 - height3) * 2.0 * fmn_autoGenNormalStrength;
+	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength;
+	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength;
 
 	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
@@ -85,6 +88,7 @@ void resolveMaterials() {
 
 	// Put color into linear color space
 	frx_fragColor.rgb = pow(frx_fragColor.rgb, gamma);
+	//frx_fragColor.rgb = vec3(1.0);
 
 	// Put normal from tangent space to world space
 	autoGenNormal();
@@ -187,6 +191,7 @@ void frx_pipelineFragment() {
 
 		fragColor = color;//vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
 		fragCompositeData = uvec4(packedFinal, 1u);
+		vertexCompositeNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
 		fragData = uvec4(packedFinal, 1u);
 	}
 

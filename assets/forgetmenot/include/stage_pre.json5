@@ -445,6 +445,7 @@
 				framebuffer: "skybox",
 				width: 1024,
 				height: 1024,
+				lod: 0,
 				samplerImages: [
 					"sky_lut",
 					"sky_lut_night",
@@ -456,8 +457,9 @@
 				name: "skybox_d1",
 				program: "cube_downsample",
 				framebuffer: "skybox_d1",
-				width: 512,
-				height: 512,
+				width: 1024,
+				height: 1024,
+				lod: 1,
 				samplerImages: [
 					"skybox"
 				]
@@ -466,8 +468,9 @@
 				name: "skybox_d2",
 				program: "cube_downsample",
 				framebuffer: "skybox_d2",
-				width: 256,
-				height: 256,
+				width: 1024,
+				height: 1024,
+				lod: 2,
 				samplerImages: [
 					"skybox"
 				]
@@ -476,8 +479,9 @@
 				name: "skybox_d3",
 				program: "cube_downsample",
 				framebuffer: "skybox_d3",
-				width: 128,
-				height: 128,
+				width: 1024,
+				height: 1024,
+				lod: 3,
 				samplerImages: [
 					"skybox"
 				]
@@ -486,8 +490,9 @@
 				name: "skybox_d4",
 				program: "cube_downsample",
 				framebuffer: "skybox_d4",
-				width: 64,
-				height: 64,
+				width: 1024,
+				height: 1024,
+				lod: 4,
 				samplerImages: [
 					"skybox"
 				]
@@ -496,8 +501,9 @@
 				name: "skybox_d5",
 				program: "cube_downsample",
 				framebuffer: "skybox_d5",
-				width: 32,
-				height: 32,
+				width: 1024,
+				height: 1024,
+				lod: 5,
 				samplerImages: [
 					"skybox"
 				]
@@ -506,8 +512,9 @@
 				name: "skybox_d6",
 				program: "cube_downsample",
 				framebuffer: "skybox_d6",
-				width: 16,
-				height: 16,
+				width: 1024,
+				height: 1024,
+				lod: 6, 
 				samplerImages: [
 					"skybox"
 				]
@@ -516,8 +523,9 @@
 				name: "skybox_d7",
 				program: "cube_downsample",
 				framebuffer: "skybox_d7",
-				width: 8,
-				height: 8,
+				width: 1024,
+				height: 1024,
+				lod: 7, 
 				samplerImages: [
 					"skybox"
 				]
@@ -526,8 +534,9 @@
 				name: "skybox_d8",
 				program: "cube_downsample",
 				framebuffer: "skybox_d8",
-				width: 4,
-				height: 4,
+				width: 1024,
+				height: 1024,
+				lod: 8,
 				samplerImages: [
 					"skybox"
 				]
@@ -536,8 +545,20 @@
 				name: "skybox_d9",
 				program: "cube_downsample",
 				framebuffer: "skybox_d9",
-				width: 2,
-				height: 2,
+				width: 1024,
+				height: 1024,
+				lod: 9,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d10",
+				program: "cube_downsample",
+				framebuffer: "skybox_d10",
+				width: 1024,
+				height: 1024,
+				lod: 10,
 				samplerImages: [
 					"skybox"
 				]

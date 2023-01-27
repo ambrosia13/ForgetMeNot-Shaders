@@ -19,5 +19,5 @@
 
 #include frex:shaders/lib/noise/noise2d.glsl
 #include frex:shaders/lib/noise/noise3d.glsl
-#include frex:shaders/lib/noise/cellular2x2.glsl
+#include frex:shaders/lib/noise/cellular3d.glsl
 

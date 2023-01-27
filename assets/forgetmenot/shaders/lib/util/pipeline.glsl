@@ -146,8 +146,8 @@ bool isModdedDimension() {
 
 			if(z >= lower_depth) {
 				if(level == 0u) {
-					hitPos.xy = (vec2(prev_texel) + vec2(0.5)) / frxu_size;
-					hitPos.z = prev_z >= lower_depth ? prev_z : lower_depth;
+					hitPos.xy = (vec2(prev_texel) + 0.5) / frxu_size;
+					hitPos.z = mix(lower_depth, prev_z, step(lower_depth, prev_z));
 					return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < 1.0;
 				}
 				float mul = (lower_depth - prev_z) / (z - prev_z);
@@ -232,14 +232,14 @@ bool isModdedDimension() {
 
 			shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
-			vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + 40.0 * vec3(0.0, (0.000001 * (sceneSpacePos.y + frx_cameraPos.y) - 0.000065), 0.0), frx_skyLightVector);
+			vec3 directLightTransmittance = textureLod(skybox, frx_skyLightVector, 3).rgb * 0.005;
 			directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 			if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
 		}
 
 		// Ambient lighting
 		{
-			ambientLighting = sampleAllCubemapFaces(skybox).rgb * (1.5 + 0.5 * normal.y) * 0.5;
+			ambientLighting = textureLod(skybox, normal, 10).rgb;
 			ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
 			ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
@@ -268,3 +268,41 @@ bool isModdedDimension() {
 		return color;
 	}
 #endif
+
+struct Material {
+	vec3 fragNormal;
+
+	float blockLight;
+	float skyLight;
+	float vanillaAo;
+
+	float f0;
+	float roughness;
+	float sssAmount;
+
+	float disableDiffuse;
+	float isWater;
+};
+
+Material unpackMaterial(in uvec3 packedMaterial) {
+	Material material;
+
+	vec4 unpackedX = unpackUnormArb(packedMaterial.x, BITS_X);
+	vec4 unpackedY = unpackUnormArb(packedMaterial.y, BITS_Y);
+	vec4 unpackedZ = unpackUnormArb(packedMaterial.z, BITS_Z);
+
+	material.fragNormal = normalize(clamp01(unpackedX.xyz) * 2.0 - 1.0);
+
+	material.blockLight = unpackedY.x * unpackedY.x;
+	material.skyLight = unpackedY.y;
+	material.vanillaAo = unpackedY.z * unpackedY.z;
+
+	material.f0 = unpackedZ.x * unpackedZ.x;
+	material.roughness = unpackedZ.y * unpackedZ.y;
+	material.sssAmount = unpackedZ.z;
+
+	material.disableDiffuse = step(0.5, unpackedY.w);
+	material.isWater = step(0.5, unpackedX.w);
+
+	return material;
+}

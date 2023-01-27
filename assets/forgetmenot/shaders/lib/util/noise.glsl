@@ -121,4 +121,23 @@
 	float fbmHash(vec2 uv, int octaves, float t) {
 		return fbmHash(uv, octaves, 2.0, t);
 	}
+	// FBM Hash noise that accepts a time parameter
+	float fbm3d(vec3 uv, int octaves, float lacunarity, float t) {
+		float noise = 0.01;
+		float amp = 0.5;
+
+		for (int i = 0; i < octaves; i++) {
+			noise += amp * (snoise(uv) * 0.5 + 0.5);
+			uv = uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
+			amp *= 0.5;
+		}
+
+		return noise * (octaves + 1.0) / octaves;
+	}
+	float fbm3d(vec3 uv, int octaves) {
+		return fbm3d(uv, octaves, 2.0, 0.0);
+	}
+	float fbm3d(vec3 uv, int octaves, float t) {
+		return fbm3d(uv, octaves, 2.0, t);
+	}
 #endif

@@ -84,32 +84,30 @@
 	// --------------------------------------------------------------------------------------------------------
 #endif
 
-#ifdef INCLUDE_PACKING
-	// --------------------------------------------------------------------------------------------------------
-	// Packing functions from sixthsurge#3922. 
-	// Found in the shaderLABS discord @ #snippets.
-	// --------------------------------------------------------------------------------------------------------
-	// Pack 4 unsigned normalized numbers into a uint32_t with arbitrary precision per channel
+// --------------------------------------------------------------------------------------------------------
+// Packing functions from sixthsurge#3922. 
+// Found in the shaderLABS discord @ #snippets.
+// --------------------------------------------------------------------------------------------------------
+// Pack 4 unsigned normalized numbers into a uint32_t with arbitrary precision per channel
 
-	uint packUnormArb(vec4 data, const uvec4 bits) {
-		vec4 mul = exp2(vec4(bits)) - 1.0;
+uint packUnormArb(vec4 data, const uvec4 bits) {
+	vec4 mul = exp2(vec4(bits)) - 1.0;
 
-		uvec4 shift = uvec4(0, bits.x, bits.x + bits.y, bits.x + bits.y + bits.z);
-		uvec4 shifted = uvec4(data * mul + 0.5) << shift;
+	uvec4 shift = uvec4(0, bits.x, bits.x + bits.y, bits.x + bits.y + bits.z);
+	uvec4 shifted = uvec4(data * mul + 0.5) << shift;
 
-		return shifted.x | shifted.y | shifted.z | shifted.w;
-	}
+	return shifted.x | shifted.y | shifted.z | shifted.w;
+}
 
-	vec4 unpackUnormArb(uint pack, const uvec4 bits) {
-		uvec4 maxValue  = uvec4(exp2(vec4(bits)) - 1);
-		uvec4 shift	= uvec4(0, bits.x, bits.x + bits.y, bits.x + bits.y + bits.z);
-		uvec4 unshifted = uvec4(pack) >> shift;
-			 unshifted = unshifted & maxValue;
+vec4 unpackUnormArb(uint pack, const uvec4 bits) {
+	uvec4 maxValue  = uvec4(exp2(vec4(bits)) - 1);
+	uvec4 shift	= uvec4(0, bits.x, bits.x + bits.y, bits.x + bits.y + bits.z);
+	uvec4 unshifted = uvec4(pack) >> shift;
+	unshifted = unshifted & maxValue;
 
-		return vec4(unshifted) / vec4(maxValue);
-	}
-	// --------------------------------------------------------------------------------------------------------
-#endif
+	return vec4(unshifted) / vec4(maxValue);
+}
+// --------------------------------------------------------------------------------------------------------
 
 #ifdef INCLUDE_NOISE
 	// --------------------------------------------------------------------------------------------------------

@@ -29,7 +29,7 @@ void main() {
 
 	vec3 finalColor = color.rgb;
 	//float ev100 = log2(exposure * 100.0 / 12.5);
-	finalColor *= 0.5 / clamp(exposure, 0.1, 1.5);
+	finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
 
 	finalColor = frx_toneMap(finalColor);
 

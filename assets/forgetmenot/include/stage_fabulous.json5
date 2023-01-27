@@ -23,6 +23,72 @@
 			]
 		},
 		{
+			name: "ssao",
+			lod: 0,
+			internalFormat: "R8",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "ssao_copy",
+			lod: 0,
+			internalFormat: "R8",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "depth_copy",
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
 			name: "deferred_solid",
 			lod: 0,
 			internalFormat: "R11F_G11F_B10F",
@@ -134,6 +200,30 @@
 			colorAttachments: [{image: "depth_mips", lod: 8}]
 		},
 		{
+			name: "ssao",
+			colorAttachments: [
+				{
+					image: "ssao", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "ssao_copy",
+			colorAttachments: [
+				{
+					image: "ssao_copy", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "depth_copy",
+			colorAttachments: [
+				{
+					image: "depth_copy", clearColor: 0x00000000
+				}
+			]
+		},
+		{
 			name: "deferred_solid",
 			colorAttachments: [
 				{
@@ -185,6 +275,18 @@
 			]
 		},
 		{
+			name: "ssao",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/ssao.frag",
+			samplers: [
+				"u_depth",
+				"u_data",
+
+				"u_previous",
+				"u_previous_depth"
+			]
+		},
+		{
 			name: "deferred_solid",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
@@ -192,7 +294,7 @@
 				"u_color",
 				"u_data",
 				"u_depth",
-				"u_depths",
+				"u_ssao",
 
 				"u_shadow_map",
 				"u_shadow_tex",
@@ -222,6 +324,7 @@
 				"u_previous_color",
 				"u_skybox",
 				"u_data",
+				"u_vertex_normal",
 				"u_depths",
 
 				"u_sky_lut"
@@ -295,6 +398,37 @@
 				lod: 8
 			},
 			{
+				name: "ssao",
+				program: "ssao",
+				framebuffer: "ssao",
+				samplerImages: [
+					"particles_depth",
+					"main_data",
+
+					"ssao_copy",
+					"depth_copy"
+				],
+				lod: 1
+			},
+			{
+				name: "ssao_copy",
+				program: "copy",
+				framebuffer: "ssao_copy",
+				samplerImages: [
+					"ssao"
+				],
+				lod: 0
+			},
+			{
+				name: "depth_copy",
+				program: "copy",
+				framebuffer: "depth_copy",
+				samplerImages: [
+					"particles_depth"
+				],
+				lod: 1
+			},
+			{
 				name: "deferred_solid",
 				program: "deferred_solid",
 				framebuffer: "deferred_solid",
@@ -302,7 +436,7 @@
 					"main_color",
 					"main_data",
 					"particles_depth",
-					"depth_mips"
+					"ssao"
 
 					"shadow_map",
 					"shadow_map",
@@ -332,6 +466,7 @@
 					"resolve",
 					"skybox",
 					"all_data",
+					"vertex_normal",
 					"depth_mips",
 
 					"sky_lut"
