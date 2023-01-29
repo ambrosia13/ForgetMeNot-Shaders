@@ -402,7 +402,7 @@
 				program: "ssao",
 				framebuffer: "ssao",
 				samplerImages: [
-					"particles_depth",
+					"depth_mips",
 					"main_data",
 
 					"ssao_copy",

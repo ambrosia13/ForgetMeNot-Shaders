@@ -187,6 +187,8 @@ bool isModdedDimension() {
 		bool doPcss,
 		int shadowMapSamples
 	) {
+		skyLight = mix(skyLight, 1.0, float(frx_worldIsEnd));
+
 		float emission = clamp01(frx_luminance(albedo) - 1.0);
 		float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);
 
@@ -233,7 +235,7 @@ bool isModdedDimension() {
 			shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
 			vec3 directLightTransmittance = textureLod(skybox, frx_skyLightVector, 3).rgb * 0.005;
-			directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+			directLighting = 5.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 			if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
 		}
 
@@ -294,7 +296,7 @@ Material unpackMaterial(in uvec3 packedMaterial) {
 	material.fragNormal = normalize(clamp01(unpackedX.xyz) * 2.0 - 1.0);
 
 	material.blockLight = unpackedY.x * unpackedY.x;
-	material.skyLight = unpackedY.y;
+	material.skyLight = mix(unpackedY.y, 1.0, 1.0 - frx_worldIsOverworld);
 	material.vanillaAo = unpackedY.z * unpackedY.z;
 
 	material.f0 = unpackedZ.x * unpackedZ.x;

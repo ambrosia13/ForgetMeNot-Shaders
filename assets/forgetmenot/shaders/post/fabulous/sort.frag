@@ -197,7 +197,7 @@ void main() {
 
 			// Reflection reprojection
 			vec3 hitPosScene = setupSceneSpacePos(hitPos);
-			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene);
+			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene + frx_cameraPos - frx_lastCameraPos);
 		}
 		
 		if(hit) {
@@ -236,14 +236,14 @@ void main() {
 				fogAccumulator *= distance(fogPos, startPos) / (frx_viewDistance * 0.25);
 			#else
 				float fogAccumulator = length(blockDistance) / 1500.0;
-				fogAccumulator *= mix(1.0, exp(-viewDir.y * 5.0), floor(min_depth));
+				if(frx_worldIsOverworld == 1) fogAccumulator *= mix(1.0, 0.5 * exp(-viewDir.y * 5.0), floor(min_depth));
 			#endif
 
 			float fogTransmittance = exp2(-fogAccumulator);
 			vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
-			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, frx_skyLightVector, 0).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9);
-			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, -frx_skyLightVector, 0).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9);
-
+			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * fogTransmittance * frx_skyLightTransitionFactor;
+			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * fogTransmittance * frx_skyLightTransitionFactor;
+			fogScattering *= max(frx_smoothedEyeBrightness.y, material.skyLight);
 
 			composite = mix(fogScattering, composite, fogTransmittance);
 		}

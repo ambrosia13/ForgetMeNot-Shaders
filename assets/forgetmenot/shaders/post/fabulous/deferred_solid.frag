@@ -31,6 +31,7 @@ void main() {
 	uvec3 packedSample = texture(u_data, texcoord).xyz;
 	float depth = texture(u_depth, texcoord).r;
 	vec3 color = texture(u_color, texcoord).rgb;
+	vec3 albedo = color;
 
 	vec3 viewDir = getViewDir();
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
@@ -51,6 +52,8 @@ void main() {
 	}
 	
 	if(depth < 1.0) {
+		//material.vanillaAo = pow2(texture(u_ssao, texcoord * 0.5).r);
+
 		color = basicLighting(
 			color,
 			sceneSpacePos,

@@ -21,21 +21,21 @@ float sampleCumulusNoise(in vec2 plane, in int octaves) {
 	//	 fbmHash(plane * 10.0 + 2000.0, 4, 2.0, 0.5)
 	// );
 	// return smoothstep(0.5, 0.9, smoothHashBlocky(plane * 0.75) * 0.5 + 0.5);
-
+//return 0.0;
 	return smoothstep(
-		0.5, 
+		0.35, 
 		0.8, 
 		fbmHash(
 			plane,
 			octaves, 
-			2.0, 
-			0.05
-		)
+			2.5, 
+			0.1
+		) * smoothHash(plane * 0.3 + frx_renderSeconds * 0.01)
 	);
 }
 
 vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
-	if(viewDir.y < 0.0) return vec2(1.0, 0.0);
+	if(viewDir.y < 0.0 || frx_worldIsEnd == 1) return vec2(1.0, 0.0);
 
 	vec2 plane = 2.0 * viewDir.xz * rcp(0.1 * dot(viewDir.xz, viewDir.xz) + viewDir.y);
 
@@ -47,10 +47,10 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
 	);
 	// vec2 sunLightDirection = fNormalize(mix(1.0, -1.0, linearstepFrom0(0.2, getMoonVector().y)) * getSunVector().xz * rcp(abs(frx_skyLightVector.y)) - temp);
 
-	const int cumulusOctaves = 8;
+	const int cumulusOctaves = 6;
 	float noise = sampleCumulusNoise(plane, cumulusOctaves);
 
-	float transmittance = exp2(-noise * 10.0);
+	float transmittance = exp2(-noise * 5.0);
 	
 	float scattering;
 

@@ -14,8 +14,56 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
+const int rays = 80;
+
+void castRay(inout float ssao, vec3 viewNormal, vec3 viewSpacePos, vec3 screenSpacePos, float linearDepth, int i) {
+	bool hit = false;
+
+	vec3 viewSpaceDir = generateCosineVector(viewNormal);
+	vec3 screenSpaceDir = (
+		(
+			viewSpaceToScreenSpace(viewSpacePos + viewSpaceDir) -
+			screenSpacePos
+		)
+	);
+
+	if((viewSpacePos + viewSpaceDir).z > 0.0) return;
+
+	screenSpacePos += screenSpaceDir * randF();
+
+	if(clamp01(screenSpacePos.xy) != screenSpacePos.xy) return;
+
+	for(int lod = 2; lod >= 2; lod -= 2) {
+		float depthQuery = textureLod(u_depth, screenSpacePos.xy, lod).r;
+		hit = screenSpacePos.z > depthQuery && abs(linearizeDepth(screenSpacePos.z) - linearizeDepth(depthQuery)) < 1.0;
+		if(!hit) {
+			return;
+		}
+	}
+
+	// hit = raytrace(
+	// 	pos_ws,
+	// 	dir_ws,
+	// 	80,
+	// 	u_depths,
+	// 	hitPos
+	// );
+
+	ssao -= float(hit) / rays * 1.0;
+}
+
+float doSSAO(vec3 viewNormal, vec3 viewSpacePos, vec3 screenSpacePos, float linearDepth) {
+	float ssao = 1.0;
+
+	for(int i = 0; i < rays; i++) {
+		castRay(ssao, viewNormal, viewSpacePos, screenSpacePos, linearDepth, i);
+	}
+
+	return ssao;
+}
+
 void main() {
-	float depth = texture(u_depth, texcoord).r;
+	float depth = textureLod(u_depth, texcoord, 0).r;
 	float linearDepth = linearizeDepth(depth);
 
 	vec3 normal = fNormalize(unpackUnormArb(texture(u_data, texcoord).x, BITS_X).xyz * 2.0 - 1.0);
@@ -27,49 +75,12 @@ void main() {
 	}
 
 	const int rays = 20;
-	float ssao = 1.0;
 
 	vec3 viewSpacePos = setupViewSpacePos(texcoord, depth);
 	vec3 screenSpacePos = vec3(texcoord, depth);
 
-	for(int i = 0; i < rays; i++) {
-		vec3 hitPos;
-		bool hit = false;
+	float ssao = doSSAO(viewNormal, viewSpacePos, screenSpacePos, linearDepth);
 
-
-		vec3 viewSpaceDir = generateCosineVector(viewNormal);
-		vec3 screenSpaceDir = (
-			normalize(
-				viewSpaceToScreenSpace(viewSpacePos + viewSpaceDir) -
-				screenSpacePos
-			)
-		);
-
-		if((viewSpacePos + viewSpaceDir).z > 0.0) continue;
-
-		screenSpacePos += screenSpaceDir * max(0.01, 0.05 - linearDepth / 256.0) * interleavedGradient(i);
-
-		if(clamp01(screenSpacePos.xy) != screenSpacePos.xy) continue;
-
-		float depthQuery = textureLod(u_depth, screenSpacePos.xy, 0).r;
-		// for(int lod = 8; lod >= 2; lod -= 2) {
-			hit = screenSpacePos.z > depthQuery && abs(linearizeDepth(screenSpacePos.z) - linearizeDepth(depthQuery)) < 3.0;
-		// 	if(!hit) {
-		// 		break;
-		// 	}
-		// }
-
-		// hit = raytrace(
-		// 	pos_ws,
-		// 	dir_ws,
-		// 	80,
-		// 	u_depths,
-		// 	hitPos
-		// );
-
-		ssao -= float(hit) / rays * 1.0;
-	}
-	
 	vec2 lastFrameCoords = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(texcoord, depth) + (frx_cameraPos - frx_lastCameraPos)).xy;
 
 	vec2 lastFrameSample = texture(u_previous, lastFrameCoords * 0.5).rg;

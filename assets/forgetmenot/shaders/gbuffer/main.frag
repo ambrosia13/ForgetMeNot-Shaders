@@ -43,10 +43,14 @@ void autoGenNormal() {
 	uv3 = uv + sampleOffset.yx;
 	uv4 = uv - sampleOffset.yx;
 
+	float lodFactor = pow(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal)), 1.0 / 2.0);
+
 	vec4 sample1 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0);
 	vec4 sample2 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv2)), 0);
 	vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0);
 	vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0);
+
+	//frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), pow4(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal))));
 
 	// Cursed way to make sure we don't sample invalid pixels.
 	sample1 = mix(sample1, sample2, step(sample1.a, 0.0001));
@@ -59,8 +63,8 @@ void autoGenNormal() {
 	float height3 = frx_luminance(sample3.rgb * sample3.a);
 	float height4 = frx_luminance(sample4.rgb * sample4.a);
 
-	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength;
-	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength;
+	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
+	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
 
 	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
