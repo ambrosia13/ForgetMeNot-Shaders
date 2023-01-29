@@ -168,6 +168,16 @@ bool isModdedDimension() {
 #endif
 
 #ifdef INCLUDE_LIGHTING
+	vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + bias * 0.15, 1.0);
+		cascade = selectShadowCascade(shadowViewPos);
+
+		vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
+		vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+
+		return shadowScreenPos;
+	}
+
 	// Basic diffuse lighting
 	vec3 basicLighting(
 		in vec3 albedo,
@@ -187,6 +197,8 @@ bool isModdedDimension() {
 		bool doPcss,
 		int shadowMapSamples
 	) {
+		skyLight = mix(skyLight, 1.0, float(frx_worldIsEnd));
+
 		float emission = clamp01(frx_luminance(albedo) - 1.0);
 		float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);
 
@@ -196,12 +208,8 @@ bool isModdedDimension() {
 
 		// Direct lighting
 		{
-			vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
-			int cascade = selectShadowCascade(shadowViewPos);
-			float cascadeF = float(cascade);
-
-			vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
-			vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+			int cascade;
+			vec3 shadowScreenPos = setupShadowPos(sceneSpacePos, normal * 0.1, cascade);
 
 			shadowScreenPos.z -= 0.0005 * (3 - cascade) * (1.0 - NdotL);
 
@@ -214,7 +222,7 @@ bool isModdedDimension() {
 					vec2 sampleCoord = shadowScreenPos.xy + sampleOffset / SHADOW_MAP_SIZE;
 
 					float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
-					float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * mix(mix(mix(0.5, 1.0, step(0.5, cascadeF)), 2.0, step(1.5, cascadeF)), 3.0, step(2.5, cascadeF));
+					float diff = max(0.0, shadowScreenPos.z - depthQuery) * max(250.0, 500.0 * cascade);
 
 					penumbraSize += min(1.0 * cascade, diff / shadowMapSamples);
 				}
@@ -222,7 +230,7 @@ bool isModdedDimension() {
 				penumbraSize = 2.0;
 			}
 
-			penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(normal, frx_skyLightVector)) * 0.5 + 0.5));
+			penumbraSize = mix(penumbraSize, 8.0 * cascade, sssAmount * (-sign(dot(normal, frx_skyLightVector)) * 0.5 + 0.5));
 
 			for(int i = 0; i < shadowMapSamples; i++) {
 				vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
@@ -233,7 +241,7 @@ bool isModdedDimension() {
 			shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
 			vec3 directLightTransmittance = textureLod(skybox, frx_skyLightVector, 3).rgb * 0.005;
-			directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+			directLighting = 5.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 			if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
 		}
 
@@ -242,7 +250,7 @@ bool isModdedDimension() {
 			ambientLighting = textureLod(skybox, normal, 10).rgb;
 			ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
-			ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
+			ambientLighting += blockLight * vec3(2.4, 1.2, 0.75);
 			
 			// handheld light
 			{
@@ -294,7 +302,7 @@ Material unpackMaterial(in uvec3 packedMaterial) {
 	material.fragNormal = normalize(clamp01(unpackedX.xyz) * 2.0 - 1.0);
 
 	material.blockLight = unpackedY.x * unpackedY.x;
-	material.skyLight = unpackedY.y;
+	material.skyLight = mix(unpackedY.y, 1.0, 1.0 - frx_worldIsOverworld);
 	material.vanillaAo = unpackedY.z * unpackedY.z;
 
 	material.f0 = unpackedZ.x * unpackedZ.x;

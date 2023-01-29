@@ -26,6 +26,10 @@
 
 			return interleavedGradient(seed, t);
 		}
+		float interleavedGradientStatic() {
+			ivec2 seed = ivec2(gl_FragCoord.xy);
+			return interleavedGradient(seed, 0);
+		}
 
 		// accepts sampleOffset parameter
 		float interleavedGradient(int sampleOffset) {
@@ -33,6 +37,10 @@
 			int t = int(frx_renderFrames % 10000u);
 
 			return interleavedGradient(seed, t);
+		}
+		float interleavedGradientStatic(int sampleOffset) {
+			ivec2 seed = ivec2(gl_FragCoord.xy) + sampleOffset;
+			return interleavedGradient(seed, 0);
 		}
 	#endif
 	// --------------------------------------------------------------------------------------------------------

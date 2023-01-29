@@ -29,6 +29,10 @@ mat3 tbn;
 
 vec3 lightmap;
 
+vec2 repeatAndMirrorCoords(vec2 uv) {
+	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
+}
+
 void autoGenNormal() {
 	if(fmn_autoGenNormalStrength < 0.001 || frx_fragNormal != vec3(0.0, 0.0, 1.0) || fmn_isPlayer == 1) return;
 
@@ -36,17 +40,21 @@ void autoGenNormal() {
 	vec2 uv1, uv2, uv3, uv4;
 
 	
-	vec2 sampleOffset = vec2(1.0 / 16.0, 0.0);
+	vec2 sampleOffset = vec2(1.0 / 32.0, 0.0);
 
 	uv1 = uv + sampleOffset.xy;
 	uv2 = uv - sampleOffset.xy;
 	uv3 = uv + sampleOffset.yx;
 	uv4 = uv - sampleOffset.yx;
 
-	vec4 sample1 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv1)), 0);
-	vec4 sample2 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv2)), 0);
-	vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv3)), 0);
-	vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(fract(uv4)), 0);
+	float lodFactor = pow(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal)), 1.0 / 2.0);
+
+	vec4 sample1 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv1)), 0);
+	vec4 sample2 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv2)), 0);
+	vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv3)), 0);
+	vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv4)), 0);
+
+	//frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), pow4(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal))));
 
 	// Cursed way to make sure we don't sample invalid pixels.
 	sample1 = mix(sample1, sample2, step(sample1.a, 0.0001));
@@ -59,8 +67,8 @@ void autoGenNormal() {
 	float height3 = frx_luminance(sample3.rgb * sample3.a);
 	float height4 = frx_luminance(sample4.rgb * sample4.a);
 
-	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength;
-	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength;
+	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
+	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
 
 	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
@@ -83,7 +91,7 @@ void resolveMaterials() {
 		vec3 rcpVertexColor = 1.0 / frx_vertexColor.rgb;
 		frx_fragColor.rgb *= mix(vec3(1.0), rcpVertexColor * getSeasonColor(frx_vertexColor.rgb, fmn_isLeafBlock, worldSpacePos), 0.5 * fmn_isFoliage * step(0.001, distance(frx_vertexColor.rgb, vec3(1.0))));
 	
-		frx_fragColor.a *= mix(1.0, step(hash13(worldSpacePos), getLeavesFallingThreshold(worldSpacePos)), fmn_isLeafBlock);
+		frx_fragColor.a *= mix(1.0, step(hash13(mod(worldSpacePos, 100.0)), getLeavesFallingThreshold(worldSpacePos)), fmn_isLeafBlock);
 	#endif
 
 	// Put color into linear color space
@@ -135,7 +143,7 @@ void resolveMaterials() {
 	}
 
 	// Fix up lightmap values
-	frx_fragLight.xy = smoothstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
+	frx_fragLight.xy = linearstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
 	frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
 
 	fmn_sssAmount = max(fmn_sssAmount, float(frx_matDisableDiffuse));

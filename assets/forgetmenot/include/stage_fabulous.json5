@@ -277,13 +277,29 @@
 		{
 			name: "ssao",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/fabulous/ssao.frag",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/ssao/ssao.frag",
 			samplers: [
 				"u_depth",
 				"u_data",
-
-				"u_previous",
-				"u_previous_depth"
+				"u_blue_noise"
+			]
+		},
+		{
+			name: "ssao_blur_v",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/ssao/ssao_blur_v.frag",
+			samplers: [
+				"u_ssao",
+				"u_depth"
+			]
+		},
+		{
+			name: "ssao_blur_h",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/ssao/ssao_blur_h.frag",
+			samplers: [
+				"u_ssao",
+				"u_depth"
 			]
 		},
 		{
@@ -327,7 +343,7 @@
 				"u_vertex_normal",
 				"u_depths",
 
-				"u_sky_lut"
+				"u_shadow_map"
 			]
 		},
 		{
@@ -397,28 +413,77 @@
 				],
 				lod: 8
 			},
-			{
-				name: "ssao",
-				program: "ssao",
-				framebuffer: "ssao",
-				samplerImages: [
-					"particles_depth",
-					"main_data",
-
-					"ssao_copy",
-					"depth_copy"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_copy",
-				program: "copy",
-				framebuffer: "ssao_copy",
-				samplerImages: [
-					"ssao"
-				],
-				lod: 0
-			},
+			// {
+			// 	name: "ssao",
+			// 	program: "ssao",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"depth_mips",
+			// 		"main_data",
+			// 		"forgetmenot:textures/blue_noise.png"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v_2",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h_2",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v_3",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h_3",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
 			{
 				name: "depth_copy",
 				program: "copy",
@@ -469,7 +534,7 @@
 					"vertex_normal",
 					"depth_mips",
 
-					"sky_lut"
+					"shadow_map"
 				]
 			},
 			{

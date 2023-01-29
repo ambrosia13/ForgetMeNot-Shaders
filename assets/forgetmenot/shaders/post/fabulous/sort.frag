@@ -7,7 +7,9 @@
 #define INCLUDE_RAYTRACER
 #define INCLUDE_SKY
 #define INCLUDE_CUBEMAPS
-#include forgetmenot:shaders/lib/includes.glsl 
+#define INCLUDE_SHADOW
+#define INCLUDE_LIGHTING
+#include forgetmenot:shaders/lib/includes.glsl
 
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
@@ -28,7 +30,7 @@ uniform usampler2D u_data;
 uniform sampler2D u_vertex_normal;
 uniform sampler2D u_depths;
 
-uniform sampler2D u_sky_lut;
+uniform sampler2DArrayShadow u_shadow_map;
 
 in vec2 texcoord;
 
@@ -154,13 +156,13 @@ void main() {
 		vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
 		// Water absorption
-		composite *= mix(fNormalize(waterFogColor), vec3(0.75), exp(-waterFogDistance * mix(1.0, 1.0, float(frx_cameraInWater))));
+		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance));
 		
 		// Water scattering
 		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT + 0.4 * frx_cameraInWater)) * 0.99 + 0.01);
 	}
 
-	if(min_depth < 1.0 && material.roughness < 0.95) {
+	if(min_depth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
 		vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
 		vec3 reflectColor = vec3(0.0);
@@ -197,7 +199,7 @@ void main() {
 
 			// Reflection reprojection
 			vec3 hitPosScene = setupSceneSpacePos(hitPos);
-			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene);
+			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene + frx_cameraPos - frx_lastCameraPos);
 		}
 		
 		if(hit) {
@@ -219,31 +221,43 @@ void main() {
 		if(frx_cameraInWater == 0) {
 			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(minSceneSpacePos, minSceneSpacePos))));
 
-			#ifdef VOLUMETRIC_FOG				
-				vec3 fogPos = viewDir * min(max(256.0, frx_viewDistance), blockDistance);
+			vec3 fogPos = viewDir * min(max(256.0, frx_viewDistance), blockDistance);
 
-				vec3 startPos = fogPos;
-				float fogAccumulator = 0.0;
+			vec3 startPos = fogPos;
+			float vlFactor = 0.0;
 
-				const int VOLUMETRIC_FOG_STEPS = 30;
+			// const int VOLUMETRIC_FOG_STEPS = 30;
+			// for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
+			// 	fogPos -= fogPos / (VOLUMETRIC_FOG_STEPS) * interleavedGradient();
+
+			// 	vec3 samplePos = fogPos + frx_cameraPos;
+			// 	fogAccumulator += 2.0 * smoothstep(0.0 + smoothstep(50.0, 120.0, samplePos.y), 1.0, fbm3d((samplePos) * 0.01, 4, 3.0, 0.02)) / VOLUMETRIC_FOG_STEPS;
+			// }
+
+			#ifdef VOLUMETRIC_FOG
+				const int VOLUMETRIC_FOG_STEPS = 10;
 				for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
 					fogPos -= fogPos / (VOLUMETRIC_FOG_STEPS) * interleavedGradient();
 
-					vec3 samplePos = fogPos + frx_cameraPos;
-					fogAccumulator += 2.0 * smoothstep(0.0 + smoothstep(50.0, 120.0, samplePos.y), 1.0, fbm3d((samplePos) * 0.01, 4, 3.0, 0.02)) / VOLUMETRIC_FOG_STEPS;
+					int cascade;
+					vec3 shadowPos = setupShadowPos(fogPos, vec3(0.0), cascade);
+					vlFactor += texture(u_shadow_map, vec4(shadowPos.xy, cascade, shadowPos.z)) / VOLUMETRIC_FOG_STEPS;
 				}
 
-				fogAccumulator *= distance(fogPos, startPos) / (frx_viewDistance * 0.25);
+				vlFactor *= distance(fogPos, startPos) / (frx_viewDistance * 0.25);
 			#else
-				float fogAccumulator = length(blockDistance) / 1500.0;
-				fogAccumulator *= mix(1.0, exp(-viewDir.y * 5.0), floor(min_depth));
+				vlFactor = linearstep(150.0, 200.0, blockDistance);
 			#endif
+
+			float fogAccumulator = length(blockDistance) / 1500.0;
+			if(frx_worldIsOverworld == 1) fogAccumulator *= mix(1.0, 0.5 * exp(-viewDir.y * 5.0), floor(min_depth));
+
 
 			float fogTransmittance = exp2(-fogAccumulator);
 			vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
-			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, frx_skyLightVector, 0).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9);
-			fogScattering += fogTransmittance * 0.05 * textureLod(u_skybox, -frx_skyLightVector, 0).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9);
-
+			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			fogScattering *= max(frx_smoothedEyeBrightness.y, material.skyLight);
 
 			composite = mix(fogScattering, composite, fogTransmittance);
 		}

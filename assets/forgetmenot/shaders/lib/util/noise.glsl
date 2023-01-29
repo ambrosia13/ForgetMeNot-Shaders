@@ -18,10 +18,15 @@
 
 	#ifdef FRAGMENT_SHADER
 		uint rngState = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+		uint rngStateStatic = uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
 
 		float randF() { 
 			pcg(rngState); 
 			return float(rngState) / float(0xffffffffu); 
+		}
+		float randFStatic() {
+			pcg(rngStateStatic);
+			return float(rngStateStatic) / float(0xffffffffu); 
 		}
 
 		// From Jessie
