@@ -35,11 +35,7 @@ float sampleCumulusNoise(in vec2 plane, in int octaves) {
 }
 
 vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
-<<<<<<< HEAD
 	if(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM) > 0.0 || frx_worldIsEnd == 1) return vec2(1.0, 0.0);
-=======
-	if(viewDir.y < 0.0 || frx_worldIsEnd == 1) return vec2(1.0, 0.0);
->>>>>>> 27765ee7f2d95e051bffc28a44b0f1110f55c6f6
 
 	vec2 plane = 2.0 * viewDir.xz * rcp(0.1 * dot(viewDir.xz, viewDir.xz) + viewDir.y);
 

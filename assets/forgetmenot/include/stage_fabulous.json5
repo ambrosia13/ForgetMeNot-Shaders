@@ -413,7 +413,6 @@
 				],
 				lod: 8
 			},
-<<<<<<< HEAD
 			// {
 			// 	name: "ssao",
 			// 	program: "ssao",
@@ -485,30 +484,6 @@
 			// 	],
 			// 	lod: 1
 			// },
-=======
-			{
-				name: "ssao",
-				program: "ssao",
-				framebuffer: "ssao",
-				samplerImages: [
-					"depth_mips",
-					"main_data",
-
-					"ssao_copy",
-					"depth_copy"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_copy",
-				program: "copy",
-				framebuffer: "ssao_copy",
-				samplerImages: [
-					"ssao"
-				],
-				lod: 0
-			},
->>>>>>> 27765ee7f2d95e051bffc28a44b0f1110f55c6f6
 			{
 				name: "depth_copy",
 				program: "copy",
