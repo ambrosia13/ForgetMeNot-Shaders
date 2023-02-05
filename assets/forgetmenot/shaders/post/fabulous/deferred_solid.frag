@@ -53,7 +53,10 @@ void main() {
 	
 	if(depth < 1.0) {
 		//material.vanillaAo = pow2(texture(u_ssao, texcoord * 0.5).r);
+<<<<<<< HEAD
 		material.vanillaAo = pow(material.vanillaAo, 1.3);
+=======
+>>>>>>> 27765ee7f2d95e051bffc28a44b0f1110f55c6f6
 
 		color = basicLighting(
 			color,
