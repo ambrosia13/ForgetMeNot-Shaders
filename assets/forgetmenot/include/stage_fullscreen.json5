@@ -415,7 +415,6 @@
 					"taa"
 				],
 				lod: 0,
-				toggleConfig: "enable_bloom"
 			},
 			{
 				name: "bloom_d0",
@@ -609,7 +608,21 @@
 				program: "final",
 				framebuffer: "copy_to_main",
 				samplerImages: [
-					"final",
+					{
+						default: "final",
+						optionMap: {
+							enable_bloom: [
+								{
+									from: "true",
+									to: "final"
+								},
+								{
+									from: "false",
+									to: "taa"
+								}
+							]
+						}
+					},
 					"exposure"
 				],
 			},

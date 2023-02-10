@@ -25,6 +25,30 @@
 			]
 		},
 		{
+			name: "transmittance_lut_copy",
+			lod: 0,
+			width: 1,
+			height: 1,
+			internalFormat: "RGB8",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
 			name: "multiscattering_lut",
 			lod: 0,
 			width: 32,
@@ -180,6 +204,14 @@
 			]
 		},
 		{
+			name: "transmittance_lut_copy",
+			colorAttachments: [
+				{
+					image: "transmittance_lut_copy", lod: 0
+				}
+			]
+		},
+		{
 			name: "clouds",
 			colorAttachments: [
 				{image: "clouds", layer: 0},
@@ -315,11 +347,19 @@
 
 	programs: [
 		{
+			name: "copy",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/copy.frag",
+			samplers: [
+				"u_color"
+			]
+		},
+		{
 			name: "transmittance_lut",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/gen/transmittance.frag",
 			samplers: [
-
+				"u_transmittance_copy"
 			]
 		},
 		{
@@ -327,7 +367,8 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/gen/multiscattering.frag",
 			samplers: [
-				"u_transmittance"
+				"u_transmittance",
+				"u_transmittance_copy"
 			]
 		},
 		{
@@ -336,7 +377,7 @@
 			fragmentSource: "forgetmenot:shaders/pre/gen/sky.frag",
 			samplers: [
 				"u_transmittance",
-				"u_multiscattering"
+				"u_multiscattering",
 			]
 		},
 		{
@@ -400,13 +441,23 @@
 				program: "frex_clear"
 			},
 			{
+				name: "transmittance_lut_copy",
+				program: "copy",
+				framebuffer: "transmittance_lut_copy",
+				width: 1,
+				height: 1,
+				samplerImages: [
+					"transmittance_lut"
+				]
+			},
+			{
 				name: "transmittance_lut",
 				program: "transmittance_lut",
 				framebuffer: "transmittance_lut",
 				width: 256,
 				height: 64,
 				samplerImages: [
-
+					"transmittance_lut_copy"
 				]
 			},
 			{
@@ -416,7 +467,8 @@
 				width: 32,
 				height: 32,
 				samplerImages: [
-					"transmittance_lut"
+					"transmittance_lut",
+					"transmittance_lut_copy"
 				]
 			},
 			{

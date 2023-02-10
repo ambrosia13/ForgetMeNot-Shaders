@@ -356,14 +356,6 @@
 				"u_depth"
 			]
 		},
-		{
-			name: "copy",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/fabulous/copy.frag",
-			samplers: [
-				"u_composite"
-			]
-		}
 	],
 
 	fabulous: {

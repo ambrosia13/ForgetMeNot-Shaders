@@ -40,7 +40,7 @@ void autoGenNormal() {
 	vec2 uv1, uv2, uv3, uv4;
 
 	
-	vec2 sampleOffset = vec2(1.0 / 32.0, 0.0);
+	vec2 sampleOffset = vec2(1.0 / 16.0, 0.0);
 
 	uv1 = uv + sampleOffset.xy;
 	uv2 = uv - sampleOffset.xy;

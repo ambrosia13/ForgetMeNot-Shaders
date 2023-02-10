@@ -104,7 +104,7 @@ void main() {
 	vec3 sceneSpacePosFront = setupSceneSpacePos(texcoord, translucent_depth);
 
 	vec3 viewDirRefracted = refract(viewDir, material.fragNormal - vertexNormal, 1.0 / 1.333);
-	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, sign(particles_depth - translucent_depth));
+	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(floor(particles_depth) + sign(particles_depth - translucent_depth)));
 
 	translucent_depth = texture(u_translucent_depth, refractCoord).r;
 	particles_depth = texture(u_particles_depth, refractCoord).r;

@@ -8,6 +8,8 @@
 #define INCLUDE_SKY
 #include forgetmenot:shaders/lib/includes.glsl 
 
+uniform sampler2D u_transmittance_copy;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -42,7 +44,7 @@ vec3 getSunTransmittance(vec3 pos, vec3 sunDir) {
 }
 
 void main() {
-	if(frx_renderFrames % 10000u > 0u) discard;
+	if(texelFetch(u_transmittance_copy, ivec2(0), 0).r > 0.001 && frx_renderFrames > 1u) discard;
 
 	float u = texcoord.x;
 	float v = texcoord.y;

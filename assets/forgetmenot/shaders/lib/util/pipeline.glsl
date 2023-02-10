@@ -250,7 +250,7 @@ bool isModdedDimension() {
 			ambientLighting = textureLod(skybox, normal, 10).rgb;
 			ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
 
-			ambientLighting += blockLight * vec3(2.4, 1.2, 0.75);
+			ambientLighting += blockLight * saturation(vec3(2.4, 1.0, 0.32), 0.5);
 			
 			// handheld light
 			{

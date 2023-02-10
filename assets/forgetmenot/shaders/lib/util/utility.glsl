@@ -133,4 +133,9 @@
 		return mat * uv;
 	}
 
+	#ifndef VERTEX_SHADER
+		vec3 saturation(in vec3 color, in float amount) {
+			return mix(vec3(length(color)), color, amount);
+		}
+	#endif
 #endif

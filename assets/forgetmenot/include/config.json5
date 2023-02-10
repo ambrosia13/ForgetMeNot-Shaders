@@ -9,6 +9,13 @@
 					nameKey: "config.forgetmenot.name.enable_bloom",
 					descriptionKey: "config.forgetmenot.desc.enable_bloom"
 				},
+				sun_angle: {
+					default: 40,
+					min: 0,
+					max: 90,
+					nameKey: "config.forgetmenot.name.sun_angle",
+					descriptionKey: "config.forgetmenot.desc.sun_angle"
+				},
 				emission: {
 					default: 1.0,
 					min: 0.0,
