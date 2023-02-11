@@ -36,3 +36,7 @@ const vec2 TAA_OFFSETS[8] = vec2[8](
 #include forgetmenot:general
 #include forgetmenot:seasons
 #include forgetmenot:misc
+
+// These will always be needed
+#include forgetmenot:shaders/lib/inc/utility.glsl 
+#include forgetmenot:shaders/lib/inc/general.glsl 

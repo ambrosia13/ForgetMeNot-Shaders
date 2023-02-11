@@ -169,7 +169,7 @@ bool isModdedDimension() {
 
 #ifdef INCLUDE_LIGHTING
 	vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
-		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + bias * 0.15, 1.0);
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + bias, 1.0);
 		cascade = selectShadowCascade(shadowViewPos);
 
 		vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
@@ -197,7 +197,7 @@ bool isModdedDimension() {
 		bool doPcss,
 		int shadowMapSamples
 	) {
-		skyLight = mix(skyLight, 1.0, float(frx_worldIsEnd));
+		skyLight = mix(1.0, skyLight, float(frx_worldHasSkylight));
 
 		float emission = clamp01(frx_luminance(albedo) - 1.0);
 		float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);

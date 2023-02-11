@@ -71,19 +71,7 @@ vec4 pow4(vec4 x) {
 	return FMN_POW_4;
 }
 
-#define FMN_RCP (1.0 / x)
-float rcp(float x) {
-	return FMN_RCP;
-}
-vec2 rcp(vec2 x) {
-	return FMN_RCP;
-}
-vec3 rcp(vec3 x) {
-	return FMN_RCP;
-}
-vec4 rcp(vec4 x) {
-	return FMN_RCP;
-}
+#define rcp(x) (1.0 / (x))
 
 #define FMN_LINSTEP (clamp01((x - a) * rcp(b - a)))
 #define FMN_LINSTEP_FROM_ZERO (clamp01(x * rcp(b)))

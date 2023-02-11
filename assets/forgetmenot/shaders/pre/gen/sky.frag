@@ -5,8 +5,8 @@
 // Minimal code changes. Original Shadertoy code released under the MIT License.
 // --------------------------------------------------------------------------------------------------------
 
-#define INCLUDE_SKY
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/sky.glsl 
 
 uniform sampler2D u_transmittance;
 uniform sampler2D u_multiscattering;

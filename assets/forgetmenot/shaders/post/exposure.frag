@@ -30,8 +30,8 @@ void main() {
 		}
 	}
 
-	avgLuminance -= texelMaxLuminance + texelMinLuminance;
-	avgLuminance /= totalWeight - 2.0;
+	// avgLuminance -= texelMaxLuminance + texelMinLuminance;
+	avgLuminance /= totalWeight;
 
 	float prevLuminance = texelFetch(u_previous, ivec2(0), 0).r;
 

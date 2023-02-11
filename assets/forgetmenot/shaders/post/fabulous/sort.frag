@@ -250,7 +250,7 @@ void main() {
 			#endif
 
 			float fogAccumulator = length(blockDistance) / 1500.0;
-			if(frx_worldIsOverworld == 1) fogAccumulator *= mix(1.0, 0.5 * exp(-viewDir.y * 5.0), floor(min_depth));
+			if(frx_worldIsOverworld == 1) fogAccumulator *= mix(1.0, 0.0 * exp(-viewDir.y * 5.0), floor(min_depth));
 
 
 			float fogTransmittance = exp2(-fogAccumulator);

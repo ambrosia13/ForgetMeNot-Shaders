@@ -57,7 +57,7 @@ vec3 getSkyColor(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmit
 		return vec3(smoothstep(1.0, 0.0, noiseAccumulator));
 	}
 
-	return vec3(1.0, 0.0, 0.0);
+	return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.5;
 }
 
 vec3 getClouds(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmittance, in vec3 skyColor) {
