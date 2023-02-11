@@ -1,10 +1,11 @@
-#define INCLUDE_NOISE
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/noise.glsl 
 
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
 
 in vec2 texcoord;
+in float exposure;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -28,7 +29,6 @@ void main() {
 	vec3 finalColor = color.rgb;
 
 	#ifdef ENABLE_BLOOM
-		float exposure = texelFetch(u_exposure, ivec2(0), 0).r;
 		finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
 	#endif
 
@@ -40,6 +40,5 @@ void main() {
 	const int bitDepth = 256;
 	finalColor = floor(finalColor * bitDepth + randF()) / bitDepth;
 
-	fragColor = finalColor.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
-	// fragColor = vec4(pow3(1.0 - (distance(texcoord, vec2(0.5)))));
+	fragColor = vec4(finalColor, 1.0);
 }

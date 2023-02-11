@@ -1,5 +1,5 @@
-#define INCLUDE_SPACES
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/post/fabulous/ssao/ssao_common/depth_aware_blur.glsl
 
 uniform sampler2D u_ssao;

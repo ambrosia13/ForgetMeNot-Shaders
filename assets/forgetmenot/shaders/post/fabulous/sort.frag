@@ -1,15 +1,12 @@
-#define INCLUDE_SPACES
-#define INCLUDE_PACKING
-#define INCLUDE_PBR
-#define INCLUDE_NOISE
-#define INCLUDE_IGN
-#define INCLUDE_LDEPTH
-#define INCLUDE_RAYTRACER
-#define INCLUDE_SKY
-#define INCLUDE_CUBEMAPS
-#define INCLUDE_SHADOW
-#define INCLUDE_LIGHTING
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/sky.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
+#include forgetmenot:shaders/lib/inc/space.glsl
+#include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/packing.glsl
+#include forgetmenot:shaders/lib/inc/material.glsl
+#include forgetmenot:shaders/lib/inc/lighting.glsl
+#include forgetmenot:shaders/lib/inc/raytrace.glsl
 
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
@@ -263,5 +260,5 @@ void main() {
 		}
 	}
 
-	fragColor = composite.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
+	fragColor = vec4(composite, 1.0);
 }

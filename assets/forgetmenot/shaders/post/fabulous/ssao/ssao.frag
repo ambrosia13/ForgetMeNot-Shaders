@@ -1,8 +1,7 @@
-#define INCLUDE_PACKING
-#define INCLUDE_NOISE
-#define INCLUDE_IGN
-#define INCLUDE_SPACES
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/packing.glsl 
+#include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/space.glsl
 
 uniform sampler2D u_depth;
 uniform usampler2D u_data;

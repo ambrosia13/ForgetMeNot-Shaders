@@ -2,11 +2,10 @@
 // Atmosphere taken from https://www.shadertoy.com/view/slSXRW, MIT license. Minimal code changes.
 // --------------------------------------------------------------------------------------------------------
 
-#define INCLUDE_SKY
-#define INCLUDE_CUBEMAPS
-#define INCLUDE_NOISE
-#define INCLUDE_IGN
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/sky.glsl 
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
+#include forgetmenot:shaders/lib/inc/noise.glsl 
 
 uniform sampler2D u_sky;
 uniform sampler2D u_sky_night;

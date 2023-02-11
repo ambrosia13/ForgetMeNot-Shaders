@@ -1,5 +1,5 @@
-#define INCLUDE_SPACES
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/space.glsl 
 
 uniform sampler2D u_color;
 uniform sampler2D u_previous_frame;

@@ -1,4 +1,4 @@
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
 
 uniform sampler2D u_depth_mips;
 

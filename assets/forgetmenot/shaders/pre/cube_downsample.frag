@@ -1,5 +1,5 @@
-#define INCLUDE_CUBEMAPS
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
 
 uniform samplerCube u_cube;
 

@@ -385,7 +385,7 @@
 		},
 		{
 			name: "final",
-			vertexSource: "forgetmenot:shaders/post/final_frame_full.vert",
+			vertexSource: "forgetmenot:shaders/post/final.vert",
 			fragmentSource: "forgetmenot:shaders/post/final.frag",
 			samplers: [
 				"u_color",

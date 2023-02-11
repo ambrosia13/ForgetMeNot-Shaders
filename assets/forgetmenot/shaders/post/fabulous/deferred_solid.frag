@@ -1,12 +1,11 @@
-#define INCLUDE_SPACES
-#define INCLUDE_SKY
-#define INCLUDE_IGN
-#define INCLUDE_SHADOW
-#define INCLUDE_NOISE
-#define INCLUDE_CUBEMAPS
-#define INCLUDE_PACKING
-#define INCLUDE_LIGHTING
-#include forgetmenot:shaders/lib/includes.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/sky.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
+#include forgetmenot:shaders/lib/inc/space.glsl
+#include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/packing.glsl
+#include forgetmenot:shaders/lib/inc/material.glsl
+#include forgetmenot:shaders/lib/inc/lighting.glsl
 
 uniform sampler2D u_color;
 uniform usampler2D u_data;
@@ -77,5 +76,5 @@ void main() {
 		color = textureLod(u_skybox, viewDir, 0).rgb;
 	}
 
-	fragColor = color.rgbb * FMN_MASK.xxxy + FMN_MASK.yyyx;
+	fragColor = vec4(color, 1.0);
 }

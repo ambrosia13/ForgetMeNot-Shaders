@@ -1,18 +1,11 @@
-#define INCLUDE_PACKING
-#define INCLUDE_NOISE
-#define INCLUDE_SEASONS
-#define INCLUDE_SKY
-#define INCLUDE_IGN
-#define INCLUDE_SHADOW
-#define INCLUDE_NOISE
-#define INCLUDE_CUBEMAPS
-#define INCLUDE_GBUFFER
-
-#define INCLUDE_LIGHTING
-#include frex:shaders/api/fragment.glsl
-#include frex:shaders/api/material.glsl
 #include forgetmenot:shaders/lib/api/fmn_pbr.glsl
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/sky.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
+#include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/packing.glsl
+#include forgetmenot:shaders/lib/inc/lighting.glsl
+#include forgetmenot:shaders/lib/inc/seasons.glsl
 
 uniform samplerCube u_skybox;
 uniform sampler2D u_transmittance;

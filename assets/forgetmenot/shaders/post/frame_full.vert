@@ -1,4 +1,4 @@
-#include forgetmenot:shaders/lib/includes.glsl
+#include forgetmenot:shaders/lib/inc/header.glsl
 
 uniform mat4 frxu_frameProjectionMatrix;
 
