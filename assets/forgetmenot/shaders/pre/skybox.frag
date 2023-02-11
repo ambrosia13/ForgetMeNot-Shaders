@@ -70,8 +70,11 @@ vec3 getClouds(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmitta
 		vec3 sunVector = getSunVector();
 		vec3 moonVector = getMoonVector();
 
-		vec3 scatteringColor = sunTransmittance + moonTransmittance;
-		vec3 ambientColor = getSkyColor(vec3(0.0, 1.0, 0.0), sunTransmittance, moonTransmittance, 0.0) * 0.5;
+		vec3 sunColor = getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.001, 0.0), sunVector);
+		vec3 moonColor = moonFlux * getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.001, 0.0), moonVector);
+
+		vec3 scatteringColor = sunColor + moonColor;
+		vec3 ambientColor = getSkyColor(vec3(0.0, 1.0, 0.0), sunColor, moonColor, 0.0) * 0.5;
 
 		vec3 scattering = 8.0 * scatteringColor * mix(cloudsSample.g, 1.0, getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7)) + ambientColor;
 		float transmittance = cloudsSample.r;

@@ -65,14 +65,14 @@ vec3 basicLighting(
 
 	// Direct lighting
 	{
-		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * (0.05 + 1.0 * (1.0 - exp(-length(sceneSpacePos) * 0.01))), 1.0);
 		int cascade = selectShadowCascade(shadowViewPos);
 		float cascadeF = float(cascade);
 
 		vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
 		vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
-		shadowScreenPos.z -= 0.0005 * (3 - cascade) * (1.0 - NdotL);
+		//shadowScreenPos.z -= 0.0005 * (3 - cascade) * (1.0 - NdotL);
 
 		float shadowFactor = 0.0;
 		float penumbraSize = 0.5;
@@ -101,7 +101,7 @@ vec3 basicLighting(
 
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
-		vec3 directLightTransmittance = textureLod(skybox, frx_skyLightVector, 3).rgb * 0.005;
+		vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
 	}
