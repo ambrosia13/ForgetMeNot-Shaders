@@ -405,77 +405,77 @@
 				],
 				lod: 8
 			},
-			{
-				name: "ssao",
-				program: "ssao",
-				framebuffer: "ssao",
-				samplerImages: [
-					"depth_mips",
-					"main_data",
-					"forgetmenot:textures/blue_noise.png"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_v",
-				program: "ssao_blur_v",
-				framebuffer: "ssao_copy",
-				samplerImages: [
-					"ssao",
-					"depth_mips"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_h",
-				program: "ssao_blur_h",
-				framebuffer: "ssao",
-				samplerImages: [
-					"ssao_copy",
-					"depth_mips"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_v_2",
-				program: "ssao_blur_v",
-				framebuffer: "ssao_copy",
-				samplerImages: [
-					"ssao",
-					"depth_mips"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_h_2",
-				program: "ssao_blur_h",
-				framebuffer: "ssao",
-				samplerImages: [
-					"ssao_copy",
-					"depth_mips"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_v_3",
-				program: "ssao_blur_v",
-				framebuffer: "ssao_copy",
-				samplerImages: [
-					"ssao",
-					"depth_mips"
-				],
-				lod: 1
-			},
-			{
-				name: "ssao_blur_h_3",
-				program: "ssao_blur_h",
-				framebuffer: "ssao",
-				samplerImages: [
-					"ssao_copy",
-					"depth_mips"
-				],
-				lod: 1
-			},
+			// {
+			// 	name: "ssao",
+			// 	program: "ssao",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"depth_mips",
+			// 		"main_data",
+			// 		"forgetmenot:textures/blue_noise.png"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v_2",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h_2",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_v_3",
+			// 	program: "ssao_blur_v",
+			// 	framebuffer: "ssao_copy",
+			// 	samplerImages: [
+			// 		"ssao",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
+			// {
+			// 	name: "ssao_blur_h_3",
+			// 	program: "ssao_blur_h",
+			// 	framebuffer: "ssao",
+			// 	samplerImages: [
+			// 		"ssao_copy",
+			// 		"depth_mips"
+			// 	],
+			// 	lod: 1
+			// },
 			{
 				name: "depth_copy",
 				program: "copy",
