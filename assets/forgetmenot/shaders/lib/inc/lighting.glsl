@@ -65,7 +65,7 @@ vec3 basicLighting(
 
 	// Direct lighting
 	{
-		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * (0.05 + 1.0 * (1.0 - exp(-length(sceneSpacePos) * 0.01))), 1.0);
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
 		int cascade = selectShadowCascade(shadowViewPos);
 		float cascadeF = float(cascade);
 

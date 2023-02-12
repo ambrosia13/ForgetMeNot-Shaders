@@ -35,11 +35,5 @@ void main() {
 
 	float prevLuminance = texelFetch(u_previous, ivec2(0), 0).r;
 
-	// mix factor will be less (slower transition) when brightness is to be increased
-	float mixFactor = 0.995;
-	if (avgLuminance > prevLuminance) {
-		mixFactor = 0.99;
-	}
-
-	avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, 1.0 / min(60u, frx_renderFrames + 1u)));
+	if(frx_renderFrames > 1u) avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, 1.0 / min(60u, frx_renderFrames + 1u)));
 }

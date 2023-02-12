@@ -324,24 +324,28 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
 			samplers: [
-				"u_main_color",
-				"u_main_depth",
-				"u_translucent_color",
-				"u_translucent_depth",
-				"u_entity_color",
-				"u_entity_depth",
-				"u_weather_color",
-				"u_weather_depth",
-				"u_clouds_color",
-				"u_clouds_depth",
-				"u_particles_color",
-				"u_particles_depth",
-				
-				"u_previous_color",
-				"u_skybox",
-				"u_data",
-				"u_vertex_normal",
-				"u_depths",
+				"u_previous_color"
+
+				"u_main_color"
+				"u_main_depth"
+				"u_translucent_color"
+				"u_translucent_depth"
+				"u_entity_color"
+				"u_entity_depth"
+				"u_weather_color"
+				"u_weather_depth"
+				"u_clouds_color"
+				"u_clouds_depth"
+				"u_particles_color"
+				"u_particles_depth"
+
+				"u_depths"
+
+				"u_data"
+				"u_vertex_normal"
+
+				"u_skybox"
+				"u_multiscattering"
 
 				"u_shadow_map"
 			]
@@ -507,6 +511,8 @@
 				program: "sort",
 				framebuffer: "sort",
 				samplerImages: [
+					"resolve",
+
 					"deferred_solid",
 					"main_depth",
 					"translucent_color",
@@ -520,11 +526,13 @@
 					"particles_color",
 					"particles_depth",
 
-					"resolve",
-					"skybox",
+					"depth_mips",
+
 					"all_data",
 					"vertex_normal",
-					"depth_mips",
+
+					"skybox",
+					"multiscattering_lut",
 
 					"shadow_map"
 				]

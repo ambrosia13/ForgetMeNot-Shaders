@@ -63,7 +63,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir) {
 	scattering = exp2(-lightOpticalDepth * 6.0);
 	scattering *= 1.0 - transmittance;
 
-	return vec2(mix(transmittance, 1.0, linearstep(0.0, -0.05, viewDir.y)), scattering);
+	return vec2(mix(transmittance, 1.0, linearstep(0.05, 0.0, viewDir.y)), scattering);
 }
 
 void main() {

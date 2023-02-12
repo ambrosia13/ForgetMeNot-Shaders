@@ -8,6 +8,8 @@
 #include forgetmenot:shaders/lib/inc/lighting.glsl
 #include forgetmenot:shaders/lib/inc/raytrace.glsl
 
+uniform sampler2D u_previous_color;
+
 uniform sampler2D u_main_color;
 uniform sampler2D u_main_depth;
 uniform sampler2D u_translucent_color;
@@ -21,11 +23,13 @@ uniform sampler2D u_clouds_depth;
 uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
-uniform sampler2D u_previous_color;
-uniform samplerCube u_skybox;
+uniform sampler2D u_depths;
+
 uniform usampler2D u_data;
 uniform sampler2D u_vertex_normal;
-uniform sampler2D u_depths;
+
+uniform samplerCube u_skybox;
+uniform sampler2D u_multiscattering;
 
 uniform sampler2DArrayShadow u_shadow_map;
 
@@ -101,7 +105,7 @@ void main() {
 	vec3 sceneSpacePosFront = setupSceneSpacePos(texcoord, translucent_depth);
 
 	vec3 viewDirRefracted = refract(viewDir, material.fragNormal - vertexNormal, 1.0 / 1.333);
-	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(floor(particles_depth) + sign(particles_depth - translucent_depth)));
+	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(sign(particles_depth - translucent_depth)));
 
 	translucent_depth = texture(u_translucent_depth, refractCoord).r;
 	particles_depth = texture(u_particles_depth, refractCoord).r;
@@ -206,6 +210,7 @@ void main() {
 			
 			// Rough material should get more conservative skylight
 			skybox.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
+			//skybox += 100.0 * pow(clamp01(dot(cleanReflectDir, (frx_skyLightVector + 0*viewDir))), 128.0);
 
 			reflectColor = skybox.rgb * material.skyLight;
 		}
@@ -246,14 +251,20 @@ void main() {
 				vlFactor = linearstep(150.0, 200.0, blockDistance);
 			#endif
 
-			float fogAccumulator = length(blockDistance) / 1500.0;
-			if(frx_worldIsOverworld == 1) fogAccumulator *= mix(1.0, 0.0 * exp(-viewDir.y * 5.0), floor(min_depth));
-
-
+			// if(min_depth == 1.0) {
+			// 	float distToPlanet = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
+			// 	blockDistance = 1000.0 * length(viewDir.xz / (viewDir.y + length(viewDir.xz) * 0.015)) * step(0.0, distToPlanet);
+			// }
+			float fogAccumulator = length(blockDistance) / 1500.0 * (1.0 - floor(min_depth));
 			float fogTransmittance = exp2(-fogAccumulator);
-			vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
-			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
-			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			// vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
+			// fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			// fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			
+			vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (minSceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
+			vec3 fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + moonFlux * getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector());
+			fogScattering *= 300.0;
+			
 			fogScattering *= max(frx_smoothedEyeBrightness.y, material.skyLight);
 
 			composite = mix(fogScattering, composite, fogTransmittance);
