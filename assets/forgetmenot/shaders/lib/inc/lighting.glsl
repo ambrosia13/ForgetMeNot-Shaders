@@ -36,6 +36,16 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 #endif
 // --------------------------------------------------------------------------------------------------------
 
+vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
+	vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + bias, 1.0);
+	cascade = selectShadowCascade(shadowViewPos);
+
+	vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
+	vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+
+	return shadowScreenPos;
+}
+
 vec3 basicLighting(
 	in vec3 albedo,
 	in vec3 sceneSpacePos,
@@ -103,7 +113,7 @@ vec3 basicLighting(
 
 		vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
-		if(frx_worldIsMoonlit == 1) directLighting *= moonFlux;
+		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting);
 	}
 
 	// Ambient lighting
@@ -133,7 +143,7 @@ vec3 basicLighting(
 	totalLighting += directLighting + ambientLighting;
 	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
-	vec3 color = albedo * mix(totalLighting, vec3(1.0), emission);
+	vec3 color = albedo * (totalLighting + emission);
 	return color;
 }
 

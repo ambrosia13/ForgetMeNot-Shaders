@@ -45,7 +45,7 @@ void castRay(inout float ssao, vec3 viewNormal, vec3 viewSpacePos, vec3 screenSp
 	screenSpacePos += mix(nearScreenSpaceDir, farScreenSpaceDir, farFactor) * (interleavedGradientStatic(i) * 0.9 + 0.1);
 	if(clamp01(screenSpacePos.xy) != screenSpacePos.xy) return;
 
-	float depthQuery = textureLod(u_depth, screenSpacePos.xy, 2).r;
+	float depthQuery = textureLod(u_depth, screenSpacePos.xy, 0).r;
 
 	float linearTracePos = linearizeDepth(screenSpacePos.z);
 	float linearSamplePos = linearizeDepth(depthQuery);

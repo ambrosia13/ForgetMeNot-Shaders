@@ -52,7 +52,7 @@ float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
 	vec2 velocity = (currentCoord - previousCoord) * frxu_size;
 
 	float blendFactor = float(clamp01(previousCoord) == previousCoord);
-	blendFactor *= exp(-length(velocity)) * 0.1 + 0.8;
+	blendFactor *= exp(-length(velocity)) * 0.19 + 0.8;
 
 	return blendFactor;
 }

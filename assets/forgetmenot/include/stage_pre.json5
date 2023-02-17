@@ -395,7 +395,9 @@
 				"u_sky",
 				"u_sky_night",
 				"u_transmittance",
-				"u_clouds"
+				"u_clouds",
+
+				"u_end_sky"
 			]
 		},
 		{
@@ -502,7 +504,9 @@
 					"sky_lut",
 					"sky_lut_night",
 					"transmittance_lut",
-					"clouds"
+					"clouds",
+
+					"forgetmenot:textures/end_sky.png"
 				]
 			},
 			{

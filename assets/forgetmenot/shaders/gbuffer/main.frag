@@ -22,10 +22,6 @@ mat3 tbn;
 
 vec3 lightmap;
 
-vec2 repeatAndMirrorCoords(vec2 uv) {
-	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
-}
-
 void autoGenNormal() {
 	if(fmn_autoGenNormalStrength < 0.001 || frx_fragNormal != vec3(0.0, 0.0, 1.0) || fmn_isPlayer == 1) return;
 
@@ -68,6 +64,24 @@ void autoGenNormal() {
 	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
 
+void directionalLightmap() {
+	vec3 dFdPosX = dFdx(frx_vertex.xyz);
+	vec3 dFdPosY = dFdy(frx_vertex.xyz);
+
+	vec2 dFdBlockLight = vec2(
+		dFdx(frx_fragLight.x), dFdy(frx_fragLight.x)
+	);
+	vec2 dFdSkyLight = vec2(
+		dFdx(frx_fragLight.y), dFdy(frx_fragLight.y)
+	);
+
+	vec3 blockLightDir = normalize(dFdPosX * dFdBlockLight.x + dFdPosY * dFdBlockLight.y);
+	vec3 skyLightDir = normalize(dFdPosX * dFdSkyLight.x + dFdPosY * dFdSkyLight.y);
+	
+	frx_fragLight.x *= clamp01(dot(blockLightDir, frx_fragNormal)) * 3.0 + 1.0;
+	frx_fragLight.y *= clamp01(dot(skyLightDir, frx_fragNormal)) * 3.0 + 1.0;
+}
+
 void resolveMaterials() {
 	isInventory = frx_isGui && !frx_isHand;
 	gamma = vec3(isInventory ? 1.0 : 2.2);
@@ -104,6 +118,8 @@ void resolveMaterials() {
 	}
 
 	if(!isInventory) {
+		if(!frx_isHand) directionalLightmap();
+
 		// If the current dimension is non-vanilla, use MC's lightmap.
 		if(isModdedDimension()) {
 			lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;

@@ -145,7 +145,7 @@ void main() {
 		const float WATER_DIRT_AMOUNT = 0.25;
 		const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
-		float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.1), float(frx_cameraInWater));
+		float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.3), float(frx_cameraInWater));
 		waterFogDistance = max(waterFogDistance, 0.01);
 
 		float sunLightFactor = linearstep(0.0, 0.2, frx_skyLightVector.y);
@@ -256,15 +256,16 @@ void main() {
 			// 	blockDistance = 1000.0 * length(viewDir.xz / (viewDir.y + length(viewDir.xz) * 0.015)) * step(0.0, distToPlanet);
 			// }
 			float fogAccumulator = length(blockDistance) / 1500.0 * (1.0 - floor(min_depth));
-			float fogTransmittance = exp2(-fogAccumulator);
+			float fogTransmittance = exp2(-fogAccumulator * 0.5);
 			// vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
-			// fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
-			// fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
 			
 			vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (minSceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
-			vec3 fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + moonFlux * getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector());
+			vec3 fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + nightAdjust(getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector()));
 			fogScattering *= 300.0;
-			
+
+			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+
 			fogScattering *= max(frx_smoothedEyeBrightness.y, material.skyLight);
 
 			composite = mix(fogScattering, composite, fogTransmittance);

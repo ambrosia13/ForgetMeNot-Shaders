@@ -125,3 +125,7 @@ vec2 rotate2D(vec2 uv, float angle) {
 	mat2 mat = mat2(c, s, -s, c);
 	return mat * uv;
 }
+
+vec2 repeatAndMirrorCoords(vec2 uv) {
+	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
+}

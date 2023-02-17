@@ -12,6 +12,8 @@ uniform sampler2D u_sky_night;
 uniform sampler2D u_transmittance;
 uniform samplerCube u_clouds;
 
+uniform sampler2D u_end_sky;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor0;
@@ -35,7 +37,7 @@ vec3 getSkyColor(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmit
 		float intersectedPlanet = step(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM), 0.0);
 
 		vec3 dayColor = (2.0 * getValFromSkyLUT(viewDir, sunVector, u_sky) + sunBrightness * step(0.9997, dot(viewDir, sunVector)) * intersectedPlanet * sunTransmittance) * 20.0;
-		vec3 nightColor = (getValFromSkyLUT(viewDir, moonVector, u_sky_night) + 4.0 * sunBrightness * step(0.9997, dot(viewDir, moonVector)) * intersectedPlanet * moonTransmittance) * 20.0;
+		vec3 nightColor = (getValFromSkyLUT(viewDir, moonVector, u_sky_night) + sunBrightness * step(0.9997, dot(viewDir, moonVector)) * intersectedPlanet * moonTransmittance) * 20.0;
 
 		return 2.0 * blueHourMultiplier * (dayColor + nightColor);
 	} else if(frx_worldIsNether == 1) {
@@ -53,7 +55,7 @@ vec3 getSkyColor(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmit
 		noiseAccumulator += cellular(plane + distort * 4.0).x * 0.25;
 		noiseAccumulator += cellular(plane + distort * 6.0).x * 0.25;
 
-		return vec3(smoothstep(1.0, 0.0, noiseAccumulator));
+		return pow2(1.5 * texture(u_end_sky, (vec2(acos(viewDir.y), atan(viewDir.x, viewDir.z)))).rgb);
 	}
 
 	return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.5;
@@ -71,7 +73,7 @@ vec3 getClouds(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmitta
 		vec3 moonVector = getMoonVector();
 
 		vec3 sunColor = getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.001, 0.0), sunVector);
-		vec3 moonColor = moonFlux * getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.001, 0.0), moonVector);
+		vec3 moonColor = nightAdjust(getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.001, 0.0), moonVector));
 
 		vec3 scatteringColor = sunColor + moonColor;
 		vec3 ambientColor = getSkyColor(vec3(0.0, 1.0, 0.0), sunColor, moonColor, 0.0) * 0.5;
@@ -88,7 +90,7 @@ vec3 getClouds(in vec3 viewDir, in vec3 sunTransmittance, in vec3 moonTransmitta
 
 void main() {
 	global_sunTransmittance = getValFromTLUT(u_transmittance, skyViewPos, getSunVector());
-	global_moonTransmittance = moonFlux * getValFromTLUT(u_transmittance, skyViewPos, getMoonVector());
+	global_moonTransmittance = nightAdjust(getValFromTLUT(u_transmittance, skyViewPos, getMoonVector()));
 
 	vec3 viewDirs[6] = vec3[6] (
 		vec3(0.0),
