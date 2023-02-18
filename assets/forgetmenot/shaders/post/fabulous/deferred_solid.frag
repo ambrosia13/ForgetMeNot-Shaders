@@ -51,8 +51,8 @@ void main() {
 	}
 	
 	if(depth < 1.0) {
-		material.vanillaAo = pow2(texture(u_ssao, texcoord * 0.5).r);
-		//material.vanillaAo = pow(material.vanillaAo, 1.3);
+		//material.vanillaAo = pow3(texture(u_ssao, texcoord * 0.5).r);
+		material.vanillaAo = pow(material.vanillaAo, 1.3);
 
 		color = basicLighting(
 			color,

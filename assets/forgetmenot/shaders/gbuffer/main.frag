@@ -22,6 +22,10 @@ mat3 tbn;
 
 vec3 lightmap;
 
+vec3 getClippedWorldSpacePos() {
+	return floor((frx_vertex.xyz + mod(frx_cameraPos, 3000.0) + 0.1 * frx_vertexNormal.xyz) * 16.0) / 16.0;
+}
+
 void autoGenNormal() {
 	if(fmn_autoGenNormalStrength < 0.001 || frx_fragNormal != vec3(0.0, 0.0, 1.0) || fmn_isPlayer == 1) return;
 
@@ -53,10 +57,12 @@ void autoGenNormal() {
 	sample3 = mix(sample3, sample4, step(sample3.a, 0.0001));
 	sample4 = mix(sample4, sample3, step(sample4.a, 0.0001));
 
-	float height1 = frx_luminance(sample1.rgb * sample1.a);
-	float height2 = frx_luminance(sample2.rgb * sample2.a);
-	float height3 = frx_luminance(sample3.rgb * sample3.a);
-	float height4 = frx_luminance(sample4.rgb * sample4.a);
+	vec3 worldSpacePos = getClippedWorldSpacePos();
+
+	float height1 = frx_luminance(sample1.rgb * sample1.a) + 0.025 * (hash13(worldSpacePos) * 2.0 - 1.0);
+	float height2 = frx_luminance(sample2.rgb * sample2.a) + 0.025 * (hash13(worldSpacePos + 100.0) * 2.0 - 1.0);
+	float height3 = frx_luminance(sample3.rgb * sample3.a) + 0.025 * (hash13(worldSpacePos + 200.0) * 2.0 - 1.0);
+	float height4 = frx_luminance(sample4.rgb * sample4.a) + 0.025 * (hash13(worldSpacePos + 300.0) * 2.0 - 1.0);
 
 	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
 	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
@@ -94,8 +100,7 @@ void resolveMaterials() {
 	lightmap = vec3(1.0);
 
 	#ifdef SEASONS
-		vec3 worldSpacePos = mod(frx_vertex.xyz + frx_cameraPos.xyz, vec3(5000.0));
-		worldSpacePos = floor(worldSpacePos * 16.0) / 16.0;
+		vec3 worldSpacePos = getClippedWorldSpacePos();
 
 		vec3 rcpVertexColor = 1.0 / frx_vertexColor.rgb;
 		frx_fragColor.rgb *= mix(vec3(1.0), rcpVertexColor * getSeasonColor(frx_vertexColor.rgb, fmn_isLeafBlock, worldSpacePos), 0.5 * fmn_isFoliage * step(0.001, distance(frx_vertexColor.rgb, vec3(1.0))));
@@ -118,7 +123,7 @@ void resolveMaterials() {
 	}
 
 	if(!isInventory) {
-		if(!frx_isHand) directionalLightmap();
+		//if(!frx_isHand) directionalLightmap();
 
 		// If the current dimension is non-vanilla, use MC's lightmap.
 		if(isModdedDimension()) {
