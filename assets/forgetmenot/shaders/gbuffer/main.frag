@@ -23,7 +23,7 @@ mat3 tbn;
 vec3 lightmap;
 
 vec3 getClippedWorldSpacePos() {
-	return floor((frx_vertex.xyz + mod(frx_cameraPos, 3000.0) + 0.1 * frx_vertexNormal.xyz) * 16.0) / 16.0;
+	return floor(mod(frx_vertex.xyz + frx_cameraPos - 0.1 * frx_vertexNormal.xyz, 3000.0) * 16.0) / 16.0;
 }
 
 void autoGenNormal() {

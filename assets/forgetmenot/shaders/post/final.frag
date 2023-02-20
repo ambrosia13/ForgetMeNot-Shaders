@@ -56,6 +56,7 @@ void main() {
 
 	#ifdef ENABLE_BLOOM
 		finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
+		//finalColor *= 0.5 * rcp(clamp(exposure, 0.2, 1.5));
 	#endif
 
 	// aces tonemap

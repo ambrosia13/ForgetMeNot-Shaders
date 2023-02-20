@@ -4,6 +4,13 @@
 			includeToken: "forgetmenot:general",
 			categoryKey: "config.forgetmenot.category.general",
 			elements: {
+				sun_brightness: {
+					default: 16.0,
+					min: 0.0,
+					max: 64.0,
+					nameKey: "config.forgetmenot.name.sun_brightness",
+					descriptionKey: "config.forgetmenot.desc.sun_brightness"
+				},
 				enable_bloom: {
 					default: true,
 					nameKey: "config.forgetmenot.name.enable_bloom",

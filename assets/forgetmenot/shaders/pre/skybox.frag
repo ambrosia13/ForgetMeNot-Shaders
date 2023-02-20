@@ -32,7 +32,7 @@ vec3 getSkyAndClouds(const in vec3 viewDir) {
 		viewDir,
 		sunTransmittance,
 		moonTransmittance,
-		8.0,
+		SUN_BRIGHTNESS,
 		u_sky,
 		u_sky_night
 	);

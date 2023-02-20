@@ -19,8 +19,7 @@ uniform sampler2DArray u_shadow_tex;
 uniform samplerCube u_skybox;
 
 uniform sampler2D u_transmittance;
-uniform sampler2D u_sky_day;
-uniform sampler2D u_sky_night;
+uniform sampler2D u_sky_display;
 
 in vec2 texcoord;
 
@@ -77,12 +76,7 @@ void main() {
 			8
 		);
 	} else {
-		color = getSkyAndClouds(
-			viewDir,
-			u_transmittance,
-			u_sky_day,
-			u_sky_night
-		);
+		color = texture(u_sky_display, texcoord * 0.5).rgb;
 	}
 
 	fragColor = vec4(color, 1.0);

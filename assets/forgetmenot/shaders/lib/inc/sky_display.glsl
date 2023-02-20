@@ -19,13 +19,16 @@ struct CloudLayer {
 
 	vec2 domainMult;
 	float rangeMult;
+
+	vec2 domainShift;
+	float rangeShift;
 };
 
 CloudLayer createCumulusCloudLayer(const in vec2 plane) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.001;
-	cloudLayer.density = 10.0;
+	cloudLayer.density = 15.0;
 	cloudLayer.selfShadowSteps = 5;
 
 	cloudLayer.useNoiseTexture = false;
@@ -37,6 +40,9 @@ CloudLayer createCumulusCloudLayer(const in vec2 plane) {
 	
 	cloudLayer.domainMult = vec2(1.0);
 	cloudLayer.rangeMult = smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
+
+	cloudLayer.domainShift = vec2(0.0);
+	cloudLayer.rangeShift = 0.0;
 
 	return cloudLayer;
 }
@@ -55,8 +61,11 @@ CloudLayer createCirrusCloudLayer(const in vec2 plane) {
 	cloudLayer.noiseLowerBound = 0.0;
 	cloudLayer.noiseUpperBound = 1.5;
 
-	cloudLayer.domainMult = vec2(6.0 + sin(plane.y) * 0.5, 1.0);
+	cloudLayer.domainMult = vec2(6.0, 1.0);
 	cloudLayer.rangeMult = 0.3 * smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
+
+	cloudLayer.domainShift = vec2(sin(plane.y) * 0.25 + sin(plane.y * 2.0 + 100.0) * 0.125, 1.0);
+	cloudLayer.rangeShift = 0.0;
 
 	return cloudLayer;
 }
@@ -69,11 +78,13 @@ float sampleCloudNoise(const in vec2 plane, const in CloudLayer cloudLayer) {
 	return smoothstep(
 		cloudLayer.noiseLowerBound,
 		cloudLayer.noiseUpperBound,
-		fbmHash(
-			plane * cloudLayer.domainMult,
-			cloudLayer.noiseOctaves,
-			cloudLayer.noiseLacunarity,
-			0.0001 / cloudLayer.altitude
+		(
+			fbmHash(
+				(plane + cloudLayer.domainShift) * cloudLayer.domainMult,
+				cloudLayer.noiseOctaves,
+				cloudLayer.noiseLacunarity,
+				0.0001 / cloudLayer.altitude
+			) + cloudLayer.rangeShift
 		) * cloudLayer.rangeMult
 	);
 }
@@ -230,7 +241,7 @@ vec3 getSkyAndClouds(
 		viewDir,
 		sunTransmittance,
 		moonTransmittance,
-		8.0,
+		SUN_BRIGHTNESS,
 		skyLutDay,
 		skyLutNight
 	);

@@ -67,11 +67,11 @@
 			]
 		},
 		{
-			name: "depth_copy",
+			name: "sky_display",
 			lod: 0,
-			internalFormat: "R32F",
-			pixelFormat: "RED",
-			pixelDataType: "FLOAT",
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
 			texParams: [
 				{
@@ -216,10 +216,10 @@
 			]
 		},
 		{
-			name: "depth_copy",
+			name: "sky_display",
 			colorAttachments: [
 				{
-					image: "depth_copy", clearColor: 0x00000000
+					image: "sky_display", clearColor: 0x00000000
 				}
 			]
 		},
@@ -303,6 +303,16 @@
 			]
 		},
 		{
+			name: "sky_display",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/sky_display.frag",
+			samplers: [
+				"u_transmittance",
+				"u_sky_day",
+				"u_sky_night"
+			]
+		},
+		{
 			name: "deferred_solid",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
@@ -318,8 +328,7 @@
 				"u_skybox",
 
 				"u_transmittance",
-				"u_sky_day",
-				"u_sky_night"
+				"u_sky_display"
 			]
 		},
 		{
@@ -504,11 +513,13 @@
 			// 	lod: 1
 			// },
 			{
-				name: "depth_copy",
-				program: "copy",
-				framebuffer: "depth_copy",
+				name: "sky_display",
+				program: "sky_display",
+				framebuffer: "sky_display",
 				samplerImages: [
-					"particles_depth"
+					"transmittance_lut",
+					"sky_lut",
+					"sky_lut_night"
 				],
 				lod: 1
 			},
@@ -528,8 +539,7 @@
 					"skybox",
 
 					"transmittance_lut",
-					"sky_lut",
-					"sky_lut_night"
+					"sky_display"
 				]
 			},
 			{
