@@ -126,8 +126,8 @@
 			internalFormat: "RG16",
 			pixelFormat: "RG",
 			pixelDataType: "UNSIGNED_BYTE",
-			width: 512,
-			height: 512,
+			width: 64,
+			height: 64,
 			target: "TEXTURE_CUBE_MAP",
 			texParams: [
 				{
@@ -149,11 +149,11 @@
 		},
 		{
 			name: "skybox",
-			lod: 10,
+			lod: 7,
 			internalFormat: "R11F_G11F_B10F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
-			size: 1024,
+			size: 128,
 			target: "TEXTURE_CUBE_MAP",
 			texParams: [
 				{
@@ -310,39 +310,6 @@
 				{image: "skybox", layer: 5, lod: 7},
 			]
 		},
-		{
-			name: "skybox_d8",
-			colorAttachments: [
-				{image: "skybox", layer: 0, lod: 8},
-				{image: "skybox", layer: 1, lod: 8},
-				{image: "skybox", layer: 2, lod: 8},
-				{image: "skybox", layer: 3, lod: 8},
-				{image: "skybox", layer: 4, lod: 8},
-				{image: "skybox", layer: 5, lod: 8},
-			]
-		},
-		{
-			name: "skybox_d9",
-			colorAttachments: [
-				{image: "skybox", layer: 0, lod: 9},
-				{image: "skybox", layer: 1, lod: 9},
-				{image: "skybox", layer: 2, lod: 9},
-				{image: "skybox", layer: 3, lod: 9},
-				{image: "skybox", layer: 4, lod: 9},
-				{image: "skybox", layer: 5, lod: 9},
-			]
-		},
-		{
-			name: "skybox_d10",
-			colorAttachments: [
-				{image: "skybox", layer: 0, lod: 10},
-				{image: "skybox", layer: 1, lod: 10},
-				{image: "skybox", layer: 2, lod: 10},
-				{image: "skybox", layer: 3, lod: 10},
-				{image: "skybox", layer: 4, lod: 10},
-				{image: "skybox", layer: 5, lod: 10},
-			]
-		},
 	],
 
 	programs: [
@@ -488,8 +455,8 @@
 				name: "clouds",
 				program: "clouds",
 				framebuffer: "clouds",
-				width: 512,
-				height: 512,
+				width: 64,
+				height: 64,
 				samplerImages: [
 				]
 			},
@@ -497,8 +464,8 @@
 				name: "skybox",
 				program: "skybox",
 				framebuffer: "skybox",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 0,
 				samplerImages: [
 					"sky_lut",
@@ -513,8 +480,8 @@
 				name: "skybox_d1",
 				program: "cube_downsample",
 				framebuffer: "skybox_d1",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 1,
 				samplerImages: [
 					"skybox"
@@ -524,8 +491,8 @@
 				name: "skybox_d2",
 				program: "cube_downsample",
 				framebuffer: "skybox_d2",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 2,
 				samplerImages: [
 					"skybox"
@@ -535,8 +502,8 @@
 				name: "skybox_d3",
 				program: "cube_downsample",
 				framebuffer: "skybox_d3",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 3,
 				samplerImages: [
 					"skybox"
@@ -546,8 +513,8 @@
 				name: "skybox_d4",
 				program: "cube_downsample",
 				framebuffer: "skybox_d4",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 4,
 				samplerImages: [
 					"skybox"
@@ -557,8 +524,8 @@
 				name: "skybox_d5",
 				program: "cube_downsample",
 				framebuffer: "skybox_d5",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 5,
 				samplerImages: [
 					"skybox"
@@ -568,8 +535,8 @@
 				name: "skybox_d6",
 				program: "cube_downsample",
 				framebuffer: "skybox_d6",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 6, 
 				samplerImages: [
 					"skybox"
@@ -579,42 +546,9 @@
 				name: "skybox_d7",
 				program: "cube_downsample",
 				framebuffer: "skybox_d7",
-				width: 1024,
-				height: 1024,
+				width: 128,
+				height: 128,
 				lod: 7, 
-				samplerImages: [
-					"skybox"
-				]
-			},
-			{
-				name: "skybox_d8",
-				program: "cube_downsample",
-				framebuffer: "skybox_d8",
-				width: 1024,
-				height: 1024,
-				lod: 8,
-				samplerImages: [
-					"skybox"
-				]
-			},
-			{
-				name: "skybox_d9",
-				program: "cube_downsample",
-				framebuffer: "skybox_d9",
-				width: 1024,
-				height: 1024,
-				lod: 9,
-				samplerImages: [
-					"skybox"
-				]
-			},
-			{
-				name: "skybox_d10",
-				program: "cube_downsample",
-				framebuffer: "skybox_d10",
-				width: 1024,
-				height: 1024,
-				lod: 10,
 				samplerImages: [
 					"skybox"
 				]

@@ -22,7 +22,7 @@ uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
 // Offsets from Chocapic13 shaders
-const vec2 TAA_OFFSETS[8] = vec2[8](
+const vec2[] TAA_OFFSETS = vec2[8] (
 	vec2( 0.125,-0.375),
 	vec2(-0.125, 0.375),
 	vec2( 0.625, 0.125),
@@ -40,22 +40,3 @@ const vec2 TAA_OFFSETS[8] = vec2[8](
 // These will always be needed
 #include forgetmenot:shaders/lib/inc/utility.glsl 
 #include forgetmenot:shaders/lib/inc/general.glsl 
-
-bool shouldReprojectFrame() {
-	#ifdef REPROJECTION_RENDERING
-		return frx_renderFrames % 2u == 0u;
-	#else
-		return false;
-	#endif
-}
-#ifdef FRAGMENT_SHADER
-	void init() {
-		if(shouldReprojectFrame()) {
-			discard;
-		}
-	}
-#endif
-
-bool isModdedDimension() {
-	return frx_worldIsOverworld + frx_worldIsNether + frx_worldIsEnd == 0;
-}

@@ -316,7 +316,10 @@
 				"u_shadow_tex",
 
 				"u_skybox",
-				"u_transmittance"
+
+				"u_transmittance",
+				"u_sky_day",
+				"u_sky_night"
 			]
 		},
 		{
@@ -523,7 +526,10 @@
 					"shadow_map",
 
 					"skybox",
-					"transmittance_lut"
+
+					"transmittance_lut",
+					"sky_lut",
+					"sky_lut_night"
 				]
 			},
 			{

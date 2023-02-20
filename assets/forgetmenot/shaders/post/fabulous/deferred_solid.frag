@@ -6,6 +6,7 @@
 #include forgetmenot:shaders/lib/inc/packing.glsl
 #include forgetmenot:shaders/lib/inc/material.glsl
 #include forgetmenot:shaders/lib/inc/lighting.glsl
+#include forgetmenot:shaders/lib/inc/sky_display.glsl
 
 uniform sampler2D u_color;
 uniform usampler2D u_data;
@@ -16,7 +17,10 @@ uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
 
 uniform samplerCube u_skybox;
+
 uniform sampler2D u_transmittance;
+uniform sampler2D u_sky_day;
+uniform sampler2D u_sky_night;
 
 in vec2 texcoord;
 
@@ -73,7 +77,12 @@ void main() {
 			8
 		);
 	} else {
-		color = textureLod(u_skybox, viewDir, 0).rgb;
+		color = getSkyAndClouds(
+			viewDir,
+			u_transmittance,
+			u_sky_day,
+			u_sky_night
+		);
 	}
 
 	fragColor = vec4(color, 1.0);
