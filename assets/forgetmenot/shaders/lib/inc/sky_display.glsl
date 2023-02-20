@@ -7,13 +7,13 @@ vec2 createCloudPlane(const in vec3 viewDir) {
 
 struct CloudLayer {
 	float altitude;
+	float density;
 	int selfShadowSteps;
 
 	bool useNoiseTexture;
 
 	int noiseOctaves;
 	float noiseLacunarity;
-	float noiseTimeFactor;
 	float noiseLowerBound;
 	float noiseUpperBound;
 
@@ -25,18 +25,38 @@ CloudLayer createCumulusCloudLayer(const in vec2 plane) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.001;
+	cloudLayer.density = 10.0;
 	cloudLayer.selfShadowSteps = 5;
 
 	cloudLayer.useNoiseTexture = false;
 
 	cloudLayer.noiseOctaves = 6;
 	cloudLayer.noiseLacunarity = 2.5;
-	cloudLayer.noiseTimeFactor = 0.1;
 	cloudLayer.noiseLowerBound = 0.35;
-	cloudLayer.noiseUpperBound = 0.8;
+	cloudLayer.noiseUpperBound = 1.0;
 	
 	cloudLayer.domainMult = vec2(1.0);
 	cloudLayer.rangeMult = smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
+
+	return cloudLayer;
+}
+
+CloudLayer createCirrusCloudLayer(const in vec2 plane) {
+	CloudLayer cloudLayer;
+
+	cloudLayer.altitude = 0.015;
+	cloudLayer.density = 5.0;
+	cloudLayer.selfShadowSteps = 0;
+	
+	cloudLayer.useNoiseTexture = false;
+
+	cloudLayer.noiseOctaves = 6;
+	cloudLayer.noiseLacunarity = 2.0;
+	cloudLayer.noiseLowerBound = 0.0;
+	cloudLayer.noiseUpperBound = 1.5;
+
+	cloudLayer.domainMult = vec2(6.0 + sin(plane.y) * 0.5, 1.0);
+	cloudLayer.rangeMult = 0.3 * smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
 
 	return cloudLayer;
 }
@@ -76,7 +96,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec2 plane, const in vec3 viewDir, c
 
 	float noise = sampleCloudNoise(plane, cloudLayer);
 	
-	float transmittance = exp2(-noise * 5.0);
+	float transmittance = exp2(-noise * cloudLayer.density);
 	float scattering = 0.75;
 
 	if(cloudLayer.selfShadowSteps > 0) {
@@ -188,10 +208,8 @@ vec3 getClouds(
 		skyLutNight
 	);
 
-	vec3 scattering = 8.0 * scatteringColor * mix(
-		cloudsTransmittanceAndScattering.y, 1.0, 
-		getMiePhase(dot(viewDir, sunVector), 0.7) + 
-		0.5 * getMiePhase(dot(viewDir, moonVector), 0.7)
+	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
+		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
 	) + ambientColor;
 
 	float transmittance = cloudsTransmittanceAndScattering.x;
@@ -218,8 +236,20 @@ vec3 getSkyAndClouds(
 	);
 
 	vec2 plane = createCloudPlane(viewDir);
+	CloudLayer cirrusClouds = createCirrusCloudLayer(plane);
 	CloudLayer cumulusClouds = createCumulusCloudLayer(plane);
 
+	color = getClouds(
+		viewDir,
+		sunTransmittance,
+		moonTransmittance,
+		getCloudsTransmittanceAndScattering(plane, viewDir, cirrusClouds),
+		cirrusClouds,
+		transmittanceLut,
+		skyLutDay,
+		skyLutNight,
+		color
+	);
 	color = getClouds(
 		viewDir,
 		sunTransmittance,
