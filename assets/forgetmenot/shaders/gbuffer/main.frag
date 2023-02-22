@@ -105,7 +105,7 @@ void resolveMaterials() {
 		vec3 rcpVertexColor = 1.0 / frx_vertexColor.rgb;
 		frx_fragColor.rgb *= mix(vec3(1.0), rcpVertexColor * getSeasonColor(frx_vertexColor.rgb, fmn_isLeafBlock, worldSpacePos), 0.5 * fmn_isFoliage * step(0.001, distance(frx_vertexColor.rgb, vec3(1.0))));
 	
-		frx_fragColor.a *= mix(1.0, step(hash13(mod(worldSpacePos, 100.0)), getLeavesFallingThreshold(worldSpacePos)), fmn_isLeafBlock);
+		frx_fragColor.a *= mix(1.0, step(hash13(mod(worldSpacePos * 20.0, 100.0)), getLeavesFallingThreshold(worldSpacePos)), fmn_isLeafBlock);
 	#endif
 
 	// Put color into linear color space
