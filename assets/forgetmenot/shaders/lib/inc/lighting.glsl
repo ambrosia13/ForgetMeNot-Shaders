@@ -74,7 +74,7 @@ vec3 basicLighting(
 	vec3 ambientLighting = vec3(0.0);
 
 	// Direct lighting
-	{
+	if(frx_worldHasSkylight == 1) {
 		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
 		int cascade = selectShadowCascade(shadowViewPos);
 		float cascadeF = float(cascade);

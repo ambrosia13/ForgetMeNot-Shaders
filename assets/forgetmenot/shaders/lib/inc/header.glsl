@@ -17,6 +17,7 @@
 #include frex:shaders/lib/noise/noise3d.glsl
 #include frex:shaders/lib/noise/cellular2d.glsl
 #include frex:shaders/lib/noise/cellular3d.glsl
+#include frex:shaders/lib/noise/cellular2x2x2.glsl
 
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
@@ -40,3 +41,4 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 // These will always be needed
 #include forgetmenot:shaders/lib/inc/utility.glsl 
 #include forgetmenot:shaders/lib/inc/general.glsl 
+#include forgetmenot:shaders/lib/inc/palette.glsl 

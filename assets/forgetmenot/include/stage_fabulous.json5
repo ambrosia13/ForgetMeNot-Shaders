@@ -519,7 +519,7 @@
 				samplerImages: [
 					"transmittance_lut",
 					"sky_lut",
-					"sky_lut_night"
+					"sky_lut_night",
 				],
 				lod: 1
 			},

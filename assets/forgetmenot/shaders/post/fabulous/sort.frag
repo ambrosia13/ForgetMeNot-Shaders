@@ -256,17 +256,25 @@ void main() {
 			// 	blockDistance = 1000.0 * length(viewDir.xz / (viewDir.y + length(viewDir.xz) * 0.015)) * step(0.0, distToPlanet);
 			// }
 			float fogAccumulator = length(blockDistance) / 1500.0 * (1.0 - floor(min_depth));
-			float fogTransmittance = exp2(-fogAccumulator * 0.5);
-			// vec3 fogScattering = 2.0 * sampleAllCubemapFaces(u_skybox).rgb;
+
+			float fogDensity = 0.5;
+			//fogDensity = mix(fogDensity, 3.0, float(frx_worldIsEnd));
+
+			float fogTransmittance = exp2(-fogAccumulator * fogDensity);
 			
-			vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (minSceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
-			vec3 fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + nightAdjust(getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector()));
-			fogScattering *= 300.0;
+			vec3 fogScattering = vec3(0.0);
+			if(frx_worldHasSkylight == 1) {
+				vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (minSceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
+				fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + nightAdjust(getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector()));
+				fogScattering *= 300.0;
 
-			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
-			fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
+				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
 
-			fogScattering *= max(frx_smoothedEyeBrightness.y, material.skyLight);
+				fogScattering = mix(caveFogColor, fogScattering, max(frx_smoothedEyeBrightness.y, material.skyLight));
+			} else {
+				fogScattering = textureLod(u_skybox, viewDir, 7).rgb;
+			}
 
 			composite = mix(fogScattering, composite, fogTransmittance);
 		}

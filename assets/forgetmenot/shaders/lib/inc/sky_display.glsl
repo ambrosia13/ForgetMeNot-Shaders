@@ -177,7 +177,18 @@ vec3 getSkyColor(
 	} else if(frx_worldIsNether == 1) {
 		return 0.5 * normalize(pow(frx_fogColor.rgb, vec3(2.2)));
 	} else if(frx_worldIsEnd == 1) {
-		return vec3(0.5);
+		vec3 starCoord = viewDir * 1.5;
+
+		vec3 flooredStarCoord = floor(starCoord * 20.0);
+
+		float noise = 0.0;
+		noise += step(0.97, 1.0 - cellular2x2x2(starCoord * 8.0).x) * (hash13(flooredStarCoord) + 0.5);
+		noise += step(0.9, 1.0 - cellular2x2x2(starCoord * 16.0 + 100.0).x) * (hash13(flooredStarCoord) + 0.5);
+		noise += step(0.83, 1.0 - cellular2x2x2(starCoord * 24.0 + 200.0).x) * (hash13(flooredStarCoord) + 0.5);
+
+		vec3 endStarColor = length(frx_cameraPos.xz) > 250.0 ? vec3(1.5, 0.75, 8.0) : vec3(4.0, 0.75, 8.0);
+
+		return 4.0 * noise * vec3(hash13(flooredStarCoord), hash13(flooredStarCoord + 100.0), hash13(flooredStarCoord + 200.0)) * endStarColor;
 	}
 
 	return pow(frx_fogColor.rgb, vec3(2.2));
@@ -196,6 +207,10 @@ vec3 getClouds(
 
 	const in vec3 skyColor
 ) {
+	if(frx_worldHasSkylight == 0) {
+		return skyColor;
+	}
+
 	vec3 sunVector = getSunVector();
 	vec3 moonVector = getMoonVector();
 
@@ -230,6 +245,7 @@ vec3 getClouds(
 
 vec3 getSkyAndClouds(
 	const in vec3 viewDir,
+
 	const in sampler2D transmittanceLut,
 	const in sampler2D skyLutDay,
 	const in sampler2D skyLutNight
@@ -246,32 +262,34 @@ vec3 getSkyAndClouds(
 		skyLutNight
 	);
 
-	vec2 plane = createCloudPlane(viewDir);
-	CloudLayer cirrusClouds = createCirrusCloudLayer(plane);
-	CloudLayer cumulusClouds = createCumulusCloudLayer(plane);
+	if(frx_worldHasSkylight == 1) {
+		vec2 plane = createCloudPlane(viewDir);
+		CloudLayer cirrusClouds = createCirrusCloudLayer(plane);
+		CloudLayer cumulusClouds = createCumulusCloudLayer(plane);
 
-	color = getClouds(
-		viewDir,
-		sunTransmittance,
-		moonTransmittance,
-		getCloudsTransmittanceAndScattering(plane, viewDir, cirrusClouds),
-		cirrusClouds,
-		transmittanceLut,
-		skyLutDay,
-		skyLutNight,
-		color
-	);
-	color = getClouds(
-		viewDir,
-		sunTransmittance,
-		moonTransmittance,
-		getCloudsTransmittanceAndScattering(plane, viewDir, cumulusClouds),
-		cumulusClouds,
-		transmittanceLut,
-		skyLutDay,
-		skyLutNight,
-		color
-	);
+		color = getClouds(
+			viewDir,
+			sunTransmittance,
+			moonTransmittance,
+			getCloudsTransmittanceAndScattering(plane, viewDir, cirrusClouds),
+			cirrusClouds,
+			transmittanceLut,
+			skyLutDay,
+			skyLutNight,
+			color
+		);
+		color = getClouds(
+			viewDir,
+			sunTransmittance,
+			moonTransmittance,
+			getCloudsTransmittanceAndScattering(plane, viewDir, cumulusClouds),
+			cumulusClouds,
+			transmittanceLut,
+			skyLutDay,
+			skyLutNight,
+			color
+		);
+	}
 
 	return color;
 }

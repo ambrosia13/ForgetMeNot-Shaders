@@ -55,8 +55,18 @@ void main() {
 	vec3 finalColor = color.rgb;
 
 	#ifdef ENABLE_BLOOM
-		finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
+		//finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
 		//finalColor *= 0.5 * rcp(clamp(exposure, 0.2, 1.5));
+
+		const float bias = 0.2;
+		float ev100 = log2(exposure * 100.0 * bias / 12.5);
+		
+		const float minExposure = 0.4;
+		const float maxExposure = 2.0;
+		float exposureValue = 1.0 / (1.2 * exp2(ev100));
+		exposureValue = clamp(exposureValue, minExposure, maxExposure);
+
+		finalColor *= exposureValue;
 	#endif
 
 	// aces tonemap

@@ -13,8 +13,6 @@ uniform sampler2D u_sky_night;
 uniform sampler2D u_transmittance;
 uniform samplerCube u_clouds;
 
-uniform sampler2D u_end_sky;
-
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor0;

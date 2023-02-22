@@ -8,7 +8,7 @@
 const vec3 moonFlux = vec3(0.56, 0.8, 1.1);
 
 vec3 nightAdjust(in vec3 color) {
-	return mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.02;
+	return mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.05;
 } 
 
 // Units are in megameters.
@@ -36,7 +36,7 @@ const float mieAbsorptionBase = 4.4;
 const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, .085);
 
 float getMiePhase(float cosTheta) {
-	const float g = 0.85;
+	const float g = 0.8;
 	const float scale = 3.0 / (8.0 * PI);
 	
 	float num = (1.0 - g * g) * (1.0 + cosTheta * cosTheta);

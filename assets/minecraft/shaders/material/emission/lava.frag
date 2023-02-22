@@ -21,7 +21,7 @@ void frx_materialFragment() {
 		fmn_autoGenNormalStrength = 0.5;
 	#endif
 
-	frx_fragEmissive = 1.0;
+	frx_fragEmissive = frx_luminance(frx_fragColor.rgb) * 0.5;
 	frx_fragEnableDiffuse = false;
 	frx_fragEnableAo = false;
 }
