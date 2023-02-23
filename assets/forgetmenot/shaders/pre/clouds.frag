@@ -14,6 +14,8 @@ layout(location = 4) out vec2 fragColor4;
 layout(location = 5) out vec2 fragColor5;
 
 void main() {
+	init();
+
 	vec3[] viewDirs = vec3[6] (
 		vec3(0.0),
 		vec3(0.0),
@@ -25,28 +27,19 @@ void main() {
 
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	vec2[] planes = vec2[6] (
-		createCloudPlane(viewDirs[0]),
-		createCloudPlane(viewDirs[1]),
-		createCloudPlane(viewDirs[2]),
-		createCloudPlane(viewDirs[3]),
-		createCloudPlane(viewDirs[4]),
-		createCloudPlane(viewDirs[5])
-	);
-
 	CloudLayer[] cloudLayers = CloudLayer[6] (
-		createCumulusCloudLayer(planes[0]),
-		createCumulusCloudLayer(planes[1]),
-		createCumulusCloudLayer(planes[2]),
-		createCumulusCloudLayer(planes[3]),
-		createCumulusCloudLayer(planes[4]),
-		createCumulusCloudLayer(planes[5])
+		createCumulusCloudLayer(viewDirs[0]),
+		createCumulusCloudLayer(viewDirs[1]),
+		createCumulusCloudLayer(viewDirs[2]),
+		createCumulusCloudLayer(viewDirs[3]),
+		createCumulusCloudLayer(viewDirs[4]),
+		createCumulusCloudLayer(viewDirs[5])
 	);
 
-	fragColor0 = sqrt(getCloudsTransmittanceAndScattering(planes[0], viewDirs[0], cloudLayers[0]));
-	fragColor1 = sqrt(getCloudsTransmittanceAndScattering(planes[1], viewDirs[1], cloudLayers[1]));
-	fragColor2 = sqrt(getCloudsTransmittanceAndScattering(planes[2], viewDirs[2], cloudLayers[2]));
-	fragColor3 = sqrt(getCloudsTransmittanceAndScattering(planes[3], viewDirs[3], cloudLayers[3]));
-	fragColor4 = sqrt(getCloudsTransmittanceAndScattering(planes[4], viewDirs[4], cloudLayers[4]));
-	fragColor5 = sqrt(getCloudsTransmittanceAndScattering(planes[5], viewDirs[5], cloudLayers[5]));
+	fragColor0 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cloudLayers[0]));
+	fragColor1 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cloudLayers[1]));
+	fragColor2 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cloudLayers[2]));
+	fragColor3 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cloudLayers[3]));
+	fragColor4 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cloudLayers[4]));
+	fragColor5 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cloudLayers[5]));
 }

@@ -95,6 +95,8 @@ float doSSAO(vec3 viewNormal, vec3 viewSpacePos, vec3 screenSpacePos, float line
 }
 
 void main() {
+	init();
+
 	float depth = textureLod(u_depth, texcoord, 0).r;
 	if(depth == 1.0) {
 		discard;

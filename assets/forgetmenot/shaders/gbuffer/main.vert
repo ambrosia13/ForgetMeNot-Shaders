@@ -1,6 +1,8 @@
 #include forgetmenot:shaders/lib/inc/header.glsl 
 
 void frx_pipelineVertex() {
+	init();
+
 	if (frx_modelOriginScreen) {
 		gl_Position = frx_guiViewProjectionMatrix * frx_vertex;
 		frx_distance = 0.0;

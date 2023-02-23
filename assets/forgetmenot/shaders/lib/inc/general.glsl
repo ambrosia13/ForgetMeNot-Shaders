@@ -28,21 +28,6 @@ int getWorldTicks() {
 	return int(getWorldTime() * 24000.0);
 }
 
-bool shouldReprojectFrame() {
-	#ifdef REPROJECTION_RENDERING
-		return frx_renderFrames % 2u == 0u;
-	#else
-		return false;
-	#endif
-}
-#ifdef FRAGMENT_SHADER
-	void init() {
-		if(shouldReprojectFrame()) {
-			discard;
-		}
-	}
-#endif
-
 bool isModdedDimension() {
 	return frx_worldIsOverworld + frx_worldIsNether + frx_worldIsEnd == 0;
 }

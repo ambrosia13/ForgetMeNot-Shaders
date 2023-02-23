@@ -13,6 +13,8 @@ layout(location = 4) out vec4 fragColor4;
 layout(location = 5) out vec4 fragColor5;
 
 void main() {
+	init();
+
 	vec3 viewDirs[6] = vec3[6] (
 		vec3(0.0),
 		vec3(0.0),

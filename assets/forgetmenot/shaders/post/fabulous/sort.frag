@@ -37,115 +37,91 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
-// this is the exact same as vanilla fabulous blending
+// 1.0 if a is greater than b, 0.0 otherwise.
+// Used for blending. 
+float getClosestDepth(const in float a, inout float b) {
+	float isACloser = step(a, b);
+	b = mix(b, min(a, b), isACloser);
 
-#define NUM_LAYERS 6
-
-vec4 color_layers[NUM_LAYERS];
-float depth_layers[NUM_LAYERS];
-int active_layers = 0;
-
-void try_insert(vec4 color, float depth) {
-	if(color.a == 0.0) {
-		return;
-	}
-
-	color_layers[active_layers] = color;
-	depth_layers[active_layers] = depth;
-
-	int jj = active_layers++;
-	int ii = jj - 1;
-	while(jj > 0 && depth_layers[jj] > depth_layers[ii]) {
-		float depthTemp = depth_layers[ii];
-		depth_layers[ii] = depth_layers[jj];
-		depth_layers[jj] = depthTemp;
-
-		vec4 colorTemp = color_layers[ii];
-		color_layers[ii] = color_layers[jj];
-		color_layers[jj] = colorTemp;
-
-		jj = ii--;
-	}
-}
-
-vec3 blend(vec3 dst, vec4 src) {
-	return mix(dst, src.rgb, src.a);
+	return isACloser;
 }
 
 void main() {
 	init();
+	vec3 viewDir = getViewDir();
+	vec3 tdata = getTimeOfDayFactors();
+
+	// ----------------------------------------------------------------------------------------------------
+	// Sample stuff
 	uvec3 samplePacked = texture(u_data, texcoord).xyz;
 
 	vec3 vertexNormal = texture(u_vertex_normal, texcoord).xyz;
 
-	float translucent_depth = texture(u_translucent_depth, texcoord).r;
-	float particles_depth = texture(u_particles_depth, texcoord).r;
-
 	vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
+	float translucent_depth = texture(u_translucent_depth, texcoord).r;
+
 	vec4 particles_color = texture(u_particles_color, texcoord);
+	float particles_depth = texture(u_particles_depth, texcoord).r;
 
 	vec4 entity_color = texture(u_entity_color, texcoord);
 	float entity_depth = texture(u_entity_depth, texcoord).r;
 
 	vec4 weather_color = texture(u_weather_color, texcoord);
-	weather_color.rgb = pow(weather_color.rgb, vec3(2.2));
 	float weather_depth = texture(u_weather_depth, texcoord).r;
 
 	vec4 clouds_color = texture(u_clouds_color, texcoord);
-	clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
 	float clouds_depth = texture(u_clouds_depth, texcoord).r;
 
-	vec3 viewDir = getViewDir();
+	// ----------------------------------------------------------------------------------------------------
+	// Fix up samples
+	vertexNormal = vertexNormal * 2.0 - 1.0;
+
+	weather_color.rgb = (pow(weather_color.rgb, vec3(2.2)));
+
+	clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
 
 	Material material = unpackMaterial(samplePacked);
 
-	vertexNormal = vertexNormal * 2.0 - 1.0;
-
+	// ----------------------------------------------------------------------------------------------------
+	// Refractions
 	vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, particles_depth);
-	vec3 sceneSpacePosFront = setupSceneSpacePos(texcoord, translucent_depth);
+	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, translucent_depth);
 
 	vec3 viewDirRefracted = refract(viewDir, material.fragNormal - vertexNormal, 1.0 / 1.333);
 	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(sign(particles_depth - translucent_depth)));
 
-	translucent_depth = texture(u_translucent_depth, refractCoord).r;
-	particles_depth = texture(u_particles_depth, refractCoord).r;
-
 	vec4 main_color = texture(u_main_color, refractCoord);
 	float main_depth = texture(u_main_depth, refractCoord).r;
 
-	// Disable fabulous blending for water
-	translucent_color.a = mix(translucent_color.a, 0.0, step(0.5, material.isWater));
-
-	vec3 tdata = getTimeOfDayFactors();
+	translucent_depth = texture(u_translucent_depth, refractCoord).r;
+	particles_depth = texture(u_particles_depth, refractCoord).r;
 
 	float max_depth = max(max(translucent_depth, particles_depth), main_depth);
 	float min_depth = min(min(translucent_depth, particles_depth), main_depth);
 
 	vec3 maxSceneSpacePos = setupSceneSpacePos(texcoord, max_depth);
 	vec3 minSceneSpacePos = setupSceneSpacePos(texcoord, min_depth);
-	
-	color_layers[0] = main_color;
-	depth_layers[0] = main_depth;
-	active_layers = 1;
 
-	try_insert(translucent_color, translucent_depth);
-	try_insert(entity_color, entity_depth);
-	try_insert(weather_color, weather_depth);
-	try_insert(particles_color, particles_depth);
+	// ----------------------------------------------------------------------------------------------------
+	// Fabulous blending
+	vec3 composite = main_color.rgb;
+	float composite_depth = main_depth;
+	composite = mix(composite, translucent_color.rgb, translucent_color.a * getClosestDepth(translucent_depth, composite_depth) * step(material.isWater, 0.5)); // that last part disables water blending
+	composite = mix(composite, particles_color.rgb, particles_color.a * getClosestDepth(particles_depth, composite_depth));
+	composite = mix(composite, entity_color.rgb, entity_color.a * getClosestDepth(entity_depth, composite_depth));
+	composite = mix(composite, weather_color.rgb, weather_color.a * step(weather_depth, composite_depth));
 
-	vec3 composite = color_layers[0].rgb;
-	for (int ii = 1; ii < active_layers; ++ii) {
-		composite = blend(composite, color_layers[ii]);
-	}
+	sceneSpacePosBack = setupSceneSpacePos(texcoord, main_depth);
+	sceneSpacePos = setupSceneSpacePos(texcoord, composite_depth);
 
+	// ----------------------------------------------------------------------------------------------------
+	// Water blending
 	if(material.isWater > 0.5 || frx_cameraInWater == 1) {
-		//composite *= 0.5;
-
 		// These should eventually be configurable
 		const float WATER_DIRT_AMOUNT = 0.25;
 		const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
-		float waterFogDistance = mix(distance(maxSceneSpacePos, minSceneSpacePos), length(minSceneSpacePos * 0.3), float(frx_cameraInWater));
+		float waterFogDistance = mix(distance(sceneSpacePosBack, sceneSpacePos), length(sceneSpacePos * 0.3), float(frx_cameraInWater));
 		waterFogDistance = max(waterFogDistance, 0.01);
 
 		float sunLightFactor = linearstep(0.0, 0.2, frx_skyLightVector.y);
@@ -163,6 +139,8 @@ void main() {
 		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT + 0.4 * frx_cameraInWater)) * 0.99 + 0.01);
 	}
 
+	// ----------------------------------------------------------------------------------------------------
+	// Reflections
 	if(min_depth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
 		vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
 
@@ -219,9 +197,13 @@ void main() {
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
+	// ----------------------------------------------------------------------------------------------------
+	// Fog
 	{
+		float undergroundFactor = max(frx_smoothedEyeBrightness.y, material.skyLight);
+
 		if(frx_cameraInWater == 0) {
-			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(minSceneSpacePos, minSceneSpacePos))));
+			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
 			vec3 fogPos = viewDir * min(max(256.0, frx_viewDistance), blockDistance);
 
@@ -248,30 +230,32 @@ void main() {
 
 				vlFactor *= distance(fogPos, startPos) / (frx_viewDistance * 0.25);
 			#else
-				vlFactor = linearstep(150.0, 200.0, blockDistance);
+				vlFactor = 0.0;
 			#endif
 
 			// if(min_depth == 1.0) {
 			// 	float distToPlanet = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
 			// 	blockDistance = 1000.0 * length(viewDir.xz / (viewDir.y + length(viewDir.xz) * 0.015)) * step(0.0, distToPlanet);
 			// }
-			float fogAccumulator = length(blockDistance) / 1500.0 * (1.0 - floor(min_depth));
+			float fogAccumulator = length(max(0.0, blockDistance - 20.0)) / 1500.0 * (1.0 - floor(min_depth));
 
-			float fogDensity = 0.5;
-			//fogDensity = mix(fogDensity, 3.0, float(frx_worldIsEnd));
+			float fogDensity = mix(1.0, 3.0, linearstep(0.1, -0.1, getSunVector().y));
+			fogDensity *= mix(1.0, 6.0, fmn_rainFactor);
+			fogDensity = mix(3.0, fogDensity, undergroundFactor);
+			fogDensity = mix(fogDensity, 10.0, float(frx_worldIsNether));
 
 			float fogTransmittance = exp2(-fogAccumulator * fogDensity);
 			
 			vec3 fogScattering = vec3(0.0);
 			if(frx_worldHasSkylight == 1) {
-				vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (minSceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
+				vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (sceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
 				fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + nightAdjust(getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector()));
 				fogScattering *= 300.0;
 
 				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
 				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
 
-				fogScattering = mix(caveFogColor, fogScattering, max(frx_smoothedEyeBrightness.y, material.skyLight));
+				fogScattering = mix(caveFogColor, fogScattering, undergroundFactor);
 			} else {
 				fogScattering = textureLod(u_skybox, viewDir, 7).rgb;
 			}

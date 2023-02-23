@@ -10,5 +10,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
+	init();
+
 	fragColor = depthAwareBlur(u_ssao, u_depth, texcoord, vec2(1.0, 0.0));
 }

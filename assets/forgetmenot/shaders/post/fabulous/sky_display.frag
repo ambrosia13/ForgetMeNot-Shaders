@@ -12,6 +12,8 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
+	init();
+
 	fragColor.rgb = getSkyAndClouds(
 		getViewDir(),
 		u_transmittance,

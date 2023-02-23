@@ -10,16 +10,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-	if(!shouldReprojectFrame()) {
-		fragColor = texture(u_current, texcoord);
-	} else {
-		float depth = texture(u_depth, texcoord).r;
-		vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
-		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+	init();
 
-		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(sceneSpacePos + positionDifference);
-		vec2 sampleCoord = mix(lastScreenPos.xy, texcoord, abs(sign(clamp01(lastScreenPos.xy) - lastScreenPos.xy)));
-
-		fragColor = texture(u_previous, sampleCoord);
-	}
+	fragColor = texture(u_current, texcoord);
 }

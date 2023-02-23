@@ -58,6 +58,8 @@ float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
 }
 
 void main() {
+	init();
+
 	vec4 current = texture(u_current, texcoord * 0.5);
 
 	vec3 pos = setupSceneSpacePos(texcoord, 1.0);

@@ -40,7 +40,7 @@ vec3 getSkyAndClouds(const in vec3 viewDir) {
 		sunTransmittance,
 		moonTransmittance,
 		texture(u_clouds, viewDir).xy,
-		createCumulusCloudLayer(createCloudPlane(viewDir)),
+		createCumulusCloudLayer(viewDir),
 		u_transmittance,
 		u_sky,
 		u_sky_night,
@@ -51,6 +51,8 @@ vec3 getSkyAndClouds(const in vec3 viewDir) {
 }
 
 void main() {
+	init();
+
 	vec3 viewDirs[6] = vec3[6] (
 		vec3(0.0),
 		vec3(0.0),

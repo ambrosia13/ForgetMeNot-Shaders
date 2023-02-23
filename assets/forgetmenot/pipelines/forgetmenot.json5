@@ -6,7 +6,8 @@
 
 	glslVersion: 330,
 	smoothBrightnessBidirectionaly: true,
-	rainSmoothingFrames: 100,
+	rainSmoothingFrames: 250,
+	thunderSmoothingFrames: 500,
 	enablePBR: true,
 	runVanillaClear: true,
 

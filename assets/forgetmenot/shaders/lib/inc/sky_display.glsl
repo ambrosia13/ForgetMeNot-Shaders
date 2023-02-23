@@ -2,11 +2,13 @@
 #include forgetmenot:shaders/lib/inc/noise.glsl
 
 vec2 createCloudPlane(const in vec3 viewDir) {
-	return 2.0 * viewDir.xz * rcp(0.1 * dotSelf(viewDir.xz) + viewDir.y);
+	return 2.0 * (viewDir.xz) * rcp(0.1 * dotSelf(viewDir.xz) + viewDir.y);
 }
 
 struct CloudLayer {
 	float altitude;
+	vec2 plane;
+
 	float density;
 	int selfShadowSteps;
 
@@ -24,10 +26,12 @@ struct CloudLayer {
 	float rangeShift;
 };
 
-CloudLayer createCumulusCloudLayer(const in vec2 plane) {
+CloudLayer createCumulusCloudLayer(const in vec3 viewDir) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.001;
+	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude + 0.00001 * fmn_time / cloudLayer.altitude;
+
 	cloudLayer.density = 15.0;
 	cloudLayer.selfShadowSteps = 5;
 
@@ -35,11 +39,11 @@ CloudLayer createCumulusCloudLayer(const in vec2 plane) {
 
 	cloudLayer.noiseOctaves = 6;
 	cloudLayer.noiseLacunarity = 2.5;
-	cloudLayer.noiseLowerBound = 0.35;
+	cloudLayer.noiseLowerBound = 0.35 - 0.2 * fmn_rainFactor;
 	cloudLayer.noiseUpperBound = 1.0;
 	
 	cloudLayer.domainMult = vec2(1.0);
-	cloudLayer.rangeMult = smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
+	cloudLayer.rangeMult = mix(smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01), 1.0, 0.5 * fmn_rainFactor);
 
 	cloudLayer.domainShift = vec2(0.0);
 	cloudLayer.rangeShift = 0.0;
@@ -47,10 +51,12 @@ CloudLayer createCumulusCloudLayer(const in vec2 plane) {
 	return cloudLayer;
 }
 
-CloudLayer createCirrusCloudLayer(const in vec2 plane) {
+CloudLayer createCirrusCloudLayer(const in vec3 viewDir) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.015;
+	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude;
+
 	cloudLayer.density = 5.0;
 	cloudLayer.selfShadowSteps = 0;
 	
@@ -62,15 +68,15 @@ CloudLayer createCirrusCloudLayer(const in vec2 plane) {
 	cloudLayer.noiseUpperBound = 1.5;
 
 	cloudLayer.domainMult = vec2(6.0, 1.0);
-	cloudLayer.rangeMult = 0.3 * smoothHash(plane * 0.3 + frx_renderSeconds * 0.01);
+	cloudLayer.rangeMult = 0.3 * smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01);
 
-	cloudLayer.domainShift = vec2(sin(plane.y) * 0.25 + sin(plane.y * 2.0 + 100.0) * 0.125, 1.0);
+	cloudLayer.domainShift = vec2(sin(cloudLayer.plane.y) * 0.25 + sin(cloudLayer.plane.y * 2.0 + 100.0) * 0.125, 1.0);
 	cloudLayer.rangeShift = 0.0;
 
 	return cloudLayer;
 }
 
-float sampleCloudNoise(const in vec2 plane, const in CloudLayer cloudLayer) {
+float sampleCloudNoise(const in CloudLayer cloudLayer) {
 	if(cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -80,15 +86,15 @@ float sampleCloudNoise(const in vec2 plane, const in CloudLayer cloudLayer) {
 		cloudLayer.noiseUpperBound,
 		(
 			fbmHash(
-				(plane + cloudLayer.domainShift) * cloudLayer.domainMult,
+				(cloudLayer.plane + cloudLayer.domainShift) * cloudLayer.domainMult,
 				cloudLayer.noiseOctaves,
 				cloudLayer.noiseLacunarity,
-				0.0001 / cloudLayer.altitude
+				(0.0001 + 0.000075 * fmn_rainFactor) / cloudLayer.altitude
 			) + cloudLayer.rangeShift
 		) * cloudLayer.rangeMult
 	);
 }
-float sampleCloudNoise(const in vec2 plane, const in CloudLayer cloudLayer, const in sampler2D noiseTexture) {
+float sampleCloudNoise(const in CloudLayer cloudLayer, const in sampler2D noiseTexture) {
 	if(!cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -96,16 +102,16 @@ float sampleCloudNoise(const in vec2 plane, const in CloudLayer cloudLayer, cons
 	return smoothstep(
 		cloudLayer.noiseLowerBound,
 		cloudLayer.noiseUpperBound,
-		texture(noiseTexture, plane * cloudLayer.domainMult + 0.0001 / cloudLayer.altitude).r * cloudLayer.rangeMult
+		texture(noiseTexture, cloudLayer.plane * cloudLayer.domainMult + 0.0001 / cloudLayer.altitude).r * cloudLayer.rangeMult
 	);
 }
 
-vec2 getCloudsTransmittanceAndScattering(in vec2 plane, const in vec3 viewDir, const in CloudLayer cloudLayer) {
+vec2 getCloudsTransmittanceAndScattering(const in vec3 viewDir, in CloudLayer cloudLayer) {
 	if(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM) > 0.0) {
 		return vec2(1.0, 0.0);
 	}
 
-	float noise = sampleCloudNoise(plane, cloudLayer);
+	float noise = sampleCloudNoise(cloudLayer);
 	
 	float transmittance = exp2(-noise * cloudLayer.density);
 	float scattering = 0.75;
@@ -122,11 +128,11 @@ vec2 getCloudsTransmittanceAndScattering(in vec2 plane, const in vec3 viewDir, c
 		float lightOpticalDepth = 0.0;
 
 		for(int i = 0; i < cloudLayer.selfShadowSteps; i++) {
-			plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i);
-			lightOpticalDepth += sampleCloudNoise(plane, cloudLayer) * rcp(cloudLayer.selfShadowSteps);
+			cloudLayer.plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i);
+			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
 
-		scattering = exp2(-lightOpticalDepth * 6.0);
+		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.4);
 	}
 
 	return vec2(
@@ -214,10 +220,9 @@ vec3 getClouds(
 	vec3 sunVector = getSunVector();
 	vec3 moonVector = getMoonVector();
 
-	vec2 plane = createCloudPlane(viewDir);
 	vec3 cloudPos = vec3(
 		0.0,
-		skyViewPos.y + cloudLayer.altitude * clamp01(dot(plane, sunVector.xz)),
+		skyViewPos.y + cloudLayer.altitude * clamp01(dot(cloudLayer.plane, sunVector.xz)),
 		0.0
 	);
 
@@ -263,15 +268,14 @@ vec3 getSkyAndClouds(
 	);
 
 	if(frx_worldHasSkylight == 1) {
-		vec2 plane = createCloudPlane(viewDir);
-		CloudLayer cirrusClouds = createCirrusCloudLayer(plane);
-		CloudLayer cumulusClouds = createCumulusCloudLayer(plane);
+		CloudLayer cirrusClouds = createCirrusCloudLayer(viewDir);
+		CloudLayer cumulusClouds = createCumulusCloudLayer(viewDir);
 
 		color = getClouds(
 			viewDir,
 			sunTransmittance,
 			moonTransmittance,
-			getCloudsTransmittanceAndScattering(plane, viewDir, cirrusClouds),
+			getCloudsTransmittanceAndScattering(viewDir, cirrusClouds),
 			cirrusClouds,
 			transmittanceLut,
 			skyLutDay,
@@ -282,7 +286,7 @@ vec3 getSkyAndClouds(
 			viewDir,
 			sunTransmittance,
 			moonTransmittance,
-			getCloudsTransmittanceAndScattering(plane, viewDir, cumulusClouds),
+			getCloudsTransmittanceAndScattering(viewDir, cumulusClouds),
 			cumulusClouds,
 			transmittanceLut,
 			skyLutDay,

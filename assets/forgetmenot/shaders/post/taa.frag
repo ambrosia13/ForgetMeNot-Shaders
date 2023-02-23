@@ -58,6 +58,8 @@ float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
 }
 
 void main() {
+	init();
+
 	#ifdef TAA
 		vec4 color;
 		vec4 previousColor;

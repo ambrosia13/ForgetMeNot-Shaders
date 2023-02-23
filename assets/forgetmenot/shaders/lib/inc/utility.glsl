@@ -141,3 +141,7 @@ vec2 rotate2D(vec2 uv, float angle) {
 vec2 repeatAndMirrorCoords(vec2 uv) {
 	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
 }
+
+vec3 saturation(const in vec3 color, const in float amount) {
+	return mix(vec3(frx_luminance(color)), color, amount);
+}

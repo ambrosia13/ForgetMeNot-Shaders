@@ -4,6 +4,8 @@
 Contains the diffuse lighting function as well as some other lighting utilities.
 */
 
+#include forgetmenot:shaders/lib/inc/sky_display.glsl
+
 // --------------------------------------------------------------------------------------------------------
 // https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
 // Utility functions for cascaded shadow maps
@@ -108,6 +110,14 @@ vec3 basicLighting(
 			shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
 		}
 		shadowFactor *= skyLight;
+
+		#ifndef CLOUD_SHADOWS
+			CloudLayer cloudLayer = createCumulusCloudLayer(frx_skyLightVector);
+			cloudLayer.selfShadowSteps = 0;
+			cloudLayer.noiseOctaves = 2;
+
+			shadowFactor *= 0.25 + 0.75 * getCloudsTransmittanceAndScattering(frx_skyLightVector, cloudLayer).x;
+		#endif
 
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 

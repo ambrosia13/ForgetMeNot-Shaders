@@ -6,7 +6,7 @@ layout(location = 0) out float out_minDepth;
 
 void main() {
 	init();
-	
+
 	const int power_of_two = 2;
 	const int cell_size = 1 << power_of_two;
 

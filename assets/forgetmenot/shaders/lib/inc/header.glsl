@@ -42,3 +42,13 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 #include forgetmenot:shaders/lib/inc/utility.glsl 
 #include forgetmenot:shaders/lib/inc/general.glsl 
 #include forgetmenot:shaders/lib/inc/palette.glsl 
+
+// Global utility variables
+float fmn_rainFactor;
+float fmn_time;
+
+// Should be called in every program that uses these variables
+void init() {
+	fmn_rainFactor = frx_smoothedRainGradient * 0.5 + frx_smoothedThunderGradient * 0.5;
+	fmn_time = mod(frx_renderSeconds, 4000.0);
+}
