@@ -1,1 +1,1 @@
-const vec3 caveFogColor = vec3(0.1, 0.25, 0.4);
+const vec3 caveFogColor = vec3(0.0125, 0.03125, 0.05);

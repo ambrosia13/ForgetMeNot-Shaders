@@ -128,8 +128,8 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		ambientLighting = textureLod(skybox, normal, 7).rgb;
-		ambientLighting = mix(vec3(0.01), ambientLighting, skyLight);
+		ambientLighting = textureLod(skybox, normal, 7).rgb * skyLight;
+		ambientLighting += 0.025;
 
 		ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
 		

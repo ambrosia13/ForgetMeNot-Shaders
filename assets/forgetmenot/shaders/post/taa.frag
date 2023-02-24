@@ -13,10 +13,10 @@ layout(location = 0) out vec4 fragColor;
 // tone map and inverse tone map your color texture reads 
 // to prevent bright regions from being fuzzy due to TAA
 vec3 toneMap(in vec3 color) {
-	return color / (color + 1.0);
+	return color;//color / (color + 1.0);
 }
 vec3 inverseToneMap(in vec3 color) {
-	return -color / (color - 1.0);
+	return color;//-color / (color - 1.0);
 }
 
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"

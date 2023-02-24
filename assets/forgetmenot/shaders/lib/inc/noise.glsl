@@ -146,6 +146,45 @@ float smoothHash(in vec2 st) {
 	);
 }
 
+float smoothHash(in vec3 st) {
+	// "Value Noise" from Inigo Quilez
+	// https://www.shadertoy.com/view/lsf3WH
+	vec3 i = (floor(st));
+	vec3 f = fract(st);
+		
+	vec3 u = f * f * (3.0 - 2.0 * f);
+
+	return mix(
+		mix(
+			mix(
+				hash13(i + vec3(0.0, 0.0, 0.0)),
+				hash13(i + vec3(1.0, 0.0, 0.0)),
+				u.x
+			),
+			mix(
+				hash13(i + vec3(0.0, 1.0, 0.0)),
+				hash13(i + vec3(1.0, 1.0, 0.0)),
+				u.x
+			),
+			u.y
+		),
+		mix(
+			mix(
+				hash13(i + vec3(0.0, 0.0, 1.0)),
+				hash13(i + vec3(1.0, 0.0, 1.0)),
+				u.x
+			),
+			mix(
+				hash13(i + vec3(0.0, 1.0, 1.0)),
+				hash13(i + vec3(1.0, 1.0, 1.0)),
+				u.x
+			),
+			u.y
+		),
+		u.z
+	);
+}
+
 // Precalculated rotation matrix to make things a tiny bit faster.
 const mat2 ROTATE_30_DEGREES = mat2(
 	0.99995824399, 0.00913839539,
@@ -173,21 +212,21 @@ float fbmHash(vec2 uv, int octaves) {
 }
 
 // 3D FBM Hash
-float fbm3d(vec3 uv, int octaves, float lacunarity, float t) {
+float fbmHash3D(vec3 uv, int octaves, float lacunarity, float t) {
 	float noise = 0.01;
 	float amp = 0.5;
 
 	for (int i = 0; i < octaves; i++) {
-		noise += amp * (snoise(uv) * 0.5 + 0.5);
-		uv = uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
+		noise += amp * (smoothHash(uv));
+		uv = 10.0 + uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
 		amp *= 0.5;
 	}
 
 	return noise * (octaves + 1.0) / octaves;
 }
-float fbm3d(vec3 uv, int octaves, float t) {
-	return fbm3d(uv, octaves, 2.0, t);
+float fbmHash3D(vec3 uv, int octaves, float t) {
+	return fbmHash3D(uv, octaves, 2.0, t);
 }
-float fbm3d(vec3 uv, int octaves) {
-	return fbm3d(uv, octaves, 0.0);
+float fbmHash3D(vec3 uv, int octaves) {
+	return fbmHash3D(uv, octaves, 0.0);
 }

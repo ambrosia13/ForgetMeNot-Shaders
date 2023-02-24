@@ -113,7 +113,7 @@
 		{
 			name: "sort",
 			lod: 0,
-			internalFormat: "R11F_G11F_B10F",
+			internalFormat: "RGBA16F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
@@ -123,6 +123,28 @@
 				}, 
 				{
 					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "composite_depth",
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
 				},
 				{
 					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
@@ -214,6 +236,9 @@
 			colorAttachments: [
 				{
 					image: "sort", clearColor: 0x00000000
+				},
+				{
+					image: "composite_depth", clearColor: 0x00000000
 				}
 			]
 		},

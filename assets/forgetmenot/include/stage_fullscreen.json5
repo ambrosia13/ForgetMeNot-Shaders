@@ -380,7 +380,11 @@
 			fragmentSource: "forgetmenot:shaders/post/bloom/bloom_merge.frag",
 			samplers: [
 				"u_color", 
-				"u_bloom"
+				"u_downsampled",
+				"u_upsampled",
+
+				"u_sort",
+				"u_main_depth"
 			]
 		},
 		{
@@ -600,7 +604,11 @@
 				framebuffer: "final",
 				samplerImages: [
 					"taa",
+					"bloom_downsample",
 					"bloom_upsample"
+
+					"sort",
+					"main_depth"
 				],
 			},
 			{

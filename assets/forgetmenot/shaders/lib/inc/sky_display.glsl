@@ -181,7 +181,7 @@ vec3 getSkyColor(
 
 		return 40.0 * blueHourMultiplier * (dayColor + nightColor);
 	} else if(frx_worldIsNether == 1) {
-		return 0.5 * normalize(pow(frx_fogColor.rgb, vec3(2.2)));
+		return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.2;
 	} else if(frx_worldIsEnd == 1) {
 		vec3 starCoord = viewDir * 1.5;
 

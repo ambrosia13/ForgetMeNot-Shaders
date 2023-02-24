@@ -1,5 +1,6 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/sky.glsl
+#include forgetmenot:shaders/lib/inc/fog.glsl
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl
@@ -36,6 +37,7 @@ uniform sampler2DArrayShadow u_shadow_map;
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 fragDepth;
 
 // 1.0 if a is greater than b, 0.0 otherwise.
 // Used for blending. 
@@ -44,6 +46,11 @@ float getClosestDepth(const in float a, inout float b) {
 	b = mix(b, min(a, b), isACloser);
 
 	return isACloser;
+}
+
+float sdPlane(vec3 p, vec4 n) {
+	// n must be normalized
+	return dot(p, n.xyz) + n.w;
 }
 
 void main() {
@@ -199,70 +206,51 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
-	{
-		float undergroundFactor = max(frx_smoothedEyeBrightness.y, material.skyLight);
+	const int VOLUMETRIC_FOG_STEPS = 5;
 
-		if(frx_cameraInWater == 0) {
-			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+	float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
+	float undergroundFactor = max(frx_smoothedEyeBrightness.y, material.skyLight);
 
-			vec3 fogPos = viewDir * min(max(256.0, frx_viewDistance), blockDistance);
+	float fogDensity = mix(30.0, 1.0, linearstep(0.0, 0.2, getSunVector().y));
+	fogDensity *= mix(1.0, 2.0, fmn_rainFactor);
+	fogDensity = mix(20.0, fogDensity, undergroundFactor);
+	fogDensity = mix(fogDensity, 15.0, float(frx_worldIsNether));
 
-			vec3 startPos = fogPos;
-			float vlFactor = 0.0;
+	float fogAmount = mix(0.5, 0.0, linearstep(0.0, 0.2, getSunVector().y));
+	fogAmount *= mix(1.0, 2.0, fmn_rainFactor);
+	fogAmount = mix(0.35, fogAmount, undergroundFactor);
+	fogAmount = mix(fogAmount, 0.45, float(frx_worldIsNether));
 
-			// const int VOLUMETRIC_FOG_STEPS = 30;
-			// for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
-			// 	fogPos -= fogPos / (VOLUMETRIC_FOG_STEPS) * interleavedGradient();
+	float fogScale = 1.0;
+	fogScale = mix(3.0, fogScale, undergroundFactor);
+	fogScale = mix(fogScale, 3.0, float(frx_worldIsNether));
 
-			// 	vec3 samplePos = fogPos + frx_cameraPos;
-			// 	fogAccumulator += 2.0 * smoothstep(0.0 + smoothstep(50.0, 120.0, samplePos.y), 1.0, fbm3d((samplePos) * 0.01, 4, 3.0, 0.02)) / VOLUMETRIC_FOG_STEPS;
-			// }
+	float fogAccumulator = 0.0;
 
-			#ifdef VOLUMETRIC_FOG
-				const int VOLUMETRIC_FOG_STEPS = 10;
-				for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
-					fogPos -= fogPos / (VOLUMETRIC_FOG_STEPS) * interleavedGradient();
+	if(fogAmount > 0.0) {
+		vec3 startPos = vec3(0.0);
+		vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
 
-					int cascade;
-					vec3 shadowPos = setupShadowPos(fogPos, vec3(0.0), cascade);
-					vlFactor += texture(u_shadow_map, vec4(shadowPos.xy, cascade, shadowPos.z)) / VOLUMETRIC_FOG_STEPS;
-				}
+		vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
 
-				vlFactor *= distance(fogPos, startPos) / (frx_viewDistance * 0.25);
-			#else
-				vlFactor = 0.0;
-			#endif
 
-			// if(min_depth == 1.0) {
-			// 	float distToPlanet = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
-			// 	blockDistance = 1000.0 * length(viewDir.xz / (viewDir.y + length(viewDir.xz) * 0.015)) * step(0.0, distToPlanet);
-			// }
-			float fogAccumulator = length(max(0.0, blockDistance - 20.0)) / 1500.0 * (1.0 - floor(min_depth));
+		for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
+			vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
 
-			float fogDensity = mix(1.0, 3.0, linearstep(0.1, -0.1, getSunVector().y));
-			fogDensity *= mix(1.0, 6.0, fmn_rainFactor);
-			fogDensity = mix(3.0, fogDensity, undergroundFactor);
-			fogDensity = mix(fogDensity, 10.0, float(frx_worldIsNether));
-
-			float fogTransmittance = exp2(-fogAccumulator * fogDensity);
-			
-			vec3 fogScattering = vec3(0.0);
-			if(frx_worldHasSkylight == 1) {
-				vec3 fogViewPos = skyViewPos + vec3(0.0, 0.000001 * (sceneSpacePos.y + frx_cameraPos.y - 60.0), 0.0);
-				fogScattering = getValFromMultiScattLUT(u_multiscattering, fogViewPos, getSunVector()) + nightAdjust(getValFromMultiScattLUT(u_multiscattering, fogViewPos, getMoonVector()));
-				fogScattering *= 300.0;
-
-				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
-				fogScattering += vlFactor * 0.15 * textureLod(u_skybox, -frx_skyLightVector, 2).rgb * getMiePhase(dot(viewDir, -frx_skyLightVector), 0.9) * frx_skyLightTransitionFactor;
-
-				fogScattering = mix(caveFogColor, fogScattering, undergroundFactor);
-			} else {
-				fogScattering = textureLod(u_skybox, viewDir, 7).rgb;
-			}
-
-			composite = mix(fogScattering, composite, fogTransmittance);
+			vec3 samplePos = (fogPos + frx_cameraPos) * vec3(0.0125, 0.025, 0.0125) * fogScale;
+			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fogAmount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
 		}
+
+		fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
 	}
 
-	fragColor = vec4(composite, 1.0);
+	float fogTransmittance = exp2(-fogAccumulator * fogDensity);
+	vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
+
+	composite = mix(fogScattering, composite, fogTransmittance);
+
+	// ----------------------------------------------------------------------------------------------------
+	// Writing to buffers
+	fragColor = vec4(composite, fogTransmittance);
+	fragDepth = vec4(composite_depth);
 }
