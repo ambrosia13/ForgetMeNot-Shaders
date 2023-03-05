@@ -9,22 +9,39 @@ in float exposure;
 
 layout(location = 0) out vec4 fragColor;
 
-// Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
-vec3 lottes(vec3 x) {
-	const vec3 a = vec3(1.6);
-	const vec3 d = vec3(0.977);
-	const vec3 hdrMax = vec3(8.0);
-	const vec3 midIn = vec3(0.18);
-	const vec3 midOut = vec3(0.267);
+struct ExposureProfile {
+	float bias;
+	float minExposure;
+	float maxExposure;
+};
 
-	const vec3 b =
-		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
-		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
-	const vec3 c =
-		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
-		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+ExposureProfile getOverworldExposureProfile() {
+	return ExposureProfile(0.4, 0.4, 2.0);
+}
+ExposureProfile getNetherExposureProfile() {
+	return ExposureProfile(0.2, 1.5, 2.0);
+}
+ExposureProfile getEndExposureProfile() {
+	return ExposureProfile(0.2, 1.0, 1.4);
+}
 
-	return pow(x, a) / (pow(x, a * d) * b + c);
+ExposureProfile getExposureProfile() {
+	if(frx_worldIsNether == 1) return getNetherExposureProfile();
+	if(frx_worldIsEnd == 1) return getEndExposureProfile();
+	return getOverworldExposureProfile();
+}
+
+float getExposureValue(const in ExposureProfile ep, const in float luminance) {
+	float ev100 = log2(luminance * 100.0 * ep.bias / 12.5);
+	float exposureValue = 1.0 / (1.2 * exp2(ev100));
+
+	return clamp(exposureValue, ep.minExposure, ep.maxExposure);
+}
+float getExposureValue(const in float luminance) {
+	return getExposureValue(getExposureProfile(), luminance);
+}
+float getExposureValue() {
+	return getExposureValue(exposure);
 }
 
 void main() {
@@ -49,18 +66,7 @@ void main() {
 	vec3 finalColor = color.rgb;
 
 	#ifdef ENABLE_BLOOM
-		//finalColor *= 0.5 / clamp(exposure * 0.9 + 0.1, 0.1, 1.5);
-		//finalColor *= 0.5 * rcp(clamp(exposure, 0.2, 1.5));
-
-		const float bias = 0.2;
-		float ev100 = log2(exposure * 100.0 * bias / 12.5);
-		
-		const float minExposure = 0.4;
-		const float maxExposure = 2.0;
-		float exposureValue = 1.0 / (1.2 * exp2(ev100));
-		exposureValue = clamp(exposureValue, minExposure, maxExposure);
-
-		finalColor *= exposureValue;
+		finalColor *= getExposureValue();
 	#endif
 
 	// aces tonemap

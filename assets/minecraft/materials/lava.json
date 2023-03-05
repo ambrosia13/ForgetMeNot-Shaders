@@ -1,4 +1,6 @@
 {
+	"disableAo": true,
+	"disableDiffuse": true,
 	"layers": [
 		{
 			"vertexSource": "minecraft:shaders/material/varying.vert",

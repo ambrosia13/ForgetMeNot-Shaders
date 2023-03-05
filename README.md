@@ -17,15 +17,13 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 2. Install [Fabric](https://fabricmc.net/wiki/install).
 
-3. Install [Canvas](https://modrinth.com/mod/canvas) and drag it into the `mods` folder of your Fabric installation. **Keep in mind that Canvas will never work with Sodium, Iris, OptiFine, or OptiFabric.**
+3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). You can also find an unofficial 1.19.3 build [here](https://cdn.discordapp.com/attachments/614626265663668276/1079640291906170921/canvas-fabric-mc119-1.0.2515-SNAPSHOT.jar). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
 
-4. Get some other mods that you want to play with, so long as they are not part of the incompatible list of mods mentioned above.
+4. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases), [Lomo (not for gameplay)](https://github.com/fewizz/lomo/releases), or [Aerie (vanilla-plus)](https://modrinth.com/shader/aerie-shaders).
 
-5. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases). You can also try out [Lomo](https://github.com/fewizz/lomo/releases), but as of now, it isn't meant for gameplay purposes. 
+5. Launch your game, put your downloaded `.zip` file into your `resourcepacks` folder and activate the resource pack. (Don't extract it!)
 
-6. Launch your game, put your downloaded `.zip` file into your `resourcepacks` folder and activate the resource pack. (Don't extract it!)
-
-7. Navigate to `Options / Video Settings / Canvas / Pipeline Options / Pipelines` and select the pipeline that you want to play with.
+6. Navigate to `Options / Video Settings / Canvas / Pipeline Options / Pipelines` and select the pipeline that you want to play with.
 
 ## troubleshooting
 

@@ -116,7 +116,6 @@ void main() {
 	composite = mix(composite, translucent_color.rgb, translucent_color.a * getClosestDepth(translucent_depth, composite_depth) * step(material.isWater, 0.5)); // that last part disables water blending
 	composite = mix(composite, particles_color.rgb, particles_color.a * getClosestDepth(particles_depth, composite_depth));
 	composite = mix(composite, entity_color.rgb, entity_color.a * getClosestDepth(entity_depth, composite_depth));
-	composite = mix(composite, weather_color.rgb, weather_color.a * step(weather_depth, composite_depth));
 
 	sceneSpacePosBack = setupSceneSpacePos(texcoord, main_depth);
 	sceneSpacePos = setupSceneSpacePos(texcoord, composite_depth);
@@ -143,7 +142,7 @@ void main() {
 		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance));
 		
 		// Water scattering
-		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT + 0.4 * frx_cameraInWater)) * 0.99 + 0.01);
+		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT)) * 0.99 + 0.01);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -209,25 +208,27 @@ void main() {
 	const int VOLUMETRIC_FOG_STEPS = 5;
 
 	float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
-	float undergroundFactor = max(frx_smoothedEyeBrightness.y, material.skyLight);
 
-	float fogDensity = mix(30.0, 1.0, linearstep(0.0, 0.2, getSunVector().y));
-	fogDensity *= mix(1.0, 2.0, fmn_rainFactor);
-	fogDensity = mix(20.0, fogDensity, undergroundFactor);
-	fogDensity = mix(fogDensity, 15.0, float(frx_worldIsNether));
+	// float fogDensity = mix(30.0, 1.0, linearstep(0.0, 0.2, getSunVector().y));
+	// fogDensity *= mix(1.0, 2.0, fmn_rainFactor);
+	// fogDensity = mix(20.0, fogDensity, undergroundFactor);
+	// fogDensity = mix(fogDensity, 15.0, float(frx_worldIsNether));
 
-	float fogAmount = mix(0.5, 0.0, linearstep(0.0, 0.2, getSunVector().y));
-	fogAmount *= mix(1.0, 2.0, fmn_rainFactor);
-	fogAmount = mix(0.35, fogAmount, undergroundFactor);
-	fogAmount = mix(fogAmount, 0.45, float(frx_worldIsNether));
+	// float fogAmount = mix(0.5, 0.0, linearstep(0.0, 0.2, getSunVector().y));
+	// fogAmount *= mix(1.0, 2.0, fmn_rainFactor);
+	// fogAmount = mix(0.35, fogAmount, undergroundFactor);
+	// fogAmount = mix(fogAmount, 0.45, float(frx_worldIsNether));
 
-	float fogScale = 1.0;
-	fogScale = mix(3.0, fogScale, undergroundFactor);
-	fogScale = mix(fogScale, 3.0, float(frx_worldIsNether));
+	// float fogScale = 1.0;
+	// fogScale = mix(3.0, fogScale, undergroundFactor);
+	// fogScale = mix(fogScale, 3.0, float(frx_worldIsNether));
+
+	float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+	FogProfile fp = getFogProfile(undergroundFactor);
 
 	float fogAccumulator = 0.0;
 
-	if(fogAmount > 0.0) {
+	if(fp.amount > 0.0) {
 		vec3 startPos = vec3(0.0);
 		vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
 
@@ -237,17 +238,21 @@ void main() {
 		for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
 			vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
 
-			vec3 samplePos = (fogPos + frx_cameraPos) * vec3(0.0125, 0.025, 0.0125) * fogScale;
-			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fogAmount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
+			vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
+			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
 		}
 
 		fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
 	}
 
-	float fogTransmittance = exp2(-fogAccumulator * fogDensity);
+	float fogTransmittance = exp2(-fogAccumulator * fp.density);
 	vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
 
 	composite = mix(fogScattering, composite, fogTransmittance);
+
+	// ----------------------------------------------------------------------------------------------------
+	// Weather blending
+	composite = mix(composite, weather_color.rgb, weather_color.a * step(weather_depth, composite_depth));
 
 	// ----------------------------------------------------------------------------------------------------
 	// Writing to buffers

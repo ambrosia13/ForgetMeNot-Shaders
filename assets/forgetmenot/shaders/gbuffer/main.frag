@@ -96,12 +96,11 @@ void resolveMaterials() {
 		cross(frx_vertexTangent.xyz, frx_vertexNormal.xyz), 
 		frx_vertexNormal.xyz
 	);
-
 	lightmap = vec3(1.0);
 
-	#ifdef SEASONS
-		vec3 worldSpacePos = getClippedWorldSpacePos();
+	vec3 worldSpacePos = getClippedWorldSpacePos();
 
+	#ifdef SEASONS
 		vec3 rcpVertexColor = 1.0 / frx_vertexColor.rgb;
 		frx_fragColor.rgb *= mix(vec3(1.0), rcpVertexColor * getSeasonColor(frx_vertexColor.rgb, fmn_isLeafBlock, worldSpacePos), 0.5 * fmn_isFoliage * step(0.001, distance(frx_vertexColor.rgb, vec3(1.0))));
 	
@@ -122,9 +121,18 @@ void resolveMaterials() {
 		frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
 	}
 
-	if(!isInventory) {
-		//if(!frx_isHand) directionalLightmap();
+	// Rain effects
+	if(fmn_rainFactor > 0.0) {
+		float rainReflectionFactor = linearstep(0.0, 0.5, fmn_rainFactor) * step(0.95, frx_vertexNormal.y) * smoothstep(7.0 / 8.0, 15.0 / 16.0, frx_fragLight.y);
+		float puddleNoise = fbmHash(worldSpacePos.xz * 0.5, 3, 0.0);
+		puddleNoise += hash13(mod(worldSpacePos * 20.0, 100.0)) * 0.2 - 0.1;
+		puddleNoise = smoothstep(0.5 - 0.2 * frx_smoothedThunderGradient, 0.7, puddleNoise);
 
+		frx_fragRoughness = mix(frx_fragRoughness, 0.0, clamp01(puddleNoise * rainReflectionFactor + frx_smoothedThunderGradient * 0.1));
+		frx_fragReflectance = mix(frx_fragReflectance, 0.025, puddleNoise * rainReflectionFactor);
+	}
+
+	if(!isInventory) {
 		// If the current dimension is non-vanilla, use MC's lightmap.
 		if(isModdedDimension()) {
 			lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;
