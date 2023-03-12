@@ -129,7 +129,7 @@ vec3 basicLighting(
 	// Ambient lighting
 	{
 		ambientLighting = textureLod(skybox, normal, 7).rgb * skyLight;
-		ambientLighting += 0.025;
+		ambientLighting += 0.005;
 
 		ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
 		
@@ -152,6 +152,8 @@ vec3 basicLighting(
 
 	totalLighting += directLighting + ambientLighting;
 	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
+
+	totalLighting = max(totalLighting, vec3(0.03, 0.045, 0.06) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos) * 0.75)));
 
 	vec3 color = albedo * (totalLighting + emission);
 	return color;

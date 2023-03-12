@@ -173,7 +173,7 @@ vec3 getSkyColor(
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
 		
-		vec3 sun = sunBrightness * step(0.9997, dot(viewDir, sunVector)) * intersectedPlanet * sunTransmittance;
+		vec3 sun = sunBrightness * step(0.9995, dot(viewDir, sunVector)) * intersectedPlanet * sunTransmittance;
 		vec3 moon = sunBrightness * step(0.9998, dot(viewDir, moonVector)) * intersectedPlanet * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;

@@ -16,7 +16,7 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.4, 0.4, 2.0);
+	return ExposureProfile(0.2, 0.4, 2.0);
 }
 ExposureProfile getNetherExposureProfile() {
 	return ExposureProfile(0.2, 1.5, 2.0);
@@ -42,6 +42,23 @@ float getExposureValue(const in float luminance) {
 }
 float getExposureValue() {
 	return getExposureValue(exposure);
+}
+
+vec3 lottes(vec3 x) {
+	const vec3 a = vec3(1.75);
+	const vec3 d = vec3(0.977);
+	const vec3 hdrMax = vec3(12.0);
+	const vec3 midIn = vec3(0.18);
+	const vec3 midOut = vec3(0.227);
+
+	const vec3 b =
+		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+	const vec3 c =
+		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+
+	return pow(x, a) / (pow(x, a * d) * b + c);
 }
 
 void main() {
@@ -70,9 +87,9 @@ void main() {
 	#endif
 
 	// aces tonemap
-	finalColor = FRX_ACES_INPUT_MATRIX * finalColor;
-	finalColor = FRX_RRT_AND_ODTF_FIT(finalColor * 1.0);
-	finalColor = FRX_ACES_OUTPUT_MATRIX * finalColor;
+	if(texcoord.x > 0.5 || true) finalColor = FRX_ACES_INPUT_MATRIX * finalColor;
+	finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
+	if(texcoord.x > 0.5 || true) finalColor = FRX_ACES_OUTPUT_MATRIX * finalColor;
 
 	// vibrance(finalColor, 0.05);
 	// liftGammaGain(finalColor, 0.0075, 1.0, 2.0);

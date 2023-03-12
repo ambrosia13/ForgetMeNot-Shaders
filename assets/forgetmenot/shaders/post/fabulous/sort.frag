@@ -205,50 +205,44 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
-	const int VOLUMETRIC_FOG_STEPS = 5;
+	#ifdef FOG
+		const int VOLUMETRIC_FOG_STEPS = 5;
 
-	float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
+		float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
 
-	// float fogDensity = mix(30.0, 1.0, linearstep(0.0, 0.2, getSunVector().y));
-	// fogDensity *= mix(1.0, 2.0, fmn_rainFactor);
-	// fogDensity = mix(20.0, fogDensity, undergroundFactor);
-	// fogDensity = mix(fogDensity, 15.0, float(frx_worldIsNether));
+		float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+		FogProfile fp = getFogProfile(undergroundFactor);
 
-	// float fogAmount = mix(0.5, 0.0, linearstep(0.0, 0.2, getSunVector().y));
-	// fogAmount *= mix(1.0, 2.0, fmn_rainFactor);
-	// fogAmount = mix(0.35, fogAmount, undergroundFactor);
-	// fogAmount = mix(fogAmount, 0.45, float(frx_worldIsNether));
+		float fogAccumulator = 0.0;
 
-	// float fogScale = 1.0;
-	// fogScale = mix(3.0, fogScale, undergroundFactor);
-	// fogScale = mix(fogScale, 3.0, float(frx_worldIsNether));
+		if(fp.amount > 0.0) {
+			#ifdef VOLUMETRIC_FOG
+				vec3 startPos = vec3(0.0);
+				vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
 
-	float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
-	FogProfile fp = getFogProfile(undergroundFactor);
-
-	float fogAccumulator = 0.0;
-
-	if(fp.amount > 0.0) {
-		vec3 startPos = vec3(0.0);
-		vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
-
-		vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
+				vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
 
 
-		for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
-			vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
+				for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
+					vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
 
-			vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
-			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
+					vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
+					fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
+				}
+
+				fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
+			#else
+				fogAccumulator = min(blockDistance, min(128.0, frx_viewDistance)) * fp.amount * 0.0025;
+			#endif
 		}
 
-		fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
-	}
+		float fogTransmittance = exp2(-fogAccumulator * fp.density);
+		vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
 
-	float fogTransmittance = exp2(-fogAccumulator * fp.density);
-	vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
-
-	composite = mix(fogScattering, composite, fogTransmittance);
+		composite = mix(fogScattering, composite, fogTransmittance);
+	#else
+		float fogTransmittance = 1.0;
+	#endif
 
 	// ----------------------------------------------------------------------------------------------------
 	// Weather blending
