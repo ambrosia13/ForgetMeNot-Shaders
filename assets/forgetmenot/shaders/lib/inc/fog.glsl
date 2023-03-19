@@ -49,8 +49,8 @@ FogProfile getFogProfile(const in float undergroundFactor) {
 	if(frx_worldIsNether == 1) return getNetherFogProfile();
 	if(frx_worldIsEnd == 1) return getEndFogProfile();
 	
-	float fogFalloff = linearstep(0.0, 0.2, getSunVector().y);
-	return getOverworldFogProfile(undergroundFactor, fogFalloff);
+	//float fogFalloff = linearstep(0.0, 0.2, getSunVector().y);
+	return getOverworldFogProfile(undergroundFactor, 0.5);
 }
 
 vec3 getFogScattering(const in vec3 viewDir, const in float vlFactor, const in float undergroundFactor, const in samplerCube skybox, const in sampler2D multiscatteringLut) {

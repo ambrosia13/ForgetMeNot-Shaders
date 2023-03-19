@@ -149,6 +149,6 @@ vec3 saturation(const in vec3 color, const in float amount) {
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height) {
 	vec3 viewDir = normalize(pos.xyz) * tbn;
-	vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
+	vec2 p = viewDir.xy / viewDir.z * (height);
 	return texcoord - p;
 }

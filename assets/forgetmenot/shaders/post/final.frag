@@ -83,11 +83,12 @@ void main() {
 	vec3 finalColor = color.rgb;
 
 	// Purkinje effect
-	finalColor = mix(saturation(finalColor, 0.0) * vec3(1.0, 1.2, 1.8), finalColor, clamp01(1.0 - exp2(-frx_luminance(finalColor * 30.0))));
+	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(finalColor * 40.0)));
+	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.02 * randF(), finalColor, purkinjeFactor);
 
 
 	#ifdef ENABLE_BLOOM
-		finalColor *= getExposureValue();
+		finalColor *= getExposureValue() * 0.75;
 	#endif
 
 	// aces tonemap

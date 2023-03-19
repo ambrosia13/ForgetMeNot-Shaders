@@ -50,11 +50,9 @@ float getClosestDepth(const in float a, inout float b) {
 
 float waterHeightNoise(in vec2 uv) {
 	float noiseA = fbmHash(uv, 3, 2.3, 1.4) * 7.5;
-	float noiseB = fbmHash(uv * 2.0, 3, 2.3, -0.9) * 3.25;
+	float noiseB = fbmHash(uv * 2.0, 3, 2.3, -1.4) * 3.25;
 
-	return mix(noiseA, noiseB, 0.5 + smoothHash(uv * 0.3) * 0.5) * 1.5;
-
-	return 1.0;
+	return mix(noiseA, noiseB, smoothHash(uv * 0.1) * 0.8 + 0.1) * 1.5;
 }
 
 void main() {
@@ -148,22 +146,22 @@ void main() {
 			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 1000.0);
 			vec2 uv = frx_faceUv(worldSpacePos, face);
 
-			const vec2 offset = vec2(0.0, 1e-3);
+			const vec2 offset = vec2(0.0, 5e-3);
 
 			float noiseCenter = waterHeightNoise(uv);
 
 			// Parallaxify
-			//uv = parallaxMapping(worldSpacePos, tbn, uv, noiseCenter * 0.1);
-			// noiseCenter = snoise(uv);
+			// uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
+			// noiseCenter = waterHeightNoise(uv);
 
 			float noiseOffsetX = waterHeightNoise(uv + offset.xy);
 			float noiseOffsetY = waterHeightNoise(uv + offset.yx);
 
-			float deltaX = (noiseOffsetX - noiseCenter) * 10.0;
-			float deltaY = (noiseOffsetY - noiseCenter) * 10.0;
+			float deltaX = (noiseOffsetX - noiseCenter) / offset.y * 0.01;
+			float deltaY = (noiseOffsetY - noiseCenter) / offset.y * 0.01;
 
 			material.fragNormal = tbn * normalize(
-				cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY))
+				cross(vec3(2.0, 0.0, deltaX), vec3(0.0, 2.0, deltaY))
 			);
 		#endif
 
@@ -238,7 +236,7 @@ void main() {
 		}
 		
 		if(hit) {
-			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size - TAA_OFFSETS[frx_renderFrames % 8u]), 0).rgb;
+			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
 		} else {
 			vec4 skybox = textureLod(u_skybox, cleanReflectDir, 10.0 * rcp(inversesqrt(material.roughness)));
 			
@@ -256,41 +254,53 @@ void main() {
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
-		const int VOLUMETRIC_FOG_STEPS = 5;
-
-		float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
+		float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
 		float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
 		FogProfile fp = getFogProfile(undergroundFactor);
 
-		float fogAccumulator = 0.0;
+		float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
 
-		if(fp.amount > 0.0) {
-			#ifdef VOLUMETRIC_FOG
-				vec3 startPos = vec3(0.0);
-				vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
+		vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
+		atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
 
-				vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
+		composite = mix(mix(atmosphericFogScattering, composite, undergroundFactor), composite, atmosphericFogTransmittance);
+
+		// const int VOLUMETRIC_FOG_STEPS = 5;
+
+		// float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
+
+		// float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+		// FogProfile fp = getFogProfile(undergroundFactor);
+
+		// float fogAccumulator = 0.0;
+
+		// if(fp.amount > 0.0) {
+		// 	#ifdef VOLUMETRIC_FOG
+		// 		vec3 startPos = vec3(0.0);
+		// 		vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
+
+		// 		vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
 
 
-				for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
-					vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
+		// 		for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
+		// 			vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
 
-					vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
-					fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
-				}
+		// 			vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
+		// 			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
+		// 		}
 
-				fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
-			#else
-				fogAccumulator = min(blockDistance, min(128.0, frx_viewDistance)) * fp.amount * 0.0025;
-			#endif
-		}
+		// 		fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
+		// 	#else
+		// 		fogAccumulator = min(blockDistance, min(128.0, frx_viewDistance)) * fp.amount * 0.0025;
+		// 	#endif
+		// }
 
-		float atmosphericFogTransmittance = exp2(-fogAccumulator * fp.density);
-		vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
+		// float atmosphericFogTransmittance = exp2(-fogAccumulator * fp.density);
+		// vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
 
-		composite = mix(fogScattering, composite, atmosphericFogTransmittance);
-		fogTransmittance = min(fogTransmittance, atmosphericFogTransmittance);
+		// composite = mix(fogScattering, composite, atmosphericFogTransmittance);
+		// fogTransmittance = min(fogTransmittance, atmosphericFogTransmittance);
 	#else
 		//fogTransmittance = 1.0;
 	#endif

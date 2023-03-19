@@ -131,7 +131,8 @@ vec3 basicLighting(
 		ambientLighting = textureLod(skybox, normal, 7).rgb * skyLight;
 
 		// Ambient lighting boost during night 
-		ambientLighting *= mix(8.0, 1.0, getTimeOfDayFactors().x);
+		float nightFactor = linearstep(0.05, 0.0, getSunVector().y);
+		ambientLighting *= mix(1.0, 6.0, nightFactor);
 
 		ambientLighting += 0.02;
 
