@@ -27,7 +27,16 @@ vec3 getClippedWorldSpacePos() {
 }
 
 void autoGenNormal() {
-	if(fmn_autoGenNormalStrength < 0.001 || frx_fragNormal != vec3(0.0, 0.0, 1.0) || fmn_isPlayer == 1) return;
+	if(
+		fmn_autoGenNormalStrength < 0.001 || 
+		frx_fragNormal != vec3(0.0, 0.0, 1.0) || 
+		#ifdef REALISTIC_WATER
+			fmn_isWater == 1 ||
+		#endif
+		fmn_isPlayer == 1 
+	) {
+		return;
+	}
 
 	vec2 uv = frx_normalizeMappedUV(frx_texcoord);
 	vec2 uv1, uv2, uv3, uv4;
@@ -59,10 +68,10 @@ void autoGenNormal() {
 
 	vec3 worldSpacePos = getClippedWorldSpacePos();
 
-	float height1 = frx_luminance(sample1.rgb * sample1.a) + 0.025 * (hash13(worldSpacePos) * 2.0 - 1.0);
-	float height2 = frx_luminance(sample2.rgb * sample2.a) + 0.025 * (hash13(worldSpacePos + 100.0) * 2.0 - 1.0);
-	float height3 = frx_luminance(sample3.rgb * sample3.a) + 0.025 * (hash13(worldSpacePos + 200.0) * 2.0 - 1.0);
-	float height4 = frx_luminance(sample4.rgb * sample4.a) + 0.025 * (hash13(worldSpacePos + 300.0) * 2.0 - 1.0);
+	float height1 = frx_luminance(sample1.rgb * sample1.a);// + 0.025 * (hash13(worldSpacePos) * 2.0 - 1.0);
+	float height2 = frx_luminance(sample2.rgb * sample2.a);// + 0.025 * (hash13(worldSpacePos + 100.0) * 2.0 - 1.0);
+	float height3 = frx_luminance(sample3.rgb * sample3.a);// + 0.025 * (hash13(worldSpacePos + 200.0) * 2.0 - 1.0);
+	float height4 = frx_luminance(sample4.rgb * sample4.a);// + 0.025 * (hash13(worldSpacePos + 300.0) * 2.0 - 1.0);
 
 	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
 	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength * lodFactor;

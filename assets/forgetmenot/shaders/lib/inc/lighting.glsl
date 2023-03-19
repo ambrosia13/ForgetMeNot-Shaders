@@ -123,13 +123,17 @@ vec3 basicLighting(
 
 		vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		directLighting = 10.0 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
-		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting);
+		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
 	// Ambient lighting
 	{
 		ambientLighting = textureLod(skybox, normal, 7).rgb * skyLight;
-		ambientLighting += 0.005;
+
+		// Ambient lighting boost during night 
+		ambientLighting *= mix(8.0, 1.0, getTimeOfDayFactors().x);
+
+		ambientLighting += 0.02;
 
 		ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
 		

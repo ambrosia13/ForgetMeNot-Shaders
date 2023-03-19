@@ -145,3 +145,10 @@ vec2 repeatAndMirrorCoords(vec2 uv) {
 vec3 saturation(const in vec3 color, const in float amount) {
 	return mix(vec3(frx_luminance(color)), color, amount);
 }
+
+// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height) {
+	vec3 viewDir = normalize(pos.xyz) * tbn;
+	vec2 p = viewDir.xy / viewDir.z * (height * 1.0);
+	return texcoord - p;
+}

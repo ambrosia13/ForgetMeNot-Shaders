@@ -89,6 +89,8 @@ bool is_out_of_fb(uvec2 texel, float z) {
 }
 
 bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths, out vec3 hitPos) {
+	float linearDepth = linearizeDepth(pos_win.z);
+
 	pos_win.z -= max(0.0, dir_ws.z * 4.0);
 	pos_win.z -= 1.0 / 1000000.0;
 
@@ -123,7 +125,9 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 			if(level == 0u) {
 				hitPos.xy = (vec2(prev_texel) + 0.5) / frxu_size;
 				hitPos.z = mix(lower_depth, prev_z, step(lower_depth, prev_z));
-				return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < 1.0;
+
+				
+				return hitPos.z < 1.0 && abs(linearizeDepth(hitPos.z) - linearizeDepth(lower_depth)) < mix(2.0, 10.0, linearstep(10.0, 40.0, linearDepth));
 			}
 			float mul = (lower_depth - prev_z) / (z - prev_z);
 			dist_xy *= mul;

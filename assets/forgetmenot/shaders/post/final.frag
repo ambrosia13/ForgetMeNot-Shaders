@@ -16,7 +16,7 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.25, 0.4, 2.0);
+	return ExposureProfile(0.25, 0.55, 2.0);
 }
 ExposureProfile getNetherExposureProfile() {
 	return ExposureProfile(0.2, 1.5, 2.0);
@@ -81,6 +81,10 @@ void main() {
 	#endif
 
 	vec3 finalColor = color.rgb;
+
+	// Purkinje effect
+	finalColor = mix(saturation(finalColor, 0.0) * vec3(1.0, 1.2, 1.8), finalColor, clamp01(1.0 - exp2(-frx_luminance(finalColor * 30.0))));
+
 
 	#ifdef ENABLE_BLOOM
 		finalColor *= getExposureValue();

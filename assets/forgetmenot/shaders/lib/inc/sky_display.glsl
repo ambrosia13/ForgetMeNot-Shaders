@@ -1,7 +1,7 @@
 #include forgetmenot:shaders/lib/inc/sky.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl
 
-vec2 createCloudPlane(const in vec3 viewDir) {
+vec2 createCloudPlane(in vec3 viewDir) {
 	return 2.0 * (viewDir.xz) * rcp(0.1 * dotSelf(viewDir.xz) + viewDir.y);
 }
 
@@ -26,7 +26,7 @@ struct CloudLayer {
 	float rangeShift;
 };
 
-CloudLayer createCumulusCloudLayer(const in vec3 viewDir) {
+CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.001;
@@ -51,7 +51,7 @@ CloudLayer createCumulusCloudLayer(const in vec3 viewDir) {
 	return cloudLayer;
 }
 
-CloudLayer createCirrusCloudLayer(const in vec3 viewDir) {
+CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	CloudLayer cloudLayer;
 
 	cloudLayer.altitude = 0.015;
@@ -76,7 +76,7 @@ CloudLayer createCirrusCloudLayer(const in vec3 viewDir) {
 	return cloudLayer;
 }
 
-float sampleCloudNoise(const in CloudLayer cloudLayer) {
+float sampleCloudNoise(in CloudLayer cloudLayer) {
 	if(cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -94,7 +94,7 @@ float sampleCloudNoise(const in CloudLayer cloudLayer) {
 		) * cloudLayer.rangeMult
 	);
 }
-float sampleCloudNoise(const in CloudLayer cloudLayer, const in sampler2D noiseTexture) {
+float sampleCloudNoise(in CloudLayer cloudLayer, in sampler2D noiseTexture) {
 	if(!cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -106,7 +106,7 @@ float sampleCloudNoise(const in CloudLayer cloudLayer, const in sampler2D noiseT
 	);
 }
 
-vec2 getCloudsTransmittanceAndScattering(const in vec3 viewDir, in CloudLayer cloudLayer) {
+vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLayer) {
 	if(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM) > 0.0) {
 		return vec2(1.0, 0.0);
 	}
@@ -142,13 +142,13 @@ vec2 getCloudsTransmittanceAndScattering(const in vec3 viewDir, in CloudLayer cl
 }
 
 vec3 getSkyColor(
-	const in vec3 viewDir, 
-	const in vec3 sunTransmittance,
-	const in vec3 moonTransmittance, 
-	const in float sunBrightness,
+	in vec3 viewDir, 
+	in vec3 sunTransmittance,
+	in vec3 moonTransmittance, 
+	in float sunBrightness,
 
-	const in sampler2D skyLutDay,
-	const in sampler2D skyLutNight
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight
 ) {
 	if(isModdedDimension()) {
 		return pow(frx_fogColor.rgb, vec3(2.2));
@@ -203,17 +203,17 @@ vec3 getSkyColor(
 }
 
 vec3 getClouds(
-	const in vec3 viewDir,
-	const in vec3 sunTransmittance,
-	const in vec3 moonTransmittance,
-	const in vec2 cloudsTransmittanceAndScattering,
-	const in CloudLayer cloudLayer,
+	in vec3 viewDir,
+	in vec3 sunTransmittance,
+	in vec3 moonTransmittance,
+	in vec2 cloudsTransmittanceAndScattering,
+	in CloudLayer cloudLayer,
 
-	const in sampler2D transmittanceLut,
-	const in sampler2D skyLutDay,
-	const in sampler2D skyLutNight,
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight,
 
-	const in vec3 skyColor
+	in vec3 skyColor
 ) {
 	if(frx_worldHasSkylight == 0) {
 		return skyColor;
@@ -251,11 +251,11 @@ vec3 getClouds(
 }
 
 vec3 getSkyAndClouds(
-	const in vec3 viewDir,
+	in vec3 viewDir,
 
-	const in sampler2D transmittanceLut,
-	const in sampler2D skyLutDay,
-	const in sampler2D skyLutNight
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight
 ) {
 	vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, getSunVector());
 	vec3 moonTransmittance = nightAdjust(getValFromTLUT(transmittanceLut, skyViewPos, getMoonVector()));

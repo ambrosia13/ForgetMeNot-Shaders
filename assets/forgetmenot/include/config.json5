@@ -50,6 +50,11 @@
 					nameKey: "config.forgetmenot.name.rain_fog",
 					descriptionKey: "config.forgetmenot.desc.rain_fog"
 				},
+				realistic_water: {
+					default: true,
+					nameKey: "config.forgetmenot.name.realistic_water",
+					descriptionKey: "config.forgetmenot.desc.realistic_water"
+				},
 			}
 		},
 		{

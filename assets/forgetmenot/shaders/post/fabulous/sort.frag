@@ -48,9 +48,13 @@ float getClosestDepth(const in float a, inout float b) {
 	return isACloser;
 }
 
-float sdPlane(vec3 p, vec4 n) {
-	// n must be normalized
-	return dot(p, n.xyz) + n.w;
+float waterHeightNoise(in vec2 uv) {
+	float noiseA = fbmHash(uv, 3, 2.3, 1.4) * 7.5;
+	float noiseB = fbmHash(uv * 2.0, 3, 2.3, -0.9) * 3.25;
+
+	return mix(noiseA, noiseB, 0.5 + smoothHash(uv * 0.3) * 0.5) * 1.5;
+
+	return 1.0;
 }
 
 void main() {
@@ -121,8 +125,50 @@ void main() {
 	sceneSpacePos = setupSceneSpacePos(texcoord, composite_depth);
 
 	// ----------------------------------------------------------------------------------------------------
-	// Water blending
+	// Water normals and blending
+
+	// Initialize fog transmittance used for bloomy fog
+	float fogTransmittance = 1.0;
+
 	if(material.isWater > 0.5 || frx_cameraInWater == 1) {
+		#ifdef REALISTIC_WATER
+			// NORMALS
+
+			// Get TBN matrix
+			vec3 tangent = normalize(cross(vertexNormal, vec3(0.0, 1.0, 1.0)));
+			mat3 tbn = mat3(
+				tangent,
+				cross(vertexNormal, tangent),
+				vertexNormal
+			);
+
+			// Math from Balint
+			int face = int(dot(max(vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
+
+			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 1000.0);
+			vec2 uv = frx_faceUv(worldSpacePos, face);
+
+			const vec2 offset = vec2(0.0, 1e-3);
+
+			float noiseCenter = waterHeightNoise(uv);
+
+			// Parallaxify
+			//uv = parallaxMapping(worldSpacePos, tbn, uv, noiseCenter * 0.1);
+			// noiseCenter = snoise(uv);
+
+			float noiseOffsetX = waterHeightNoise(uv + offset.xy);
+			float noiseOffsetY = waterHeightNoise(uv + offset.yx);
+
+			float deltaX = (noiseOffsetX - noiseCenter) * 10.0;
+			float deltaY = (noiseOffsetY - noiseCenter) * 10.0;
+
+			material.fragNormal = tbn * normalize(
+				cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY))
+			);
+		#endif
+
+		// BLENDING
+
 		// These should eventually be configurable
 		const float WATER_DIRT_AMOUNT = 0.25;
 		const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
@@ -139,10 +185,14 @@ void main() {
 		vec3 waterFogColor = mix(translucent_color.rgb, underwaterFogColor, frx_cameraInWater);
 
 		// Water absorption
-		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance));
+		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 2.0));
 		
 		// Water scattering
-		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, exp(-waterFogDistance * (WATER_DIRT_AMOUNT)) * 0.99 + 0.01);
+		float waterFogTransmittance = exp(-waterFogDistance * (WATER_DIRT_AMOUNT));
+		
+		if(frx_cameraInFluid == 1) fogTransmittance = min(fogTransmittance, waterFogTransmittance);
+		
+		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, waterFogTransmittance * 0.99 + 0.01);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -188,7 +238,7 @@ void main() {
 		}
 		
 		if(hit) {
-			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
+			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size - TAA_OFFSETS[frx_renderFrames % 8u]), 0).rgb;
 		} else {
 			vec4 skybox = textureLod(u_skybox, cleanReflectDir, 10.0 * rcp(inversesqrt(material.roughness)));
 			
@@ -236,12 +286,13 @@ void main() {
 			#endif
 		}
 
-		float fogTransmittance = exp2(-fogAccumulator * fp.density);
+		float atmosphericFogTransmittance = exp2(-fogAccumulator * fp.density);
 		vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
 
-		composite = mix(fogScattering, composite, fogTransmittance);
+		composite = mix(fogScattering, composite, atmosphericFogTransmittance);
+		fogTransmittance = min(fogTransmittance, atmosphericFogTransmittance);
 	#else
-		float fogTransmittance = 1.0;
+		//fogTransmittance = 1.0;
 	#endif
 
 	// ----------------------------------------------------------------------------------------------------
