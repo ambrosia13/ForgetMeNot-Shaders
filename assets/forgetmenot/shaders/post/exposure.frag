@@ -16,7 +16,7 @@ void main() {
 	vec2 size = textureSize(u_color, luminanceLod);
 	float totalWeight;
 
-	float texelMaxLuminance = 0.0, texelMinLuminance = 100.0;
+	// float texelMaxLuminance = 0.0, texelMinLuminance = 100.0;
 
 	for(int x = 0; x < size.x; x++) {
 		for(int y = 0; y < size.y; y++) {
@@ -24,8 +24,8 @@ void main() {
 			float currentWeight = 1.0;
 			float currentSample = frx_luminance(texelFetch(u_color, ivec2(x, y), luminanceLod).rgb);
 
-			texelMaxLuminance = max(texelMaxLuminance, currentSample);
-			texelMinLuminance = min(texelMinLuminance, currentSample);
+			// texelMaxLuminance = max(texelMaxLuminance, currentSample);
+			// texelMinLuminance = min(texelMinLuminance, currentSample);
 
 			avgLuminance += currentSample * currentWeight;
 			totalWeight += currentWeight;

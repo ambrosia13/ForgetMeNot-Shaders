@@ -41,7 +41,7 @@ layout(location = 1) out vec4 fragDepth;
 
 // 1.0 if a is greater than b, 0.0 otherwise.
 // Used for blending. 
-float getClosestDepth(const in float a, inout float b) {
+float getClosestDepth(in float a, inout float b) {
 	float isACloser = step(a, b);
 	b = mix(b, min(a, b), isACloser);
 
@@ -49,10 +49,10 @@ float getClosestDepth(const in float a, inout float b) {
 }
 
 float waterHeightNoise(in vec2 uv) {
-	float noiseA = fbmHash(uv, 3, 2.3, 1.4) * 7.5;
-	float noiseB = fbmHash(uv * 2.0, 3, 2.3, -1.4) * 3.25;
+	float noiseA = fbmHash(uv, 3, 2.5, 1.4) * 7.5;
+	float noiseB = fbmHash(uv * 2.0, 3, 2.5, -1.4) * 5.0;
 
-	return mix(noiseA, noiseB, smoothHash(uv * 0.1) * 0.8 + 0.1) * 1.5;
+	return mix(noiseA, noiseB, smoothHash(uv * 0.1) * 0.8 + 0.1) * 1.0;
 }
 
 void main() {
@@ -212,7 +212,7 @@ void main() {
 		if(material.roughness < 0.5) {
 			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
-			vec3 pos_ws = vec3(gl_FragCoord.xy, min_depth);
+			vec3 pos_ws = sceneSpaceToScreenSpace(sceneSpacePos) * vec3(frxu_size, 1.0);
 			vec3 dir_ws = normalize(
 				(
 					viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) -

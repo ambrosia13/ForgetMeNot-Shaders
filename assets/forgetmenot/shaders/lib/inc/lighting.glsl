@@ -66,6 +66,8 @@ vec3 basicLighting(
 	bool doPcss,
 	int shadowMapSamples
 ) {
+	skyLight *= skyLight;
+
 	skyLight = mix(skyLight, 1.0, float(frx_worldIsEnd));
 
 	float emission = clamp01(frx_luminance(albedo) - 1.0);
@@ -128,7 +130,7 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		ambientLighting = textureLod(skybox, normal, 7).rgb * skyLight;
+		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (2.0 + 2.0 * normal.y) * skyLight;
 
 		// Ambient lighting boost during night 
 		float nightFactor = linearstep(0.05, 0.0, getSunVector().y);

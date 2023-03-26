@@ -147,7 +147,7 @@ float smoothHash(in vec2 st) {
 }
 
 float smoothHash(in vec3 st) {
-	// "Value Noise" from Inigo Quilez
+	// "Value Noise" from Inigo Quilez, modified
 	// https://www.shadertoy.com/view/lsf3WH
 	vec3 i = (floor(st));
 	vec3 f = fract(st);

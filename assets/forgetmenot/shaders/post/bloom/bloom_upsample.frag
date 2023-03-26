@@ -10,5 +10,11 @@ layout(location = 0) out vec4 fragColor;
 void main() {
 	init();
 
-	fragColor = frx_sampleTent(u_prior, texcoord, 2.0 / frxu_size, frxu_lod + 1) + textureLod(u_color, texcoord, frxu_lod);
+	vec4 current = textureLod(u_color, texcoord, frxu_lod);
+
+	if(frxu_lod < 1) {
+		current.rgb *= 2.0;
+	}
+
+	fragColor = frx_sampleTent(u_prior, texcoord, 2.0 / frxu_size, frxu_lod + 1) + current;
 }

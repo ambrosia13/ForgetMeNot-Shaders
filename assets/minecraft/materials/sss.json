@@ -4,5 +4,7 @@
 			"fragmentSource": "minecraft:shaders/material/api_impl/sss.frag",
 			"vertexSource": "canvas:shaders/material/leaves.vert"
 		}
-	]
+	],
+	"disableDiffuse": true,
+	"disableAo": true
 }

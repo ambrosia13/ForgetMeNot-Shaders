@@ -13,16 +13,17 @@ struct ExposureProfile {
 	float bias;
 	float minExposure;
 	float maxExposure;
+	float exposureMultiplier;
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.25, 0.55, 2.0);
+	return ExposureProfile(0.25, 0.6, 1.3, 1.0);
 }
 ExposureProfile getNetherExposureProfile() {
-	return ExposureProfile(0.2, 1.5, 2.0);
+	return ExposureProfile(0.2, 1.5, 2.0, 1.0);
 }
 ExposureProfile getEndExposureProfile() {
-	return ExposureProfile(0.2, 1.0, 1.4);
+	return ExposureProfile(0.2, 1.0, 1.4, 1.0);
 }
 
 ExposureProfile getExposureProfile() {
@@ -83,12 +84,12 @@ void main() {
 	vec3 finalColor = color.rgb;
 
 	// Purkinje effect
-	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(finalColor * 40.0)));
-	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.02 * randF(), finalColor, purkinjeFactor);
+	// float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(finalColor * 40.0)));
+	// finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.02 * randF(), finalColor, purkinjeFactor);
 
 
 	#ifdef ENABLE_BLOOM
-		finalColor *= getExposureValue() * 0.75;
+		finalColor *= getExposureValue() * getExposureProfile().exposureMultiplier;
 	#endif
 
 	// aces tonemap

@@ -28,12 +28,12 @@ vec3 getClippedWorldSpacePos() {
 
 void autoGenNormal() {
 	if(
-		fmn_autoGenNormalStrength < 0.001 || 
+		// fmn_autoGenNormalStrength < 0.001 || 
 		frx_fragNormal != vec3(0.0, 0.0, 1.0) || 
 		#ifdef REALISTIC_WATER
 			fmn_isWater == 1 ||
 		#endif
-		fmn_isPlayer == 1 
+		!frx_modelOriginRegion
 	) {
 		return;
 	}
@@ -73,8 +73,8 @@ void autoGenNormal() {
 	float height3 = frx_luminance(sample3.rgb * sample3.a);// + 0.025 * (hash13(worldSpacePos + 200.0) * 2.0 - 1.0);
 	float height4 = frx_luminance(sample4.rgb * sample4.a);// + 0.025 * (hash13(worldSpacePos + 300.0) * 2.0 - 1.0);
 
-	float deltaX = (height2 - height1) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
-	float deltaY = (height4 - height3) * 4.0 * fmn_autoGenNormalStrength * lodFactor;
+	float deltaX = (height2 - height1) * 3.0 * lodFactor;
+	float deltaY = (height4 - height3) * 3.0 * lodFactor;
 
 	frx_fragNormal = fNormalize(cross(vec3(-2.0, 0.0, deltaX), vec3(0.0, -2.0, deltaY)));
 }
@@ -177,7 +177,7 @@ void resolveMaterials() {
 
 	// Fix up lightmap values
 	frx_fragLight.xy = linearstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
-	frx_fragLight.z = mix(frx_fragLight.z, 1.0, frx_matDisableAo);
+	frx_fragLight.z = mix(frx_fragLight.z * 0.6 + 0.4, 1.0, frx_matDisableAo);
 
 	fmn_sssAmount = max(fmn_sssAmount, float(frx_matDisableDiffuse));
 }
@@ -189,8 +189,6 @@ void frx_pipelineFragment() {
 	vec4 color = frx_fragColor;
 
 	// A non-vanilla dimension is loaded, we don't want to touch lighting.
-	//frx_fragRoughness = 0.0001;
-	//frx_fragReflectance = 0.5;
 	if(isModdedDimension()) {
 		color.rgb *= lightmap;
 		color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));

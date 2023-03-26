@@ -67,6 +67,50 @@
 			]
 		},
 		{
+			name: "filter_further",
+			lod: 7,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "filter_further_copy",
+			lod: 7,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
 			name: "exposure",
 			size: 1,
 			lod: 0,
@@ -240,6 +284,22 @@
 			]
 		},
 		{
+			name: "filter_further",
+			colorAttachments: [
+				{
+					image: "filter_further", lod: 7
+				}
+			]
+		},
+		{
+			name: "filter_further_copy",
+			colorAttachments: [
+				{
+					image: "filter_further_copy", lod: 7
+				}
+			]
+		},
+		{
 			name: "exposure",
 			colorAttachments: [
 				{
@@ -345,6 +405,14 @@
 			name: "bloom_downsample",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/bloom/bloom_downsample.frag",
+			samplers: [
+				"u_color"
+			]
+		},
+		{
+			name: "downsample",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/bloom/downsample.frag",
 			samplers: [
 				"u_color"
 			]
@@ -500,11 +568,41 @@
 				toggleConfig: "enable_bloom"
 			},
 			{
+				name: "filter_0",
+				program: "downsample",
+				framebuffer: "filter_further",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "filter_1",
+				program: "downsample",
+				framebuffer: "filter_further_copy",
+				samplerImages: [
+					"filter_further"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "filter_2",
+				program: "downsample",
+				framebuffer: "filter_further",
+				samplerImages: [
+					"filter_further_copy"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
 				name: "exposure",
 				program: "exposure",
 				framebuffer: "exposure",
 				samplerImages: [
-					"bloom_downsample",
+					"filter_further",
 					"exposure_copy"
 				],
 				width: 1,
