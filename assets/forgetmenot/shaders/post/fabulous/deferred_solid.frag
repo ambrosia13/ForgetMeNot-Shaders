@@ -38,7 +38,7 @@ void main() {
 	vec3 viewDir = getViewDir();
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
 
-	if(isModdedDimension()) {
+	if(isModdedDimension) {
 		color = mix(color, pow(color, vec3(2.2)), floor(depth));
 		fragColor = vec4(color, 1.0);
 		return;

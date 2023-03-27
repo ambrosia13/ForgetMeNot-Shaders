@@ -47,8 +47,12 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 float fmn_rainFactor;
 float fmn_time;
 
+bool isModdedDimension;
+
 // Should be called in every program that uses these variables
 void init() {
 	fmn_rainFactor = frx_smoothedRainGradient * 0.5 + frx_smoothedThunderGradient * 0.5;
 	fmn_time = mod(frx_renderSeconds, 4000.0);
+
+	isModdedDimension = frx_worldIsOverworld + frx_worldIsNether + frx_worldIsEnd == 0;
 }

@@ -258,20 +258,24 @@ void main() {
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
-		if(frx_cameraInFluid == 0) {
-			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+		if(!isModdedDimension) {
+			if(frx_cameraInFluid == 0) {
+				float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
-			float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
-			FogProfile fp = getFogProfile(undergroundFactor);
+				float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+				FogProfile fp = getFogProfile(undergroundFactor);
 
-			float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
+				float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
 
-			vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb * 1.5;
-			atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
+				vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb * 1.5;
+				atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
 
-			atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 0.75, floor(composite_depth));
+				atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 0.75, floor(composite_depth));
 
-			composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
+				composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
+			}
+		} else {
+			if(composite_depth != 1.0) composite = mix(composite, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, length(sceneSpacePos)));
 		}
 	#else
 		//fogTransmittance = 1.0;

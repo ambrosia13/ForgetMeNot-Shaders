@@ -27,7 +27,3 @@ float getWorldTime() {
 int getWorldTicks() {
 	return int(getWorldTime() * 24000.0);
 }
-
-bool isModdedDimension() {
-	return frx_worldIsOverworld + frx_worldIsNether + frx_worldIsEnd == 0;
-}

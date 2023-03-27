@@ -67,8 +67,7 @@ vec3 basicLighting(
 	int shadowMapSamples
 ) {
 	skyLight *= skyLight;
-
-	skyLight = mix(skyLight, 1.0, float(frx_worldIsEnd));
+	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
 	float emission = clamp01(frx_luminance(albedo) - 1.0);
 	float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);
@@ -107,6 +106,8 @@ vec3 basicLighting(
 
 		penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(normal, frx_skyLightVector)) * 0.5 + 0.5));
 
+		penumbraSize *= 0.75;
+
 		for(int i = 0; i < shadowMapSamples; i++) {
 			vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
 			shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
@@ -132,9 +133,15 @@ vec3 basicLighting(
 	{
 		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (3.0 + 2.0 * normal.y) * skyLight;
 
-		// // Ambient lighting boost during night 
-		// float nightFactor = linearstep(0.05, 0.0, getSunVector().y);
-		// ambientLighting *= mix(1.0, 6.0, nightFactor);
+		if(frx_worldIsNether == 1) {
+			ambientLighting *= 0.5;
+			//ambientLighting += 0.25;
+
+			ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-normal.y * 0.75 + 0.25);
+		} else if(frx_worldIsEnd == 1) {
+			ambientLighting *= 0.5;
+			ambientLighting += endMistColor * clamp01(dot(normal, normalize(vec3(-0.7, 0.1, 0.7))));
+		}
 
 		ambientLighting += 0.02;
 

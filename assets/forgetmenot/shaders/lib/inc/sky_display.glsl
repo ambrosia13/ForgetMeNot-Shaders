@@ -150,7 +150,7 @@ vec3 getSkyColor(
 	in sampler2D skyLutDay,
 	in sampler2D skyLutNight
 ) {
-	if(isModdedDimension()) {
+	if(isModdedDimension) {
 		return pow(frx_fogColor.rgb, vec3(2.2));
 	}
 
@@ -183,20 +183,28 @@ vec3 getSkyColor(
 
 		return result * (1.0 + 9.0 * frx_skyFlashStrength);
 	} else if(frx_worldIsNether == 1) {
-		return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.4;
+		return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.4 + 0.075;
 	} else if(frx_worldIsEnd == 1) {
-		vec3 starCoord = viewDir * 1.5;
+		vec3 skyColor = vec3(0.0);
+		vec3 mist = endMistColor * 0.1 * fbmHash3D(viewDir * 3.0, 4);
 
-		vec3 flooredStarCoord = floor(starCoord * 20.0);
+		vec3 starPos = normalize(vec3(-0.7, 0.1, 0.7));
+		float VdotStar = clamp01(dot(viewDir, starPos));
 
-		float noise = 0.0;
-		noise += step(0.97, 1.0 - cellular2x2x2(starCoord * 8.0).x) * (hash13(flooredStarCoord) + 0.5);
-		noise += step(0.9, 1.0 - cellular2x2x2(starCoord * 16.0 + 100.0).x) * (hash13(flooredStarCoord) + 0.5);
-		noise += step(0.83, 1.0 - cellular2x2x2(starCoord * 24.0 + 200.0).x) * (hash13(flooredStarCoord) + 0.5);
+		vec3 star = endMistColor * vec3(min(20.0, 0.02 / (distance(starPos, viewDir))));
 
-		vec3 endStarColor = length(frx_cameraPos.xz) > 250.0 ? vec3(1.5, 0.75, 8.0) : vec3(4.0, 0.75, 8.0);
+		// Not the main star
+		vec3 otherStars = 0.25 * vec3(
+			smoothHash(viewDir * 40.0), 
+			smoothHash(viewDir * 40.0 + 100.0), 
+			smoothHash(viewDir * 40.0 + 200.0)
+		) * linearstep(4.0, 100.0, 1.0 / max(0.0001, cellular2x2x2(viewDir * 10.0).x - 0.03));
 
-		return 4.0 * noise * vec3(hash13(flooredStarCoord), hash13(flooredStarCoord + 100.0), hash13(flooredStarCoord + 200.0)) * endStarColor;
+		mist += star + otherStars;
+
+		skyColor += mist;
+
+		return skyColor;
 	}
 
 	return pow(frx_fogColor.rgb, vec3(2.2));
@@ -215,7 +223,7 @@ vec3 getClouds(
 
 	in vec3 skyColor
 ) {
-	if(frx_worldHasSkylight == 0) {
+	if(frx_worldHasSkylight == 0 || isModdedDimension) {
 		return skyColor;
 	}
 
