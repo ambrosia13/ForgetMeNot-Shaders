@@ -6,7 +6,7 @@
 // 
 // Gate usage of material flags using #if FMN_PBR >= <required_version>.
 // ----------------------------------------------------------------------------------------------------
-#define FMN_PBR 4
+#define FMN_PBR 5
 
 // ----------------------------------------------------------------------------------------------------
 // Flag for whether this material is water and should have water fog and other water-specific effects.
@@ -66,4 +66,4 @@ int fmn_isLeafBlock = 0;
 // 
 // Version 4 feature.
 // ----------------------------------------------------------------------------------------------------
-float fmn_autoGenNormalStrength = 0.0;
+float fmn_autoGenNormalStrength = 1.0;

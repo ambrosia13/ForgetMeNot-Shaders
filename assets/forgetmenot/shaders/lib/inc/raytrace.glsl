@@ -25,7 +25,7 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 
 	while(
 		steps > 0 &&
-		all(lessThan(uvec2(ivec2(texel) * isgn_xy), frxu_size)) &&
+		all(lessThan(ivec2(texel) * isgn_xy, frxu_size)) &&
 		z > 0.0
 	) {
 		--steps;

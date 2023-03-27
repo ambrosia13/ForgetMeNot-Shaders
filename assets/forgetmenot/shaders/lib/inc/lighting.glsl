@@ -130,15 +130,15 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (2.0 + 2.0 * normal.y) * skyLight;
+		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (3.0 + 2.0 * normal.y) * skyLight;
 
-		// Ambient lighting boost during night 
-		float nightFactor = linearstep(0.05, 0.0, getSunVector().y);
-		ambientLighting *= mix(1.0, 6.0, nightFactor);
+		// // Ambient lighting boost during night 
+		// float nightFactor = linearstep(0.05, 0.0, getSunVector().y);
+		// ambientLighting *= mix(1.0, 6.0, nightFactor);
 
 		ambientLighting += 0.02;
 
-		ambientLighting += 1.0 * blockLight * vec3(1.3, 1.0, 0.7);
+		ambientLighting += 2.0 * blockLight * vec3(1.3, 1.0, 0.7);
 		
 		// handheld light
 		{

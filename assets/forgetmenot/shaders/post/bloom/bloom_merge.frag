@@ -33,10 +33,11 @@ vec4 frx_sampleTentLod(sampler2D tex, vec2 uv, vec2 dist, float lod) {
 void main() {
 	init();
 
+	vec4 color = texture(u_color, texcoord);
+
 	float fogTransmittance = texture(u_sort, texcoord).a;
 	fogTransmittance = mix(1.0, fogTransmittance, floor(texture(u_main_depth, texcoord).r));
 
-	vec4 color = vec4(texture(u_color, texcoord).rgb, 1.0);
 	color = mix(frx_sampleTentLod(u_downsampled, texcoord, 1.0 / frxu_size, min(6.0, fogTransmittance * 1.0)), color, smoothstep(0.9, 1.0, fogTransmittance));
 
 	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 6.0;

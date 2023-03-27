@@ -49,10 +49,14 @@ float getClosestDepth(in float a, inout float b) {
 }
 
 float waterHeightNoise(in vec2 uv) {
-	float noiseA = fbmHash(uv, 3, 2.5, 1.4) * 7.5;
-	float noiseB = fbmHash(uv * 2.0, 3, 2.5, -1.4) * 5.0;
+	//uv += fmn_time;
+	//uv *= vec2(1.0, 0.7);
+	//uv *= 0.4;
 
-	return mix(noiseA, noiseB, smoothHash(uv * 0.1) * 0.8 + 0.1) * 1.0;
+	float noise = 0.0;
+
+
+	return noise;
 }
 
 void main() {
@@ -143,34 +147,33 @@ void main() {
 			// Math from Balint
 			int face = int(dot(max(vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
 
-			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 1000.0);
+			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 500.0);
 			vec2 uv = frx_faceUv(worldSpacePos, face);
 
-			const vec2 offset = vec2(0.0, 5e-3);
+			// const vec2 offset = vec2(0.0, 5e-3);
 
-			float noiseCenter = waterHeightNoise(uv);
+			// float noiseCenter = waterHeightNoise(uv);
 
-			// Parallaxify
-			// uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
-			// noiseCenter = waterHeightNoise(uv);
+			// // Parallaxify
+			// // uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
+			// // noiseCenter = waterHeightNoise(uv);
 
-			float noiseOffsetX = waterHeightNoise(uv + offset.xy);
-			float noiseOffsetY = waterHeightNoise(uv + offset.yx);
+			// float noiseOffsetX = waterHeightNoise(uv + offset.xy);
+			// float noiseOffsetY = waterHeightNoise(uv + offset.yx);
 
-			float deltaX = (noiseOffsetX - noiseCenter) / offset.y * 0.01;
-			float deltaY = (noiseOffsetY - noiseCenter) / offset.y * 0.01;
+			// float deltaX = (noiseOffsetX - noiseCenter) / offset.y * 0.01;
+			// float deltaY = (noiseOffsetY - noiseCenter) / offset.y * 0.01;
+
+			vec2 waterNoise = fbmDXY(uv, 5, 1.8, 0.5) * 0.1;
 
 			material.fragNormal = tbn * normalize(
-				cross(vec3(2.0, 0.0, deltaX), vec3(0.0, 2.0, deltaY))
+				cross(vec3(2.0, 0.0, waterNoise.x), vec3(0.0, 2.0, waterNoise.y))
 			);
 		#endif
 
 		// BLENDING
 
 		// These should eventually be configurable
-		const float WATER_DIRT_AMOUNT = 0.25;
-		const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
-
 		float waterFogDistance = mix(distance(sceneSpacePosBack, sceneSpacePos), length(sceneSpacePos * 0.3), float(frx_cameraInWater));
 		waterFogDistance = max(waterFogDistance, 0.01);
 
@@ -239,6 +242,7 @@ void main() {
 			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
 		} else {
 			vec4 skybox = textureLod(u_skybox, cleanReflectDir, 10.0 * rcp(inversesqrt(material.roughness)));
+			skybox.rgb = mix(skybox.rgb, WATER_COLOR, float(frx_cameraInWater));
 			
 			// Rough material should get more conservative skylight
 			skybox.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
@@ -254,53 +258,21 @@ void main() {
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
-		float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+		if(frx_cameraInFluid == 0) {
+			float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
-		float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
-		FogProfile fp = getFogProfile(undergroundFactor);
+			float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+			FogProfile fp = getFogProfile(undergroundFactor);
 
-		float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
+			float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
 
-		vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
-		atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
+			vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb * 1.5;
+			atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
 
-		composite = mix(mix(atmosphericFogScattering, composite, undergroundFactor), composite, atmosphericFogTransmittance);
+			atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 0.75, floor(composite_depth));
 
-		// const int VOLUMETRIC_FOG_STEPS = 5;
-
-		// float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
-
-		// float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
-		// FogProfile fp = getFogProfile(undergroundFactor);
-
-		// float fogAccumulator = 0.0;
-
-		// if(fp.amount > 0.0) {
-		// 	#ifdef VOLUMETRIC_FOG
-		// 		vec3 startPos = vec3(0.0);
-		// 		vec3 endPos = viewDir * min(blockDistance, min(128.0, frx_viewDistance));
-
-		// 		vec3 rayStep = (endPos - startPos) / VOLUMETRIC_FOG_STEPS;
-
-
-		// 		for(int i = 0; i < VOLUMETRIC_FOG_STEPS; i++) {
-		// 			vec3 fogPos = startPos + rayStep * (i + interleavedGradient(i));
-
-		// 			vec3 samplePos = (fogPos * vec3(0.0125, 0.025, 0.0125) + frx_cameraPos * vec3(0.0125, 0.025, 0.0125)) * fp.scale;
-		// 			fogAccumulator += 0.5 * smoothstep(1.0 - clamp01(fp.amount), 1.0, fbmHash3D(samplePos, 3, 0.1 * undergroundFactor)) / VOLUMETRIC_FOG_STEPS;
-		// 		}
-
-		// 		fogAccumulator *= rcp(inversesqrt(dot(endPos, endPos))) / 128.0;
-		// 	#else
-		// 		fogAccumulator = min(blockDistance, min(128.0, frx_viewDistance)) * fp.amount * 0.0025;
-		// 	#endif
-		// }
-
-		// float atmosphericFogTransmittance = exp2(-fogAccumulator * fp.density);
-		// vec3 fogScattering = getFogScattering(viewDir, 0.0, undergroundFactor, u_skybox, u_multiscattering);
-
-		// composite = mix(fogScattering, composite, atmosphericFogTransmittance);
-		// fogTransmittance = min(fogTransmittance, atmosphericFogTransmittance);
+			composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
+		}
 	#else
 		//fogTransmittance = 1.0;
 	#endif
