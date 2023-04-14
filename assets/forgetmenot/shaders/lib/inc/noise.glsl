@@ -225,6 +225,19 @@ float smoothHash(in vec3 st) {
 	);
 }
 
+float fbmHash3DBlocky(vec3 uv, int octaves, float lacunarity, float t) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (hash13(floor(uv * 2.0) / 2.0));
+		uv = 10.0 + uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
+		amp *= 0.5;
+	}
+
+	return noise * (octaves + 1.0) / octaves;
+}
+
 float fbmHash3D(vec3 uv, int octaves, float lacunarity, float t) {
 	float noise = 0.01;
 	float amp = 0.5;

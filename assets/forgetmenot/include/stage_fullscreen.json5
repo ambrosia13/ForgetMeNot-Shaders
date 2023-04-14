@@ -703,7 +703,7 @@
 				samplerImages: [
 					"taa",
 					"bloom_downsample",
-					"bloom_upsample"
+					"bloom_upsample",
 
 					"sort",
 					"main_depth"

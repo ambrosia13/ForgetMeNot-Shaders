@@ -22,7 +22,7 @@
 		],
 		samplerImages: [
 			"skybox",
-			"transmittance_lut"
+			"transmittance_lut",
 			"minecraft:textures/misc/enchanted_item_glint.png"
 		]
 	},
@@ -65,17 +65,18 @@
 			]
 		},
 		{
-			name: "all_data",
+			name: "main_depth",
 			lod: 0,
-			internalFormat: "RGB32UI",
-			pixelFormat: "RGB_INTEGER",
-			pixelDataType: "UNSIGNED_INT",
+			internalFormat: "DEPTH_COMPONENT",
+			pixelFormat: "DEPTH_COMPONENT",
+			pixelDataType: "FLOAT",
 			target: "TEXTURE_2D",
 			texParams: [
 				{name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
 				{name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
-				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
-				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"},
+				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"},
+				{name: "TEXTURE_COMPARE_MODE", val: "NONE"}
 			]
 		},
 		{
@@ -102,23 +103,22 @@
 			texParams: [
 				{name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
 				{name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
-				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"},
 				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
 			]
 		},
 		{
-			name: "main_depth",
+			name: "composite_data",
 			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
+			internalFormat: "RGB32UI",
+			pixelFormat: "RGB_INTEGER",
+			pixelDataType: "UNSIGNED_INT",
 			target: "TEXTURE_2D",
-			texParams: [ 
-				{name: "TEXTURE_MIN_FILTER", val: "NEAREST"}, 
+			texParams: [
+				{name: "TEXTURE_MIN_FILTER", val: "NEAREST"},
 				{name: "TEXTURE_MAG_FILTER", val: "NEAREST"},
-				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
-				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"},
-				{name: "TEXTURE_COMPARE_MODE", val: "NONE"}
+				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"},
+				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
 			]
 		}
 	],
@@ -136,11 +136,11 @@
 					clearColor: 0x00000000
 				},
 				{
-					image: "all_data",
+					image: "vertex_normal",
 					clearColor: 0x00000000
 				},
 				{
-					image: "vertex_normal",
+					image: "composite_data",
 					clearColor: 0x00000000
 				},
 				{
@@ -177,9 +177,9 @@
 		"forgetmenot:include/composite/particles.json5",
 		"forgetmenot:include/composite/translucent.json5",
 		"forgetmenot:include/composite/weather.json5",
-		"forgetmenot:include/shadow.json5"
-		"forgetmenot:include/stage_pre.json5"
-		"forgetmenot:include/stage_fabulous.json5"
+		"forgetmenot:include/shadow.json5",
+		"forgetmenot:include/stage_pre.json5",
+		"forgetmenot:include/stage_fabulous.json5",
 		"forgetmenot:include/stage_fullscreen.json5"
 	]
 }

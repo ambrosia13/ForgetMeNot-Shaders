@@ -1,7 +1,4 @@
-<div align="center">
-<h1>Forget-Me-Not Shaders</h1>
-<h4>developed by Ambrosia</h4>
-</div align="center">
+# Forget-me-not Shaders
 
 **Forget-me-not** is a semi-realistic pipeline shader for the [Canvas](https://modrinth.com/mod/canvas) mod. It's designed to give the most authentic and immersive experience while sticking to "traditional" rendering methods to keep up good performance.
 
@@ -53,9 +50,11 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 ## credits
 
+Forget-me-not wouldn't be nearly as polished as it is if it weren't for the help of people like fewizz, spiralhalo, Grondag, and many others from the Canvas community for contributing and testing. Here are some specifics:
+
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
-- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things, as well as the raytracer
+- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things, as well as the raytracer and lots of testing
 
 ## discord
 

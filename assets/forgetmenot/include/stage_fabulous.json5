@@ -517,7 +517,7 @@
 					"main_color",
 					"main_data",
 					"main_depth",
-					"ssao"
+					"ssao",
 
 					"shadow_map",
 					"shadow_map",
@@ -550,13 +550,13 @@
 
 					"depth_mips",
 
-					"all_data",
+					"composite_data",
 					"vertex_normal",
 
 					"skybox",
 					"multiscattering_lut",
 
-					"bloom_downsample"
+					"bloom_downsample",
 					"shadow_map"
 				]
 			},

@@ -14,7 +14,7 @@ FogProfile getOverworldFogProfile(const in float undergroundFactor, const in flo
 	FogProfile fp;
 
 	// Density modifiers
-	fp.density = mix(15.0, 1.0, fogFalloff);
+	fp.density = mix(5.0, 1.0, fogFalloff);
 
 	// Density absolutes
 	fp.density = mix(fp.density, 15.0, fmn_rainFactor);

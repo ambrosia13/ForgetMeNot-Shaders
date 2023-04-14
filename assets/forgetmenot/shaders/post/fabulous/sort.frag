@@ -100,7 +100,7 @@ void main() {
 	vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, particles_depth);
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, translucent_depth);
 
-	vec3 viewDirRefracted = refract(viewDir, material.fragNormal - vertexNormal, 1.0 / 1.333);
+	vec3 viewDirRefracted = refract(viewDir, material.fragNormal - material.vertexNormal, 1.0 / 1.333);
 	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(sign(particles_depth - translucent_depth)));
 
 	vec4 main_color = texture(u_main_color, refractCoord);
@@ -137,15 +137,15 @@ void main() {
 			// NORMALS
 
 			// Get TBN matrix
-			vec3 tangent = normalize(cross(vertexNormal, vec3(0.0, 1.0, 1.0)));
+			vec3 tangent = normalize(cross(material.vertexNormal, vec3(0.0, 1.0, 1.0)));
 			mat3 tbn = mat3(
 				tangent,
-				cross(vertexNormal, tangent),
-				vertexNormal
+				cross(material.vertexNormal, tangent),
+				material.vertexNormal
 			);
 
 			// Math from Balint
-			int face = int(dot(max(vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
+			int face = int(dot(max(material.vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-material.vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
 
 			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 500.0);
 			vec2 uv = frx_faceUv(worldSpacePos, face);
@@ -154,9 +154,9 @@ void main() {
 
 			// float noiseCenter = waterHeightNoise(uv);
 
-			// // Parallaxify
-			// // uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
-			// // noiseCenter = waterHeightNoise(uv);
+			// Parallaxify
+			// uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
+			// noiseCenter = waterHeightNoise(uv);
 
 			// float noiseOffsetX = waterHeightNoise(uv + offset.xy);
 			// float noiseOffsetY = waterHeightNoise(uv + offset.yx);
@@ -205,7 +205,7 @@ void main() {
 		vec3 reflectance = getReflectance(vec3(material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
-		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, vertexNormal), step(dot(cleanReflectDir, vertexNormal), 0.0));
+		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
 		vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
 		
@@ -255,6 +255,8 @@ void main() {
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
+	vec3 atmosphericColor = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb;
+
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
@@ -263,11 +265,15 @@ void main() {
 				float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
 				float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
+
 				FogProfile fp = getFogProfile(undergroundFactor);
 
 				float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
 
-				vec3 atmosphericFogScattering = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb * 1.5;
+				vec3 atmosphericFogScattering = atmosphericColor;
+				if(frx_worldHasSkylight == 1) atmosphericFogScattering *= 4.0;
+
 				atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
 
 				atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 0.75, floor(composite_depth));
@@ -283,10 +289,13 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Weather blending
-	composite = mix(composite, weather_color.rgb, weather_color.a * step(weather_depth, composite_depth));
+	composite = mix(composite, weather_color.rgb * 40.0 * frx_luminance(atmosphericColor), weather_color.a * step(weather_depth, composite_depth) * 0.5);
 
 	// ----------------------------------------------------------------------------------------------------
 	// Writing to buffers
+
+	vec3 centerPos = setupSceneSpacePos(texcoord, texture(u_translucent_depth, vec2(0.5)).r);
+
 	fragColor = vec4(composite, fogTransmittance);
 	fragDepth = vec4(composite_depth);
 }

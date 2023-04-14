@@ -60,6 +60,7 @@ void main() {
 		color = basicLighting(
 			color,
 			sceneSpacePos,
+			material.vertexNormal,
 			material.fragNormal,
 			material.blockLight,
 			material.skyLight,

@@ -33,7 +33,7 @@ const float rayleighAbsorptionBase = 0.0;
 const float mieScatteringBase = 25.996;
 const float mieAbsorptionBase = 4.4;
 
-const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, .085);
+const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
 
 float getMiePhase(float cosTheta) {
 	const float g = 0.8;

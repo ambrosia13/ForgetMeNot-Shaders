@@ -54,7 +54,7 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	CloudLayer cloudLayer;
 
-	cloudLayer.altitude = 0.015;
+	cloudLayer.altitude = 0.01;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude;
 
 	cloudLayer.density = 5.0;
@@ -76,7 +76,7 @@ CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	return cloudLayer;
 }
 
-float sampleCloudNoise(in CloudLayer cloudLayer) {
+float sampleCloudNoise(in CloudLayer cloudLayer, in int noiseOctaves) {
 	if(cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -87,12 +87,15 @@ float sampleCloudNoise(in CloudLayer cloudLayer) {
 		(
 			fbmHash(
 				(cloudLayer.plane + cloudLayer.domainShift) * cloudLayer.domainMult,
-				cloudLayer.noiseOctaves,
+				noiseOctaves,
 				cloudLayer.noiseLacunarity,
 				(0.0001 + 0.000075 * fmn_rainFactor) / cloudLayer.altitude
 			) + cloudLayer.rangeShift
 		) * cloudLayer.rangeMult
 	);
+}
+float sampleCloudNoise(in CloudLayer cloudLayer) {
+	return sampleCloudNoise(cloudLayer, cloudLayer.noiseOctaves);
 }
 float sampleCloudNoise(in CloudLayer cloudLayer, in sampler2D noiseTexture) {
 	if(!cloudLayer.useNoiseTexture) {
@@ -131,6 +134,8 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 			cloudLayer.plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i);
 			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
+
+		lightOpticalDepth *= 1.0 + noise;
 
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.4);
 	}
@@ -186,12 +191,14 @@ vec3 getSkyColor(
 		return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.4 + 0.075;
 	} else if(frx_worldIsEnd == 1) {
 		vec3 skyColor = vec3(0.0);
-		vec3 mist = endMistColor * 0.1 * fbmHash3D(viewDir * 3.0, 4);
+
+		float mistAmount = 0.1 * fbmHash3D(viewDir * 3.0, 4);
+		vec3 mist = endMistColor * mistAmount;
 
 		vec3 starPos = normalize(vec3(-0.7, 0.1, 0.7));
 		float VdotStar = clamp01(dot(viewDir, starPos));
 
-		vec3 star = endMistColor * vec3(min(20.0, 0.02 / (distance(starPos, viewDir))));
+		vec3 star = endMistColor * vec3(min(20.0, 0.04 / (distance(starPos, viewDir))));
 
 		// Not the main star
 		vec3 otherStars = 0.25 * vec3(
@@ -200,9 +207,7 @@ vec3 getSkyColor(
 			smoothHash(viewDir * 40.0 + 200.0)
 		) * linearstep(4.0, 100.0, 1.0 / max(0.0001, cellular2x2x2(viewDir * 10.0).x - 0.03));
 
-		mist += star + otherStars;
-
-		skyColor += mist;
+		skyColor += mist + star + otherStars;
 
 		return skyColor;
 	}
@@ -232,7 +237,7 @@ vec3 getClouds(
 
 	vec3 cloudPos = vec3(
 		0.0,
-		skyViewPos.y + cloudLayer.altitude * clamp01(dot(cloudLayer.plane, sunVector.xz)),
+		skyViewPos.y + cloudLayer.altitude,// * clamp01(dot(cloudLayer.plane, sunVector.xz)),
 		0.0
 	);
 

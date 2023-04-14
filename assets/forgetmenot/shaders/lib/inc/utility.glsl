@@ -142,8 +142,11 @@ vec2 repeatAndMirrorCoords(vec2 uv) {
 	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
 }
 
-vec3 saturation(const in vec3 color, const in float amount) {
+vec3 saturation(in vec3 color, in float amount) {
 	return mix(vec3(frx_luminance(color)), color, amount);
+}
+vec3 contrast(in vec3 color, float contrast) {
+	return (color - 0.5) * contrast + 0.5;
 }
 
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
@@ -152,3 +155,15 @@ vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height
 	vec2 p = viewDir.xy / viewDir.z * (height);
 	return texcoord - p;
 }
+
+const mat3 sRGBtoAP1 = mat3(
+	0.613097, 0.339523, 0.047379,
+	0.070194, 0.916354, 0.013452,
+	0.020616, 0.109570, 0.869815
+);
+
+const mat3 AP1toSRGB = mat3(
+	1.704859, -0.621715, -0.083299,
+	-0.130078,  1.140734, -0.010560,
+	-0.023964, -0.128975,  1.153013
+);

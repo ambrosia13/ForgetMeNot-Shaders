@@ -50,27 +50,35 @@ vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
 
 vec3 basicLighting(
 	in vec3 albedo,
+
 	in vec3 sceneSpacePos,
-	in vec3 normal,
+
+	in vec3 vertexNormal,
+	in vec3 fragNormal,
+
 	in float blockLight,
 	in float skyLight,
 	in float vanillaAo,
+
 	in float f0,
 	in float roughness,
 	in float sssAmount,
 	in float isWater,
+
 	in samplerCube skybox,
 	in sampler2D transmittanceLut,
 	in sampler2DArrayShadow shadowMap,
 	in sampler2DArray shadowMapTexture,
+
 	bool doPcss,
 	int shadowMapSamples
 ) {
+	blockLight *= blockLight;
 	skyLight *= skyLight;
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
 	float emission = clamp01(frx_luminance(albedo) - 1.0);
-	float NdotL = mix(clamp01(dot(normal, frx_skyLightVector)), 1.0, sssAmount);
+	float NdotL = mix(clamp01(dot(fragNormal, frx_skyLightVector)), 1.0, sssAmount);
 
 	vec3 totalLighting = vec3(0.0);
 	vec3 directLighting = vec3(0.0);
@@ -78,7 +86,7 @@ vec3 basicLighting(
 
 	// Direct lighting
 	if(frx_worldHasSkylight == 1) {
-		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + vertexNormal * 0.1, 1.0);
 		int cascade = selectShadowCascade(shadowViewPos);
 		float cascadeF = float(cascade);
 
@@ -104,7 +112,7 @@ vec3 basicLighting(
 			penumbraSize = 2.0;
 		}
 
-		penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(normal, frx_skyLightVector)) * 0.5 + 0.5));
+		penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(vertexNormal, frx_skyLightVector)) * 0.5 + 0.5));
 
 		penumbraSize *= 0.75;
 
@@ -114,7 +122,7 @@ vec3 basicLighting(
 		}
 		shadowFactor *= skyLight;
 
-		#ifndef CLOUD_SHADOWS
+		#ifdef CLOUD_SHADOWS
 			CloudLayer cloudLayer = createCumulusCloudLayer(frx_skyLightVector);
 			cloudLayer.selfShadowSteps = 0;
 			cloudLayer.noiseOctaves = 2;
@@ -131,16 +139,16 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (3.0 + 2.0 * normal.y) * skyLight;
+		ambientLighting = textureLod(skybox, vec3(0.0, -1.0, 0.0), 7).rgb * (3.0 + 2.0 * fragNormal.y) * skyLight;
 
 		if(frx_worldIsNether == 1) {
 			ambientLighting *= 0.5;
 			//ambientLighting += 0.25;
 
-			ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-normal.y * 0.75 + 0.25);
+			ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-fragNormal.y * 0.75 + 0.25);
 		} else if(frx_worldIsEnd == 1) {
 			ambientLighting *= 0.5;
-			ambientLighting += endMistColor * clamp01(dot(normal, normalize(vec3(-0.7, 0.1, 0.7))));
+			ambientLighting += endMistColor * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
 		}
 
 		ambientLighting += 0.02;
@@ -151,7 +159,7 @@ vec3 basicLighting(
 		{
 			float heldLightFactor = 1.0 / (1.0 + pow2(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos)));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
 
-			heldLightFactor *= mix(clamp01(dot(-normal, fNormalize((sceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+			heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize((sceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
 
 			#ifdef frx_isHand
 				heldLightFactor = mix(heldLightFactor, 0.1, float(frx_isHand));

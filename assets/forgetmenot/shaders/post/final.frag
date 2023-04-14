@@ -45,21 +45,21 @@ float getExposureValue() {
 	return getExposureValue(exposure);
 }
 
-vec3 lottes(vec3 x) {
-	const vec3 a = vec3(1.75);
-	const vec3 d = vec3(0.977);
-	const vec3 hdrMax = vec3(12.0);
-	const vec3 midIn = vec3(0.18);
-	const vec3 midOut = vec3(0.227);
+vec3 tonemap(vec3 color) {
+	float l = length(color);
 
-	const vec3 b =
-		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
-		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
-	const vec3 c =
-		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
-		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+	color /= l;
+	color *= pow(l, 1.1);
 
-	return pow(x, a) / (pow(x, a * d) * b + c);
+	float exposureBias = 1.;
+	color *= exposureBias;
+
+	vec3 tmColor =  1.0 - exp(-color);
+
+	tmColor = contrast(tmColor, 1.3);
+//	tmColor = saturation(tmColor, 1.15);
+
+	return tmColor;
 }
 
 void main() {
@@ -85,7 +85,7 @@ void main() {
 
 	// Purkinje effect
 	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(finalColor * 40.0)));
-	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.02 * randF(), finalColor, purkinjeFactor);
+	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.005, finalColor, purkinjeFactor);
 
 
 	#ifdef ENABLE_BLOOM
@@ -93,9 +93,9 @@ void main() {
 	#endif
 
 	// aces tonemap
-	if(texcoord.x > 0.5 || true) finalColor = FRX_ACES_INPUT_MATRIX * finalColor;
-	finalColor = FRX_RRT_AND_ODTF_FIT(finalColor);
-	if(texcoord.x > 0.5 || true) finalColor = FRX_ACES_OUTPUT_MATRIX * finalColor;
+	//finalColor = FRX_ACES_INPUT_MATRIX * finalColor;
+	finalColor = frx_toneMap(finalColor);
+	//finalColor = FRX_ACES_OUTPUT_MATRIX * finalColor;
 
 	// vibrance(finalColor, 0.05);
 	// liftGammaGain(finalColor, 0.0075, 1.0, 2.0);

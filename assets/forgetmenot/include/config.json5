@@ -5,7 +5,7 @@
 			categoryKey: "config.forgetmenot.category.general",
 			elements: {
 				sun_brightness: {
-					default: 16.0,
+					default: 8.0,
 					min: 0.0,
 					max: 64.0,
 					nameKey: "config.forgetmenot.name.sun_brightness",
@@ -24,7 +24,7 @@
 					descriptionKey: "config.forgetmenot.desc.sun_angle"
 				},
 				emission: {
-					default: 2.0,
+					default: 0.75,
 					min: 0.0,
 					max: 20.0,
 					nameKey: "config.forgetmenot.name.emission",

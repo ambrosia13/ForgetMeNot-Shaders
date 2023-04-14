@@ -45,11 +45,11 @@
 					clearColor: 0x00000000
 				},
 				{
-					image: "all_data",
+					image: "vertex_normal",
 					clearColor: 0x00000000
 				},
 				{
-					image: "vertex_normal",
+					image: "composite_data",
 					clearColor: 0x00000000
 				},
 			]

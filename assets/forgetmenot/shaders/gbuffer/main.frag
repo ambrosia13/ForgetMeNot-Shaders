@@ -12,9 +12,9 @@ uniform sampler2D u_transmittance;
 uniform sampler2D u_glint;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out uvec4 fragCompositeData;
-layout(location = 2) out vec4 vertexCompositeNormal;
-layout(location = 3) out uvec4 fragData;
+layout(location = 1) out vec4 fragNormal;
+layout(location = 2) out uvec3 fragData;
+layout(location = 3) out uvec3 fragData1;
 
 bool isInventory;
 vec3 gamma;
@@ -137,8 +137,11 @@ void resolveMaterials() {
 		puddleNoise += hash13(mod(worldSpacePos * 20.0, 100.0)) * 0.2 - 0.1;
 		puddleNoise = smoothstep(0.5 - 0.2 * frx_smoothedThunderGradient, 0.7, puddleNoise);
 
-		frx_fragRoughness = mix(frx_fragRoughness, 0.0, clamp01(puddleNoise * rainReflectionFactor + frx_smoothedThunderGradient * 0.1));
-		frx_fragReflectance = mix(frx_fragReflectance, 0.025, puddleNoise * rainReflectionFactor);
+		float puddles = puddleNoise * rainReflectionFactor;
+
+		frx_fragRoughness = mix(frx_fragRoughness, 0.0, clamp01(puddles + frx_smoothedThunderGradient * 0.1));
+		frx_fragReflectance = mix(frx_fragReflectance, 0.025, puddles);
+		frx_fragNormal = mix(frx_fragNormal, frx_vertexNormal, puddles * 0.75);
 	}
 
 	if(!isInventory) {
@@ -197,6 +200,7 @@ void frx_pipelineFragment() {
 		color.rgb = basicLighting(
 			color.rgb,
 			frx_vertex.xyz,
+			frx_vertexNormal,
 			frx_fragNormal,
 			frx_fragLight.x,
 			frx_fragLight.y,
@@ -214,24 +218,42 @@ void frx_pipelineFragment() {
 		);
 	}
 
-	vec4 dataX = vec4(clamp01(frx_fragNormal.xyz * 0.5 + 0.5), clamp(float(fmn_isWater), 0.02, 0.6));
-	uint packedX = packUnormArb(dataX, BITS_X);
+	vec3 vertexNormalUnorm = frx_vertexNormal * 0.5 + 0.5;
+	vec3 fragNormalUnorm = frx_fragNormal * 0.5 + 0.5;
 
-	vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
-	uint packedY = packUnormArb(dataY, BITS_Y);
+	uint packedX = packUnormArb6Elements(
+		float[6] (
+			vertexNormalUnorm.x, vertexNormalUnorm.y, vertexNormalUnorm.z,
+			frx_fragReflectance, step(0.999, frx_fragReflectance), float(fmn_isWater)
+		),
+		BITS_X
+	);
 
-	vec4 dataZ = vec4(frx_fragReflectance, frx_fragRoughness, fmn_sssAmount, 1.0);
-	uint packedZ = packUnormArb(dataZ, BITS_Z);
+	uint packedY = packUnormArb5Elements(
+		float[5] (
+			frx_fragLight.x, frx_fragLight.y, frx_fragLight.z,
+			frx_fragRoughness, fmn_sssAmount
+		),
+		BITS_Y
+	);
 
-	uvec3 packedFinal = (uvec3(packedX, packedY, packedZ));
+//	vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
+//	uint packedY = packUnormArb(dataY, BITS_Y);
+
+	uint packedZ = packUnormArb3Elements(
+		float[3] (
+			fragNormalUnorm.x, fragNormalUnorm.y, fragNormalUnorm.z
+		),
+		BITS_Z
+	);
 
 	if(color.a < 0.0001) discard;
 	color = max(color, vec4(0.0005));
 
 	fragColor = color;//vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
-	fragCompositeData = uvec4(packedFinal, 1u);
-	vertexCompositeNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
-	fragData = uvec4(packedFinal, 1u);
+	fragNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
+	fragData = uvec3(packedX, packedY, packedZ);
+	fragData1 = fragData;
 
 	gl_FragDepth = gl_FragCoord.z;
 }
