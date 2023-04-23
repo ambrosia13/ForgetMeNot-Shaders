@@ -48,7 +48,7 @@ void main() {
 	vec3 sunDirMoon = vec3(0.0, sin(sunAltitudeMoon), -cos(sunAltitudeMoon));
 	
 	float atmoDist = rayIntersectSphere(skyViewPos, rayDir, atmosphereRadiusMM);
-	float groundDist = rayIntersectSphere(skyViewPos, rayDir, groundRadiusMM) * groundRadiusMM;
+	float groundDist = rayIntersectSphere(skyViewPos, rayDir, groundRadiusMM);
 	float tMax = (groundDist < 0.0) ? atmoDist : groundDist;
 
 	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering) * 0.5, 1.0);

@@ -180,7 +180,7 @@ void resolveMaterials() {
 
 	// Fix up lightmap values
 	frx_fragLight.xy = linearstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
-	frx_fragLight.z = mix(frx_fragLight.z * 0.6 + 0.4, 1.0, frx_matDisableAo);
+	frx_fragLight.z = mix(pow2(frx_fragLight.z * 0.7 + 0.3), 1.0, clamp01(frx_matDisableAo + fmn_sssAmount));
 
 	fmn_sssAmount = max(fmn_sssAmount, float(frx_matDisableDiffuse));
 }

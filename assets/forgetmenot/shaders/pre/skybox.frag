@@ -63,10 +63,10 @@ void main() {
 	);
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	fragColor0 = vec4(getSkyAndClouds(viewDirs[0]), 1.0);
-	fragColor1 = vec4(getSkyAndClouds(viewDirs[1]), 1.0);
-	fragColor2 = vec4(getSkyAndClouds(viewDirs[2]), 1.0);
-	fragColor3 = vec4(getSkyAndClouds(viewDirs[3]), 1.0);
-	fragColor4 = vec4(getSkyAndClouds(viewDirs[4]), 1.0);
-	fragColor5 = vec4(getSkyAndClouds(viewDirs[5]), 1.0);
+	fragColor0 = vec4(clamp(getSkyAndClouds(viewDirs[0]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor1 = vec4(clamp(getSkyAndClouds(viewDirs[1]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor2 = vec4(clamp(getSkyAndClouds(viewDirs[2]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor3 = vec4(clamp(getSkyAndClouds(viewDirs[3]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor4 = vec4(clamp(getSkyAndClouds(viewDirs[4]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor5 = vec4(clamp(getSkyAndClouds(viewDirs[5]), vec3(0.0), vec3(40.0)), 1.0);
 }
