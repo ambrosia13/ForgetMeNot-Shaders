@@ -165,6 +165,18 @@ float smoothHash(in vec2 st) {
 		u.y
 	);
 }
+vec2 curlNoise(in vec2 st) {
+	const float eps = 1e-3;
+
+	float centerNoise = smoothHash(st);
+	float noiseUp = smoothHash(st + vec2(st.x, st.y + eps));
+	float noiseRight = smoothHash(st + vec2(st.x + eps, st.y));
+
+	float dx = (noiseUp - centerNoise) / eps;
+	float dy = (noiseRight - centerNoise) / eps;
+
+	return vec2(dx, dy);
+}
 
 float fbmHash(vec2 uv, int octaves, float lacunarity, float t) {
 	float noise = 0.01;

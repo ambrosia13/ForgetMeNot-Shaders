@@ -24,6 +24,9 @@ struct CloudLayer {
 
 	vec2 domainShift;
 	float rangeShift;
+
+	float curlNoiseAmount;
+	float curlNoiseFrequency;
 };
 
 CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
@@ -48,6 +51,9 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.domainShift = vec2(0.0);
 	cloudLayer.rangeShift = 0.0;
 
+	cloudLayer.curlNoiseAmount = 0.0001;
+	cloudLayer.curlNoiseFrequency = 3.5;
+
 	return cloudLayer;
 }
 
@@ -57,21 +63,24 @@ CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	cloudLayer.altitude = 0.01;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude;
 
-	cloudLayer.density = 5.0;
+	cloudLayer.density = 2.0;
 	cloudLayer.selfShadowSteps = 0;
 	
 	cloudLayer.useNoiseTexture = false;
 
 	cloudLayer.noiseOctaves = 6;
 	cloudLayer.noiseLacunarity = 2.0;
-	cloudLayer.noiseLowerBound = 0.0;
+	cloudLayer.noiseLowerBound = 0.3;
 	cloudLayer.noiseUpperBound = 1.5;
 
 	cloudLayer.domainMult = vec2(6.0, 1.0);
-	cloudLayer.rangeMult = 0.3 * smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01);
+	cloudLayer.rangeMult = smoothHash(cloudLayer.plane + frx_renderSeconds * 0.01);
 
-	cloudLayer.domainShift = vec2(sin(cloudLayer.plane.y) * 0.25 + sin(cloudLayer.plane.y * 2.0 + 100.0) * 0.125, 1.0);
-	cloudLayer.rangeShift = 0.0;
+	cloudLayer.domainShift = vec2(0.0);//vec2(sin(cloudLayer.plane.y) * 0.25 + sin(cloudLayer.plane.y * 2.0 + 100.0) * 0.125, 1.0);
+	cloudLayer.rangeShift = -0.1;
+
+	cloudLayer.curlNoiseAmount = 0.00035;
+	cloudLayer.curlNoiseFrequency = 0.75;
 
 	return cloudLayer;
 }
@@ -86,10 +95,10 @@ float sampleCloudNoise(in CloudLayer cloudLayer, in int noiseOctaves) {
 		cloudLayer.noiseUpperBound,
 		(
 			fbmHash(
-				(cloudLayer.plane + cloudLayer.domainShift) * cloudLayer.domainMult,
+				(cloudLayer.plane + cloudLayer.domainShift + curlNoise(cloudLayer.plane * cloudLayer.curlNoiseFrequency) * cloudLayer.curlNoiseAmount) * cloudLayer.domainMult,
 				noiseOctaves,
 				cloudLayer.noiseLacunarity,
-				(0.0001 + 0.000075 * fmn_rainFactor) / cloudLayer.altitude
+				0.05
 			) + cloudLayer.rangeShift
 		) * cloudLayer.rangeMult
 	);
@@ -120,6 +129,8 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 	float scattering = 0.75;
 
 	if(cloudLayer.selfShadowSteps > 0) {
+		cloudLayer.noiseOctaves = max(2, cloudLayer.noiseOctaves / 2);
+
 		vec2 temp = viewDir.xz * rcp(viewDir.y);
 		float skyLightZenithAngle = rcp(abs(frx_skyLightVector.y));
 		vec2 sunLightDirection = mix(
