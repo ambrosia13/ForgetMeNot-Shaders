@@ -236,6 +236,14 @@ void main() {
 			// Reflection reprojection
 			vec3 hitPosScene = setupSceneSpacePos(hitPos);
 			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene + frx_cameraPos - frx_lastCameraPos);
+			
+			// check if reprojected hitPos is out of buffer
+			if(
+				any(greaterThanEqual(hitPos.xy, ivec2(1.0))) ||
+				any(lessThan(hitPos.xy, ivec2(0.0)))
+			) {
+				hit = false;
+			}
 		}
 		
 		if(hit) {
