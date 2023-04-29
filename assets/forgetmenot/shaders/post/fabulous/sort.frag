@@ -147,7 +147,7 @@ void main() {
 			// Math from Balint
 			int face = int(dot(max(material.vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-material.vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
 
-			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 500.0);
+			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 250.0);
 			vec2 uv = frx_faceUv(worldSpacePos, face);
 
 			// const vec2 offset = vec2(0.0, 5e-3);
@@ -263,14 +263,14 @@ void main() {
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
-	vec3 atmosphericColor = textureLod(u_skybox, vec3(0.0, -1.0, 0.0), 7).rgb;
+	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - 2.0 * pow4(dot(viewDir, frx_skyLightVector))).rgb;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
 		if(!isModdedDimension) {
 			if(frx_cameraInFluid == 0) {
-				float blockDistance = min(frx_viewDistance, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+				float blockDistance = min(512.0, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
 
 				float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
@@ -280,11 +280,11 @@ void main() {
 				float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
 
 				vec3 atmosphericFogScattering = atmosphericColor;
-				if(frx_worldHasSkylight == 1) atmosphericFogScattering *= 4.0;
+				//if(frx_worldHasSkylight == 1) atmosphericFogScattering *= 4.0;
 
 				atmosphericFogScattering = mix(caveFogColor, atmosphericFogScattering, undergroundFactor);
 
-				atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 0.75, floor(composite_depth));
+				atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 1.0, floor(composite_depth));
 
 				composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
 			}

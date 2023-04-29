@@ -507,7 +507,7 @@
 					"sky_lut",
 					"sky_lut_night",
 				],
-				lod: 1
+				lod: 0
 			},
 			{
 				name: "deferred_solid",

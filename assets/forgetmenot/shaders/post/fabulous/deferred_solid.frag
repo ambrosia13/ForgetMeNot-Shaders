@@ -77,7 +77,7 @@ void main() {
 			8
 		);
 	} else {
-		color = texture(u_sky_display, texcoord * 0.5).rgb;
+		color = texture(u_sky_display, texcoord).rgb;
 	}
 
 	fragColor = vec4(color, 1.0);

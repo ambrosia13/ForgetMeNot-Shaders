@@ -22,34 +22,6 @@ layout(location = 3) out vec4 fragColor3;
 layout(location = 4) out vec4 fragColor4;
 layout(location = 5) out vec4 fragColor5;
 
-vec3 getSkyAndClouds(const in vec3 viewDir) {
-	vec3 sunTransmittance = getValFromTLUT(u_transmittance, skyViewPos, getSunVector());
-	vec3 moonTransmittance = nightAdjust(getValFromTLUT(u_transmittance, skyViewPos, getMoonVector()));
-
-	vec3 color = getSkyColor(
-		viewDir,
-		sunTransmittance,
-		moonTransmittance,
-		SUN_BRIGHTNESS,
-		u_sky,
-		u_sky_night
-	);
-
-	color = getClouds(
-		viewDir,
-		sunTransmittance,
-		moonTransmittance,
-		texture(u_clouds, viewDir).xy,
-		createCumulusCloudLayer(viewDir),
-		u_transmittance,
-		u_sky,
-		u_sky_night,
-		color
-	);
-
-	return color;
-}
-
 void main() {
 	init();
 
@@ -63,10 +35,10 @@ void main() {
 	);
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	fragColor0 = vec4(clamp(getSkyAndClouds(viewDirs[0]), vec3(0.0), vec3(40.0)), 1.0);
-	fragColor1 = vec4(clamp(getSkyAndClouds(viewDirs[1]), vec3(0.0), vec3(40.0)), 1.0);
-	fragColor2 = vec4(clamp(getSkyAndClouds(viewDirs[2]), vec3(0.0), vec3(40.0)), 1.0);
-	fragColor3 = vec4(clamp(getSkyAndClouds(viewDirs[3]), vec3(0.0), vec3(40.0)), 1.0);
-	fragColor4 = vec4(clamp(getSkyAndClouds(viewDirs[4]), vec3(0.0), vec3(40.0)), 1.0);
-	fragColor5 = vec4(clamp(getSkyAndClouds(viewDirs[5]), vec3(0.0), vec3(40.0)), 1.0);
+	fragColor0 = vec4(clamp(getSkyAndClouds(viewDirs[0], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor1 = vec4(clamp(getSkyAndClouds(viewDirs[1], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor2 = vec4(clamp(getSkyAndClouds(viewDirs[2], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor3 = vec4(clamp(getSkyAndClouds(viewDirs[3], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor4 = vec4(clamp(getSkyAndClouds(viewDirs[4], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor5 = vec4(clamp(getSkyAndClouds(viewDirs[5], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
 }

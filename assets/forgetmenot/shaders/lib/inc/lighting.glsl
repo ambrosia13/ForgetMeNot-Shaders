@@ -132,15 +132,20 @@ vec3 basicLighting(
 
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
-		vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		directLighting = 7.5 * directLightTransmittance * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		//vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+		directLighting = 0.025 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
 	// Ambient lighting
 	{
 		vec3 skyLightDir = mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * (1.0 + 0.5 * fragNormal.y) * skyLight;
+		ambientLighting = textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
+
+		// Prevent ambient lighting from getting too bright while still preserving the color
+		ambientLighting = normalize(ambientLighting) * clamp(length(ambientLighting), 0.0, 1.5);
+
+		ambientLighting *= (fragNormal.y * 0.3 + 0.7) * skyLight;
 
 		if(frx_worldIsNether == 1) {
 			ambientLighting *= 0.5;

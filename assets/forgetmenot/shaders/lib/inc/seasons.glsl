@@ -42,19 +42,21 @@ vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
 		float toSpring = seasonFactors.w;
 
 		#ifdef VARIED_TREE_COLOR
-			float noise = smoothstep(0.4, 0.7, smoothHash(worldCoord.xz * 0.01));
+			float noiseA = smoothstep(0.4, 0.7, smoothHash(worldCoord.xz * 0.01));
+			float noiseB = smoothstep(0.5, 0.7, smoothHash(worldCoord.xz * 0.01 + 1000.0));
 		#else
-			float noise = 0.0;
+			float noiseA = 0.0;
+			float noiseB = 0.0;
 		#endif
 		
 		float leaves = float(isLeafBlock);
 
-		vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noise);
+		vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noiseA);
 		vec3 seasonColor = vertexColor;
 
-		seasonColor = mix(seasonColor, vec3(0.9, 1.0, 0.4), toSummer); // summer
-		seasonColor = mix(seasonColor, mix(vec3(1.000,0.666,0.346), mix(vec3(1.000,0.480,0.105), vec3(1.000,0.341,0.158) * 1.5, noise), leaves), toAutumn); // autumn
-		seasonColor = mix(seasonColor, mix(vec3(0.828,1.000,0.844), vec3(1.000,0.874,0.912), leaves), toWinter); // winter
+		seasonColor = mix(seasonColor, summerFoliageColor, toSummer); // summer
+		seasonColor = mix(seasonColor, mix(autumnFoliageColor, mix(mix(autumnTreeColor0, autumnTreeColor1, noiseA), autumnTreeColor2, noiseB), leaves), toAutumn); // autumn
+		seasonColor = mix(seasonColor, mix(winterFoliageColor, winterTreeColor, leaves), toWinter); // winter
 		seasonColor = mix(seasonColor, vertexColor, toSpring); // spring
 
 		return seasonColor;

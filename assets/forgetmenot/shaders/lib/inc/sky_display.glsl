@@ -181,19 +181,28 @@ vec3 getSkyColor(
 			linearstep(0.05, -0.05, sunVector.y)
 		);
 
-		float intersectedPlanet = step(
-			rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM),
-			0.0
-		);
-
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
 		
-		vec3 sun = sunBrightness * step(0.999, dot(viewDir, sunVector)) * intersectedPlanet * sunTransmittance;
-		vec3 moon = sunBrightness * step(0.9998, dot(viewDir, moonVector)) * intersectedPlanet * moonTransmittance;
+		vec3 sun = sunBrightness * step(0.999, dot(viewDir, sunVector)) * sunTransmittance;
+		vec3 moon = sunBrightness * step(0.9995, dot(viewDir, moonVector)) * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
+
+		vec2 starPlane = viewDir.xz / (viewDir.y + length(viewDir.xz));
+		starPlane *= 500.0;
+
+		const float starThreshold = 0.995;
+
+		vec3 stars = vec3(step(starThreshold, hash12(floor(starPlane))) * moonTransmittance); // Star shape
+		stars *= (hash32(floor(starPlane)) * 0.7 + 0.3); // Star color
+		stars *= 1.0 + 5.0 * step(starThreshold * 0.5 + 0.5, hash12(floor(starPlane))); // Star brightness
+
+		vec3 tdata = getTimeOfDayFactors();
+		float starMultiplier = tdata.z * 0.5 + tdata.y;
+
+		nightColor += stars * starMultiplier;
 
 		vec3 result = 40.0 * blueHourMultiplier * (dayColor + nightColor);
 
@@ -258,8 +267,8 @@ vec3 getClouds(
 	vec3 scatteringColor = sunColor + moonColor;
 	vec3 ambientColor = getSkyColor(
 		vec3(0.0, 1.0, 0.0), 
-		sunColor, 
-		moonColor, 
+		sunTransmittance, 
+		moonTransmittance, 
 		0.0,
 		skyLutDay,
 		skyLutNight
@@ -279,16 +288,18 @@ vec3 getSkyAndClouds(
 
 	in sampler2D transmittanceLut,
 	in sampler2D skyLutDay,
-	in sampler2D skyLutNight
+	in sampler2D skyLutNight,
+
+	in float sunAmount
 ) {
-	vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, getSunVector());
-	vec3 moonTransmittance = nightAdjust(getValFromTLUT(transmittanceLut, skyViewPos, getMoonVector()));
+	vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, viewDir);
+	vec3 moonTransmittance = nightAdjust(sunTransmittance);
 
 	vec3 color = getSkyColor(
 		viewDir,
 		sunTransmittance,
 		moonTransmittance,
-		SUN_BRIGHTNESS,
+		sunAmount,
 		skyLutDay,
 		skyLutNight
 	);
@@ -322,4 +333,14 @@ vec3 getSkyAndClouds(
 	}
 
 	return color;
+}
+
+vec3 getSkyAndClouds(
+	in vec3 viewDir, 
+
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight
+) {
+	return getSkyAndClouds(viewDir, transmittanceLut, skyLutDay, skyLutNight, SUN_BRIGHTNESS);
 }
