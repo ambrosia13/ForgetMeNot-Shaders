@@ -1,6 +1,54 @@
 {
 	images: [
 		{
+			name: "smoothing",
+			lod: 0,
+			width: 3,
+			height: 1,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "smoothing_copy",
+			lod: 0,
+			width: 3,
+			height: 1,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
 			name: "transmittance_lut",
 			lod: 0,
 			width: 256,
@@ -177,6 +225,22 @@
 
 	framebuffers: [
 		{
+			name: "smoothing",
+			colorAttachments: [
+				{
+					image: "smoothing", lod: 0
+				}
+			]
+		},
+		{
+			name: "smoothing_copy",
+			colorAttachments: [
+				{
+					image: "smoothing_copy", lod: 0
+				}
+			]
+		},
+		{
 			name: "transmittance_lut",
 			colorAttachments: [
 				{
@@ -322,6 +386,14 @@
 			]
 		},
 		{
+			name: "smoothing",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/smoothing.frag",
+			samplers: [
+				"u_smoothing_previous"
+			]
+		},
+		{
 			name: "transmittance_lut",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/gen/transmittance.frag",
@@ -406,6 +478,26 @@
 				name: "clear_particles_gbuffer",
 				framebuffer: "particles_gbuffer",
 				program: "frex_clear"
+			},
+			{
+				name: "smoothing_copy",
+				program: "copy",
+				framebuffer: "smoothing_copy",
+				width: 3,
+				height: 1,
+				samplerImages: [
+					"smoothing"
+				]
+			},
+			{
+				name: "smoothing",
+				program: "smoothing",
+				framebuffer: "smoothing",
+				width: 3,
+				height: 1,
+				samplerImages: [
+					"smoothing_copy"
+				]
 			},
 			{
 				name: "transmittance_lut_copy",

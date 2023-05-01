@@ -184,13 +184,17 @@ vec3 getSkyColor(
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
 		
-		vec3 sun = sunBrightness * step(0.999, dot(viewDir, sunVector)) * sunTransmittance;
+		vec3 sun = sunBrightness * step(0.9993, dot(viewDir, sunVector)) * sunTransmittance;
 		vec3 moon = sunBrightness * step(0.9995, dot(viewDir, moonVector)) * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
 
-		vec2 starPlane = viewDir.xz / (viewDir.y + length(viewDir.xz));
+		vec3 starViewDir = viewDir;
+		starViewDir.xy = rotate2D(starViewDir.xy, -frx_skyAngleRadians);
+		starViewDir.y = abs(starViewDir.y);
+
+		vec2 starPlane = starViewDir.xz / (starViewDir.y + length(starViewDir.xz));
 		starPlane *= 500.0;
 
 		const float starThreshold = 0.995;

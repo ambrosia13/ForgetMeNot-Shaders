@@ -61,6 +61,24 @@ void main() {
 	init();
 
 	#ifdef TAA
+		//#define LONG_EXPOSURE
+		#ifdef LONG_EXPOSURE
+			// Note that if you want long exposure to look good, the
+			// texture formats for `taa` and `bright_color` should
+			// both be changed to RGB32F.
+
+			fragColor = mix(
+				texture(u_color, texcoord),
+				max(
+					texture(u_color, texcoord),
+					texture(u_previous_frame, texcoord)
+				),
+				0.995
+			);
+
+			return;
+		#endif
+
 		vec4 color;
 		vec4 previousColor;
 		

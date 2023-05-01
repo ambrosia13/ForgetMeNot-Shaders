@@ -153,7 +153,7 @@ vec3 basicLighting(
 
 			ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-fragNormal.y * 0.75 + 0.25);
 		} else if(frx_worldIsEnd == 1) {
-			ambientLighting *= 0.5;
+			//ambientLighting *= ;
 			ambientLighting += endMistColor * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
 		}
 
@@ -181,7 +181,7 @@ vec3 basicLighting(
 	totalLighting += directLighting + ambientLighting;
 	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
-	totalLighting = max(totalLighting, vec3(0.03, 0.045, 0.06) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos) * 0.75)));
+	totalLighting = max(totalLighting, vec3(0.2) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
 
 	vec3 color = albedo * (totalLighting + emission);
 	return color;

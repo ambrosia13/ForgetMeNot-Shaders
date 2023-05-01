@@ -4,6 +4,8 @@
 Contains various noise functions.
 */
 
+#include frex:shaders/lib/noise/cellular2x2.glsl
+
 // --------------------------------------------------------------------------------------------------------
 // Hash Without Sine from https://www.shadertoy.com/view/4djSRW
 // Code released under the MIT license.
@@ -202,6 +204,26 @@ float fbmHash(vec2 uv, int octaves, float t) {
 }
 float fbmHash(vec2 uv, int octaves) {
 	return fbmHash(uv, octaves, 0.0);
+}
+
+
+float fbmCellular(vec2 uv, int octaves, float lacunarity, float t) {
+	float noise = 0.01;
+	float amp = 0.5;
+
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * (1.0 - cellular2x2(uv).x);
+		uv = ROTATE_30_DEGREES * uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
+		amp *= 0.5;
+	}
+
+	return noise * (octaves + 1.0) / octaves;
+}
+float fbmCellular(vec2 uv, int octaves, float t) {
+	return fbmCellular(uv, octaves, 2.0, t);
+}
+float fbmCellular(vec2 uv, int octaves) {
+	return fbmCellular(uv, octaves, 0.0);
 }
 
 // 3D noise

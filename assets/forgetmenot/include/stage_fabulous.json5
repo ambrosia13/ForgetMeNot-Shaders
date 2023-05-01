@@ -349,13 +349,19 @@
 				"u_depths",
 
 				"u_data",
-				"u_vertex_normal",
 
 				"u_skybox",
-				"u_multiscattering",
 
-				"u_bloomed_color",
-				"u_shadow_map"
+				"u_smoothed_uniforms"
+			]
+		},
+		{
+			name: "motion_blur",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/motion_blur.frag",
+			samplers: [
+				"u_color",
+				"u_depth"
 			]
 		}
 	],
@@ -407,97 +413,6 @@
 				],
 				lod: 8
 			},
-			// {
-			// 	name: "ssao",
-			// 	program: "ssao",
-			// 	framebuffer: "ssao",
-			// 	samplerImages: [
-			// 		"particles_depth",
-			// 		"main_data",
-			// 		"forgetmenot:textures/blue_noise.png"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_v",
-			// 	program: "ssao_blur_v",
-			// 	framebuffer: "ssao_copy",
-			// 	samplerImages: [
-			// 		"ssao",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_h",
-			// 	program: "ssao_blur_h",
-			// 	framebuffer: "ssao",
-			// 	samplerImages: [
-			// 		"ssao_copy",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_v_2",
-			// 	program: "ssao_blur_v",
-			// 	framebuffer: "ssao_copy",
-			// 	samplerImages: [
-			// 		"ssao",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_h_2",
-			// 	program: "ssao_blur_h",
-			// 	framebuffer: "ssao",
-			// 	samplerImages: [
-			// 		"ssao_copy",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_v_3",
-			// 	program: "ssao_blur_v",
-			// 	framebuffer: "ssao_copy",
-			// 	samplerImages: [
-			// 		"ssao",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_h_3",
-			// 	program: "ssao_blur_h",
-			// 	framebuffer: "ssao",
-			// 	samplerImages: [
-			// 		"ssao_copy",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_v_4",
-			// 	program: "ssao_blur_v",
-			// 	framebuffer: "ssao_copy",
-			// 	samplerImages: [
-			// 		"ssao",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
-			// {
-			// 	name: "ssao_blur_h_4",
-			// 	program: "ssao_blur_h",
-			// 	framebuffer: "ssao",
-			// 	samplerImages: [
-			// 		"ssao_copy",
-			// 		"particles_depth"
-			// 	],
-			// 	lod: 1
-			// },
 			{
 				name: "sky_display",
 				program: "sky_display",
@@ -551,21 +466,19 @@
 					"depth_mips",
 
 					"composite_data",
-					"vertex_normal",
 
 					"skybox",
-					"multiscattering_lut",
 
-					"bloom_downsample",
-					"shadow_map"
+					"smoothing"
 				]
 			},
 			{
-				name: "copy",
-				program: "copy",
+				name: "motion_blur_and_copy",
+				program: "motion_blur",
 				framebuffer: "copy_to_main",
 				samplerImages: [
-					"sort"
+					"sort",
+					"translucent_depth"
 				]
 			},
 			{

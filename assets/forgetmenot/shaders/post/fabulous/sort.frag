@@ -27,12 +27,10 @@ uniform sampler2D u_particles_depth;
 uniform sampler2D u_depths;
 
 uniform usampler2D u_data;
-uniform sampler2D u_vertex_normal;
 
 uniform samplerCube u_skybox;
-uniform sampler2D u_multiscattering;
 
-uniform sampler2DArrayShadow u_shadow_map;
+uniform sampler2D u_smoothed_uniforms;
 
 in vec2 texcoord;
 
@@ -68,8 +66,6 @@ void main() {
 	// Sample stuff
 	uvec3 samplePacked = texture(u_data, texcoord).xyz;
 
-	vec3 vertexNormal = texture(u_vertex_normal, texcoord).xyz;
-
 	vec4 translucent_color = texture(u_translucent_color, texcoord.xy);
 	float translucent_depth = texture(u_translucent_depth, texcoord).r;
 
@@ -87,10 +83,7 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fix up samples
-	vertexNormal = vertexNormal * 2.0 - 1.0;
-
 	weather_color.rgb = (pow(weather_color.rgb, vec3(2.2)));
-
 	clouds_color.rgb = pow(clouds_color.rgb, vec3(2.2));
 
 	Material material = unpackMaterial(samplePacked);
@@ -265,13 +258,13 @@ void main() {
 
 	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - 2.0 * pow4(dot(viewDir, frx_skyLightVector))).rgb;
 
+	float blockDistance = min(512.0, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
 		if(!isModdedDimension) {
 			if(frx_cameraInFluid == 0) {
-				float blockDistance = min(512.0, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
-
 				float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
@@ -299,10 +292,20 @@ void main() {
 	// Weather blending
 	composite = mix(composite, weather_color.rgb * 40.0 * frx_luminance(atmosphericColor), weather_color.a * step(weather_depth, composite_depth) * 0.5);
 
+
+	// ----------------------------------------------------------------------------------------------------
+	// Blindness and darkness fog effects
+	float smoothedBlindnessFactor = texelFetch(u_smoothed_uniforms, ivec2(0, 0), 0).r;
+	float smoothedDarknessFactor = texelFetch(u_smoothed_uniforms, ivec2(1, 0), 0).r;
+	float smoothedDarknessPulseFactor = texelFetch(u_smoothed_uniforms, ivec2(2, 0), 0).r;
+
+	composite = mix(composite, vec3(0.0), smoothstep(0.0, 10.0, blockDistance) * smoothedBlindnessFactor);
+	composite = mix(composite, vec3(0.0), smoothstep(0.0, 5.0 + 20.0 * smoothedDarknessPulseFactor, blockDistance) * smoothedDarknessFactor);
+
 	// ----------------------------------------------------------------------------------------------------
 	// Writing to buffers
 
-	vec3 centerPos = setupSceneSpacePos(texcoord, texture(u_translucent_depth, vec2(0.5)).r);
+
 
 	fragColor = vec4(composite, fogTransmittance);
 	fragDepth = vec4(composite_depth);

@@ -134,9 +134,10 @@ void resolveMaterials() {
 	if(fmn_rainFactor > 0.0 && fmn_isWater == 0) {
 		float porosity = (frx_fragRoughness) * step(frx_fragReflectance, 0.999);
 
-		float rainReflectionFactor = linearstep(0.0, 0.5, fmn_rainFactor) * step(0.95, frx_vertexNormal.y) * smoothstep(7.0 / 8.0, 15.0 / 16.0, frx_fragLight.y);
+		float rainReflectionFactor = linearstep(0.0, 0.5, fmn_rainFactor) * step(0.95, frx_vertexNormal.y);
 		float puddleNoise = fbmHash(worldSpacePos.xz * 0.5, 3, 0.0);
 		puddleNoise += hash13(mod(worldSpacePos * 20.0, 100.0)) * 0.2 - 0.1;
+		puddleNoise *= smoothstep(7.0 / 8.0, 15.0 / 16.0, frx_fragLight.y);
 		puddleNoise = smoothstep(0.5 - 0.2 * frx_smoothedThunderGradient, 0.7, puddleNoise);
 
 		float puddles = puddleNoise * rainReflectionFactor;
