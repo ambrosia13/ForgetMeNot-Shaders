@@ -9,7 +9,6 @@
 #include forgetmenot:shaders/lib/inc/sky.glsl 
 
 uniform sampler2D u_transmittance;
-uniform sampler2D u_transmittance_copy;
 
 in vec2 texcoord;
 
@@ -104,8 +103,6 @@ void getMulScattValues(vec3 pos, vec3 sunDir, out vec3 lumTotal, out vec3 fms) {
 }
 
 void main() {
-	if(texelFetch(u_transmittance_copy, ivec2(0), 0).r > 0.001 && frx_renderFrames > 5u) discard;
-
 	float u = texcoord.x;
 	float v = texcoord.y;
 	

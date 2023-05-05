@@ -8,8 +8,6 @@
 #include forgetmenot:shaders/lib/inc/header.glsl 
 #include forgetmenot:shaders/lib/inc/sky.glsl 
 
-uniform sampler2D u_transmittance_copy;
-
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -44,8 +42,6 @@ vec3 getSunTransmittance(vec3 pos, vec3 sunDir) {
 }
 
 void main() {
-	if(texelFetch(u_transmittance_copy, ivec2(0), 0).r > 0.001 && frx_renderFrames > 5u) discard;
-
 	float u = texcoord.x;
 	float v = texcoord.y;
 	

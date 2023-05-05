@@ -332,7 +332,7 @@
 			fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
 			samplers: [
 				"u_previous_color",
-,
+
 				"u_main_color",
 				"u_main_depth",
 				"u_translucent_color",
@@ -365,6 +365,16 @@
 			]
 		}
 	],
+
+	onResize: {
+		passes: [
+			{
+				name: "clear_sort_copy",
+				framebuffer: "sort_copy",
+				program: "frex_clear"
+			}
+		]
+	},
 
 	fabulous: {
 		passes: [
