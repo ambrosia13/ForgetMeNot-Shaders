@@ -276,7 +276,7 @@ vec3 getClouds(
 
 	in vec3 skyColor
 ) {
-	if(true || frx_worldHasSkylight == 0 || isModdedDimension) {
+	if(frx_worldHasSkylight == 0 || isModdedDimension) {
 		return skyColor;
 	}
 

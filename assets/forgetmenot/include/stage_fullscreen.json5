@@ -215,7 +215,7 @@
 			name: "bright_color",
 			colorAttachments: [
 				{
-					image: "bright_color"
+					image: "bright_color", clearColor: 0x00000000
 				}
 			]
 		},
@@ -311,7 +311,7 @@
 			name: "exposure_copy",
 			colorAttachments: [
 				{
-					image: "exposure_copy"
+					image: "exposure_copy", clearColor: 0x00000000
 				}
 			]
 		},
@@ -465,6 +465,25 @@
 			]
 		},
 	],
+
+	onInit: {
+		passes: [
+			{
+				name: "clear_exposure_copy",
+				framebuffer: "exposure_copy",
+				program: "frex_clear"
+			}
+		]
+	},
+	onResize: {
+		passes: [
+			{
+				name: "clear_bright_color",
+				framebuffer: "bright_color",
+				program: "frex_clear"
+			}
+		]
+	},
 
 	afterRenderHand: {
 		passes: [

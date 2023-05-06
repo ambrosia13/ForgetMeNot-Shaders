@@ -14,8 +14,8 @@ uniform sampler2D u_smoothed_uniforms;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
-layout(location = 2) out uvec3 fragData;
-layout(location = 3) out uvec3 fragData1;
+layout(location = 2) out uvec4 fragData;
+layout(location = 3) out uvec4 fragData1;
 
 bool isInventory;
 vec3 gamma;
@@ -259,7 +259,7 @@ void frx_pipelineFragment() {
 
 	fragColor = color;//vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
 	fragNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
-	fragData = uvec3(packedX, packedY, packedZ);
+	fragData = uvec4(packedX, packedY, packedZ, 1u);
 	fragData1 = fragData;
 
 	gl_FragDepth = gl_FragCoord.z;
