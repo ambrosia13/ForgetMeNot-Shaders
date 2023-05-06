@@ -97,10 +97,7 @@ void main() {
 	vec2 refractCoord = mix(texcoord, sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted).xy, clamp01(sign(particles_depth - translucent_depth)));
 
 	vec4 main_color = texture(u_main_color, refractCoord);
-	float main_depth = texture(u_main_depth, refractCoord).r;
-
-	translucent_depth = texture(u_translucent_depth, refractCoord).r;
-	particles_depth = texture(u_particles_depth, refractCoord).r;
+	float main_depth = texture(u_main_depth, texcoord).r;
 
 	float max_depth = max(max(translucent_depth, particles_depth), main_depth);
 	float min_depth = min(min(translucent_depth, particles_depth), main_depth);
