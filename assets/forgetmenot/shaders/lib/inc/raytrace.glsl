@@ -23,15 +23,19 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 	vec2 inner = fract(pos_win.xy * sgn_xy);
 	float z = pos_win.z;
 
-	while(
-		steps > 0 &&
-		all(lessThan(uvec2(ivec2(texel) * isgn_xy), uvec2(frxu_size))) &&
-		z > 0.0
-	) {
+	while(steps > 0) {
 		--steps;
 
+		ivec2 itexel = ivec2(texel) * isgn_xy + (isgn_xy - 1) / 2;
+
+		if( // check if out of buffer bounds
+			any(greaterThanEqual(uvec2(itexel), uvec2(frxu_size))) ||
+			z <= 0.0
+		) {
+			break;
+		}
+
 		uint level = last_level;
-		ivec2 itexel = ivec2(texel) * isgn_xy;
 		float upper_depth = texelFetch(depths, itexel >> last_level, int(last_level)).r;
 
 		while(z >= upper_depth && level > 0u) {
@@ -69,7 +73,7 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 		if(z < upper_depth) continue;
 
 		if(level == 0u) {
-			hitPos.xy = (vec2(ivec2(prev_texel) * isgn_xy) + 0.5) / frxu_size;
+			hitPos.xy = (itexel + 0.5) / frxu_size;
 			hitPos.z = mix(upper_depth, prev_z, step(upper_depth, prev_z));
 
 			float depth_d = abs(linearizeDepth(hitPos.z) - linearizeDepth(upper_depth));
