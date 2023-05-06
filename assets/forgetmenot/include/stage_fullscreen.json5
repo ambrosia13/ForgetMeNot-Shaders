@@ -3,7 +3,7 @@
 		{
 			name: "taa",
 			lod: 0,
-			internalFormat: "R11F_G11F_B10F",
+			internalFormat: "RGB16F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
@@ -25,7 +25,7 @@
 		{
 			name: "bright_color",
 			lod: 0,
-			internalFormat: "R11F_G11F_B10F",
+			internalFormat: "RGB16F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",

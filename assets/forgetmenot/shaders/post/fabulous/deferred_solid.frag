@@ -21,6 +21,8 @@ uniform samplerCube u_skybox;
 uniform sampler2D u_transmittance;
 uniform sampler2D u_sky_display;
 
+uniform sampler2D u_smoothed_uniforms;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -74,7 +76,8 @@ void main() {
 			u_shadow_map,
 			u_shadow_tex,
 			true,
-			8
+			8,
+			texelFetch(u_smoothed_uniforms, ivec2(3, 0), 0).r
 		);
 	} else {
 		color = texture(u_sky_display, texcoord).rgb;

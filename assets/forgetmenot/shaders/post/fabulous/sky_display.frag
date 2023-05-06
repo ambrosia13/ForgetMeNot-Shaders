@@ -18,7 +18,8 @@ void main() {
 		getViewDir(),
 		u_transmittance,
 		u_sky_day,
-		u_sky_night
+		u_sky_night,
+		true // stars
 	);
 
 	fragColor.a = 1.0;

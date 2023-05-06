@@ -162,6 +162,7 @@ vec3 getSkyColor(
 	in vec3 sunTransmittance,
 	in vec3 moonTransmittance, 
 	in float sunBrightness,
+	in bool renderStars,
 
 	in sampler2D skyLutDay,
 	in sampler2D skyLutNight
@@ -190,23 +191,25 @@ vec3 getSkyColor(
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
 
-		vec3 starViewDir = viewDir;
-		starViewDir.xy = rotate2D(starViewDir.xy, -frx_skyAngleRadians);
-		starViewDir.y = abs(starViewDir.y);
+		if(renderStars) {
+			vec3 starViewDir = viewDir;
+			starViewDir.xy = rotate2D(starViewDir.xy, -frx_skyAngleRadians);
+			starViewDir.y = abs(starViewDir.y);
 
-		vec2 starPlane = starViewDir.xz / (starViewDir.y + length(starViewDir.xz));
-		starPlane *= 500.0;
+			vec2 starPlane = starViewDir.xz / (starViewDir.y + length(starViewDir.xz));
+			starPlane *= 500.0;
 
-		const float starThreshold = 0.995;
+			const float starThreshold = 0.995;
 
-		vec3 stars = vec3(step(starThreshold, hash12(floor(starPlane))) * moonTransmittance); // Star shape
-		stars *= (hash32(floor(starPlane)) * 0.7 + 0.3); // Star color
-		stars *= 1.0 + 5.0 * step(starThreshold * 0.5 + 0.5, hash12(floor(starPlane))); // Star brightness
+			vec3 stars = vec3(step(starThreshold, hash12(floor(starPlane))) * moonTransmittance); // Star shape
+			stars *= (hash32(floor(starPlane)) * 0.7 + 0.3); // Star color
+			stars *= 1.0 + 5.0 * step(starThreshold * 0.5 + 0.5, hash12(floor(starPlane))); // Star brightness
 
-		vec3 tdata = getTimeOfDayFactors();
-		float starMultiplier = tdata.z * 0.5 + tdata.y;
+			vec3 tdata = getTimeOfDayFactors();
+			float starMultiplier = tdata.z * 0.5 + tdata.y;
 
-		nightColor += stars * starMultiplier;
+			nightColor += stars * starMultiplier;
+		}
 
 		vec3 result = 40.0 * blueHourMultiplier * (dayColor + nightColor);
 
@@ -239,6 +242,27 @@ vec3 getSkyColor(
 	return pow(frx_fogColor.rgb, vec3(2.2));
 }
 
+vec3 getSkyColor(
+	in vec3 viewDir, 
+	in vec3 sunTransmittance,
+	in vec3 moonTransmittance, 
+	in float sunBrightness,
+
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight
+) {
+	return getSkyColor(
+		viewDir,
+		sunTransmittance,
+		moonTransmittance,
+		sunBrightness,
+		false,
+
+		skyLutDay,
+		skyLutNight
+	);
+}
+
 vec3 getClouds(
 	in vec3 viewDir,
 	in vec3 sunTransmittance,
@@ -252,7 +276,7 @@ vec3 getClouds(
 
 	in vec3 skyColor
 ) {
-	if(frx_worldHasSkylight == 0 || isModdedDimension) {
+	if(true || frx_worldHasSkylight == 0 || isModdedDimension) {
 		return skyColor;
 	}
 
@@ -294,7 +318,8 @@ vec3 getSkyAndClouds(
 	in sampler2D skyLutDay,
 	in sampler2D skyLutNight,
 
-	in float sunAmount
+	in float sunAmount,
+	in bool renderStars
 ) {
 	vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, viewDir);
 	vec3 moonTransmittance = nightAdjust(sunTransmittance);
@@ -304,6 +329,7 @@ vec3 getSkyAndClouds(
 		sunTransmittance,
 		moonTransmittance,
 		sunAmount,
+		renderStars,
 		skyLutDay,
 		skyLutNight
 	);
@@ -344,7 +370,31 @@ vec3 getSkyAndClouds(
 
 	in sampler2D transmittanceLut,
 	in sampler2D skyLutDay,
+	in sampler2D skyLutNight,
+
+	in bool renderStars
+) {
+	return getSkyAndClouds(viewDir, transmittanceLut, skyLutDay, skyLutNight, SUN_BRIGHTNESS, renderStars);
+}
+
+vec3 getSkyAndClouds(
+	in vec3 viewDir, 
+
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight,
+
+	in float sunBrightness
+) {
+	return getSkyAndClouds(viewDir, transmittanceLut, skyLutDay, skyLutNight, sunBrightness, false);
+}
+
+vec3 getSkyAndClouds(
+	in vec3 viewDir, 
+
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
 	in sampler2D skyLutNight
 ) {
-	return getSkyAndClouds(viewDir, transmittanceLut, skyLutDay, skyLutNight, SUN_BRIGHTNESS);
+	return getSkyAndClouds(viewDir, transmittanceLut, skyLutDay, skyLutNight, SUN_BRIGHTNESS, false);
 }

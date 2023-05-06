@@ -100,7 +100,10 @@ void main() {
 		#ifdef NO_CLIP
 			color.rgb = mix(color.rgb, previousColor.rgb, 0.95);
 		#else
-			color.rgb = mix(color.rgb, tempColor, clamp01(taaBlendFactor(texcoord, lastScreenPos.xy)));
+			float blendFactor = clamp01(taaBlendFactor(texcoord, lastScreenPos.xy));
+			blendFactor = min(blendFactor, frx_renderFrames / (frx_renderFrames + 1.0));
+
+			color.rgb = mix(color.rgb, tempColor, blendFactor);
 		#endif
 
 		color.rgb = inverseToneMap(color.rgb);

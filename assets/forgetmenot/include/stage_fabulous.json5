@@ -323,7 +323,9 @@
 				"u_skybox",
 
 				"u_transmittance",
-				"u_sky_display"
+				"u_sky_display",
+
+				"u_smoothed_uniforms"
 			]
 		},
 		{
@@ -440,7 +442,9 @@
 					"skybox",
 
 					"transmittance_lut",
-					"sky_display"
+					"sky_display",
+
+					"smoothing"
 				]
 			},
 			{

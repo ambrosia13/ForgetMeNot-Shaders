@@ -71,7 +71,8 @@ vec3 basicLighting(
 	in sampler2DArray shadowMapTexture,
 
 	bool doPcss,
-	int shadowMapSamples
+	int shadowMapSamples,
+	float nightVisionFactor
 ) {
 	blockLight *= blockLight;
 	skyLight *= skyLight;
@@ -159,7 +160,7 @@ vec3 basicLighting(
 
 		ambientLighting += 0.02;
 
-		ambientLighting += 2.0 * blockLight * vec3(1.3, 1.0, 0.7);
+		ambientLighting += 2.0 * blockLight * blockLightColor;
 		
 		// handheld light
 		{
@@ -182,6 +183,9 @@ vec3 basicLighting(
 	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
 	totalLighting = max(totalLighting, vec3(0.2) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
+	
+	// Night vision
+	totalLighting = mix(totalLighting, max(totalLighting, normalize(totalLighting) * vanillaAo), nightVisionFactor);
 
 	vec3 color = albedo * (totalLighting + emission);
 	return color;

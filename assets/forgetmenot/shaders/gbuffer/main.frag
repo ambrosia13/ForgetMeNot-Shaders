@@ -10,6 +10,7 @@
 uniform samplerCube u_skybox;
 uniform sampler2D u_transmittance;
 uniform sampler2D u_glint;
+uniform sampler2D u_smoothed_uniforms;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec4 fragNormal;
@@ -219,7 +220,8 @@ void frx_pipelineFragment() {
 			frxs_shadowMap,
 			frxs_shadowMapTexture,
 			false,
-			4
+			4,
+			texelFetch(u_smoothed_uniforms, ivec2(3, 0), 0).r
 		);
 	}
 

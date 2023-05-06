@@ -249,7 +249,7 @@ void main() {
 			skybox.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
 			//skybox += 100.0 * pow(clamp01(dot(cleanReflectDir, (frx_skyLightVector + 0*viewDir))), 128.0);
 
-			reflectColor = skybox.rgb * material.skyLight;
+			reflectColor = max(blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), skybox.rgb * material.skyLight);
 		}
 
 		composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));

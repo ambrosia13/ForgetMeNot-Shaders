@@ -18,12 +18,14 @@
 		samplers: [
 			"u_skybox",
 			"u_transmittance",
-			"u_glint"
+			"u_glint",
+			"u_smoothed_uniforms"
 		],
 		samplerImages: [
 			"skybox",
 			"transmittance_lut",
-			"minecraft:textures/misc/enchanted_item_glint.png"
+			"minecraft:textures/misc/enchanted_item_glint.png",
+			"smoothing"
 		]
 	},
 
