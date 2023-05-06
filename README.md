@@ -14,7 +14,7 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 2. Install [Fabric](https://fabricmc.net/wiki/install).
 
-3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). You can also find an unofficial 1.19.3 build [here](https://cdn.discordapp.com/attachments/614626265663668276/1079640291906170921/canvas-fabric-mc119-1.0.2515-SNAPSHOT.jar). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
+3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
 
 4. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases), [Lomo (not for gameplay)](https://github.com/fewizz/lomo/releases), or [Aerie (vanilla-plus)](https://modrinth.com/shader/aerie-shaders).
 
