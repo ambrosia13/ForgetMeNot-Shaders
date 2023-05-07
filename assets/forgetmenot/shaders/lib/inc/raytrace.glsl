@@ -19,14 +19,16 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 	dir_xy *= sgn_xy;
 	ivec2 isgn_xy = ivec2(sgn_xy);
 
-	uvec2 texel = uvec2(ivec2(pos_win.xy * sgn_xy));
+	// shift[x] is 1u if isgn_xy[i] is -1, 0u otherwise
+	uvec2 shift = uvec2((-isgn_xy + 1) / 2);
+	uvec2 texel = uvec2(ivec2(pos_win.xy * sgn_xy)) - shift;
 	vec2 inner = fract(pos_win.xy * sgn_xy);
 	float z = pos_win.z;
 
 	while(steps > 0) {
 		--steps;
 
-		ivec2 itexel = ivec2(texel) * isgn_xy + (isgn_xy - 1) / 2;
+		ivec2 itexel = ivec2(texel + shift) * isgn_xy;
 
 		if( // check if out of buffer bounds
 			any(greaterThanEqual(uvec2(itexel), uvec2(frxu_size))) ||
