@@ -7,7 +7,7 @@ const vec3 endMistColor = vec3(0.0, 0.15, 0.4) * 1.0;
 
 const vec3 blockLightColor = vec3(1.3, 1.0, 0.7);
 
-const float WATER_DIRT_AMOUNT = 0.25;
+const float WATER_DIRT_AMOUNT = 0.15;
 const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
 // SEASONS

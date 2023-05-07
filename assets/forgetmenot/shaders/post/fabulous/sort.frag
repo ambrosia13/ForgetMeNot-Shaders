@@ -145,7 +145,7 @@ void main() {
 			// float noiseCenter = waterHeightNoise(uv);
 
 			// Parallaxify
-			// uv = parallaxMapping(sceneSpacePos, tbn, uv, noiseCenter * 0.1);
+			uv = parallaxMapping(sceneSpacePos, tbn, uv, smoothHash(uv + fmn_time) * 0.1);
 			// noiseCenter = waterHeightNoise(uv);
 
 			// float noiseOffsetX = waterHeightNoise(uv + offset.xy);
@@ -154,7 +154,16 @@ void main() {
 			// float deltaX = (noiseOffsetX - noiseCenter) / offset.y * 0.01;
 			// float deltaY = (noiseOffsetY - noiseCenter) / offset.y * 0.01;
 
-			vec2 waterNoise = fbmDXY(uv, 5, 1.8, 0.5) * 0.1;
+			vec2 waterNoise = vec2(0.0);
+			vec2 waterWindDirection = vec2(fmn_time, fmn_time * 0.25);
+			waterNoise += smoothHashDXY(rotate2D(uv, 0.1) * vec2(1.5, 0.5) + waterWindDirection) * 0.5;
+			waterNoise += smoothHashDXY(rotate2D(uv, -0.1) * vec2(1.0, 0.2) + waterWindDirection) * 0.75;
+			waterNoise += smoothHashDXY(uv * vec2(3.0, 1.0) + 200.0 + waterWindDirection * 4.0) * 0.125;
+			waterNoise += smoothHashDXY(uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) * 0.065;
+			waterNoise += smoothHashDXY(uv * vec2(5.0, 3.5) + 600.0 - waterWindDirection * 1.0) * 0.065;
+
+			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 4.0);
+			waterNoise *= 0.1;
 
 			material.fragNormal = tbn * normalize(
 				cross(vec3(2.0, 0.0, waterNoise.x), vec3(0.0, 2.0, waterNoise.y))

@@ -35,10 +35,10 @@ void main() {
 	);
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	fragColor0 = vec4(clamp(getSkyAndClouds(viewDirs[0], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
-	fragColor1 = vec4(clamp(getSkyAndClouds(viewDirs[1], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
-	fragColor2 = vec4(clamp(getSkyAndClouds(viewDirs[2], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
-	fragColor3 = vec4(clamp(getSkyAndClouds(viewDirs[3], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
-	fragColor4 = vec4(clamp(getSkyAndClouds(viewDirs[4], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
-	fragColor5 = vec4(clamp(getSkyAndClouds(viewDirs[5], u_transmittance, u_sky, u_sky_night, 4.0), vec3(0.0), vec3(400.0)), 1.0);
+	fragColor0 = vec4(getSkyAndClouds(viewDirs[0], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
+	fragColor1 = vec4(getSkyAndClouds(viewDirs[1], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
+	fragColor2 = vec4(getSkyAndClouds(viewDirs[2], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
+	fragColor3 = vec4(getSkyAndClouds(viewDirs[3], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
+	fragColor4 = vec4(getSkyAndClouds(viewDirs[4], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
+	fragColor5 = vec4(getSkyAndClouds(viewDirs[5], u_transmittance, u_sky, u_sky_night, 4.0), 1.0);
 }
