@@ -192,7 +192,41 @@ vec3 basicLighting(
 }
 
 // Schlick fresnel approximation
-vec3 getReflectance(in vec3 f0, in float NdotV, in float r) {
-	float k = 1.0 / inversesqrt(r);
-	return f0 + (1.0 - f0) * (pow((1.0 - k) * (1.0 - NdotV) + k * 0.5, 5.0));
+vec3 getReflectance(in vec3 f0, in float NdotV) {
+	return f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+}
+
+vec3 ggxBrdf(float roughness, vec3 f0, vec3 N, vec3 V, vec3 L) {
+	// Halfway vector
+	vec3 H = normalize(V + L);
+	
+	// roughness squared
+	float alpha = roughness * roughness;
+	
+	float NdotV = clamp01(dot(N, V));
+	float NdotL = clamp01(dot(N, L));
+	float NdotH = clamp01(dot(N, H));
+	float VdotH = clamp01(dot(V, H));
+	
+	// D
+	float D;
+	{
+		float a = NdotH * alpha;
+		float k = alpha / (1.0 - NdotH * NdotH + a * a);
+		D = k * k * (1.0 / PI);
+	}
+	
+	// F
+	vec3 F = f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+	
+	// G
+	float G;
+	{
+		float GGXV = NdotL * (NdotV * (1.0 - alpha) + alpha);
+		float GGXL = NdotV * (NdotL * (1.0 - alpha) + alpha);
+		G = 0.5 / (GGXV + GGXL);
+	}
+	
+	// result
+	return D * V * F;
 }

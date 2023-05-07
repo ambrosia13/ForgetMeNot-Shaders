@@ -185,72 +185,120 @@ void main() {
 		
 		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, waterFogTransmittance * 0.99 + 0.01);
 	}
-
+	
 	// ----------------------------------------------------------------------------------------------------
 	// Reflections
 	if(min_depth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
-		vec3 viewSpacePos = setupViewSpacePos(texcoord, min_depth);
+		vec3 viewSpacePos = setupViewSpacePos(texcoord, composite_depth);
 
 		vec3 reflectColor = vec3(0.0);
-		vec3 reflectance = getReflectance(vec3(material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
+		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)));
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
-		vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
-		
-		vec3 hitPos;
-		bool hit = false;
-
-		if(material.roughness < 0.5) {
+		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
+		float reflectionFactor = 0.0;
+		for(int i = 0; i < numReflectionRays; i++) {
+			vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
 			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
-			vec3 pos_ws = sceneSpaceToScreenSpace(sceneSpacePos) * vec3(frxu_size, 1.0);
-			vec3 dir_ws = normalize(
-				(
-					viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) -
-					vec3(texcoord, min_depth)
-				) * vec3(frxu_size, 1.0)
+			bool hit = false;
+			vec3 hitPos;
+
+			vec3 windowSpacePos = vec3(texcoord, composite_depth) * vec3(frxu_size, 1.0);
+			vec3 windowSpaceDir = normalize(
+				(viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) - vec3(texcoord, composite_depth)) * vec3(frxu_size, 1.0)
 			);
 
-			if((viewSpacePos + viewReflectDir).z < 0.0) {
+			if(viewSpacePos.z + viewReflectDir.z < 0.0) {
 				hit = raytrace(
-					pos_ws,
-					dir_ws,
+					windowSpacePos,
+					windowSpaceDir,
 					40,
 					u_depths,
 					hitPos
 				);
+
+				// Reproject reflection
+				hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
+
+				hit = hit && clamp01(hitPos.xy) == hitPos.xy;
 			}
 
-			// Reflection reprojection
-			vec3 hitPosScene = setupSceneSpacePos(hitPos);
-			hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene + frx_cameraPos - frx_lastCameraPos);
-			
-			// check if reprojected hitPos is out of buffer
-			if(
-				any(greaterThanEqual(hitPos.xy, ivec2(1.0))) ||
-				any(lessThan(hitPos.xy, ivec2(0.0)))
-			) {
-				hit = false;
+			if(hit) {
+				reflectColor += texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
+				reflectionFactor += 1.0 / numReflectionRays;
 			}
 		}
-		
-		if(hit) {
-			reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
-		} else {
-			vec4 skybox = textureLod(u_skybox, cleanReflectDir, 10.0 * rcp(inversesqrt(material.roughness)));
-			skybox.rgb = mix(skybox.rgb, WATER_COLOR, float(frx_cameraInWater));
-			
-			// Rough material should get more conservative skylight
-			skybox.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
-			//skybox += 100.0 * pow(clamp01(dot(cleanReflectDir, (frx_skyLightVector + 0*viewDir))), 128.0);
 
-			reflectColor = max(blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), skybox.rgb * material.skyLight);
-		}
+		// Handle sky reflections
+		vec3 ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
+		ambientReflectionColor.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
+
+		// blocklight contribution
+		ambientReflectionColor = max(blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
+
+		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
 		composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
+
+
+		// vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
+		
+		// vec3 hitPos;
+		// bool hit = false;
+
+		// if(material.roughness < 0.5) {
+		// 	vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
+
+		// 	vec3 pos_ws = sceneSpaceToScreenSpace(sceneSpacePos) * vec3(frxu_size, 1.0);
+		// 	vec3 dir_ws = normalize(
+		// 		(
+		// 			viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) -
+		// 			vec3(texcoord, min_depth)
+		// 		) * vec3(frxu_size, 1.0)
+		// 	);
+
+		// 	if((viewSpacePos + viewReflectDir).z < 0.0) {
+		// 		hit = raytrace(
+		// 			pos_ws,
+		// 			dir_ws,
+		// 			40,
+		// 			u_depths,
+		// 			hitPos
+		// 		);
+		// 	}
+
+		// 	// Reflection reprojection
+		// 	vec3 hitPosScene = setupSceneSpacePos(hitPos);
+		// 	hitPos = lastFrameSceneSpaceToScreenSpace(hitPosScene + frx_cameraPos - frx_lastCameraPos);
+			
+		// 	// check if reprojected hitPos is out of buffer
+		// 	if(
+		// 		any(greaterThanEqual(hitPos.xy, ivec2(1.0))) ||
+		// 		any(lessThan(hitPos.xy, ivec2(0.0)))
+		// 	) {
+		// 		hit = false;
+		// 	}
+		// }
+		
+		// if(hit) {
+		// 	reflectColor = texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb;
+		// } else {
+		// 	vec4 skybox = textureLod(u_skybox, cleanReflectDir, 10.0 * rcp(inversesqrt(material.roughness)));
+		// 	skybox.rgb = mix(skybox.rgb, WATER_COLOR, float(frx_cameraInWater));
+			
+		// 	// Rough material should get more conservative skylight
+		// 	skybox.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
+		// 	//skybox += 100.0 * pow(clamp01(dot(cleanReflectDir, (frx_skyLightVector + 0*viewDir))), 128.0);
+
+		// 	reflectColor = max(blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), skybox.rgb * material.skyLight);
+		// }
+
+		// composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
+		// composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
 	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - 2.0 * pow4(dot(viewDir, frx_skyLightVector))).rgb;
