@@ -51,7 +51,7 @@ vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
 		
 		float leaves = float(isLeafBlock);
 
-		vertexColor = mix(vertexColor, vec3(1.000,0.592,0.837) * 2.0, leaves * noiseA);
+		vertexColor = mix(vertexColor, springTreeColor, leaves * noiseA);
 		vec3 seasonColor = vertexColor;
 
 		seasonColor = mix(seasonColor, summerFoliageColor, toSummer); // summer

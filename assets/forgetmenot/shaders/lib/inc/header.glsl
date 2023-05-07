@@ -34,6 +34,10 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 	vec2( 0.875, 0.875)
 );
 
+vec2 getTaaOffset(in uint frame) {
+	return TAA_OFFSETS[frame % 8u];
+}
+
 #include forgetmenot:general
 #include forgetmenot:seasons
 #include forgetmenot:misc

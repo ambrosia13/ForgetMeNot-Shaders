@@ -11,6 +11,7 @@ const float WATER_DIRT_AMOUNT = 0.25;
 const vec3 WATER_COLOR = vec3(0.0, 0.20, 0.25);
 
 // SEASONS
+const vec3 springTreeColor = vec3(0.7, 0.9, 0.6);
 
 const vec3 summerFoliageColor = vec3(0.9, 1.0, 0.4);
 
