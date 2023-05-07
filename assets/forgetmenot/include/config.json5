@@ -56,7 +56,7 @@
 					descriptionKey: "config.forgetmenot.desc.realistic_water"
 				},
 				motion_blur: {
-					default: true,
+					default: false,
 					nameKey: "config.forgetmenot.name.motion_blur",
 					descriptionKey: "config.forgetmenot.desc.motion_blur"
 				},
