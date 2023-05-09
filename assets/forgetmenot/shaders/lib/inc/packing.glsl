@@ -40,8 +40,8 @@ uint packUnormArb3Elements(float[3] data, uint[3] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 3; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[3] shifted;
@@ -69,8 +69,8 @@ float[3] unpackUnormArb3Elements(uint pack, uint[3] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 3; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[3] unshifted;
@@ -100,8 +100,8 @@ uint packUnormArb5Elements(float[5] data, uint[5] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 5; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[5] shifted;
@@ -129,8 +129,8 @@ float[5] unpackUnormArb5Elements(uint pack, uint[5] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 5; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[5] unshifted;
@@ -160,8 +160,8 @@ uint packUnormArb6Elements(float[6] data, uint[6] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 6; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[6] shifted;
@@ -189,8 +189,8 @@ float[6] unpackUnormArb6Elements(uint pack, uint[6] bits) {
 	uint currentSum = 0u;
 
 	for(int i = 0; i < 6; i++) {
-		if(i > 0) currentSum += bits[i - 1];
 		shift[i] = currentSum;
+		currentSum += bits[i];
 	}
 
 	uint[6] unshifted;
