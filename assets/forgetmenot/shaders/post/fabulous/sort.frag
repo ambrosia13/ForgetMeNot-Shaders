@@ -125,11 +125,11 @@ void main() {
 
 			vec2 waterNoise = vec2(0.0);
 			vec2 waterWindDirection = vec2(fmn_time, fmn_time * 0.25);
-			waterNoise += smoothHashDXY(rotate2D(uv, 0.1) * vec2(1.5, 0.5) + waterWindDirection) * 0.5;
-			waterNoise += smoothHashDXY(rotate2D(uv, -0.1) * vec2(1.0, 0.2) + waterWindDirection) * 0.75;
-			waterNoise += smoothHashDXY(uv * vec2(3.0, 1.0) + 200.0 + waterWindDirection * 4.0) * 0.125;
-			waterNoise += smoothHashDXY(uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) * 0.065;
-			waterNoise += smoothHashDXY(uv * vec2(5.0, 3.5) + 600.0 - waterWindDirection * 1.0) * 0.065;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords(rotate2D(uv * vec2(1.5, 0.5) + waterWindDirection, radians( 15.0)) / 250.0) * 250.0) * 0.5;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords(rotate2D(uv * vec2(1.0, 0.2) + waterWindDirection, radians(-15.0)) / 250.0) * 250.0) * 0.75;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(3.0, 1.0) + 200.0 + waterWindDirection * 4.0) / 250.0) * 250.0) * 0.125;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) / 250.0) * 250.0) * 0.065;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 3.5) + 600.0 - waterWindDirection) / 250.0) * 250.0) * 0.065;
 
 			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 4.0);
 			waterNoise *= 0.1;
