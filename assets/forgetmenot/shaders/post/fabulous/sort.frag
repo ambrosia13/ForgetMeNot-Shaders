@@ -101,7 +101,7 @@ void main() {
 			// Math from Balint
 			int face = int(dot(max(material.vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-material.vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
 
-			vec3 worldSpacePos = mod(sceneSpacePos + frx_cameraPos, 250.0);
+			vec3 worldSpacePos = sceneSpacePos + frx_cameraPos;
 			vec2 uv = frx_faceUv(worldSpacePos, face);
 
 			// Parallaxify
