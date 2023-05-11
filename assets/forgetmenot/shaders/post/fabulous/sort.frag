@@ -142,16 +142,19 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Refractions
-	vec4 main_color; {
+	vec4 main_color; 
+	float main_depth = texture(u_main_depth, texcoord).r;
+	
+	if(main_depth < 1.0) {
 		// refraction is not even close to physical, just as these indices
 		const float refractiveInidices[3] = float[3](
 			1.1, 1.3, 1.5
 		);
 
-		for(int channel = 0; channel < 3; ++channel) {
-			vec3 normDiff = material.fragNormal - material.vertexNormal;
-			float normDiffLength = length(normDiff);
+		vec3 normDiff = material.fragNormal - material.vertexNormal;
+		float normDiffLength = length(normDiff);
 
+		for(int channel = 0; channel < 3; ++channel) {
 			vec3 viewDirRefracted = refract(
 				viewDir,
 				normDiff / normDiffLength,
@@ -161,14 +164,15 @@ void main() {
 			vec2 refractCoord = mix(
 				texcoord,
 				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 2.0).xy,
-				clamp01(sign(particles_depth - translucent_depth))
+				clamp01(sign(main_depth - translucent_depth))
 			);
 
 			main_color[channel] = texture(u_main_color, refractCoord)[channel];
 		}
 		main_color.a = 1.0;
+	} else {
+		main_color = texture(u_main_color, texcoord);
 	}
-	float main_depth = texture(u_main_depth, texcoord).r;
 
 	float max_depth = max(max(translucent_depth, particles_depth), main_depth);
 	float min_depth = min(min(translucent_depth, particles_depth), main_depth);
