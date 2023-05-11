@@ -156,14 +156,6 @@ vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height
 	return texcoord - p;
 }
 
-const mat3 sRGBtoAP1 = mat3(
-	0.613097, 0.339523, 0.047379,
-	0.070194, 0.916354, 0.013452,
-	0.020616, 0.109570, 0.869815
-);
-
-const mat3 AP1toSRGB = mat3(
-	1.704859, -0.621715, -0.083299,
-	-0.130078,  1.140734, -0.010560,
-	-0.023964, -0.128975,  1.153013
-);
+int intMix(int a, int b, int x) {
+	return a * (1 - x) + b * x;
+}

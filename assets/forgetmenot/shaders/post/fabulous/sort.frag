@@ -113,7 +113,7 @@ void main() {
 			waterNoise += smoothHashDXY(repeatAndMirrorCoords(rotate2D(uv * vec2(1.0, 0.2) + waterWindDirection, radians(-15.0)) / 250.0) * 250.0) * 0.75;
 			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(3.0, 1.0) + 200.0 + waterWindDirection * 4.0) / 250.0) * 250.0) * 0.125;
 			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) / 250.0) * 250.0) * 0.065;
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 3.5) + 600.0 - waterWindDirection) / 250.0) * 250.0) * 0.065;
+			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(10.0, 1.5) + 600.0 - waterWindDirection) / 250.0) * 250.0) * 0.125;
 
 			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 4.0);
 			waterNoise *= 0.1;
@@ -128,31 +128,40 @@ void main() {
 	// Refractions
 	vec4 mainColor; 
 	float mainDepth = texture(u_main_depth, texcoord).r;
+
+	float refractedDepthBack = 1.0;
+	float refractedDepthFront = 1.0;
 	
 	if(mainDepth < 1.0) {
 		// refraction is not even close to physical, just as these indices
-		const float refractiveInidices[3] = float[3](
+		const float refractiveIndices[3] = float[3](
 			1.1, 1.3, 1.5
 		);
 
 		vec3 normDiff = material.fragNormal - material.vertexNormal;
 		float normDiffLength = length(normDiff);
 
+		vec2 refractCoord;
+
 		for(int channel = 0; channel < 3; ++channel) {
 			vec3 viewDirRefracted = refract(
 				viewDir,
 				normDiff / normDiffLength,
-				1.0 / refractiveInidices[channel]
+				1.0 / refractiveIndices[channel]
 			);
 
-			vec2 refractCoord = mix(
+			refractCoord = mix(
 				texcoord,
-				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 2.0).xy,
+				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 4.0).xy,
 				clamp01(sign(mainDepth - translucentDepth))
 			);
 
 			mainColor[channel] = texture(u_main_color, refractCoord)[channel];
 		}
+
+		refractedDepthBack = texture(u_translucent_depth, refractCoord).r;
+		refractedDepthFront = texture(u_main_depth, refractCoord).r;
+
 		mainColor.a = 1.0;
 	} else {
 		mainColor = texture(u_main_color, texcoord);
@@ -170,8 +179,8 @@ void main() {
 	insertLayer(composite, particlesColor, compositeDepth, particlesDepth);
 	insertLayer(composite, entityColor, compositeDepth, entityDepth);
 
-	sceneSpacePosBack = setupSceneSpacePos(texcoord, mainDepth);
-	sceneSpacePos = setupSceneSpacePos(texcoord, compositeDepth);
+	sceneSpacePosBack = setupSceneSpacePos(texcoord, refractedDepthBack);
+	sceneSpacePos = setupSceneSpacePos(texcoord, refractedDepthFront);
 
 	// Initialize fog transmittance used for bloomy fog
 	float fogTransmittance = 1.0;
