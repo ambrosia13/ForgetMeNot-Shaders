@@ -219,8 +219,6 @@ void main() {
 	// ----------------------------------------------------------------------------------------------------
 	// Reflections
 	if(min_depth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
-		vec3 viewSpacePos = setupViewSpacePos(texcoord, composite_depth);
-
 		vec3 reflectColor = vec3(0.0);
 		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)));
 
@@ -233,28 +231,29 @@ void main() {
 			vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
 			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
+			vec3 screenSpacePos = vec3(texcoord, composite_depth);
+			vec3 NDC = screenSpacePos * 2.0 - 1.0;
+			vec4 D = frx_projectionMatrix * vec4(viewReflectDir, 0.0);
+			vec3 windowSpaceDir = normalize(
+				(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
+			);
+			vec3 windowSpacePos = vec3(texcoord, composite_depth) * vec3(frxu_size, 1.0);
+
 			bool hit = false;
 			vec3 hitPos;
 
-			vec3 windowSpacePos = vec3(texcoord, composite_depth) * vec3(frxu_size, 1.0);
-			vec3 windowSpaceDir = normalize(
-				(viewSpaceToScreenSpace(viewSpacePos + viewReflectDir) - vec3(texcoord, composite_depth)) * vec3(frxu_size, 1.0)
+			hit = raytrace(
+				windowSpacePos,
+				windowSpaceDir,
+				40,
+				u_depths,
+				hitPos
 			);
 
-			if(viewSpacePos.z + viewReflectDir.z < 0.0) {
-				hit = raytrace(
-					windowSpacePos,
-					windowSpaceDir,
-					40,
-					u_depths,
-					hitPos
-				);
+			// Reproject reflection
+			hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
 
-				// Reproject reflection
-				hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
-
-				hit = hit && clamp01(hitPos.xy) == hitPos.xy;
-			}
+			hit = hit && clamp01(hitPos.xy) == hitPos.xy;
 
 			if(hit) {
 				reflectColor += texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
