@@ -201,7 +201,7 @@ void main() {
 		vec3 waterFogColor = mix(translucentColor.rgb, underwaterFogColor, frx_cameraInWater);
 
 		// Water absorption
-		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 2.0));
+		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.5));
 		
 		// Water scattering
 		float waterFogTransmittance = exp(-waterFogDistance * (WATER_DIRT_AMOUNT));
