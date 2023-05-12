@@ -46,7 +46,7 @@ float getClosestDepth(in float a, inout float b) {
 	return isACloser;
 }
 
-void insertLayer(inout vec3 background, in vec4 foreground, inout float backgroundDepth, in float foregroundDepth) {
+void insertLayer(inout vec3 background, inout float backgroundDepth, in vec4 foreground, in float foregroundDepth) {
 	background = mix(background, background * (1.0 - foreground.a) + foreground.rgb * foreground.a, getClosestDepth(foregroundDepth, backgroundDepth));
 }
 
@@ -175,9 +175,9 @@ void main() {
 	// Disable blending on water, because water is blended separately
 	translucentColor.a *= step(material.isWater, 0.5);
 
-	insertLayer(composite, translucentColor, compositeDepth, translucentDepth);
-	insertLayer(composite, particlesColor, compositeDepth, particlesDepth);
-	insertLayer(composite, entityColor, compositeDepth, entityDepth);
+	insertLayer(composite, compositeDepth, translucentColor, translucentDepth);
+	insertLayer(composite, compositeDepth, particlesColor, particlesDepth);
+	insertLayer(composite, compositeDepth, entityColor, entityDepth);
 
 	sceneSpacePosBack = setupSceneSpacePos(texcoord, refractedDepthBack);
 	sceneSpacePos = setupSceneSpacePos(texcoord, refractedDepthFront);
