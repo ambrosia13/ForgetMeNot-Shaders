@@ -23,6 +23,7 @@ void main() {
 			float distToCenter = length(vec2(x, y) / size - 0.5);
 			float currentWeight = 1.0;
 			float currentSample = frx_luminance(texelFetch(u_color, ivec2(x, y), luminanceLod).rgb);
+			currentSample = min(currentSample, 5.0);
 
 			// texelMaxLuminance = max(texelMaxLuminance, currentSample);
 			// texelMinLuminance = min(texelMinLuminance, currentSample);
@@ -37,5 +38,6 @@ void main() {
 
 	float prevLuminance = texelFetch(u_previous, ivec2(0), 0).r;
 
-	if(frx_renderFrames > 1u) avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, 1.0 / min(60u, frx_renderFrames + 1u)));
+	float smoothingFactor = 1.0 - exp(-1.0 / 30.0);
+	if(frx_renderFrames > 1u) avgLuminance = max(0.0, mix(prevLuminance, avgLuminance, smoothingFactor));
 }
