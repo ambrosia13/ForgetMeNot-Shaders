@@ -40,7 +40,7 @@ void main() {
 
 	color = mix(frx_sampleTentLod(u_downsampled, texcoord, 1.0 / frxu_size, min(6.0, fogTransmittance * 1.0)), color, smoothstep(0.9, 1.0, fogTransmittance));
 
-	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 6.0;
+	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 7.0;
 
-	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid);
+	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.2 * frx_worldIsNether);
 }

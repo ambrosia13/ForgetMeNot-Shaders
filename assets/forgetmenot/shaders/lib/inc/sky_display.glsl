@@ -302,6 +302,8 @@ vec3 getClouds(
 		skyLutNight
 	);
 
+	ambientColor = saturation(ambientColor, 0.5) * 1.5;
+
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
 		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
 	) + ambientColor;

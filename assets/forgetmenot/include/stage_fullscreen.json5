@@ -59,10 +59,10 @@
 					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
 				},
 				{
-					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
 				}, 
 				{
-					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
 				}
 			]
 		},
@@ -114,8 +114,8 @@
 		},
 		{
 			name: "bloom_upsample",
-			lod: 6,
-			internalFormat: "R11F_G11F_B10F",
+			lod: 7,
+			internalFormat: "RGB16F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
@@ -127,10 +127,10 @@
 					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
 				},
 				{
-					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
 				}, 
 				{
-					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
 				}
 			]
 		},
@@ -252,6 +252,14 @@
 			colorAttachments: [
 				{
 					image: "exposure_copy", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "bloom_u7",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 7
 				}
 			]
 		},
@@ -542,11 +550,22 @@
 				toggleConfig: "enable_bloom"
 			},
 			{
-				name: "bloom_u6",
+				name: "bloom_u7",
 				program: "bloom_upsample_first",
-				framebuffer: "bloom_u6",
+				framebuffer: "bloom_u7",
 				samplerImages: [
 					"bloom_downsample"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u6",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u6",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
 				],
 				lod: 6,
 				toggleConfig: "enable_bloom"
