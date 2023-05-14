@@ -74,8 +74,6 @@ void main() {
 	vec4 cloudsColor = texture(u_clouds_color, texcoord);
 	float cloudsDepth = texture(u_clouds_depth, texcoord).r;
 
-	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - 2.0 * pow4(dot(viewDir, frx_skyLightVector))).rgb;
-
 	// ----------------------------------------------------------------------------------------------------
 	// Fix up samples
 	weatherColor.rgb = pow(weatherColor.rgb, vec3(2.2));
@@ -85,6 +83,12 @@ void main() {
 
 	vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, particlesDepth);
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, translucentDepth);
+
+	float skyboxSharpeningFactor = 4.0 * pow(clamp01(dot(viewDir, frx_skyLightVector)), 8.0);
+	skyboxSharpeningFactor *= smoothstep(0.0, 100.0, length(sceneSpacePos));
+	skyboxSharpeningFactor = mix(skyboxSharpeningFactor, 0.0, frx_skyLightTransitionFactor);
+
+	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - skyboxSharpeningFactor).rgb;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Water normals
@@ -224,6 +228,8 @@ void main() {
 
 		// number of rays to cast depends on roughness (goodbye performance)
 		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
+		numReflectionRays = min(4, numReflectionRays); // hello performance
+
 		float reflectionFactor = 0.0;
 		for(int i = 0; i < numReflectionRays; i++) {
 			vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
@@ -278,7 +284,7 @@ void main() {
 	#ifdef FOG
 		if(!isModdedDimension) {
 			if(frx_cameraInFluid == 0) {
-				float undergroundFactor = linearstep(0.0, 0.5, max(frx_eyeBrightness.y, material.skyLight));
+				float undergroundFactor = linearstep(0.0, 0.5, max(frx_smoothedEyeBrightness.y, material.skyLight));
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
 				FogProfile fp = getFogProfile(undergroundFactor);

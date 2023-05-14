@@ -112,11 +112,23 @@ void pcg(inout uint seed) {
 }
 
 #ifdef FRAGMENT_SHADER
-	uint rngState = 185730u * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+	uint rngState = uint(frxu_size.x * frxu_size.y) * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+	uint staticRngState = 1u;
 
-	float randF() { 
-		pcg(rngState); 
-		return float(rngState) / float(0xffffffffu); 
+	uint randomUint() {
+		pcg(rngState);
+		return rngState;
+	}
+	float randomFloat() {
+		return float(randomUint()) / float(0xffffffffu); 
+	}
+
+	uint staticRandomUint() {
+		pcg(staticRngState);
+		return staticRngState;
+	}
+	float staticRandomFloat() {
+		return float(staticRandomUint()) / float(0xffffffffu);
 	}
 
 	// From Jessie
@@ -135,7 +147,7 @@ void pcg(inout uint seed) {
 			vector + 
 			roughness * generateUnitVector(
 				vec2(
-					randF(), randF()
+					randomFloat(), randomFloat()
 				)
 			)
 		);

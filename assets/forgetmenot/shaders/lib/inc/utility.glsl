@@ -42,45 +42,41 @@ vec4 fNormalize(in vec4 x) {
 }
 #define normalize(x) (fNormalize(x))
 
-// Fast power functions
-#define FMN_POW_2 (x * x)
-#define FMN_POW_3 (pow2(x) * x)
-#define FMN_POW_4 (pow2(x) * pow2(x))
 float pow2(float x) {
-	return FMN_POW_2;
+	return (x * x);
 }
 vec2 pow2(vec2 x) {
-	return FMN_POW_2;
+	return (x * x);
 }
 vec3 pow2(vec3 x) {
-	return FMN_POW_2;
+	return (x * x);
 }
 vec4 pow2(vec4 x) {
-	return FMN_POW_2;
+	return (x * x);
 }
 float pow3(float x) {
-	return FMN_POW_3;
+	return (pow2(x) * x);
 }
 vec2 pow3(vec2 x) {
-	return FMN_POW_3;
+	return (pow2(x) * x);
 }
 vec3 pow3(vec3 x) {
-	return FMN_POW_3;
+	return (pow2(x) * x);
 }
 vec4 pow3(vec4 x) {
-	return FMN_POW_3;
+	return (pow2(x) * x);
 }
 float pow4(float x) {
-	return FMN_POW_4;
+	return (pow2(x) * pow2(x));
 }
 vec2 pow4(vec2 x) {
-	return FMN_POW_4;
+	return (pow2(x) * pow2(x));
 }
 vec3 pow4(vec3 x) {
-	return FMN_POW_4;
+	return (pow2(x) * pow2(x));
 }
 vec4 pow4(vec4 x) {
-	return FMN_POW_4;
+	return (pow2(x) * pow2(x));
 }
 
 #define rcp(x) (1.0 / (x))

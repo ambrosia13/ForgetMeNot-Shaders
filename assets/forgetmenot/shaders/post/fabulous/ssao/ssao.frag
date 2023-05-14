@@ -83,7 +83,7 @@ float doSSAO(vec3 viewNormal, vec3 viewSpacePos, vec3 screenSpacePos, float line
 	const float goldenAngle = 2.4;
 	float radius = 0.0;
 
-	float rotatePhase = randF() * TAU;
+	float rotatePhase = randomFloat() * TAU;
 	float rStep = 0.1 / linearDepth / rays;
 	vec2 spiralUv;
 

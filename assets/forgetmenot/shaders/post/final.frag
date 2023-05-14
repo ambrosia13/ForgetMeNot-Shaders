@@ -106,7 +106,7 @@ void main() {
 	finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)));
 
 	const int bitDepth = 256;
-	finalColor = floor(finalColor * bitDepth + randF()) / bitDepth;
+	finalColor = floor(finalColor * bitDepth + randomFloat()) / bitDepth;
 
 	fragColor = vec4(finalColor, 1.0);
 }
