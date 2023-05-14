@@ -64,6 +64,6 @@ int fmn_isLeafBlock = 0;
 // Material shaders should use this to avoid complex logic, 
 // because that can cause a performance impact due to branching.
 // 
-// Version 4 feature.
+// Version 4 feature. As of version 5, this defaults to 1.0.
 // ----------------------------------------------------------------------------------------------------
 float fmn_autoGenNormalStrength = 1.0;

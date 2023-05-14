@@ -1,7 +1,7 @@
 #include forgetmenot:shaders/lib/api_includes.glsl
-#include forgetmenot:shaders/lib/api/fmn_pbr.glsl 
-#include forgetmenot:misc
+#include forgetmenot:shaders/lib/api/fmn_pbr.glsl
 
+#include forgetmenot:shaders/lib/materials_pipeline_common.glsl
 
 // "fast" normalize functions
 vec2 fmn_fNormalize(in vec2 x) {

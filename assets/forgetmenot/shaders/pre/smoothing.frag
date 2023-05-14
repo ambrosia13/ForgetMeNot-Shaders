@@ -29,7 +29,12 @@ void main() {
 			break;
 		}
 		case 3: {
-			result = float(frx_effectNightVision);
+			#ifndef FULLBRIGHT
+				result = float(frx_effectNightVision);
+			#else
+				result = 1.0;
+			#endif
+			
 			break;
 		}
 	}

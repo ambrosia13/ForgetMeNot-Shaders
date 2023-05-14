@@ -149,16 +149,15 @@ vec3 basicLighting(
 		ambientLighting *= (fragNormal.y * 0.3 + 0.7) * skyLight;
 
 		if(frx_worldIsNether == 1) {
-			ambientLighting *= 0.5;
-			//ambientLighting += 0.25;
-
-			ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-fragNormal.y * 0.75 + 0.25);
+			#ifdef NETHER_DIFFUSE
+				ambientLighting *= 0.5;
+				ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-fragNormal.y * 0.75 + 0.25);
+			#endif
 		} else if(frx_worldIsEnd == 1) {
-			//ambientLighting *= ;
-			ambientLighting += endMistColor * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
+			ambientLighting += END_MIST_COLOR * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
 		}
 
-		ambientLighting += 0.02;
+		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		ambientLighting += 2.0 * blockLight * blockLightColor;
 		

@@ -16,7 +16,7 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
 
-4. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases), [Lomo (not for gameplay)](https://github.com/fewizz/lomo/releases), or [Aerie (vanilla-plus)](https://modrinth.com/shader/aerie-shaders).
+4. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases), [Lomo (not for gameplay as of this writing)](https://github.com/fewizz/lomo/releases), or [Aerie (vanilla-plus, wip)](https://modrinth.com/shader/aerie-shaders).
 
 5. Launch your game, put your downloaded `.zip` file into your `resourcepacks` folder and activate the resource pack. (Don't extract it!)
 
@@ -44,17 +44,15 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 - contact-hardening variable penumbra shadows 
 
-- advanced ambient shading (RTAO)
-
 - advanced anti-aliasing (TAA)
 
 ## credits
 
-Forget-me-not wouldn't be nearly as polished as it is if it weren't for the help of people like fewizz, spiralhalo, Grondag, and many others from the Canvas community for contributing and testing. Here are some specifics:
+Forget-me-not wouldn't be nearly as polished as it is if it weren't for the help of people like fewizz, spiralhalo, Grondag, and many others from the Canvas community for contributing and testing. Many thanks to:
 
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
 - [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
-- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things, as well as the raytracer and lots of testing
+- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things, as well as the raytracer and lots of invaluable contributions
 
 ## discord
 

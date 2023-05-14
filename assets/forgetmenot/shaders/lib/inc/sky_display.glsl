@@ -27,10 +27,17 @@ struct CloudLayer {
 
 	float curlNoiseAmount;
 	float curlNoiseFrequency;
+
+	bool render;
 };
 
 CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	CloudLayer cloudLayer;
+
+	#ifndef CUMULUS_CLOUDS
+		cloudLayer.render = false;
+		return cloudLayer;
+	#endif
 
 	cloudLayer.altitude = 0.001;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude + 0.00001 * fmn_time / cloudLayer.altitude;
@@ -54,11 +61,18 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.curlNoiseAmount = 0.0001;
 	cloudLayer.curlNoiseFrequency = 3.5;
 
+	cloudLayer.render = true;
+
 	return cloudLayer;
 }
 
 CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	CloudLayer cloudLayer;
+
+	#ifndef CIRRUS_CLOUDS
+		cloudLayer.render = false;
+		return cloudLayer;
+	#endif
 
 	cloudLayer.altitude = 0.01;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude;
@@ -82,10 +96,16 @@ CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	cloudLayer.curlNoiseAmount = 0.00035;
 	cloudLayer.curlNoiseFrequency = 0.75;
 
+	cloudLayer.render = true;
+
 	return cloudLayer;
 }
 
 float sampleCloudNoise(in CloudLayer cloudLayer, in int noiseOctaves) {
+	if(!cloudLayer.render) {
+		return 0.0;
+	}
+
 	if(cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -107,6 +127,10 @@ float sampleCloudNoise(in CloudLayer cloudLayer) {
 	return sampleCloudNoise(cloudLayer, cloudLayer.noiseOctaves);
 }
 float sampleCloudNoise(in CloudLayer cloudLayer, in sampler2D noiseTexture) {
+	if(!cloudLayer.render) {
+		return 0.0;
+	}
+
 	if(!cloudLayer.useNoiseTexture) {
 		return -1.0;
 	}
@@ -220,12 +244,12 @@ vec3 getSkyColor(
 		vec3 skyColor = vec3(0.0);
 
 		float mistAmount = 0.1 * fbmHash3D(viewDir * 3.0, 4);
-		vec3 mist = endMistColor * mistAmount;
+		vec3 mist = END_MIST_COLOR * mistAmount;
 
 		vec3 starPos = normalize(vec3(-0.7, 0.1, 0.7));
 		float VdotStar = clamp01(dot(viewDir, starPos));
 
-		vec3 star = endMistColor * vec3(min(20.0, 0.04 / (distance(starPos, viewDir))));
+		vec3 star = END_MIST_COLOR * vec3(min(20.0, 0.04 / (distance(starPos, viewDir))));
 
 		// Not the main star
 		vec3 otherStars = 0.25 * vec3(
