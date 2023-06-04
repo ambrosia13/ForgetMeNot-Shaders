@@ -17,7 +17,7 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.25, 0.2, 2.1, 1.0);
+	return ExposureProfile(0.25, 0.9, 1.7, 1.0);
 }
 ExposureProfile getNetherExposureProfile() {
 	return ExposureProfile(0.2, 1.5, 2.0, 1.0);

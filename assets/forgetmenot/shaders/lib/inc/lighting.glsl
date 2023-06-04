@@ -134,14 +134,14 @@ vec3 basicLighting(
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
 		//vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		directLighting = 0.0275 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting = 0.06 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
 	// Ambient lighting
 	{
 		vec3 skyLightDir = mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		ambientLighting = textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
+		ambientLighting = textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb * 2.0;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
 		ambientLighting = normalize(ambientLighting) * clamp(length(ambientLighting), 0.0, 1.5);
@@ -163,7 +163,8 @@ vec3 basicLighting(
 		
 		// handheld light
 		{
-			float heldLightFactor = 1.0 / (1.0 + pow2(distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos)));//frx_smootherstep(frx_heldLight.a * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+			float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+			heldLightFactor = pow3(heldLightFactor);
 
 			heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize((sceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
 
@@ -172,7 +173,7 @@ vec3 basicLighting(
 			#endif
 
 			heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);
-			ambientLighting += pow(frx_heldLight.rgb * (1.0 + frx_heldLight.a), vec3(2.2)) * heldLightFactor;
+			ambientLighting += pow(frx_heldLight.rgb * 1.5, vec3(2.2)) * heldLightFactor;
 		}
 
 		ambientLighting *= vanillaAo;

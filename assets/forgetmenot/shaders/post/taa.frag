@@ -49,10 +49,10 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
 
 // Blend factor referenced from BSL Shaders
 float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
-	vec2 velocity = (currentCoord - previousCoord) * frxu_size;
+	vec2 velocity = (currentCoord - previousCoord);
 
 	float blendFactor = float(clamp01(previousCoord) == previousCoord);
-	blendFactor *= exp(-length(velocity)) * 0.14 + 0.85;
+	blendFactor *= smoothstep(0.3, 0.0, length(velocity)) * 0.9;
 
 	return blendFactor;
 }

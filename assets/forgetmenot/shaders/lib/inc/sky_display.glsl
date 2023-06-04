@@ -388,7 +388,7 @@ vec3 getSkyAndClouds(
 		);
 	}
 
-	return color;
+	return color * 0.5;
 }
 
 vec3 getSkyAndClouds(
