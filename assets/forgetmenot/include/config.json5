@@ -90,6 +90,11 @@
 					nameKey: "config.forgetmenot.name.ambient_brightness",
 					descriptionKey: "config.forgetmenot.desc.ambient_brightness"
 				},
+				realistic_metals: {
+					default: false,
+					nameKey: "config.forgetmenot.name.realistic_metals",
+					descriptionKey: "config.forgetmenot.desc.realistic_metals"
+				},
 				fullbright: {
 					default: false,
 					nameKey: "config.forgetmenot.name.fullbright",
@@ -199,6 +204,11 @@
 					nameKey: "config.forgetmenot.name.taa",
 					descriptionKey: "config.forgetmenot.desc.taa"
 				},
+				no_taa_jitter: {
+					default: false,
+					nameKey: "config.forgetmenot.name.no_taa_jitter",
+					descriptionKey: "config.forgetmenot.desc.no_taa_jitter"
+				},
 			}
 		},
 		{
@@ -238,7 +248,7 @@
 					descriptionKey: "config.forgetmenot.desc.varied_tree_color"
 				},
 				falling_leaves: {
-					default: true,
+					default: false,
 					nameKey: "config.forgetmenot.name.falling_leaves",
 					descriptionKey: "config.forgetmenot.desc.falling_leaves"
 				},			

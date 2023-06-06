@@ -42,6 +42,9 @@
 	"config.forgetmenot.name.ambient_brightness": "Base Ambient Brightness",
 	"config.forgetmenot.desc.ambient_brightness": "How much ambient lighting is added everywhere, regardless of dimension, blocklight, or skylight.",
 
+	"config.forgetmenot.name.realistic_metals": "Realistic Metals",
+	"config.forgetmenot.desc.realistic_metals": "If enabled, metal reflections tint the incoming light color. Doesn't affect performance, but may look ugly in some situations.",
+
 	"config.forgetmenot.name.fullbright": "Full Brightness",
 	"config.forgetmenot.desc.fullbright": "Enables fullbright. Please do not enable this option in an unethical situation where it would give you an unfair advantage over other players.",
 
@@ -88,6 +91,8 @@
 
 	"config.forgetmenot.name.taa": "Temporal Anti-aliasing (TAA)",
 	"config.forgetmenot.desc.taa": "Blends multiple frames to smartly remove most aliasing from the image.",
+	"config.forgetmenot.name.no_taa_jitter": "No TAA Jitter",
+	"config.forgetmenot.desc.no_taa_jitter": "If enabled, skips the jittering of the image every frame for TAA. Results in less flickering, but less effective antialiasing.",
 
 	"config.forgetmenot.category.seasons": "Seasons",
 

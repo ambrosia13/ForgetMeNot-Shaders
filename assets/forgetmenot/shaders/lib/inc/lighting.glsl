@@ -97,7 +97,7 @@ vec3 basicLighting(
 		//shadowScreenPos.z -= 0.0005 * (3 - cascade) * (1.0 - NdotL);
 
 		float shadowFactor = 0.0;
-		float penumbraSize = 0.5;
+		float penumbraSize = 0.0;
 		
 		if(doPcss) {
 			for(int i = 0; i < shadowMapSamples; i++) {
@@ -107,7 +107,7 @@ vec3 basicLighting(
 				float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
 				float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * mix(mix(mix(0.5, 1.0, step(0.5, cascadeF)), 2.0, step(1.5, cascadeF)), 3.0, step(2.5, cascadeF));
 
-				penumbraSize += min(1.0 * cascade, diff / shadowMapSamples);
+				penumbraSize += min(float(cascade), diff / shadowMapSamples);
 			}
 		} else {
 			penumbraSize = 2.0;

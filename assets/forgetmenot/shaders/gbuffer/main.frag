@@ -244,9 +244,6 @@ void frx_pipelineFragment() {
 		BITS_Y
 	);
 
-//	vec4 dataY = vec4(frx_fragLight.xy, mix(frx_fragLight.z, 1.0, frx_matDisableAo), 0.0);
-//	uint packedY = packUnormArb(dataY, BITS_Y);
-
 	uint packedZ = packUnormArb3Elements(
 		float[3] (
 			fragNormalUnorm.x, fragNormalUnorm.y, fragNormalUnorm.z
@@ -257,7 +254,7 @@ void frx_pipelineFragment() {
 	if(color.a < 0.0001) discard;
 	color = max(color, vec4(0.0005));
 
-	fragColor = color;//vec4(frx_fragNormal * 0.5 + 0.5, 1.0);
+	fragColor = color;
 	fragNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
 	fragData = uvec4(packedX, packedY, packedZ, 1u);
 	fragData1 = fragData;

@@ -67,7 +67,7 @@ vec3 getSeasonColor(in vec3 vertexColor, in int isLeafBlock, vec3 worldCoord) {
 
 // Threshold for leaves to be discarded based on season.
 float getLeavesFallingThreshold(vec3 worldCoord) {
-	#ifdef SEASONS
+	#ifdef FALLING_LEAVES
 		float time = 0.0;
 		vec4 seasonFactors = getSeasonFactors(time);
 

@@ -50,10 +50,12 @@ void main() {
 
 	Material material = unpackMaterial(packedSample);
 
-	if(material.f0 > 0.999) {
-		fragColor = vec4(color, 1.0);
-		return;
-	}
+	#ifdef REALISTIC_METALS
+		if(material.f0 > 0.999) {
+			fragColor = vec4(color, 1.0);
+			return;
+		}
+	#endif
 	
 	if(depth < 1.0) {
 		//material.vanillaAo = pow3(texture(u_ssao, texcoord * 0.5).r);

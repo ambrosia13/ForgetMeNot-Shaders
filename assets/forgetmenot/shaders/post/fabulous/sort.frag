@@ -273,7 +273,10 @@ void main() {
 
 		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
-		composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
+		#ifdef REALISTIC_METALS
+			composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
+		#endif
+
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
