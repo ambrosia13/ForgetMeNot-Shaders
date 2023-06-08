@@ -12,14 +12,6 @@
 			]
 		},
 		{
-			name: "bright_color",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/bloom/bright_color.frag",
-			samplers: [
-				"u_color"
-			]
-		},
-		{
 			name: "bloom_downsample",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/bloom/bloom_downsample.frag",
@@ -62,7 +54,7 @@
 				"u_upsampled",
 
 				"u_sort",
-				"u_main_depth"
+				"u_solid_depth"
 			]
 		},
 		{

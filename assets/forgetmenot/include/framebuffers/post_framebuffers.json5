@@ -9,10 +9,10 @@
 			]
 		},
 		{
-			name: "bright_color",
+			name: "taa_copy",
 			colorAttachments: [
 				{
-					image: "bright_color", clearColor: 0x00000000
+					image: "taa_copy", clearColor: 0x00000000
 				}
 			]
 		},

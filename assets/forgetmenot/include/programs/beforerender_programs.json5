@@ -1,7 +1,7 @@
 {
 	programs: [
 		{
-			name: "smoothing",
+			name: "smooth_uniforms",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/smoothing.frag",
 			samplers: [

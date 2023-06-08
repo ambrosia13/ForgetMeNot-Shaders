@@ -23,7 +23,7 @@
 			]
 		},
 		{
-			name: "bright_color",
+			name: "taa_copy",
 			lod: 0,
 			internalFormat: "RGB16F",
 			pixelFormat: "RGBA",

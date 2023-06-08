@@ -2,23 +2,23 @@
 	beforeWorldRender: {
 		passes: [
 			{
-				name: "smoothing",
-				program: "smoothing",
-				framebuffer: "smoothing",
+				name: "smooth_uniforms",
+				program: "smooth_uniforms",
+				framebuffer: "smooth_uniforms",
 				width: 4,
 				height: 1,
 				samplerImages: [
-					"smoothing_copy"
+					"smooth_uniforms_copy"
 				]
 			},
 			{
-				name: "smoothing_copy",
+				name: "smooth_uniforms_copy",
 				program: "copy",
-				framebuffer: "smoothing_copy",
+				framebuffer: "smooth_uniforms_copy",
 				width: 4,
 				height: 1,
 				samplerImages: [
-					"smoothing"
+					"smooth_uniforms"
 				]
 			},
 			{

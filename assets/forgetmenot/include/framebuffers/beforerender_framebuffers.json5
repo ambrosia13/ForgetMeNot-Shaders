@@ -1,18 +1,18 @@
 {
 	framebuffers: [
 		{
-			name: "smoothing",
+			name: "smooth_uniforms",
 			colorAttachments: [
 				{
-					image: "smoothing", lod: 0
+					image: "smooth_uniforms", lod: 0
 				}
 			]
 		},
 		{
-			name: "smoothing_copy",
+			name: "smooth_uniforms_copy",
 			colorAttachments: [
 				{
-					image: "smoothing_copy", lod: 0, clearColor: 0x00000000
+					image: "smooth_uniforms_copy", lod: 0, clearColor: 0x00000000
 				}
 			]
 		},

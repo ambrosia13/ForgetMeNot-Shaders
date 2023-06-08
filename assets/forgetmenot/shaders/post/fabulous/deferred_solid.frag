@@ -11,7 +11,6 @@
 uniform sampler2D u_color;
 uniform usampler2D u_data;
 uniform sampler2D u_depth;
-uniform sampler2D u_ssao;
 
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
@@ -21,7 +20,7 @@ uniform samplerCube u_skybox;
 uniform sampler2D u_transmittance;
 uniform sampler2D u_sky_display;
 
-uniform sampler2D u_smoothed_uniforms;
+uniform sampler2D u_smooth_uniforms;
 
 in vec2 texcoord;
 
@@ -58,9 +57,6 @@ void main() {
 	#endif
 	
 	if(depth < 1.0) {
-		//material.vanillaAo = pow3(texture(u_ssao, texcoord * 0.5).r);
-		//material.vanillaAo = pow(material.vanillaAo, 1.3);
-
 		color = basicLighting(
 			color,
 			sceneSpacePos,
@@ -79,8 +75,9 @@ void main() {
 			u_shadow_tex,
 			true,
 			8,
-			texelFetch(u_smoothed_uniforms, ivec2(3, 0), 0).r
+			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r
 		);
+		
 	} else {
 		color = texture(u_sky_display, texcoord).rgb;
 	}

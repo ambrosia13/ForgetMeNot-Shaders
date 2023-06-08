@@ -8,7 +8,7 @@ uniform sampler2D u_downsampled;
 uniform sampler2D u_upsampled;
 
 uniform sampler2D u_sort;
-uniform sampler2D u_main_depth;
+uniform sampler2D u_solid_depth;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -36,7 +36,7 @@ void main() {
 	vec4 color = texture(u_color, texcoord);
 
 	float fogTransmittance = texture(u_sort, texcoord).a;
-	fogTransmittance = mix(1.0, fogTransmittance, floor(texture(u_main_depth, texcoord).r));
+	fogTransmittance = mix(1.0, fogTransmittance, floor(texture(u_solid_depth, texcoord).r));
 
 	color = mix(frx_sampleTentLod(u_downsampled, texcoord, 1.0 / frxu_size, min(6.0, fogTransmittance * 1.0)), color, smoothstep(0.9, 1.0, fogTransmittance));
 

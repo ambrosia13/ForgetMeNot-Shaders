@@ -7,15 +7,15 @@
 				framebuffer: "taa",
 				samplerImages: [
 					"solid_color",
-					"bright_color",
-					"translucent_depth",
+					"taa_copy",
+					"composite_depth",
 					"solid_depth"
 				]
 			},
 			{
-				name: "bright_color",
-				program: "bright_color",
-				framebuffer: "bright_color",
+				name: "taa_copy",
+				program: "copy",
+				framebuffer: "taa_copy",
 				samplerImages: [
 					"taa"
 				],
@@ -26,7 +26,7 @@
 				program: "bloom_downsample",
 				framebuffer: "bloom_d0",
 				samplerImages: [
-					"bright_color"
+					"taa_copy"
 				],
 				toggleConfig: "enable_bloom"
 			},

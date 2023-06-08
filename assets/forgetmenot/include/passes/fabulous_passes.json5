@@ -2,47 +2,47 @@
 	fabulous: {
 		passes: [
 			{
-				name: "depth_mips_0",
+				name: "hi_depth_levels_0",
 				program: "copy",
-				framebuffer: "depth_mips_0",
+				framebuffer: "hi_depth_levels_0",
 				samplerImages: [
 					"translucent_depth"
 				],
 				lod: 0
 			},
 			{
-				name: "depth_mips_2",
+				name: "hi_depth_levels_2",
 				program: "depth_downsample",
-				framebuffer: "depth_mips_2",
+				framebuffer: "hi_depth_levels_2",
 				samplerImages: [
-					"depth_mips"
+					"hi_depth_levels"
 				],
 				lod: 2
 			},
 			{
-				name: "depth_mips_4",
+				name: "hi_depth_levels_4",
 				program: "depth_downsample",
-				framebuffer: "depth_mips_4",
+				framebuffer: "hi_depth_levels_4",
 				samplerImages: [
-					"depth_mips"
+					"hi_depth_levels"
 				],
 				lod: 4
 			},
 			{
-				name: "depth_mips_6",
+				name: "hi_depth_levels_6",
 				program: "depth_downsample",
-				framebuffer: "depth_mips_6",
+				framebuffer: "hi_depth_levels_6",
 				samplerImages: [
-					"depth_mips"
+					"hi_depth_levels"
 				],
 				lod: 6
 			},
 			{
-				name: "depth_mips_8",
+				name: "hi_depth_levels_8",
 				program: "depth_downsample",
-				framebuffer: "depth_mips_8",
+				framebuffer: "hi_depth_levels_8",
 				samplerImages: [
-					"depth_mips"
+					"hi_depth_levels"
 				],
 				lod: 8
 			},
@@ -75,7 +75,7 @@
 					"transmittance_lut",
 					"sky_display",
 
-					"smoothing"
+					"smooth_uniforms"
 				]
 			},
 			{
@@ -98,13 +98,13 @@
 					"particles_color",
 					"particles_depth",
 
-					"depth_mips",
+					"hi_depth_levels",
 
 					"composite_data",
 
 					"skybox",
 
-					"smoothing"
+					"smooth_uniforms"
 				]
 			},
 			{

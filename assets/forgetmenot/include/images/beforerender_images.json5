@@ -1,7 +1,7 @@
 {
 	images: [
 		{
-			name: "smoothing",
+			name: "smooth_uniforms",
 			lod: 0,
 			width: 4,
 			height: 1,
@@ -25,7 +25,7 @@
 			]
 		},
 		{
-			name: "smoothing_copy",
+			name: "smooth_uniforms_copy",
 			lod: 0,
 			width: 4,
 			height: 1,

@@ -11,8 +11,8 @@
 
 uniform sampler2D u_previous_color;
 
-uniform sampler2D u_main_color;
-uniform sampler2D u_main_depth;
+uniform sampler2D u_solid_color;
+uniform sampler2D u_solid_depth;
 uniform sampler2D u_translucent_color;
 uniform sampler2D u_translucent_depth;
 uniform sampler2D u_entity_color;
@@ -24,13 +24,13 @@ uniform sampler2D u_clouds_depth;
 uniform sampler2D u_particles_color;
 uniform sampler2D u_particles_depth;
 
-uniform sampler2D u_depths;
+uniform sampler2D u_hi_depth_levels;
 
 uniform usampler2D u_data;
 
 uniform samplerCube u_skybox;
 
-uniform sampler2D u_smoothed_uniforms;
+uniform sampler2D u_smooth_uniforms;
 
 in vec2 texcoord;
 
@@ -131,7 +131,7 @@ void main() {
 	// ----------------------------------------------------------------------------------------------------
 	// Refractions
 	vec4 mainColor; 
-	float mainDepth = texture(u_main_depth, texcoord).r;
+	float mainDepth = texture(u_solid_depth, texcoord).r;
 
 	float refractedDepthBack = 1.0;
 	float refractedDepthFront = 1.0;
@@ -160,15 +160,15 @@ void main() {
 				clamp01(sign(mainDepth - translucentDepth))
 			);
 
-			mainColor[channel] = texture(u_main_color, refractCoord)[channel];
+			mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
 		}
 
 		refractedDepthBack = texture(u_translucent_depth, refractCoord).r;
-		refractedDepthFront = texture(u_main_depth, refractCoord).r;
+		refractedDepthFront = texture(u_solid_depth, refractCoord).r;
 
 		mainColor.a = 1.0;
 	} else {
-		mainColor = texture(u_main_color, texcoord);
+		mainColor = texture(u_solid_color, texcoord);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ void main() {
 				windowSpacePos,
 				windowSpaceDir,
 				40,
-				u_depths,
+				u_hi_depth_levels,
 				hitPos
 			);
 
@@ -317,9 +317,9 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Blindness and darkness fog effects
-	float smoothedBlindnessFactor = texelFetch(u_smoothed_uniforms, ivec2(0, 0), 0).r;
-	float smoothedDarknessFactor = texelFetch(u_smoothed_uniforms, ivec2(1, 0), 0).r;
-	float smoothedDarknessPulseFactor = texelFetch(u_smoothed_uniforms, ivec2(2, 0), 0).r;
+	float smoothedBlindnessFactor = texelFetch(u_smooth_uniforms, ivec2(0, 0), 0).r;
+	float smoothedDarknessFactor = texelFetch(u_smooth_uniforms, ivec2(1, 0), 0).r;
+	float smoothedDarknessPulseFactor = texelFetch(u_smooth_uniforms, ivec2(2, 0), 0).r;
 
 	composite = mix(composite, vec3(0.0), smoothstep(0.0, 10.0, blockDistance) * smoothedBlindnessFactor);
 	composite = mix(composite, vec3(0.0), smoothstep(0.0, 5.0 + 20.0 * smoothedDarknessPulseFactor, blockDistance) * smoothedDarknessFactor);

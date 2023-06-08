@@ -37,8 +37,8 @@
 	onInit: {
 		passes: [
 			{
-				name: "clear_smoothing_copy",
-				framebuffer: "smoothing_copy",
+				name: "clear_smooth_uniforms_copy",
+				framebuffer: "smooth_uniforms_copy",
 				program: "frex_clear"
 			},
 			{
@@ -57,8 +57,8 @@
 				program: "frex_clear"
 			},
 			{
-				name: "clear_bright_color",
-				framebuffer: "bright_color",
+				name: "clear_taa_copy",
+				framebuffer: "taa_copy",
 				program: "frex_clear"
 			}
 		]

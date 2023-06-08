@@ -1,24 +1,24 @@
 {
 	framebuffers: [
 		{
-			name: "depth_mips_0",
-			colorAttachments: [{image: "depth_mips", lod: 0}]
+			name: "hi_depth_levels_0",
+			colorAttachments: [{image: "hi_depth_levels", lod: 0}]
 		},
 		{
-			name: "depth_mips_2",
-			colorAttachments: [{image: "depth_mips", lod: 2}]
+			name: "hi_depth_levels_2",
+			colorAttachments: [{image: "hi_depth_levels", lod: 2}]
 		},
 		{
-			name: "depth_mips_4",
-			colorAttachments: [{image: "depth_mips", lod: 4}]
+			name: "hi_depth_levels_4",
+			colorAttachments: [{image: "hi_depth_levels", lod: 4}]
 		},
 		{
-			name: "depth_mips_6",
-			colorAttachments: [{image: "depth_mips", lod: 6}]
+			name: "hi_depth_levels_6",
+			colorAttachments: [{image: "hi_depth_levels", lod: 6}]
 		},
 		{
-			name: "depth_mips_8",
-			colorAttachments: [{image: "depth_mips", lod: 8}]
+			name: "hi_depth_levels_8",
+			colorAttachments: [{image: "hi_depth_levels", lod: 8}]
 		},
 		{
 			name: "sky_display",

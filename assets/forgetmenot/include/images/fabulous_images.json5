@@ -1,7 +1,7 @@
 {
 	images: [
 		{
-			name: "depth_mips",
+			name: "hi_depth_levels",
 			lod: 8,
 			internalFormat: "R32F",
 			pixelFormat: "RED",

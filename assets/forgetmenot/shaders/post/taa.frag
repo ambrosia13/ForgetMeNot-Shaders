@@ -61,10 +61,15 @@ void main() {
 	init();
 
 	#ifdef TAA
+		vec4 color = texture(u_color, texcoord);
+		vec4 previousColor;
+		float depth = texture(u_depth, texcoord).r;
+		float handDepth = texture(u_hand_depth, texcoord).r;
+
 		//#define LONG_EXPOSURE
 		#ifdef LONG_EXPOSURE
 			// Note that if you want long exposure to look good, the
-			// texture formats for `taa` and `bright_color` should
+			// texture formats for `taa` and `taa_copy` should
 			// both be changed to RGB32F.
 
 			fragColor = mix(
@@ -78,20 +83,17 @@ void main() {
 
 			return;
 		#endif
-
-		vec4 color;
-		vec4 previousColor;
+				
+		vec3 screenPos = vec3(texcoord, depth);
 		
-		float handDepth = texture(u_hand_depth, texcoord).r;
-
-		color = texture(u_color, texcoord);
-		color.rgb = toneMap(color.rgb);
-		
-		// how to do temporal reprojection in 3 easy steps
-		vec3 viewPos = setupSceneSpacePos(texcoord, min(texture(u_depth, texcoord).r, handDepth));
+		vec3 viewPos = setupSceneSpacePos(screenPos);
 		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
 		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
 
+		// Fixes hand smearing
+		lastScreenPos = mix(lastScreenPos, screenPos, step(handDepth, 0.99));
+
+		color.rgb = toneMap(color.rgb);
 		previousColor = texture(u_previous_frame, lastScreenPos.xy);
 		previousColor.rgb = toneMap(previousColor.rgb);
 
