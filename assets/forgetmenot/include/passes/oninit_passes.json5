@@ -1,0 +1,31 @@
+{
+	// "On init" and "On resize" pass stages. The use case is
+	// similar enough that I didn't feel the need to make a
+	// distinction.
+	onInit: {
+		passes: [
+			{
+				name: "transmittance_lut",
+				program: "transmittance_lut",
+				framebuffer: "transmittance_lut",
+				width: 256,
+				height: 64,
+				samplerImages: []
+			},
+			{
+				name: "multiscattering_lut",
+				program: "multiscattering_lut",
+				framebuffer: "multiscattering_lut",
+				width: 32,
+				height: 32,
+				samplerImages: [
+					"transmittance_lut"
+				]
+			}
+		]
+	},
+
+	onResize: {
+
+	}
+}

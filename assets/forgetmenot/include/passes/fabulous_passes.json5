@@ -1,0 +1,129 @@
+{
+	fabulous: {
+		passes: [
+			{
+				name: "depth_mips_0",
+				program: "copy",
+				framebuffer: "depth_mips_0",
+				samplerImages: [
+					"translucent_depth"
+				],
+				lod: 0
+			},
+			{
+				name: "depth_mips_2",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_2",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 2
+			},
+			{
+				name: "depth_mips_4",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_4",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 4
+			},
+			{
+				name: "depth_mips_6",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_6",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 6
+			},
+			{
+				name: "depth_mips_8",
+				program: "depth_downsample",
+				framebuffer: "depth_mips_8",
+				samplerImages: [
+					"depth_mips"
+				],
+				lod: 8
+			},
+			{
+				name: "sky_display",
+				program: "sky_display",
+				framebuffer: "sky_display",
+				samplerImages: [
+					"transmittance_lut",
+					"sky_lut",
+					"sky_lut_night",
+				],
+				lod: 0
+			},
+			{
+				name: "deferred_solid",
+				program: "deferred_solid",
+				framebuffer: "deferred_solid",
+				samplerImages: [
+					"solid_color",
+					"solid_data",
+					"solid_depth",
+					"ssao",
+
+					"shadow_map",
+					"shadow_map",
+
+					"skybox",
+
+					"transmittance_lut",
+					"sky_display",
+
+					"smoothing"
+				]
+			},
+			{
+				name: "sort",
+				program: "sort",
+				framebuffer: "sort",
+				samplerImages: [
+					"sort_copy",
+
+					"deferred_solid",
+					"solid_depth",
+					"translucent_color",
+					"translucent_depth",
+					"entity_color",
+					"entity_depth",
+					"weather_color",
+					"weather_depth",
+					"clouds_color",
+					"clouds_depth",
+					"particles_color",
+					"particles_depth",
+
+					"depth_mips",
+
+					"composite_data",
+
+					"skybox",
+
+					"smoothing"
+				]
+			},
+			{
+				name: "motion_blur_and_copy",
+				program: "motion_blur",
+				framebuffer: "copy_to_main",
+				samplerImages: [
+					"sort",
+					"translucent_depth"
+				]
+			},
+			{
+				name: "sort_copy",
+				program: "copy",
+				framebuffer: "sort_copy",
+				samplerImages: [
+					"sort"
+				]
+			}
+		]
+	}
+}

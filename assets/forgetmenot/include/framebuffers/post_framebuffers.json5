@@ -1,0 +1,172 @@
+{
+	framebuffers: [
+		{
+			name: "taa",
+			colorAttachments: [
+				{
+					image: "taa"
+				}
+			]
+		},
+		{
+			name: "bright_color",
+			colorAttachments: [
+				{
+					image: "bright_color", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "bloom_d0",
+			colorAttachments: [
+				{
+					image: "bloom_downsample"
+				}
+			]
+		},
+		{
+			name: "bloom_d1",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 1
+				}
+			]
+		},
+		{
+			name: "bloom_d2",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 2
+				}
+			]
+		},
+		{
+			name: "bloom_d3",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 3
+				}
+			]
+		},
+		{
+			name: "bloom_d4",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 4
+				}
+			]
+		},
+		{
+			name: "bloom_d5",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 5
+				}
+			]
+		},
+		{
+			name: "bloom_d6",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 6
+				}
+			]
+		},
+		{
+			name: "bloom_d7",
+			colorAttachments: [
+				{
+					image: "bloom_downsample", lod: 7
+				}
+			]
+		},
+		{
+			name: "exposure",
+			colorAttachments: [
+				{
+					image: "exposure"
+				}
+			]
+		},
+		{
+			name: "exposure_copy",
+			colorAttachments: [
+				{
+					image: "exposure_copy", clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "bloom_u7",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 7
+				}
+			]
+		},
+		{
+			name: "bloom_u6",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 6
+				}
+			]
+		},
+		{
+			name: "bloom_u5",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 5
+				}
+			]
+		},
+		{
+			name: "bloom_u4",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 4
+				}
+			]
+		},
+		{
+			name: "bloom_u3",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 3
+				}
+			]
+		},
+		{
+			name: "bloom_u2",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 2
+				}
+			]
+		},
+		{
+			name: "bloom_u1",
+			colorAttachments: [
+				{
+					image: "bloom_upsample", lod: 1
+				}
+			]
+		},
+		{
+			name: "bloom_u0",
+			colorAttachments: [
+				{
+					image: "bloom_upsample"
+				}
+			]
+		},
+		{
+			name: "final",
+			colorAttachments: [
+				{
+					image: "final"
+				}
+			]
+		}
+	]
+}

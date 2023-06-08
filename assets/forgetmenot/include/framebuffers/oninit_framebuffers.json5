@@ -1,0 +1,20 @@
+{
+	framebuffers: [
+		{
+			name: "transmittance_lut",
+			colorAttachments: [
+				{
+					image: "transmittance_lut", lod: 0
+				}
+			]
+		},
+		{
+			name: "multiscattering_lut",
+			colorAttachments: [
+				{
+					image: "multiscattering_lut", lod: 0
+				}
+			]
+		}
+	]
+}

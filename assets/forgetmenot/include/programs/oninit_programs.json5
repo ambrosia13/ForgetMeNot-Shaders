@@ -1,0 +1,18 @@
+{
+	programs: [
+		{
+			name: "transmittance_lut",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/gen/transmittance.frag",
+			samplers: []
+		},
+		{
+			name: "multiscattering_lut",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/gen/multiscattering.frag",
+			samplers: [
+				"u_transmittance"
+			]
+		}
+	]
+}

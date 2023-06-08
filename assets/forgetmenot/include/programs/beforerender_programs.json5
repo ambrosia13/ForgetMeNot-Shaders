@@ -1,0 +1,47 @@
+{
+	programs: [
+		{
+			name: "smoothing",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/smoothing.frag",
+			samplers: [
+				"u_smoothing_previous"
+			]
+		},
+		{
+			name: "sky_lut",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/gen/sky.frag",
+			samplers: [
+				"u_transmittance",
+				"u_multiscattering",
+			]
+		},
+		{
+			name: "clouds",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/clouds.frag",
+			samplers: [
+			]
+		},
+		{
+			name: "skybox",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/skybox.frag",
+			samplers: [
+				"u_sky",
+				"u_sky_night",
+				"u_transmittance",
+				"u_clouds",
+			]
+		},
+		{
+			name: "cube_downsample",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/cube_downsample.frag",
+			samplers: [
+				"u_cube"
+			]
+		}
+	]
+}

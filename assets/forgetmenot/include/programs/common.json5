@@ -1,0 +1,13 @@
+{
+	// Copy program used extensively
+	programs: [
+		{
+			name: "copy",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/copy.frag",
+			samplers: [
+				"u_color"
+			]
+		}
+	]
+}

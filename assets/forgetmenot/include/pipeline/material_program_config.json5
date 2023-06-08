@@ -1,0 +1,38 @@
+{
+	materialProgram: {
+		vertexSource: "forgetmenot:shaders/gbuffer/main.vert",
+		fragmentSource: "forgetmenot:shaders/gbuffer/main.frag",
+
+		samplers: [
+			"u_skybox",
+			"u_transmittance",
+			"u_glint",
+			"u_smoothed_uniforms"
+		],
+		samplerImages: [
+			"skybox",
+			"transmittance_lut",
+			"minecraft:textures/misc/enchanted_item_glint.png",
+			"smoothing"
+		]
+	},
+
+	drawTargets: {
+		solidTerrain: "solid_gbuffer",
+		translucentTerrain: "translucent_gbuffer",
+		translucentEntity: "entity_gbuffer",
+		weather: "weather_gbuffer",
+		clouds: "clouds_gbuffer",
+		translucentParticles: "particles_gbuffer"
+	},
+
+	fabulousTargets: {
+		translucent: "translucent_unmanaged",
+		entity: "entity_unmanaged",
+		weather: "weather_unmanaged",
+		clouds: "clouds_unmanaged",
+		particles: "particles_unmanaged"
+	},
+
+	defaultFramebuffer: "solid_unmanaged"
+}

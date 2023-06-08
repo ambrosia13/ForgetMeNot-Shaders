@@ -1,0 +1,8 @@
+{
+	include: [
+		"forgetmenot:include/images/fabulous_images.json5",
+		"forgetmenot:include/framebuffers/fabulous_framebuffers.json5",
+		"forgetmenot:include/programs/fabulous_programs.json5",
+		"forgetmenot:include/passes/fabulous_passes.json5"
+	]
+}

@@ -1,5 +1,4 @@
 {
-	// https://github.com/vram-guild/canvas/blob/1.17/src/main/resources/assets/canvas/pipeline/skyshadow.json5
 	images: [
 		{
 			name: "shadow_map",
@@ -19,6 +18,7 @@
 			]
 		}
 	],
+
 	framebuffers: [
 		{
 			name: "shadow",
@@ -28,6 +28,7 @@
 			},
 		}
 	],
+	
 	skyShadows: {
 		framebuffer: "shadow",
 		allowEntities: true,

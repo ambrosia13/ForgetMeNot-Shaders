@@ -1,0 +1,6 @@
+{
+	include: [
+		"forgetmenot:include/images/material_program_images.json5",
+		"forgetmenot:include/framebuffers/material_program_framebuffers.json5"
+	]
+}

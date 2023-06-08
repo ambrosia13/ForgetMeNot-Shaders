@@ -1,0 +1,251 @@
+{
+	afterRenderHand: {
+		passes: [
+			{
+				name: "taa",
+				program: "taa",
+				framebuffer: "taa",
+				samplerImages: [
+					"solid_color",
+					"bright_color",
+					"translucent_depth",
+					"solid_depth"
+				]
+			},
+			{
+				name: "bright_color",
+				program: "bright_color",
+				framebuffer: "bright_color",
+				samplerImages: [
+					"taa"
+				],
+				lod: 0,
+			},
+			{
+				name: "bloom_d0",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d0",
+				samplerImages: [
+					"bright_color"
+				],
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d1",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d1",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 1,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d2",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d2",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 2,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d3",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d3",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 3,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d4",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d4",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 4,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d5",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d5",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 5,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d6",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d6",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 6,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_d7",
+				program: "bloom_downsample",
+				framebuffer: "bloom_d7",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "exposure",
+				program: "exposure",
+				framebuffer: "exposure",
+				samplerImages: [
+					"bloom_downsample",
+					"exposure_copy"
+				],
+				width: 1,
+				height: 1,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "exposure_copy",
+				program: "copy",
+				framebuffer: "exposure_copy",
+				samplerImages: [
+					"exposure"
+				],
+				width: 1,
+				height: 1,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u7",
+				program: "bloom_upsample_first",
+				framebuffer: "bloom_u7",
+				samplerImages: [
+					"bloom_downsample"
+				],
+				lod: 7,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u6",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u6",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 6,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u5",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u5",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 5,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u4",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u4",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 4,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u3",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u3",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 3,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u2",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u2",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 2,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u1",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u1",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 1,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_u0",
+				program: "bloom_upsample",
+				framebuffer: "bloom_u0",
+				samplerImages: [
+					"bloom_downsample",
+					"bloom_upsample"
+				],
+				lod: 0,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "bloom_merge",
+				program: "bloom_merge",
+				framebuffer: "final",
+				samplerImages: [
+					"taa",
+					"bloom_downsample",
+					"bloom_upsample",
+
+					"sort",
+					"solid_depth"
+				],
+			},
+			{
+				name: "final",
+				program: "final",
+				framebuffer: "copy_to_main",
+				samplerImages: [
+					{
+						default: "final",
+						optionMap: {
+							enable_bloom: [
+								{
+									from: "true",
+									to: "final"
+								},
+								{
+									from: "false",
+									to: "taa"
+								}
+							]
+						}
+					},
+					"exposure"
+				],
+			}
+		]
+	}
+}

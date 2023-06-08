@@ -1,0 +1,160 @@
+{
+	images: [
+		{
+			name: "taa",
+			lod: 0,
+			internalFormat: "RGB16F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "bright_color",
+			lod: 0,
+			internalFormat: "RGB16F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "bloom_downsample",
+			lod: 7,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
+				}
+			]
+		},
+		{
+			name: "exposure",
+			size: 1,
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "exposure_copy",
+			size: 1,
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "bloom_upsample",
+			lod: 7,
+			internalFormat: "RGB16F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
+				}
+			]
+		},
+		{
+			name: "final",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		}
+	]
+}

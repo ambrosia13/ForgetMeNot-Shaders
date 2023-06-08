@@ -1,0 +1,153 @@
+{
+	images: [
+		{
+			name: "smoothing",
+			lod: 0,
+			width: 4,
+			height: 1,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "smoothing_copy",
+			lod: 0,
+			width: 4,
+			height: 1,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "NEAREST"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "NEAREST"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "sky_lut",
+			lod: 0,
+			width: 200,
+			height: 200,
+			internalFormat: "RGB16",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "sky_lut_night",
+			lod: 0,
+			width: 200,
+			height: 200,
+			internalFormat: "RGB16",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				}, 
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				}, 
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "clouds",
+			lod: 0,
+			internalFormat: "RG16",
+			pixelFormat: "RG",
+			pixelDataType: "UNSIGNED_BYTE",
+			width: 64,
+			height: 64,
+			target: "TEXTURE_CUBE_MAP",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				},
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				},
+				{
+					name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
+				}
+			]
+		},
+		{
+			name: "skybox",
+			lod: 7,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			size: 128,
+			target: "TEXTURE_CUBE_MAP",
+			texParams: [
+				{
+					name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_LINEAR"
+				},
+				{
+					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
+				},
+				{
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
+				},
+				{
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
+				},
+				{
+					name: "TEXTURE_WRAP_R", val: "CLAMP_TO_EDGE"
+				}
+			]
+		}
+	]
+}

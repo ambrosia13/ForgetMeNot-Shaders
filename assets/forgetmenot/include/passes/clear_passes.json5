@@ -1,0 +1,66 @@
+{
+	beforeWorldRender: {
+		passes: [
+			{
+				name: "clear_solid_gbuffer",
+				framebuffer: "solid_gbuffer",
+				program: "frex_clear",
+			},
+			{
+				name: "clear_translucent_gbuffer",
+				framebuffer: "translucent_gbuffer",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_particles_gbuffer",
+				framebuffer: "particles_gbuffer",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_entity_gbuffer",
+				framebuffer: "entity_gbuffer",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_clouds_gbuffer",
+				framebuffer: "clouds_gbuffer",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_weather_gbuffer",
+				framebuffer: "weather_gbuffer",
+				program: "frex_clear"
+			}
+		]
+	},
+
+	onInit: {
+		passes: [
+			{
+				name: "clear_smoothing_copy",
+				framebuffer: "smoothing_copy",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_exposure_copy",
+				framebuffer: "exposure_copy",
+				program: "frex_clear"
+			}	
+		]
+	},
+
+	onResize: {
+		passes: [
+			{
+				name: "clear_sort_copy",
+				framebuffer: "sort_copy",
+				program: "frex_clear"
+			},
+			{
+				name: "clear_bright_color",
+				framebuffer: "bright_color",
+				program: "frex_clear"
+			}
+		]
+	}
+}

@@ -1,0 +1,8 @@
+{
+	include: [
+		"forgetmenot:include/images/beforerender_images.json5",
+		"forgetmenot:include/framebuffers/beforerender_framebuffers.json5",
+		"forgetmenot:include/programs/beforerender_programs.json5",
+		"forgetmenot:include/passes/beforerender_passes.json5"
+	]
+}

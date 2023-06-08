@@ -1,0 +1,187 @@
+{
+	framebuffers: [
+		// Solid
+		{
+			name: "solid_gbuffer",
+			depthAttachment: {
+				image: "solid_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "solid_color",
+					clearColor: 0x00000000
+				},
+				{
+					image: "vertex_normal",
+					clearColor: 0x00000000
+				},
+				{
+					image: "composite_data",
+					clearColor: 0x00000000
+				},
+				{
+					image: "solid_data",
+					clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "solid_unmanaged",
+			depthAttachment: {
+				image: "solid_depth"
+			},
+			colorAttachments: [
+				{
+					image: "solid_color"
+				}
+			]
+		},
+
+		// Translucent
+		{
+			name: "translucent_gbuffer",
+			depthAttachment: {
+				image: "translucent_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "translucent_color",
+					clearColor: 0x00000000
+				},
+				{
+					image: "vertex_normal",
+					clearColor: 0x00000000
+				},
+				{
+					image: "composite_data",
+					clearColor: 0x00000000
+				},
+			]
+		},
+		{
+			name: "translucent_unmanaged",
+			depthAttachment: {
+				image: "translucent_depth"
+			},
+			colorAttachments: [
+				{
+					image: "translucent_color"
+				}
+			]
+		},
+
+		// Particles
+		{
+			name: "particles_gbuffer",
+			depthAttachment: {
+				image: "particles_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "particles_color",
+					clearColor: 0x00000000
+				},
+				{
+					image: "vertex_normal",
+					clearColor: 0x00000000
+				},
+				{
+					image: "composite_data",
+					clearColor: 0x00000000
+				},
+			]
+		},
+		{
+			name: "particles_unmanaged",
+			depthAttachment: {
+				image: "particles_depth"
+			},
+			colorAttachments: [
+				{
+					image: "particles_color"
+				}
+			]
+		},
+
+		// Entity
+		{
+			name: "entity_gbuffer",
+			depthAttachment: {
+				image: "entity_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "entity_color",
+					clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "entity_unmanaged",
+			depthAttachment: {
+				image: "entity_depth"
+			},
+			colorAttachments: [
+				{
+					image: "entity_color"
+				}
+			]
+		},
+
+		// Clouds
+		{
+			name: "clouds_gbuffer",
+			depthAttachment: {
+				image: "clouds_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "clouds_color",
+					clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "clouds_unmanaged",
+			depthAttachment: {
+				image: "clouds_depth"
+			},
+			colorAttachments: [
+				{
+					image: "clouds_color"
+				}
+			]
+		},
+
+		// Weather
+		{
+			name: "weather_gbuffer",
+			depthAttachment: {
+				image: "weather_depth", 
+				clearDepth: 1.0
+			},
+			colorAttachments: [
+				{
+					image: "weather_color",
+					clearColor: 0x00000000
+				}
+			]
+		},
+		{
+			name: "weather_unmanaged",
+			depthAttachment: {
+				image: "weather_depth"
+			},
+			colorAttachments: [
+				{
+					image: "weather_color"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,137 @@
+{
+	beforeWorldRender: {
+		passes: [
+			{
+				name: "smoothing",
+				program: "smoothing",
+				framebuffer: "smoothing",
+				width: 4,
+				height: 1,
+				samplerImages: [
+					"smoothing_copy"
+				]
+			},
+			{
+				name: "smoothing_copy",
+				program: "copy",
+				framebuffer: "smoothing_copy",
+				width: 4,
+				height: 1,
+				samplerImages: [
+					"smoothing"
+				]
+			},
+			{
+				name: "sky_lut",
+				program: "sky_lut",
+				framebuffer: "sky_lut",
+				width: 200,
+				height: 200,
+				samplerImages: [
+					"transmittance_lut",
+					"multiscattering_lut"
+				]
+			},
+			{
+				name: "clouds",
+				program: "clouds",
+				framebuffer: "clouds",
+				width: 64,
+				height: 64,
+				samplerImages: [
+				]
+			},
+			{
+				name: "skybox",
+				program: "skybox",
+				framebuffer: "skybox",
+				width: 128,
+				height: 128,
+				lod: 0,
+				samplerImages: [
+					"sky_lut",
+					"sky_lut_night",
+					"transmittance_lut",
+					"clouds",
+				]
+			},
+			{
+				name: "skybox_d1",
+				program: "cube_downsample",
+				framebuffer: "skybox_d1",
+				width: 128,
+				height: 128,
+				lod: 1,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d2",
+				program: "cube_downsample",
+				framebuffer: "skybox_d2",
+				width: 128,
+				height: 128,
+				lod: 2,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d3",
+				program: "cube_downsample",
+				framebuffer: "skybox_d3",
+				width: 128,
+				height: 128,
+				lod: 3,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d4",
+				program: "cube_downsample",
+				framebuffer: "skybox_d4",
+				width: 128,
+				height: 128,
+				lod: 4,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d5",
+				program: "cube_downsample",
+				framebuffer: "skybox_d5",
+				width: 128,
+				height: 128,
+				lod: 5,
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d6",
+				program: "cube_downsample",
+				framebuffer: "skybox_d6",
+				width: 128,
+				height: 128,
+				lod: 6, 
+				samplerImages: [
+					"skybox"
+				]
+			},
+			{
+				name: "skybox_d7",
+				program: "cube_downsample",
+				framebuffer: "skybox_d7",
+				width: 128,
+				height: 128,
+				lod: 7, 
+				samplerImages: [
+					"skybox"
+				]
+			}
+		]
+	}
+}

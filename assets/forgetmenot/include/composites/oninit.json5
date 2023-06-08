@@ -1,0 +1,8 @@
+{
+	include: [
+		"forgetmenot:include/images/oninit_images.json5",
+		"forgetmenot:include/framebuffers/oninit_framebuffers.json5",
+		"forgetmenot:include/programs/oninit_programs.json5",
+		"forgetmenot:include/passes/oninit_passes.json5"
+	]
+}

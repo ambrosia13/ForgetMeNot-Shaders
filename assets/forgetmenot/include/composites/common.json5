@@ -1,0 +1,6 @@
+{
+	include: [
+		"forgetmenot:include/passes/clear_passes.json5",
+		"forgetmenot:include/programs/common.json5"
+	]
+}
