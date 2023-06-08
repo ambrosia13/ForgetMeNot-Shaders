@@ -39,5 +39,12 @@
 		offsetSlopeFactor: 1.1,
 		offsetBiasUnits: 4.0,
 		cascadeRadius: [48, 16, 8]
+	},
+
+	sky: {
+		defaultZenithAngle: {
+			default: 40,
+			option: "sun_angle"
+		}
 	}
 }
