@@ -10,7 +10,7 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 ## how to use third-party shaders with canvas
 
-1. Be sure you're on 1.19.3 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
+1. Be sure you're on 1.19.4 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
 
 2. Install [Fabric](https://fabricmc.net/wiki/install).
 
