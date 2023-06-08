@@ -17,10 +17,10 @@
 			]
 		},
 		{
-			name: "sky_lut",
+			name: "sky_lut_day",
 			colorAttachments: [
 				{
-					image: "sky_lut", lod: 0
+					image: "sky_lut_day", lod: 0
 				},
 				{
 					image: "sky_lut_night", lod: 0

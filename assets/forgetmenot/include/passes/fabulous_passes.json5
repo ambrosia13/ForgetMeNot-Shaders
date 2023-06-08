@@ -52,7 +52,7 @@
 				framebuffer: "sky_display",
 				samplerImages: [
 					"transmittance_lut",
-					"sky_lut",
+					"sky_lut_day",
 					"sky_lut_night",
 				],
 				lod: 0

@@ -49,7 +49,7 @@
 			]
 		},
 		{
-			name: "sky_lut",
+			name: "sky_lut_day",
 			lod: 0,
 			width: 200,
 			height: 200,

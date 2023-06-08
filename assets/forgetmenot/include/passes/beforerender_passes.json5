@@ -22,9 +22,9 @@
 				]
 			},
 			{
-				name: "sky_lut",
-				program: "sky_lut",
-				framebuffer: "sky_lut",
+				name: "sky_lut_day",
+				program: "sky_lut_day",
+				framebuffer: "sky_lut_day",
 				width: 200,
 				height: 200,
 				samplerImages: [
@@ -49,7 +49,7 @@
 				height: 128,
 				lod: 0,
 				samplerImages: [
-					"sky_lut",
+					"sky_lut_day",
 					"sky_lut_night",
 					"transmittance_lut",
 					"clouds",

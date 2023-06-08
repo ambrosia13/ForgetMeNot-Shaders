@@ -9,7 +9,7 @@
 			]
 		},
 		{
-			name: "sky_lut",
+			name: "sky_lut_day",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/gen/sky.frag",
 			samplers: [
@@ -29,7 +29,7 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/skybox.frag",
 			samplers: [
-				"u_sky",
+				"u_sky_day",
 				"u_sky_night",
 				"u_transmittance",
 				"u_clouds",
