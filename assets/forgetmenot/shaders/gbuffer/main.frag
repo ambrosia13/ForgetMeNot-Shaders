@@ -142,8 +142,10 @@ void resolveMaterials() {
 		puddleNoise = smoothstep(0.5 - 0.2 * frx_smoothedThunderGradient, 0.7, puddleNoise);
 
 		float puddles = puddleNoise * rainReflectionFactor;
+		puddles = puddles * (1.0 + frx_smoothedThunderGradient * 0.5);
+		puddles = clamp01(puddles);
 
-		frx_fragRoughness = mix(frx_fragRoughness, 0.0, clamp01(puddles + frx_smoothedThunderGradient * 0.1));
+		frx_fragRoughness = mix(frx_fragRoughness, 0.0, puddles);
 		frx_fragReflectance = mix(frx_fragReflectance, 0.025, puddles);
 		frx_fragNormal = mix(frx_fragNormal, frx_vertexNormal, puddles * 0.75);
 
