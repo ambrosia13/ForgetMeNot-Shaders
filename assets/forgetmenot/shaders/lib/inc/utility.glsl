@@ -134,6 +134,28 @@ vec2 rotate2D(vec2 uv, float angle) {
 	return mat * uv;
 }
 
+mat3 rotationMatrix3D(vec3 axis, float angle) {
+	float c = cos(angle);
+	float s = sin(angle);
+
+	vec3 temp = vec3((1. - c) * axis);
+
+	mat3 m = mat3(0);
+	m[0][0] = c + temp[0] * axis[0];
+	m[0][1] =     temp[0] * axis[1] + s * axis[2];
+	m[0][2] =     temp[0] * axis[2] - s * axis[1];
+
+	m[1][0] =     temp[1] * axis[0] - s * axis[2];
+	m[1][1] = c + temp[1] * axis[1];
+	m[1][2] =     temp[1] * axis[2] + s * axis[0];
+
+	m[2][0] =     temp[2] * axis[0] + s * axis[1];
+	m[2][1] =     temp[2] * axis[1] - s * axis[0];
+	m[2][2] = c + temp[2] * axis[2];
+
+	return m;
+}
+
 vec2 repeatAndMirrorCoords(vec2 uv) {
 	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
 }

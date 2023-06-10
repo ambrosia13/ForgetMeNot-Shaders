@@ -3,6 +3,7 @@
 #include forgetmenot:shaders/lib/inc/fog.glsl
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
+#include forgetmenot:shaders/lib/inc/utility.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl
 #include forgetmenot:shaders/lib/inc/packing.glsl
 #include forgetmenot:shaders/lib/inc/material.glsl
@@ -136,27 +137,23 @@ void main() {
 	float refractedDepthBack = 1.0;
 	float refractedDepthFront = 1.0;
 	
-	if(mainDepth < 1.0) {
-		// refraction is not even close to physical, just as these indices
-		const float refractiveIndices[3] = float[3](
-			1.1, 1.3, 1.5
+	if(mainDepth < 1.0 && material.fragNormal != material.vertexNormal) {
+		vec3 crss = cross(material.fragNormal, material.vertexNormal);
+
+		const float angleMultiplier[3] = float[3](
+			12.0, 16.0, 24.0
 		);
 
-		vec3 normDiff = material.fragNormal - material.vertexNormal;
-		float normDiffLength = length(normDiff);
+		float angle = acos(dot(material.fragNormal, material.vertexNormal));
 
 		vec2 refractCoord;
 
 		for(int channel = 0; channel < 3; ++channel) {
-			vec3 viewDirRefracted = refract(
-				viewDir,
-				normDiff / normDiffLength,
-				1.0 / refractiveIndices[channel]
-			);
+			vec3 viewDirRefracted = rotationMatrix3D(crss, angle * angleMultiplier[channel]) * viewDir;
 
 			refractCoord = mix(
 				texcoord,
-				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 4.0).xy,
+				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * distance(sceneSpacePosBack, sceneSpacePos)).xy,
 				clamp01(sign(mainDepth - translucentDepth))
 			);
 
