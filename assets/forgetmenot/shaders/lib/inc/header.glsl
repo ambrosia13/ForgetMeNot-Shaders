@@ -13,12 +13,6 @@
 
 #include frex:shaders/lib/sample.glsl
 
-#include frex:shaders/lib/noise/noise2d.glsl
-#include frex:shaders/lib/noise/noise3d.glsl
-#include frex:shaders/lib/noise/cellular2d.glsl
-#include frex:shaders/lib/noise/cellular3d.glsl
-#include frex:shaders/lib/noise/cellular2x2x2.glsl
-
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
@@ -48,7 +42,7 @@ vec2 getTaaOffset(in uint frame) {
 	return TAA_OFFSETS[frame % 8u];
 }
 
-// Common between material shaders and pipeline shaders
+// Common between material shaders and pipeline shaders - includes the option includes
 #include forgetmenot:shaders/lib/materials_pipeline_common.glsl
 
 // These will always be needed

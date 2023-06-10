@@ -48,6 +48,20 @@
 	"config.forgetmenot.name.fullbright": "Full Brightness",
 	"config.forgetmenot.desc.fullbright": "Enables fullbright. Please do not enable this option in an unethical situation where it would give you an unfair advantage over other players.",
 
+	"config.forgetmenot.category.rtao": "RTAO",
+
+	"config.forgetmenot.name.rtao": "Raytraced Ambient Occlusion (RTAO)",
+	"config.forgetmenot.desc.rtao": "Enables slow, high-quality ambient occlusion.",
+
+	"config.forgetmenot.name.rtao_strength": "RTAO Strength",
+	"config.forgetmenot.desc.rtao_strength": "Strength of the RTAO: 1.0 for full strength, 0.0 for no strength.",
+
+	"config.forgetmenot.name.rtao_rays": "RTAO Ray Count",
+	"config.forgetmenot.desc.rtao_rays": "The number of rays to cast for RTAO. Huge impact on performance.",
+
+	"config.forgetmenot.name.rtao_ray_steps": "RTAO Ray Step Count",
+	"config.forgetmenot.desc.rtao_ray_steps": "The number of steps to use for each RTAO ray. Big impact on performance.",
+	
 	"config.forgetmenot.category.water": "Water",
 
 	"config.forgetmenot.name.realistic_water": "Realistic Water Waves",

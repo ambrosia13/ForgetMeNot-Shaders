@@ -4,7 +4,14 @@
 Contains various noise functions.
 */
 
+#include frex:shaders/lib/noise/noise2d.glsl
+#include frex:shaders/lib/noise/noise3d.glsl
+
+#include frex:shaders/lib/noise/cellular2d.glsl
 #include frex:shaders/lib/noise/cellular2x2.glsl
+
+#include frex:shaders/lib/noise/cellular3d.glsl
+#include frex:shaders/lib/noise/cellular2x2x2.glsl
 
 // --------------------------------------------------------------------------------------------------------
 // Hash Without Sine from https://www.shadertoy.com/view/4djSRW

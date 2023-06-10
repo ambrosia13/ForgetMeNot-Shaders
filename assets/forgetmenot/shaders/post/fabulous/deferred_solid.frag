@@ -57,6 +57,58 @@ void main() {
 	#endif
 	
 	if(depth < 1.0) {
+		#ifdef RTAO
+			float ambientOcclusion = 1.0;
+
+			const int numAoRays = RTAO_RAYS;
+			const float rayContribution = 1.0 / numAoRays;
+
+			const float aoStrength = RTAO_STRENGTH;
+
+			for(int i = 0; i < numAoRays; i++) {
+				vec3 rayDirWorld = generateCosineVector(material.fragNormal);
+				
+				vec3 rayPosView = setupViewSpacePos(texcoord, depth);
+				vec3 rayDirView = frx_normalModelMatrix * rayDirWorld;
+
+				// prevent rays from going behind the camera
+				if(rayPosView.z + rayDirView.z > 0.0) continue;
+
+				vec3 rayPosScreen = vec3(texcoord, depth);
+				vec3 rayDirScreen = (
+					viewSpaceToScreenSpace(rayPosView + rayDirView) - rayPosScreen
+				);
+
+				float stepLength = 0.3;
+				vec3 successDir = rayDirWorld;
+
+				for(int i = 0; i < RTAO_RAY_STEPS; i++) {
+					rayPosScreen += rayDirScreen * stepLength * interleavedGradient(i);
+
+					if(clamp01(rayPosScreen) != rayPosScreen) {
+						break;
+					} else {
+						float depthQuery = texelFetch(u_depth, ivec2(rayPosScreen.xy * frxu_size), 0).r;
+
+						if(rayPosScreen.z > depthQuery && depthQuery != 1.0) {
+							float linearDepthQuery = linearizeDepth(depthQuery);
+							float linearRayDepth = linearizeDepth(rayPosScreen.z);
+
+							float diff = abs(linearDepthQuery - linearRayDepth);
+							
+							if(diff < 2.0) {
+								ambientOcclusion -= rayContribution * aoStrength;
+							}
+						}
+					}
+
+					stepLength *= 2.0;
+				}
+			}
+		#else
+			float ambientOcclusion = material.vanillaAo;
+		#endif
+
 		color = basicLighting(
 			color,
 			sceneSpacePos,
@@ -64,7 +116,7 @@ void main() {
 			material.fragNormal,
 			material.blockLight,
 			material.skyLight,
-			material.vanillaAo,
+			ambientOcclusion,
 			material.f0,
 			material.roughness,
 			material.sssAmount,

@@ -7,6 +7,7 @@ Common things that should be available to both pipeline and material shaders.
 #include forgetmenot:atmosphere
 #include forgetmenot:clouds
 #include forgetmenot:lighting
+#include forgetmenot:rtao
 #include forgetmenot:water
 #include forgetmenot:camera
 #include forgetmenot:dimensions
