@@ -138,27 +138,47 @@ void main() {
 	float refractedDepthFront = 1.0;
 	
 	if(mainDepth < 1.0 && material.fragNormal != material.vertexNormal) {
-		vec3 crss = cross(material.fragNormal, material.vertexNormal);
-
 		const float angleMultiplier[3] = float[3](
-			12.0, 16.0, 24.0
+			1.1, 1.3, 1.5
 		);
-
-		float angle = acos(dot(material.fragNormal, material.vertexNormal));
-
 		vec2 refractCoord;
 
-		for(int channel = 0; channel < 3; ++channel) {
-			vec3 viewDirRefracted = rotationMatrix3D(crss, angle * angleMultiplier[channel]) * viewDir;
+		#ifdef DEPTH_AWARE_REFRACTIONS
+			vec3 crss = normalize(cross(material.fragNormal, material.vertexNormal));
+			float angle = acos(dot(material.fragNormal, material.vertexNormal));
 
-			refractCoord = mix(
-				texcoord,
-				sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * distance(sceneSpacePosBack, sceneSpacePos)).xy,
-				clamp01(sign(mainDepth - translucentDepth))
-			);
+			for(int channel = 0; channel < 3; ++channel) {
+				vec3 viewDirRefracted = rotationMatrix3D(crss, angle * angleMultiplier[channel]) * viewDir;
+				vec3 sceneSpacePosBackRefracted = sceneSpacePos + viewDirRefracted * distance(sceneSpacePosBack, sceneSpacePos);
 
-			mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
-		}
+				refractCoord = mix(
+					texcoord,
+					sceneSpaceToScreenSpace(sceneSpacePosBackRefracted).xy,
+					clamp01(sign(mainDepth - translucentDepth))
+				);
+
+				mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
+			}
+		#else
+			vec3 normDiff = material.fragNormal - material.vertexNormal;
+			float normDiffLength = length(normDiff);
+
+			for(int channel = 0; channel < 3; ++channel) {
+				vec3 viewDirRefracted = refract(
+					viewDir,
+					normDiff / normDiffLength,
+					1.0 / angleMultiplier[channel]
+				);
+
+				refractCoord = mix(
+					texcoord,
+					sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 4.0).xy,
+					clamp01(sign(mainDepth - translucentDepth))
+				);
+
+				mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
+			}
+		#endif
 
 		refractedDepthBack = texture(u_translucent_depth, refractCoord).r;
 		refractedDepthFront = texture(u_solid_depth, refractCoord).r;
