@@ -26,7 +26,7 @@ struct AtmosphereParams {
 	// Variable describing how many blocks per unit of fog there should
 	// be in the fog calculation. It's a completely arbitrary unit.
 	// Values around 1200 are realistic for normal days, and values
-	// around 200 are good for overcast and foggy days.
+	// around 400 are good for overcast and foggy days.
 	float blocksPerFogUnit;
 } fmn_atmosphereParams;
 
@@ -52,6 +52,13 @@ float _interpolateArray(float x, float[14] values) {
 	float coverage2 = values[(whole + 1) % arraySize];
 	
 	return mix(coverage1, coverage2, part);
+}
+
+AtmosphereParams _paramsMix(AtmosphereParams a, AtmosphereParams b, float x) {
+	return AtmosphereParams(
+		mix(a.cloudCoverage, b.cloudCoverage, x),
+		mix(a.blocksPerFogUnit, b.blocksPerFogUnit, x)
+	);
 }
 
 // Should be called in every program that uses these variables
@@ -80,4 +87,6 @@ void initGlobals() {
 	// fog density
 	fmn_atmosphereParams.blocksPerFogUnit = _interpolateArray(fmn_worldTime, _fogDensityModifiers);
 	fmn_atmosphereParams.blocksPerFogUnit -= 200.0 * fmn_rainFactor;
+
+	fmn_atmosphereParams.blocksPerFogUnit = mix(300.0, fmn_atmosphereParams.blocksPerFogUnit, frx_smoothedEyeBrightness.y);
 }

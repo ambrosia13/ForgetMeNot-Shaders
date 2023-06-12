@@ -1,6 +1,5 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/sky.glsl
-#include forgetmenot:shaders/lib/inc/fog.glsl
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/lib/inc/utility.glsl
@@ -308,9 +307,7 @@ void main() {
 				float undergroundFactor = linearstep(0.0, 0.5, max(frx_smoothedEyeBrightness.y, material.skyLight));
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
-				FogProfile fp = getFogProfile(undergroundFactor);
-
-				float atmosphericFogTransmittance = exp2(-fogDistance / fmn_atmosphereParams.blocksPerFogUnit * fp.density);
+				float atmosphericFogTransmittance = exp2(-fogDistance / fmn_atmosphereParams.blocksPerFogUnit * 4.0);
 
 				vec3 atmosphericFogScattering = atmosphericColor;
 				//if(frx_worldHasSkylight == 1) atmosphericFogScattering *= 4.0;
