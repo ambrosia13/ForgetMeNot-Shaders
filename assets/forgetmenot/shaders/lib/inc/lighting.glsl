@@ -89,12 +89,9 @@ vec3 basicLighting(
 	if(frx_worldHasSkylight == 1) {
 		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + vertexNormal * 0.1, 1.0);
 		int cascade = selectShadowCascade(shadowViewPos);
-		float cascadeF = float(cascade);
 
 		vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
 		vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
-
-		//shadowScreenPos.z -= 0.0005 * (3 - cascade) * (1.0 - NdotL);
 
 		float shadowFactor = 0.0;
 		float penumbraSize = 0.0;
@@ -105,7 +102,7 @@ vec3 basicLighting(
 				vec2 sampleCoord = shadowScreenPos.xy + sampleOffset / SHADOW_MAP_SIZE;
 
 				float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
-				float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * mix(mix(mix(0.5, 1.0, step(0.5, cascadeF)), 2.0, step(1.5, cascadeF)), 3.0, step(2.5, cascadeF));
+				float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * (0.5 + cascade);
 
 				penumbraSize += min(float(cascade), diff / shadowMapSamples);
 			}
@@ -134,19 +131,25 @@ vec3 basicLighting(
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
 		//vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		directLighting = 0.06 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting = 0.07 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
 	// Ambient lighting
 	{
-		vec3 skyLightDir = mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		ambientLighting = textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb * 2.0;
+		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
+		skyLightDir.y = abs(skyLightDir.y); // this prevents bottom faces from being too dark
+
+		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 2.0;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
-		ambientLighting = normalize(ambientLighting) * clamp(length(ambientLighting), 0.0, 1.5);
+		// This is really cursed. If you're reading this in the future, I'm sorry.
+		vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
+		vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
 
-		ambientLighting *= (fragNormal.y * 0.3 + 0.7) * skyLight;
+		ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 2.0);
+
+		ambientLighting *= skyLight;
 
 		if(frx_worldIsNether == 1) {
 			#ifdef NETHER_DIFFUSE
@@ -159,7 +162,7 @@ vec3 basicLighting(
 
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
-		ambientLighting += 2.0 * blockLight * blockLightColor;
+		ambientLighting += 2.0 * blockLight * fmn_blockLightColor;
 		
 		// handheld light
 		{
@@ -183,7 +186,8 @@ vec3 basicLighting(
 	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
 	if(AMBIENT_BRIGHTNESS != 0.0) {
-		totalLighting = max(totalLighting, vec3(0.2) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
+		// Tiny point light around the player so caves aren't completely dark
+		totalLighting = max(totalLighting, vec3(0.2 * (1.0 - skyLight)) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
 	}
 
 	// Night vision

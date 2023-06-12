@@ -154,7 +154,7 @@ void resolveMaterials() {
 
 	if(!isInventory) {
 		// If the current dimension is non-vanilla, use MC's lightmap.
-		if(isModdedDimension) {
+		if(fmn_isModdedDimension) {
 			lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;
 			lightmap *= mix(frx_vertexLight.z, 1.0, frx_matDisableAo);
 
@@ -194,13 +194,13 @@ void resolveMaterials() {
 }
 
 void frx_pipelineFragment() {
-	init();
+	initGlobals();
 	resolveMaterials();
 
 	vec4 color = frx_fragColor;
 
 	// A non-vanilla dimension is loaded, we don't want to touch lighting.
-	if(isModdedDimension) {
+	if(fmn_isModdedDimension) {
 		color.rgb *= lightmap;
 		color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
 	} else if((!frx_renderTargetSolid || frx_isHand)) {

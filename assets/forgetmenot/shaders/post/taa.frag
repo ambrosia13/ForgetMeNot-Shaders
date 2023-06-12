@@ -58,7 +58,7 @@ float taaBlendFactor(in vec2 currentCoord, in vec2 previousCoord) {
 }
 
 void main() {
-	init();
+	initGlobals();
 
 	#ifdef TAA
 		vec4 color = texture(u_color, texcoord);

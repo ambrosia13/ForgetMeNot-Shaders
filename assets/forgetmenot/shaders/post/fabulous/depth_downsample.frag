@@ -5,7 +5,7 @@ uniform sampler2D u_depth_mips;
 layout(location = 0) out float out_minDepth;
 
 void main() {
-	init();
+	initGlobals();
 
 	const int power_of_two = 2;
 	const int cell_size = 1 << power_of_two;

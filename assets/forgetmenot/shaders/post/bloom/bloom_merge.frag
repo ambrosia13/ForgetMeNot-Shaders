@@ -31,7 +31,7 @@ vec4 frx_sampleTentLod(sampler2D tex, vec2 uv, vec2 dist, float lod) {
 }
 
 void main() {
-	init();
+	initGlobals();
 
 	vec4 color = texture(u_color, texcoord);
 

@@ -7,7 +7,7 @@ in vec2 texcoord;
 layout(location = 0) out float fragColor;
 
 void main() {
-	init();
+	initGlobals();
 	
 	ivec2 index = ivec2(gl_FragCoord.xy);
 

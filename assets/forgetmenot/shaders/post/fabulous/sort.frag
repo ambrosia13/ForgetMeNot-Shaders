@@ -52,7 +52,7 @@ void insertLayer(inout vec3 background, inout float backgroundDepth, in vec4 for
 }
 
 void main() {
-	init();
+	initGlobals();
 	vec3 viewDir = getViewDir();
 	vec3 tdata = getTimeOfDayFactors();
 
@@ -89,7 +89,7 @@ void main() {
 	skyboxSharpeningFactor *= smoothstep(0.0, 100.0, length(sceneSpacePos));
 	skyboxSharpeningFactor = mix(skyboxSharpeningFactor, 0.0, frx_skyLightTransitionFactor);
 
-	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 7.0 - skyboxSharpeningFactor).rgb;
+	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 6.0 - skyboxSharpeningFactor).rgb;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Water normals
@@ -286,7 +286,7 @@ void main() {
 		ambientReflectionColor.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
 
 		// blocklight contribution
-		ambientReflectionColor = max(blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
+		ambientReflectionColor = max(fmn_blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
 
 		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
@@ -297,19 +297,20 @@ void main() {
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
 	}
 
-	float blockDistance = min(512.0, rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos))));
+	float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
+	float fogDistance = min(512.0, blockDistance);
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fog
 	#ifdef FOG
-		if(!isModdedDimension) {
+		if(!fmn_isModdedDimension) {
 			if(frx_cameraInFluid == 0) {
 				float undergroundFactor = linearstep(0.0, 0.5, max(frx_smoothedEyeBrightness.y, material.skyLight));
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
 				FogProfile fp = getFogProfile(undergroundFactor);
 
-				float atmosphericFogTransmittance = exp2(-blockDistance / 2500.0 * fp.density);
+				float atmosphericFogTransmittance = exp2(-fogDistance / fmn_atmosphereParams.blocksPerFogUnit * fp.density);
 
 				vec3 atmosphericFogScattering = atmosphericColor;
 				//if(frx_worldHasSkylight == 1) atmosphericFogScattering *= 4.0;
@@ -320,6 +321,10 @@ void main() {
 
 				composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
 			}
+
+			// Border flog
+			float fogFactor = smoothstep(frx_viewDistance - 24.0, frx_viewDistance - 8.0, blockDistance);
+			composite = mix(composite, textureLod(u_skybox, viewDir, 0.0).rgb, fogFactor * (1.0 - floor(compositeDepth)));
 		} else {
 			if(compositeDepth != 1.0) composite = mix(composite, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, length(sceneSpacePos)));
 		}

@@ -5,7 +5,7 @@ uniform mat4 frxu_frameProjectionMatrix;
 out vec2 texcoord;
 
 void main() {
-	init();
+	initGlobals();
 
 	vec2 screen = (frxu_frameProjectionMatrix * vec4(in_vertex.xy * frxu_size, 0.0, 1.0)).xy;
 

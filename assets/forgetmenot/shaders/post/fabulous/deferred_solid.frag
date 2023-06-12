@@ -27,7 +27,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-	init();
+	initGlobals();
 
 	// Sample everything first, use them later to give the GPU time to read the textures
 	// packedSample is sampling an RGB32UI image so we put the most distance between the sample and the usage
@@ -39,7 +39,7 @@ void main() {
 	vec3 viewDir = getViewDir();
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
 
-	if(isModdedDimension) {
+	if(fmn_isModdedDimension) {
 		color = mix(color, pow(color, vec3(2.2)), floor(depth));
 		fragColor = vec4(color, 1.0);
 		return;

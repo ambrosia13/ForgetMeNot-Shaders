@@ -51,7 +51,7 @@ vec4 blur25(in sampler2D tex, in vec2 coord, in vec2 resolution, in vec2 directi
 }
 
 void main() {
-	init();
+	initGlobals();
 	
 	#ifdef MOTION_BLUR
 		vec3 viewPos = setupSceneSpacePos(texcoord, texture(u_depth, texcoord).r);

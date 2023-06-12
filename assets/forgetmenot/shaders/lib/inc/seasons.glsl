@@ -6,7 +6,7 @@ Contains functions for season coloring.
 
 
 vec4 getSeasonFactors(out float time) {
-	time = frx_worldDay + frx_worldTime;
+	time = fmn_worldTime;
 
 	#if STARTING_SEASON == SEASON_SUMMER
 		time += SEASON_LENGTH + TRANSITION_LENGTH;

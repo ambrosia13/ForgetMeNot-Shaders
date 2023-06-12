@@ -53,10 +53,10 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.noiseUpperBound = 1.0;
 	
 	cloudLayer.domainMult = vec2(1.0);
-	cloudLayer.rangeMult = mix(smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01), 1.0, 0.5 * fmn_rainFactor);
+	cloudLayer.rangeMult = 1.0;
 
 	cloudLayer.domainShift = vec2(0.0);
-	cloudLayer.rangeShift = 0.0;
+	cloudLayer.rangeShift = fmn_atmosphereParams.cloudCoverage;
 
 	cloudLayer.curlNoiseAmount = 0.0001;
 	cloudLayer.curlNoiseFrequency = 3.5;
@@ -143,7 +143,7 @@ float sampleCloudNoise(in CloudLayer cloudLayer, in sampler2D noiseTexture) {
 }
 
 vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLayer) {
-	if(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM) > 0.0) {
+	if(viewDir.y < -0.05) {
 		return vec2(1.0, 0.0);
 	}
 
@@ -170,13 +170,14 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
 
-		lightOpticalDepth *= 1.0 + noise;
+		lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 3);
+		lightOpticalDepth = max(0.0, lightOpticalDepth);
 
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.3);
 	}
 
 	return vec2(
-		mix(transmittance, 1.0, linearstep(0.05, 0.0, viewDir.y)),
+		mix(transmittance, 1.0, linearstep(0.01, -0.01, viewDir.y)),
 		scattering
 	);
 }
@@ -191,7 +192,7 @@ vec3 getSkyColor(
 	in sampler2D skyLutDay,
 	in sampler2D skyLutNight
 ) {
-	if(isModdedDimension) {
+	if(fmn_isModdedDimension) {
 		return pow(frx_fogColor.rgb, vec3(2.2));
 	}
 
@@ -209,8 +210,8 @@ vec3 getSkyColor(
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
 		
-		vec3 sun = sunBrightness * step(0.9993, dot(viewDir, sunVector)) * sunTransmittance;
-		vec3 moon = sunBrightness * step(0.9995, dot(viewDir, moonVector)) * moonTransmittance;
+		vec3 sun = sunBrightness * step(0.9997, dot(viewDir, sunVector)) * sunTransmittance;
+		vec3 moon = sunBrightness * step(0.9998, dot(viewDir, moonVector)) * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
@@ -300,7 +301,7 @@ vec3 getClouds(
 
 	in vec3 skyColor
 ) {
-	if(frx_worldHasSkylight == 0 || isModdedDimension) {
+	if(frx_worldHasSkylight == 0 || fmn_isModdedDimension) {
 		return skyColor;
 	}
 
@@ -325,8 +326,6 @@ vec3 getClouds(
 		skyLutDay,
 		skyLutNight
 	);
-
-	ambientColor = saturation(ambientColor, 0.5) * 1.5;
 
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
 		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))

@@ -8,7 +8,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-	init();
+	initGlobals();
 
 	vec4 current = textureLod(u_color, texcoord, frxu_lod);
 

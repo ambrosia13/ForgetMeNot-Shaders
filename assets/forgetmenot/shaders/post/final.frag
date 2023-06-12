@@ -17,7 +17,7 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.25, 0.9, 1.7, 0.75);
+	return ExposureProfile(0.3, 0.9, 2.5, 0.75);
 }
 ExposureProfile getNetherExposureProfile() {
 	return ExposureProfile(0.2, 1.5, 2.0, 1.0);
@@ -63,7 +63,7 @@ vec3 tonemap(vec3 color) {
 }
 
 void main() {
-	init();
+	initGlobals();
 
 	vec3 color = texture(u_color, texcoord).rgb;
 
