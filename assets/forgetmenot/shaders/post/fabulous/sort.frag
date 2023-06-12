@@ -130,13 +130,13 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Refractions
-	vec4 mainColor; 
-	float mainDepth = texture(u_solid_depth, texcoord).r;
+	vec4 solidColor; 
+	float solidDepth = texture(u_solid_depth, texcoord).r;
 
 	float refractedDepthBack = 1.0;
 	float refractedDepthFront = 1.0;
 	
-	if(mainDepth < 1.0 && material.fragNormal != material.vertexNormal) {
+	if(solidDepth < 1.0 && material.fragNormal != material.vertexNormal) {
 		const float angleMultiplier[3] = float[3](
 			1.1, 1.3, 1.5
 		);
@@ -153,10 +153,10 @@ void main() {
 				refractCoord = mix(
 					texcoord,
 					sceneSpaceToScreenSpace(sceneSpacePosBackRefracted).xy,
-					clamp01(sign(mainDepth - translucentDepth))
+					clamp01(sign(solidDepth - translucentDepth))
 				);
 
-				mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
+				solidColor[channel] = texture(u_solid_color, refractCoord)[channel];
 			}
 		#else
 			vec3 normDiff = material.fragNormal - material.vertexNormal;
@@ -172,25 +172,28 @@ void main() {
 				refractCoord = mix(
 					texcoord,
 					sceneSpaceToScreenSpace(sceneSpacePosBack + viewDirRefracted * normDiffLength * 4.0).xy,
-					clamp01(sign(mainDepth - translucentDepth))
+					clamp01(sign(solidDepth - translucentDepth))
 				);
 
-				mainColor[channel] = texture(u_solid_color, refractCoord)[channel];
+				solidColor[channel] = texture(u_solid_color, refractCoord)[channel];
 			}
 		#endif
 
-		refractedDepthBack = texture(u_translucent_depth, refractCoord).r;
-		refractedDepthFront = texture(u_solid_depth, refractCoord).r;
+		refractedDepthBack = texture(u_solid_depth, refractCoord).r;
+		refractedDepthFront = texture(u_translucent_depth, refractCoord).r;
 
-		mainColor.a = 1.0;
+		solidColor.a = 1.0;
 	} else {
-		mainColor = texture(u_solid_color, texcoord);
+		solidColor = texture(u_solid_color, texcoord);
+
+		refractedDepthBack = solidDepth;
+		refractedDepthFront = translucentDepth;
 	}
 
 	// ----------------------------------------------------------------------------------------------------
 	// Fabulous blending
-	vec3 composite = mainColor.rgb;
-	float compositeDepth = mainDepth;
+	vec3 composite = solidColor.rgb;
+	float compositeDepth = solidDepth;
 
 	// Disable blending on water, because water is blended separately
 	translucentColor.a *= step(material.isWater, 0.5);
