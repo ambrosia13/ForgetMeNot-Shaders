@@ -1,7 +1,6 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/lib/inc/sky.glsl
-#include forgetmenot:shaders/lib/inc/fog.glsl
 
 uniform sampler2D u_color;
 uniform sampler2D u_downsampled;

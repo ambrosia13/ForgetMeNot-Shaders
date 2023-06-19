@@ -53,7 +53,7 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.noiseUpperBound = 1.0;
 	
 	cloudLayer.domainMult = vec2(1.0);
-	cloudLayer.rangeMult = 1.0;
+	cloudLayer.rangeMult = mix(smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01), 1.0, smoothstep(0.2, 0.4, fmn_atmosphereParams.cloudCoverage));
 
 	cloudLayer.domainShift = vec2(0.0);
 	cloudLayer.rangeShift = fmn_atmosphereParams.cloudCoverage;

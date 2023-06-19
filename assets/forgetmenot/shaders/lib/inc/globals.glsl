@@ -32,8 +32,8 @@ struct AtmosphereParams {
 
 // just for utility
 const float _coverageModifiers[] = float[](
-	-0.15, 0.0, 0.1, 0.3, 1.0, 0.1, -0.35,
-	-0.2, -0.3, -0.1, 0.2, 0.4, 0.2, 0.0
+	-0.15, 0.0, 0.1, 0.3, 1.0, 0.1, -0.5,
+	-0.1, -0.2, 0.0, 0.3, 0.5, 0.1, -0.1
 );
 const float _fogDensityModifiers[] = float[](
 	1200.0, 1000.0, 800.0, 700.0, 400.0, 900.0, 1400.0,

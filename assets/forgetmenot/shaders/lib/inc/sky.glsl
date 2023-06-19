@@ -35,19 +35,25 @@ const float mieAbsorptionBase = 4.4;
 
 const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
 
+// Code from Jessie
+// https://www.patreon.com/user?u=49201970
+float kleinNishinaPhase(float cosTheta, float g) {
+	float e = 1.0;
+	for (int i = 0; i < 8; ++i) {
+		float gFromE = 1.0 / e - 2.0 / log(2.0 * e + 1.0) + 1.0;
+		float deriv = 4.0 / ((2.0 * e + 1.0) * pow2(log(2.0 * e + 1.0))) - 1.0 / pow2(e);
+		if (abs(deriv) < 0.00000001) break;
+		e = e - (gFromE - g) / deriv;
+	}
+
+	return e / (2.0 * PI * (e * (1.0 - cosTheta) + 1.0) * log(2.0 * e + 1.0));
+}
+
 float getMiePhase(float cosTheta) {
-	const float g = 0.8;
-	
-	float num = (1.0 - g * g) * (1.0 + cosTheta * cosTheta);
-	float denom = (2.0 + g * g) * pow((1.0 + g * g - 2.0 * g * cosTheta), 1.5);
-	
-	return 0.11936620732 * num / denom;
+	return kleinNishinaPhase(cosTheta, 0.8);
 }
 float getMiePhase(float cosTheta, float g) {	
-	float num = (1.0 - g * g) * (1.0 + cosTheta * cosTheta);
-	float denom = (2.0 + g * g) * pow((1.0 + g * g - 2.0 * g * cosTheta), 1.5);
-	
-	return 0.11936620732 * num / denom;
+	return kleinNishinaPhase(cosTheta, g);
 }
 
 float getRayleighPhase(float cosTheta) {
