@@ -90,6 +90,7 @@ void main() {
 
 	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 6.0 - skyboxSharpeningFactor).rgb;
 	vec3 atmosphericColorTop = textureLod(u_skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
+	float atmosphereBrightness = frx_luminance(atmosphericColorTop);
 
 	// ----------------------------------------------------------------------------------------------------
 	// Water normals
@@ -217,7 +218,7 @@ void main() {
 		vec3 waterFogColor = WATER_COLOR;
 
 		composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.2));
-		composite = mix(waterFogColor * frx_luminance(atmosphericColorTop) * 1.5, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT));
+		composite = mix(waterFogColor * atmosphereBrightness * 1.5, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT));
 
 		vec3 refractedViewDir = refract(viewDir, material.fragNormal, 1.33);
 
@@ -250,7 +251,7 @@ void main() {
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
-		vec3 ambientReflectionColor = WATER_COLOR * frx_luminance(atmosphericColorTop);
+		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
 		
 
