@@ -144,7 +144,7 @@
 					descriptionKey: "config.forgetmenot.desc.realistic_water"
 				},
 				water_dirt_amount: {
-					default: 0.15,
+					default: 0.02,
 					min: 0.01,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_dirt_amount",
@@ -158,14 +158,14 @@
 					descriptionKey: "config.forgetmenot.desc.water_color_r"
 				},
 				water_color_g: {
-					default: 0.2,
+					default: 0.3,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_color_g",
 					descriptionKey: "config.forgetmenot.desc.water_color_g"
 				},
 				water_color_b: {
-					default: 0.25,
+					default: 0.375,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_color_b",

@@ -89,6 +89,7 @@ void main() {
 	skyboxSharpeningFactor = mix(skyboxSharpeningFactor, 0.0, frx_skyLightTransitionFactor);
 
 	vec3 atmosphericColor = textureLod(u_skybox, viewDir, 6.0 - skyboxSharpeningFactor).rgb;
+	vec3 atmosphericColorTop = textureLod(u_skybox, vec3(0.0, 1.0, 0.0), 7).rgb;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Water normals
@@ -142,6 +143,7 @@ void main() {
 		);
 		vec2 refractCoord;
 
+		#define DEPTH_AWARE_REFRACTIONS
 		#ifdef DEPTH_AWARE_REFRACTIONS
 			vec3 crss = normalize(cross(material.fragNormal, material.vertexNormal));
 			float angle = acos(dot(material.fragNormal, material.vertexNormal));
@@ -203,37 +205,42 @@ void main() {
 	insertLayer(composite, compositeDepth, entityColor, entityDepth);
 
 	sceneSpacePosBack = setupSceneSpacePos(texcoord, refractedDepthBack);
-	sceneSpacePos = setupSceneSpacePos(texcoord, refractedDepthFront);
+	sceneSpacePos = setupSceneSpacePos(texcoord, compositeDepth);
 
 	// Initialize fog transmittance used for bloomy fog
 	float fogTransmittance = 1.0;
 
 	// ----------------------------------------------------------------------------------------------------
-	// Water blending
-	if(material.isWater > 0.5 || frx_cameraInWater == 1) {
+	// Water effects
+	if(frx_cameraInWater == 1) {
+		float waterFogDistance = length(sceneSpacePos);
+		vec3 waterFogColor = WATER_COLOR;
+
+		composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.2));
+		composite = mix(waterFogColor * frx_luminance(atmosphericColorTop) * 1.5, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT));
+
+		vec3 refractedViewDir = refract(viewDir, material.fragNormal, 1.33);
+
+		if(solidDepth == 1.0) composite = textureLod(u_skybox, refractedViewDir, 0.0).rgb;
+		if(refractedViewDir.y <= 0.001 && material.isWater > 0.5) {
+			composite = waterFogColor;
+			material.f0 = 0.95;
+		}
+	} else if(material.isWater > 0.5) {
 		// These should eventually be configurable
-		float waterFogDistance = mix(distance(sceneSpacePosBack, sceneSpacePos), length(sceneSpacePos * 0.3), float(frx_cameraInWater));
-		waterFogDistance = max(waterFogDistance, 0.01);
+		float waterFogDistance = distance(sceneSpacePosBack, sceneSpacePos);
 
-		float sunLightFactor = linearstep(0.0, 0.2, frx_skyLightVector.y);
-
-		vec3 underwaterFogColor = WATER_COLOR * sunLightFactor;
-		underwaterFogColor *= (1.0 + 3.0 * getMiePhase(dot(viewDir, frx_skyLightVector), 0.75) * sunLightFactor);
-		underwaterFogColor = max(underwaterFogColor, vec3(0.01));
-
-		vec3 waterFogColor = mix(translucentColor.rgb, underwaterFogColor, frx_cameraInWater);
+		vec3 waterFogColor = translucentColor.rgb;
 
 		// Water absorption
 		composite *= mix(fNormalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.5));
 		
 		// Water scattering
 		float waterFogTransmittance = exp(-waterFogDistance * (WATER_DIRT_AMOUNT));
-		
-		if(frx_cameraInFluid == 1) fogTransmittance = min(fogTransmittance, waterFogTransmittance);
-		
-		composite = mix(waterFogColor * max(material.skyLight, frx_smoothedEyeBrightness.y), composite, waterFogTransmittance * 0.99 + 0.01);
+				
+		composite = mix(waterFogColor, composite, waterFogTransmittance * 0.99 + 0.01);
 	}
-	
+
 	// ----------------------------------------------------------------------------------------------------
 	// Reflections
 	if(compositeDepth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
@@ -243,7 +250,9 @@ void main() {
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
-		vec3 ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
+		vec3 ambientReflectionColor = WATER_COLOR * 0.2;
+		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
+		
 
 		// number of rays to cast depends on roughness (goodbye performance)
 		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
