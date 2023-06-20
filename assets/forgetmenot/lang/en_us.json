@@ -28,6 +28,9 @@
 	"config.forgetmenot.name.curl_noise": "Curl Noise",
 	"config.forgetmenot.desc.curl_noise": "Wind-like noise effects on the clouds. Slightly affects performance.",
 
+	"config.forgetmenot.name.clouds_contribute_to_light": "Clouds Contribute To Ambient Lighting",
+	"config.forgetmenot.desc.clouds_contribute_to_light": "Controls whether clouds affect lighting and reflections.",
+
 	"config.forgetmenot.category.lighting": "Lighting",
 
 	"config.forgetmenot.name.emission": "Emission Brightness",

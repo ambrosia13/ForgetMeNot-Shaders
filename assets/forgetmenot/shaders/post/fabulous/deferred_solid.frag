@@ -126,7 +126,7 @@ void main() {
 			u_shadow_map,
 			u_shadow_tex,
 			true,
-			8,
+			16,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r
 		);
 		

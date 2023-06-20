@@ -288,6 +288,28 @@ vec3 getSkyColor(
 	);
 }
 
+vec3 getSkyColor(
+	in vec3 viewDir, 
+	in float sunBrightness,
+
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight
+) {
+	vec3 temp = getValFromTLUT(transmittanceLut, skyViewPos, viewDir);
+
+	return getSkyColor(
+		viewDir,
+		temp,
+		nightAdjust(temp),
+		sunBrightness,
+		false,
+
+		skyLutDay,
+		skyLutNight
+	);
+}
+
 vec3 getClouds(
 	in vec3 viewDir,
 	in vec3 sunTransmittance,

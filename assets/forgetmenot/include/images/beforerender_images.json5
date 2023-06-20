@@ -51,8 +51,8 @@
 		{
 			name: "sky_lut_day",
 			lod: 0,
-			width: 200,
-			height: 200,
+			width: 400,
+			height: 400,
 			internalFormat: "RGB16",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
@@ -75,8 +75,8 @@
 		{
 			name: "sky_lut_night",
 			lod: 0,
-			width: 200,
-			height: 200,
+			width: 400,
+			height: 400,
 			internalFormat: "RGB16",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",

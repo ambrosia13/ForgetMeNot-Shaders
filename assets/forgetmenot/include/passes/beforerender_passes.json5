@@ -25,8 +25,8 @@
 				name: "sky_lut_day",
 				program: "sky_lut_day",
 				framebuffer: "sky_lut_day",
-				width: 200,
-				height: 200,
+				width: 400,
+				height: 400,
 				samplerImages: [
 					"transmittance_lut",
 					"multiscattering_lut"

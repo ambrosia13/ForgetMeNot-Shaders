@@ -58,6 +58,11 @@
 					nameKey: "config.forgetmenot.name.curl_noise",
 					descriptionKey: "config.forgetmenot.desc.curl_noise"
 				},
+				clouds_contribute_to_light: {
+					default: true,
+					nameKey: "config.forgetmenot.name.clouds_contribute_to_light",
+					descriptionKey: "config.forgetmenot.desc.clouds_contribute_to_light"
+				},
 			}
 		},
 		{

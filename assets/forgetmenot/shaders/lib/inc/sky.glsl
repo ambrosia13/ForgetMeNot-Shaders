@@ -18,12 +18,6 @@ const float atmosphereRadiusMM = 6.460;
 // 500M above the ground.
 const vec3 skyViewPos = vec3(0.0, groundRadiusMM + 0.0005, 0.0);
 
-const vec2 tLUTRes = vec2(256.0, 64.0);
-const vec2 msLUTRes = vec2(32.0, 32.0);
-// Doubled the vertical skyLUT res from the paper, looks way
-// better for sunrise.
-const vec2 skyLUTRes = vec2(200.0, 200.0);
-
 const vec3 groundAlbedo = vec3(0.0);
 
 // These are per megameter.
@@ -35,7 +29,7 @@ const float mieAbsorptionBase = 4.4;
 
 const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
 
-// Code from Jessie
+// Phase function from Jessie
 // https://www.patreon.com/user?u=49201970
 float kleinNishinaPhase(float cosTheta, float g) {
 	float e = 1.0;
@@ -50,7 +44,7 @@ float kleinNishinaPhase(float cosTheta, float g) {
 }
 
 float getMiePhase(float cosTheta) {
-	return kleinNishinaPhase(cosTheta, 0.8);
+	return kleinNishinaPhase(cosTheta, 0.76385);
 }
 float getMiePhase(float cosTheta, float g) {	
 	return kleinNishinaPhase(cosTheta, g);
@@ -105,18 +99,18 @@ vec3 getValFromTLUT(sampler2D tex, vec3 pos, vec3 sunDir) {
 	float height = length(pos);
 	vec3 up = pos / height;
 	float sunCosZenithAngle = dot(sunDir, up);
-	vec2 uv = vec2(tLUTRes.x * clamp(0.5 + 0.5 * sunCosZenithAngle, 0.0, 1.0),
-				tLUTRes.y * max(0.0, min(1.0, (height - groundRadiusMM) / (atmosphereRadiusMM - groundRadiusMM))));
-	uv /= tLUTRes;
+	vec2 uv = vec2(clamp(0.5 + 0.5 * sunCosZenithAngle, 0.0, 1.0),
+				max(0.0, min(1.0, (height - groundRadiusMM) / (atmosphereRadiusMM - groundRadiusMM))));
+				
 	return texture(tex, uv).rgb;
 }
 vec3 getValFromMultiScattLUT(sampler2D tex, vec3 pos, vec3 sunDir) {
 	float height = length(pos);
 	vec3 up = pos / height;
 	float sunCosZenithAngle = dot(sunDir, up);
-	vec2 uv = vec2(msLUTRes.x * clamp(0.5 + 0.5 * sunCosZenithAngle, 0.0, 1.0),
-				msLUTRes.y * max(0.0, min(1.0, (height - groundRadiusMM) / (atmosphereRadiusMM - groundRadiusMM))));
-	uv /= msLUTRes;
+	vec2 uv = vec2(clamp(0.5 + 0.5 * sunCosZenithAngle, 0.0, 1.0),
+				max(0.0, min(1.0, (height - groundRadiusMM) / (atmosphereRadiusMM - groundRadiusMM))));
+	
 	return texture(tex, uv).rgb;
 }
 

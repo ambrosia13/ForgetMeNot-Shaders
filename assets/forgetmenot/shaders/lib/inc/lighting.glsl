@@ -48,6 +48,11 @@ vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
 	return shadowScreenPos;
 }
 
+float cascadeFactor(int x) {
+	vec4 a = vec4(frx_viewDistance, 96.0, 32.0, 12.0);
+	return a[x];
+}
+
 vec3 basicLighting(
 	in vec3 albedo,
 
@@ -95,24 +100,25 @@ vec3 basicLighting(
 
 		float shadowFactor = 0.0;
 		float penumbraSize = 0.0;
-		
+
 		if(doPcss) {
-			for(int i = 0; i < shadowMapSamples; i++) {
-				vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i + shadowMapSamples)) * TAU) * (10.0 * cascade);
+			int pcssSamples = shadowMapSamples * 1;
+
+			for(int i = 0; i < pcssSamples; i++) {
+				vec2 sampleOffset = diskSampling(i, pcssSamples, sqrt(interleavedGradient(i + pcssSamples)) * TAU) * (250.0 / cascadeFactor(cascade));
 				vec2 sampleCoord = shadowScreenPos.xy + sampleOffset / SHADOW_MAP_SIZE;
 
 				float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
-				float diff = max(0.0, shadowScreenPos.z - depthQuery) * 500.0 * (0.5 + cascade);
+				float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeFactor(cascade);
 
-				penumbraSize += min(float(cascade), diff / shadowMapSamples);
+				penumbraSize += diff / pcssSamples;
 			}
 		} else {
 			penumbraSize = 2.0;
 		}
 
+		penumbraSize = max(1.0, penumbraSize);
 		penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(vertexNormal, frx_skyLightVector)) * 0.5 + 0.5));
-
-		penumbraSize *= 0.75;
 
 		for(int i = 0; i < shadowMapSamples; i++) {
 			vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;

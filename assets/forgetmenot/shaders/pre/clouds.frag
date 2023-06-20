@@ -36,10 +36,19 @@ void main() {
 		createCumulusCloudLayer(viewDirs[5])
 	);
 
-	fragColor0 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cloudLayers[0]));
-	fragColor1 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cloudLayers[1]));
-	fragColor2 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cloudLayers[2]));
-	fragColor3 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cloudLayers[3]));
-	fragColor4 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cloudLayers[4]));
-	fragColor5 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cloudLayers[5]));
+	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
+		fragColor0 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cloudLayers[0]));
+		fragColor1 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cloudLayers[1]));
+		fragColor2 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cloudLayers[2]));
+		fragColor3 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cloudLayers[3]));
+		fragColor4 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cloudLayers[4]));
+		fragColor5 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cloudLayers[5]));
+	#else
+		fragColor0 = vec2(1.0, 0.0);
+		fragColor1 = vec2(1.0, 0.0);
+		fragColor2 = vec2(1.0, 0.0);
+		fragColor3 = vec2(1.0, 0.0);
+		fragColor4 = vec2(1.0, 0.0);
+		fragColor5 = vec2(1.0, 0.0);
+	#endif
 }
