@@ -413,6 +413,61 @@ vec3 getSkyAndClouds(
 }
 
 vec3 getSkyAndClouds(
+	in vec3 viewDir,
+	in vec2 cloudsTransmittanceAndScattering,
+
+	in sampler2D transmittanceLut,
+	in sampler2D skyLutDay,
+	in sampler2D skyLutNight,
+
+	in float sunAmount,
+	in bool renderStars
+) {
+	vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, viewDir);
+	vec3 moonTransmittance = nightAdjust(sunTransmittance);
+
+	vec3 color = getSkyColor(
+		viewDir,
+		sunTransmittance,
+		moonTransmittance,
+		sunAmount,
+		renderStars,
+		skyLutDay,
+		skyLutNight
+	);
+
+	if(frx_worldHasSkylight == 1) {
+		CloudLayer cirrusClouds = createCirrusCloudLayer(viewDir);
+		CloudLayer cumulusClouds = createCumulusCloudLayer(viewDir);
+
+		color = getClouds(
+			viewDir,
+			sunTransmittance,
+			moonTransmittance,
+			cloudsTransmittanceAndScattering,
+			cirrusClouds,
+			transmittanceLut,
+			skyLutDay,
+			skyLutNight,
+			color
+		);
+		color = getClouds(
+			viewDir,
+			sunTransmittance,
+			moonTransmittance,
+			cloudsTransmittanceAndScattering,
+			cumulusClouds,
+			transmittanceLut,
+			skyLutDay,
+			skyLutNight,
+			color
+		);
+	}
+
+	return color * 0.5;
+}
+
+vec3 getSkyAndClouds(
 	in vec3 viewDir, 
 
 	in sampler2D transmittanceLut,

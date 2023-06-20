@@ -27,7 +27,7 @@ void main() {
 
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	CloudLayer[] cloudLayers = CloudLayer[6] (
+	CloudLayer[] cumulusCloudLayers = CloudLayer[6] (
 		createCumulusCloudLayer(viewDirs[0]),
 		createCumulusCloudLayer(viewDirs[1]),
 		createCumulusCloudLayer(viewDirs[2]),
@@ -36,13 +36,22 @@ void main() {
 		createCumulusCloudLayer(viewDirs[5])
 	);
 
+	CloudLayer[] cirrusCloudLayers = CloudLayer[6] (
+		createCirrusCloudLayer(viewDirs[0]),
+		createCirrusCloudLayer(viewDirs[1]),
+		createCirrusCloudLayer(viewDirs[2]),
+		createCirrusCloudLayer(viewDirs[3]),
+		createCirrusCloudLayer(viewDirs[4]),
+		createCirrusCloudLayer(viewDirs[5])
+	);
+
 	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
-		fragColor0 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cloudLayers[0]));
-		fragColor1 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cloudLayers[1]));
-		fragColor2 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cloudLayers[2]));
-		fragColor3 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cloudLayers[3]));
-		fragColor4 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cloudLayers[4]));
-		fragColor5 = sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cloudLayers[5]));
+		fragColor0 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cumulusCloudLayers[0])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[0], cirrusCloudLayers[0])));
+		fragColor1 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cumulusCloudLayers[1])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[1], cirrusCloudLayers[1])));
+		fragColor2 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cumulusCloudLayers[2])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[2], cirrusCloudLayers[2])));
+		fragColor3 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cumulusCloudLayers[3])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[3], cirrusCloudLayers[3])));
+		fragColor4 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cumulusCloudLayers[4])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[4], cirrusCloudLayers[4])));
+		fragColor5 = min(sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cumulusCloudLayers[5])), sqrt(getCloudsTransmittanceAndScattering(viewDirs[5], cirrusCloudLayers[5])));
 	#else
 		fragColor0 = vec2(1.0, 0.0);
 		fragColor1 = vec2(1.0, 0.0);
