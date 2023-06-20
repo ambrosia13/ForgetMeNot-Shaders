@@ -250,7 +250,7 @@ void main() {
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
-		vec3 ambientReflectionColor = WATER_COLOR * 0.2;
+		vec3 ambientReflectionColor = WATER_COLOR * frx_luminance(atmosphericColorTop);
 		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
 		
 
