@@ -227,6 +227,8 @@ void main() {
 			composite = waterFogColor;
 			material.f0 = 0.95;
 		}
+
+		composite = mix(composite, waterFogColor, floor(compositeDepth));
 	} else if(material.isWater > 0.5) {
 		// These should eventually be configurable
 		float waterFogDistance = distance(sceneSpacePosBack, sceneSpacePos);
@@ -330,11 +332,11 @@ void main() {
 				atmosphericFogTransmittance = mix(atmosphericFogTransmittance, 1.0, floor(compositeDepth));
 
 				composite = mix(atmosphericFogScattering, composite, atmosphericFogTransmittance);
-			}
 
-			// Border flog
-			float fogFactor = smoothstep(frx_viewDistance - 24.0, frx_viewDistance - 8.0, blockDistance);
-			composite = mix(composite, textureLod(u_skybox, viewDir, 0.0).rgb, fogFactor * (1.0 - floor(compositeDepth)));
+				// Border flog
+				float fogFactor = smoothstep(frx_viewDistance - 24.0, frx_viewDistance - 8.0, blockDistance);
+				composite = mix(composite, textureLod(u_skybox, viewDir, 0.0).rgb, fogFactor * (1.0 - floor(compositeDepth)));
+			}
 		} else {
 			if(compositeDepth != 1.0) composite = mix(composite, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, length(sceneSpacePos)));
 		}
