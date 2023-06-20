@@ -182,7 +182,7 @@ vec3 basicLighting(
 			#endif
 
 			heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);
-			ambientLighting += pow(frx_heldLight.rgb * 1.5, vec3(2.2)) * heldLightFactor;
+			ambientLighting += pow(frx_heldLight.rgb, vec3(2.2)) * heldLightFactor;
 		}
 
 		ambientLighting *= vanillaAo;
