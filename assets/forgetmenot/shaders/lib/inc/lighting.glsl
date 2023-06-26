@@ -111,7 +111,7 @@ vec3 basicLighting(
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
 	float emission = clamp01(frx_luminance(albedo) - 1.0);
-	float NdotL = mix(clamp01(dot(fragNormal, frx_skyLightVector)), 1.0, sssAmount);
+	float NdotL = mix(clamp01(dot(fragNormal, frx_skyLightVector)), 1.0, step(0.001, sssAmount));
 
 	vec3 totalLighting = vec3(0.0);
 	vec3 directLighting = vec3(0.0);
@@ -187,8 +187,8 @@ vec3 basicLighting(
 
 		if(frx_worldIsNether == 1) {
 			#ifdef NETHER_DIFFUSE
-				ambientLighting *= 0.5;
-				ambientLighting += vec3(2.0, 1.0, 0.0) * clamp01(-fragNormal.y * 0.75 + 0.25);
+				ambientLighting *= 2.0;
+				ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * vanillaAo;
 			#endif
 		} else if(frx_worldIsEnd == 1) {
 			ambientLighting += END_MIST_COLOR * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));

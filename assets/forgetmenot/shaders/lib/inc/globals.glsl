@@ -69,7 +69,7 @@ void initGlobals() {
 
 	fmn_isModdedDimension = frx_worldIsOverworld + frx_worldIsNether + frx_worldIsEnd == 0;
 
-	fmn_blockLightColor = saturation(vec3(1.0, 0.49, 0.16), BLOCKLIGHT_WARMTH);
+	fmn_blockLightColor = saturation(vec3(2.0, 0.98, 0.32), BLOCKLIGHT_WARMTH);
 
 	// Setting atmosphere parameters
 	 
