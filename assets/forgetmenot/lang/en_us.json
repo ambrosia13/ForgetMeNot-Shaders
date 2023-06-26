@@ -111,6 +111,11 @@
 	"config.forgetmenot.name.no_taa_jitter": "No TAA Jitter",
 	"config.forgetmenot.desc.no_taa_jitter": "If enabled, skips the jittering of the image every frame for TAA. Results in less flickering, but less effective antialiasing.",
 
+	"config.forgetmenot.name.shadow_resolution": "Shadow Resolution",
+	"config.forgetmenot.desc.shadow_resolution": "The rendering resolution of the shadow map. Greatly affects performance and quality.",
+	"config.forgetmenot.name.strict_shadow_bias": "Strict Shadow Bias",
+	"config.forgetmenot.desc.strict_shadow_bias": "Uses slightly more expensive calculations to use as little shadow bias as possible to ensure highest quality.",
+
 	"config.forgetmenot.category.seasons": "Seasons",
 
 	"config.forgetmenot.name.seasons": "Enable Seasons",

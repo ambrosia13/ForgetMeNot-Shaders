@@ -117,7 +117,7 @@
 					descriptionKey: "config.forgetmenot.desc.rtao"
 				},
 				rtao_strength: {
-					default: 0.5,
+					default: 0.35,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.rtao_strength",
@@ -245,6 +245,19 @@
 					default: false,
 					nameKey: "config.forgetmenot.name.no_taa_jitter",
 					descriptionKey: "config.forgetmenot.desc.no_taa_jitter"
+				},
+				shadow_resolution: {
+					default: "1024",
+					choices: ["512", "1024", "2048", "3072", "4096"],
+					enum: true,
+					prefix: "resolution_",
+					nameKey: "config.forgetmenot.name.shadow_resolution",
+					descriptionKey: "config.forgetmenot.desc.shadow_resolution"
+				},
+				strict_shadow_bias: {
+					default: true,
+					nameKey: "config.forgetmenot.name.strict_shadow_bias",
+					descriptionKey: "config.forgetmenot.desc.strict_shadow_bias"
 				},
 			}
 		},

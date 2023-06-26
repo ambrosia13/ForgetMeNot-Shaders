@@ -79,7 +79,13 @@ void main() {
 					viewSpaceToScreenSpace(rayPosView + rayDirView) - rayPosScreen
 				);
 
-				float stepLength = 0.3;
+				// fragColor = vec4(length(rayDirScreen));
+				// return;
+
+				float factor = step(1.0, length(rayDirScreen));
+				rayDirScreen = mix(rayDirScreen, normalize(rayDirScreen), factor);
+
+				float stepLength = mix(0.5, 0.1, factor);
 				vec3 successDir = rayDirWorld;
 
 				for(int i = 0; i < RTAO_RAY_STEPS; i++) {
@@ -101,8 +107,6 @@ void main() {
 							}
 						}
 					}
-
-					stepLength *= 2.0;
 				}
 			}
 		#else

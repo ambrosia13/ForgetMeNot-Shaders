@@ -25,11 +25,11 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 
 		int cascade = 0;
 
-		if (d3.x < 1.0 && d3.y < 1.0 && d3.z < 1.0) {
+		if(all(lessThan(d3, vec3(1.0)))) {
 			cascade = 3;
-		} else if (d2.x < 1.0 && d2.y < 1.0 && d2.z < 1.0) {
+		} else if(all(lessThan(d2, vec3(1.0)))) {
 			cascade = 2;
-		} else if (d1.x < 1.0 && d1.y < 1.0 && d1.z < 1.0) {
+		} else if(all(lessThan(d1, vec3(1.0)))) {
 			cascade = 1;
 		}
 
@@ -38,19 +38,45 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 #endif
 // --------------------------------------------------------------------------------------------------------
 
-vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 bias, out int cascade) {
-	vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + bias, 1.0);
-	cascade = selectShadowCascade(shadowViewPos);
+float cascadeDistance(int cascade) {
+	vec4 a = vec4(frx_viewDistance, 96.0, 32.0, 12.0);
+	return a[cascade];
+}
+
+float getBiasAmount(int cascade) {
+	vec4 biasAmounts = vec4(0.1);
+
+	#if SHADOW_RESOLUTION == RESOLUTION_512
+		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
+	#elif SHADOW_RESOLUTION == RESOLUTION_1024
+		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
+	#elif SHADOW_RESOLUTION == RESOLUTION_2048
+		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
+	#elif SHADOW_RESOLUTION == RESOLUTION_3072
+		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
+	#elif SHADOW_RESOLUTION == RESOLUTION_4096
+		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
+	#endif
+
+	return biasAmounts[cascade];
+}
+
+vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 normal, out int cascade) {
+	#ifdef STRICT_SHADOW_BIAS
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos, 1.0);
+		cascade = selectShadowCascade(shadowViewPos);
+
+		shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * getBiasAmount(cascade), 1.0);
+		cascade = selectShadowCascade(shadowViewPos);
+	#else
+		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + normal * 0.1, 1.0);
+		cascade = selectShadowCascade(shadowViewPos);
+	#endif
 
 	vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
 	vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
 
 	return shadowScreenPos;
-}
-
-float cascadeFactor(int x) {
-	vec4 a = vec4(frx_viewDistance, 96.0, 32.0, 12.0);
-	return a[x];
 }
 
 vec3 basicLighting(
@@ -92,11 +118,10 @@ vec3 basicLighting(
 
 	// Direct lighting
 	if(frx_worldHasSkylight == 1) {
-		vec4 shadowViewPos = frx_shadowViewMatrix * vec4(sceneSpacePos + vertexNormal * 0.1, 1.0);
-		int cascade = selectShadowCascade(shadowViewPos);
+		const float shadowSampleOffsetFactor = 2048.0;
 
-		vec4 shadowClipPos = frx_shadowProjectionMatrix(cascade) * shadowViewPos;
-		vec3 shadowScreenPos = (shadowClipPos.xyz / shadowClipPos.w) * 0.5 + 0.5;
+		int cascade;
+		vec3 shadowScreenPos = setupShadowPos(sceneSpacePos, vertexNormal, cascade);
 
 		float shadowFactor = 0.0;
 		float penumbraSize = 0.0;
@@ -105,11 +130,13 @@ vec3 basicLighting(
 			int pcssSamples = shadowMapSamples * 1;
 
 			for(int i = 0; i < pcssSamples; i++) {
-				vec2 sampleOffset = diskSampling(i, pcssSamples, sqrt(interleavedGradient(i + pcssSamples)) * TAU) * (250.0 / cascadeFactor(cascade));
-				vec2 sampleCoord = shadowScreenPos.xy + sampleOffset / SHADOW_MAP_SIZE;
+				vec2 sampleOffset = diskSampling(i, pcssSamples, sqrt(interleavedGradient(i + pcssSamples)) * TAU) * (250.0 / cascadeDistance(cascade));
+				
+				// Double the sample offset for penumbra search 
+				vec2 sampleCoord = shadowScreenPos.xy + 2.0 * sampleOffset / shadowSampleOffsetFactor;
 
 				float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
-				float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeFactor(cascade);
+				float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeDistance(cascade);
 
 				penumbraSize += diff / pcssSamples;
 			}
@@ -118,10 +145,10 @@ vec3 basicLighting(
 		}
 
 		penumbraSize = max(1.0, penumbraSize);
-		penumbraSize = mix(penumbraSize, 5.0 * cascade, sssAmount * (-sign(dot(vertexNormal, frx_skyLightVector)) * 0.5 + 0.5));
+		penumbraSize = mix(penumbraSize, 500.0 / cascadeDistance(cascade), sssAmount * step(dot(vertexNormal, frx_skyLightVector), 0.25));
 
 		for(int i = 0; i < shadowMapSamples; i++) {
-			vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / SHADOW_MAP_SIZE;
+			vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / shadowSampleOffsetFactor;
 			shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
 		}
 		shadowFactor *= skyLight;
@@ -137,7 +164,7 @@ vec3 basicLighting(
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 
 		//vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		directLighting = 0.07 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting = 0.03 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
