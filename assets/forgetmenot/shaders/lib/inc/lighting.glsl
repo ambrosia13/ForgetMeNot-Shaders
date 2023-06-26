@@ -46,6 +46,7 @@ float cascadeDistance(int cascade) {
 float getBiasAmount(int cascade) {
 	vec4 biasAmounts = vec4(0.1);
 
+	// Todo: this may need to be adjusted depending on shadow resolution
 	#if SHADOW_RESOLUTION == RESOLUTION_512
 		biasAmounts = vec4(0.2, 0.1, 0.05, 0.02);
 	#elif SHADOW_RESOLUTION == RESOLUTION_1024
