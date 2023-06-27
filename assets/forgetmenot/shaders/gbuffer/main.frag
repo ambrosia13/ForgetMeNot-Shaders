@@ -196,92 +196,11 @@ void resolveMaterials() {
 	fmn_sssAmount = max(fmn_sssAmount, float(frx_matDisableDiffuse));
 }
 
-#ifdef FANCY_POWDER_SNOW
-	struct Hit {
-		vec3 pos;
-		vec3 normal;
-
-		bool success;
-	};
-
-	// Controls the scale of the voxel raytrace
-	// One minecraft block is equal to this many voxels
-	const float voxelScale = 16.0;
-
-	bool evaluateHit(inout Hit hit, in vec3 voxelPos) {
-		float dist = length(voxelPos - frx_cameraPos * voxelScale);
-		dist += hash13(voxelPos) * 4.0 - 2.0;
-
-		return dist > 16.0;
-	}
-
-	Hit raytraceDDA(vec3 rayPos, vec3 rayDir, int raytraceLength) {
-		Hit hit;
-		hit.pos = vec3(0.0);
-		hit.success = false;
-
-		rayPos += frx_cameraPos * voxelScale;
-
-		vec3 stepSizes = 1.0 / abs(rayDir);
-		vec3 stepDir = sign(rayDir);
-		vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(rayPos)) / rayDir;
-
-		ivec3 voxelPos = ivec3(rayPos);
-		vec3 currentPos = rayPos;
-
-		for(int i = 0; i < raytraceLength; i++) {
-			float closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
-
-			currentPos += rayDir * closestDist;
-			
-			vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
-
-			voxelPos += ivec3(stepAxis * stepDir);
-
-			nextDist -= closestDist;
-			nextDist += stepSizes * stepAxis;
-
-			hit.normal = stepAxis;
-
-			if(evaluateHit(hit, voxelPos)) {
-				hit.pos = currentPos - frx_cameraPos * voxelScale;
-				hit.normal *= -stepDir;
-				break;
-			}
-		}
-
-		return hit;
-	}
-
-	// x should be a random value
-	vec3 getPowderSnowColor(float x) {
-		return mix(vec3(1.0), vec3(0.7, 0.85, 1.0), x);
-	}
-#endif
-
 void frx_pipelineFragment() {
 	initGlobals();
 	resolveMaterials();
 
-	#ifdef FANCY_POWDER_SNOW
-		if(frx_playerEyeInSnow == 1 && !frx_isGui) {
-			vec3 viewDir = normalize(frx_vertex.xyz);
-
-			Hit hit = raytraceDDA(vec3(0.0), viewDir, 40);
-			float hitDistance = length(hit.pos / voxelScale);
-			hit.pos -= 0.01 * hit.normal;
-
-			if(!hit.success && hitDistance < length(frx_vertex.xyz + frx_vertexNormal.xyz * 0.001)) {
-				frx_fragLight = vec3(frx_eyeBrightness, exp(-max(0.0, hitDistance - 0.8) * 2.0));
-				frx_fragNormal = hit.normal;
-
-				vec3 worldSpaceHitPos = hit.pos + frx_cameraPos * voxelScale;
-				const float voxelTextureResolution = 1.0;
-				frx_fragColor.rgb = getPowderSnowColor(hash13(floor(worldSpaceHitPos * voxelTextureResolution) / voxelTextureResolution));
-			}
-		}
-	#endif
-
+	vec3 vertexNormal = frx_vertexNormal;
 	vec4 color = frx_fragColor;
 
 	// A non-vanilla dimension is loaded, we don't want to touch lighting.
@@ -293,7 +212,7 @@ void frx_pipelineFragment() {
 		color.rgb = basicLighting(
 			color.rgb,
 			frx_vertex.xyz,
-			frx_vertexNormal,
+			vertexNormal,
 			frx_fragNormal,
 			frx_fragLight.x,
 			frx_fragLight.y,
@@ -312,7 +231,7 @@ void frx_pipelineFragment() {
 		);
 	}
 
-	vec3 vertexNormalUnorm = frx_vertexNormal * 0.5 + 0.5;
+	vec3 vertexNormalUnorm = vertexNormal * 0.5 + 0.5;
 	vec3 fragNormalUnorm = frx_fragNormal * 0.5 + 0.5;
 
 	uint packedX = packUnormArb6Elements(
@@ -342,7 +261,7 @@ void frx_pipelineFragment() {
 	color = max(color, vec4(0.0005));
 
 	fragColor = color;
-	fragNormal = vec4(frx_vertexNormal.xyz * 0.5 + 0.5, 1.0);
+	fragNormal = vec4(vertexNormal.xyz * 0.5 + 0.5, 1.0);
 	fragData = uvec4(packedX, packedY, packedZ, 1u);
 	fragData1 = fragData;
 
