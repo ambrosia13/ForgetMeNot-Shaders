@@ -39,17 +39,25 @@ const float _fogDensityModifiers[] = float[](
 	1200.0, 1000.0, 800.0, 700.0, 400.0, 900.0, 1400.0,
 	1200.0, 1300.0, 1000.0, 800.0, 500.0, 600.0, 1000.0
 );
-float _interpolateArray(float x, float[14] values) {
-	const int arraySize = 14;
 
-	float wrappedInput = mod(x, float(arraySize));
+float _getNoise(vec2 x, float lowerBound, float upperBound, float centerness, bool reverse) {
+	float rand = frx_noise2d(x);
+	rand = mix(rand, 1.0 - rand, float(reverse));
+
+	return mix(rand, 0.5, centerness) * (upperBound - lowerBound) + lowerBound;
+}
+float _interpolateRandom(float x, float lowerBound, float upperBound, float centerness, bool reverse) {
+	const int period = 60;
+	const float offset = 81.0;
+
+	float wrappedInput = mod(x + offset, float(period));
 
 	int whole = int(wrappedInput);
 	float part = fract(wrappedInput);
 	part = part * part * (3.0 - 2.0 * part);
 
-	float coverage1 = values[whole];
-	float coverage2 = values[(whole + 1) % arraySize];
+	float coverage1 = _getNoise(vec2(whole), lowerBound, upperBound, centerness, reverse);
+	float coverage2 = _getNoise(vec2((whole + 1) % period), lowerBound, upperBound, centerness, reverse);
 	
 	return mix(coverage1, coverage2, part);
 }
@@ -79,13 +87,13 @@ void initGlobals() {
 	}
 
 	// cloud coverage
-	float cloudCoverage = _interpolateArray(fmn_worldTime, _coverageModifiers);
+	float cloudCoverage = _interpolateRandom(fmn_worldTime, -0.5, 0.5, 0.2, false);
 	cloudCoverage += 0.2 * fmn_rainFactor;
 	
 	fmn_atmosphereParams.cloudCoverage = cloudCoverage;
 
 	// fog density
-	fmn_atmosphereParams.blocksPerFogUnit = _interpolateArray(fmn_worldTime, _fogDensityModifiers);
+	fmn_atmosphereParams.blocksPerFogUnit = _interpolateRandom(fmn_worldTime, 400.0, 1500.0, 0.0, true);
 	fmn_atmosphereParams.blocksPerFogUnit -= 200.0 * fmn_rainFactor;
 
 	fmn_atmosphereParams.blocksPerFogUnit = mix(300.0, fmn_atmosphereParams.blocksPerFogUnit, frx_smoothedEyeBrightness.y);

@@ -440,17 +440,17 @@ vec3 getSkyAndClouds(
 		CloudLayer cirrusClouds = createCirrusCloudLayer(viewDir);
 		CloudLayer cumulusClouds = createCumulusCloudLayer(viewDir);
 
-		color = getClouds(
-			viewDir,
-			sunTransmittance,
-			moonTransmittance,
-			cloudsTransmittanceAndScattering,
-			cirrusClouds,
-			transmittanceLut,
-			skyLutDay,
-			skyLutNight,
-			color
-		);
+		// color = getClouds(
+		// 	viewDir,
+		// 	sunTransmittance,
+		// 	moonTransmittance,
+		// 	cloudsTransmittanceAndScattering,
+		// 	cirrusClouds,
+		// 	transmittanceLut,
+		// 	skyLutDay,
+		// 	skyLutNight,
+		// 	color
+		// );
 		color = getClouds(
 			viewDir,
 			sunTransmittance,

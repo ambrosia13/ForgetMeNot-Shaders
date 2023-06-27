@@ -313,6 +313,11 @@
 					nameKey: "config.forgetmenot.name.internal_materials",
 					descriptionKey: "config.forgetmenot.desc.internal_materials"
 				},			
+				fancy_powder_snow: {
+					default: true,
+					nameKey: "config.forgetmenot.name.fancy_powder_snow",
+					descriptionKey: "config.forgetmenot.desc.fancy_powder_snow"
+				},			
 			}
 		}
 	]

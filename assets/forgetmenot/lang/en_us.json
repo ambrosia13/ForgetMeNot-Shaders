@@ -139,5 +139,8 @@
 	"config.forgetmenot.category.misc": "Miscellaneous",
 
 	"config.forgetmenot.name.internal_materials": "Internal Materials",
-	"config.forgetmenot.desc.internal_materials": "Internal option used by material shaders to detect if Forget-me-not is active. Do not disable."
+	"config.forgetmenot.desc.internal_materials": "Internal option used by material shaders to detect if Forget-me-not is active. Do not disable.",
+	
+	"config.forgetmenot.name.fancy_powder_snow": "Fancy Powder Snow",
+	"config.forgetmenot.desc.fancy_powder_snow": "Uses voxel ray tracing to render a fancy effect for powder snow instead of the traditional fog."
 }

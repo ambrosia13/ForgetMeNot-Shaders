@@ -84,7 +84,7 @@ void main() {
 	vec3 sceneSpacePosBack = setupSceneSpacePos(texcoord, particlesDepth);
 	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, translucentDepth);
 
-	float skyboxSharpeningFactor = 4.0 * pow(clamp01(dot(viewDir, frx_skyLightVector)), 8.0);
+	float skyboxSharpeningFactor = 2.0 * pow(clamp01(dot(viewDir, frx_skyLightVector)), 8.0);
 	skyboxSharpeningFactor *= smoothstep(0.0, 100.0, length(sceneSpacePos));
 	skyboxSharpeningFactor = mix(skyboxSharpeningFactor, 0.0, frx_skyLightTransitionFactor);
 
