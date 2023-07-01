@@ -163,6 +163,10 @@ vec2 repeatAndMirrorCoords(vec2 uv) {
 vec3 saturation(in vec3 color, in float amount) {
 	return mix(vec3(frx_luminance(color)), color, amount);
 }
+
+float contrast(in float value, float contrast) {
+	return (value - 0.5) * contrast + 0.5;
+}
 vec3 contrast(in vec3 color, float contrast) {
 	return (color - 0.5) * contrast + 0.5;
 }

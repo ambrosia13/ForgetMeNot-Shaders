@@ -63,6 +63,11 @@
 					nameKey: "config.forgetmenot.name.clouds_contribute_to_light",
 					descriptionKey: "config.forgetmenot.desc.clouds_contribute_to_light"
 				},
+				cloud_shadows: {
+					default: true,
+					nameKey: "config.forgetmenot.name.cloud_shadows",
+					descriptionKey: "config.forgetmenot.desc.cloud_shadows"
+				},
 			}
 		},
 		{

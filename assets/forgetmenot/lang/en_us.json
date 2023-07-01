@@ -31,6 +31,9 @@
 	"config.forgetmenot.name.clouds_contribute_to_light": "Clouds Contribute To Ambient Lighting",
 	"config.forgetmenot.desc.clouds_contribute_to_light": "Controls whether clouds affect lighting and reflections.",
 
+	"config.forgetmenot.name.cloud_shadows": "Cloud Shadows",
+	"config.forgetmenot.desc.cloud_shadows": "Whether to allow clouds in front of the sun to make sunlight darker.",
+
 	"config.forgetmenot.category.lighting": "Lighting",
 
 	"config.forgetmenot.name.emission": "Emission Brightness",

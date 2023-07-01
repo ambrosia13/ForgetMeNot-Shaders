@@ -154,18 +154,23 @@ vec3 basicLighting(
 		}
 		shadowFactor *= skyLight;
 
-		#ifdef CLOUD_SHADOWS
-			CloudLayer cloudLayer = createCumulusCloudLayer(frx_skyLightVector);
-			cloudLayer.selfShadowSteps = 0;
-			cloudLayer.noiseOctaves = 2;
+		// #ifdef CLOUD_SHADOWS
+		// 	CloudLayer cloudLayer = createCumulusCloudLayer(frx_skyLightVector);
+		// 	cloudLayer.selfShadowSteps = 0;
+		// 	cloudLayer.noiseOctaves = 2;
 
-			shadowFactor *= 0.25 + 0.75 * getCloudsTransmittanceAndScattering(frx_skyLightVector, cloudLayer).x;
-		#endif
+		// 	shadowFactor *= 0.25 + 0.75 * getCloudsTransmittanceAndScattering(frx_skyLightVector, cloudLayer).x;
+		// #endif
 
 		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
+		
+		#ifdef CLOUD_SHADOWS
+			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
+		#else
+			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+		#endif
 
-		//vec3 directLightTransmittance = getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		directLighting = 0.03 * textureLod(skybox, frx_skyLightVector, 2.0).rgb * NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting *= NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 

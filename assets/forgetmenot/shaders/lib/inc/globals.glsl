@@ -41,6 +41,8 @@ const float _fogDensityModifiers[] = float[](
 );
 
 float _getNoise(vec2 x, float lowerBound, float upperBound, float centerness, bool reverse) {
+	return (upperBound + lowerBound) / 2.0;
+
 	float rand = frx_noise2d(x);
 	rand = mix(rand, 1.0 - rand, float(reverse));
 

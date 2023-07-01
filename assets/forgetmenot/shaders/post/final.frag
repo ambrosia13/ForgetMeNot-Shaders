@@ -45,21 +45,22 @@ float getExposureValue() {
 	return getExposureValue(exposure);
 }
 
-vec3 tonemap(vec3 color) {
-	float l = length(color);
+// Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
+vec3 lottes(vec3 x) {
+	const vec3 a = vec3(1.6);
+	const vec3 d = vec3(0.977);
+	const vec3 hdrMax = vec3(8.0);
+	const vec3 midIn = vec3(0.18);
+	const vec3 midOut = vec3(0.267);
 
-	color /= l;
-	color *= pow(l, 1.1);
+	const vec3 b =
+		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+	const vec3 c =
+		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
 
-	float exposureBias = 1.;
-	color *= exposureBias;
-
-	vec3 tmColor =  1.0 - exp(-color);
-
-	tmColor = contrast(tmColor, 1.3);
-//	tmColor = saturation(tmColor, 1.15);
-
-	return tmColor;
+	return pow(x, a) / (pow(x, a * d) * b + c);
 }
 
 void main() {
@@ -83,24 +84,22 @@ void main() {
 
 	vec3 finalColor = color.rgb;
 
+	const float purkinjeLift = 0.005;
+
 	// Purkinje effect
 	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(finalColor * 40.0)));
-	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + 0.005, finalColor, purkinjeFactor);
+	finalColor = mix(saturation(finalColor, 0.0) * vec3(0.5, 1.2, 1.8) + purkinjeLift, finalColor, purkinjeFactor);
 
 
 	#ifdef ENABLE_BLOOM
 		finalColor *= getExposureValue() * getExposureProfile().exposureMultiplier;
 	#endif
 
-	// aces tonemap
-	//finalColor = FRX_ACES_INPUT_MATRIX * finalColor;
 	finalColor = frx_toneMap(finalColor);
-	//finalColor = FRX_ACES_OUTPUT_MATRIX * finalColor;
+	//finalColor = lottes(finalColor * 0.5);
 
-	// vibrance(finalColor, 0.05);
-	// liftGammaGain(finalColor, 0.0075, 1.0, 2.0);
-	// saturation(finalColor, 0.5);
-	// finalColor *= normalize(vec3(0.8, 1.4, 2.7));
+	//finalColor = normalize(finalColor) * (contrast(length(finalColor), 1.05));
+	//finalColor = tanh(finalColor);
 
 	// finally, back into srgb
 	finalColor = clamp01(pow(finalColor, vec3(1.0 / 2.2)));
