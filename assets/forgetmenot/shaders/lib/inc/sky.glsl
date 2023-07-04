@@ -8,7 +8,7 @@
 const vec3 moonFlux = vec3(0.56, 0.8, 1.1);
 
 vec3 nightAdjust(in vec3 color) {
-	return mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.075;
+	return color * 0.05;//mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.075;
 } 
 
 // Units are in megameters.
@@ -24,7 +24,9 @@ const vec3 groundAlbedo = vec3(0.0);
 const vec3 rayleighScatteringBase = vec3(5.802, 13.558, 33.1);
 const float rayleighAbsorptionBase = 0.0;
 
-const float mieScatteringBase = 25.996;
+const float turbidity = 1.0;
+
+const float mieScatteringBase = 25.996 * turbidity;
 const float mieAbsorptionBase = 4.4;
 
 const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);

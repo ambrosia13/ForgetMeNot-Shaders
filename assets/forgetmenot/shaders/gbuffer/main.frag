@@ -127,10 +127,9 @@ void resolveMaterials() {
 	//frx_fragNormal = abs(frx_fragNormal);
 	frx_fragNormal = tbn * fNormalize(frx_fragNormal);
 	//frx_fragNormal = mix(frx_fragNormal, -frx_fragNormal, 1.0 - step(0.0, dot(frx_vertexNormal.xyz, frx_fragNormal)));
-	if(frx_isHand) {
+
 		// Fix hand normals
-		frx_fragNormal = frx_fragNormal * frx_normalModelMatrix;
-	}
+	frx_fragNormal = mix(frx_fragNormal, frx_fragNormal * frx_normalModelMatrix, float(frx_isHand));
 
 	// Rain effects
 	if(fmn_rainFactor > 0.0 && fmn_isWater == 0) {
@@ -180,12 +179,10 @@ void resolveMaterials() {
 		frx_fragColor.rgb *= dot(frx_vertexNormal.xyz, fNormalize(vec3(0.2, 0.8, 0.6))) * 0.4 + 0.6;
 	}
 
-	if(frx_matGlint == 1) {
-		// Not entirely vanilla implementation of enchantment glint
-		vec3 glint = texture(u_glint, fract(frx_normalizeMappedUV(frx_texcoord) * 0.5 + frx_renderSeconds * 0.1)).rgb;
-		glint = pow(glint, vec3(4.0));
-		frx_fragColor.rgb += glint;
-	}
+	// Not entirely vanilla implementation of enchantment glint
+	vec3 glint = texture(u_glint, fract(frx_normalizeMappedUV(frx_texcoord) * 0.5 + frx_renderSeconds * 0.1)).rgb;
+	glint = pow(glint, vec3(4.0));
+	frx_fragColor.rgb += glint * frx_matGlint;
 
 	// Fix up lightmap values
 	frx_fragLight.xy = linearstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);

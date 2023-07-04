@@ -41,9 +41,11 @@ const float _fogDensityModifiers[] = float[](
 );
 
 float _getNoise(vec2 x, float lowerBound, float upperBound, float centerness, bool reverse) {
-	return (upperBound + lowerBound) / 2.0;
+	//return (upperBound + lowerBound) / 2.0;
 
 	float rand = frx_noise2d(x);
+	if(rand > 0.97) return upperBound * 4.0;
+
 	rand = mix(rand, 1.0 - rand, float(reverse));
 
 	return mix(rand, 0.5, centerness) * (upperBound - lowerBound) + lowerBound;
@@ -89,7 +91,7 @@ void initGlobals() {
 	}
 
 	// cloud coverage
-	float cloudCoverage = _interpolateRandom(fmn_worldTime, -0.5, 0.5, 0.2, false);
+	float cloudCoverage = _interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false);
 	cloudCoverage += 0.2 * fmn_rainFactor;
 	
 	fmn_atmosphereParams.cloudCoverage = cloudCoverage;

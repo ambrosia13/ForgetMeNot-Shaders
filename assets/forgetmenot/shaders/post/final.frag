@@ -107,5 +107,17 @@ void main() {
 	const int bitDepth = 256;
 	finalColor = floor(finalColor * bitDepth + randomFloat()) / bitDepth;
 
+	// if(texcoord.y < 0.1) {
+	// 	float x = texcoord.x * 40.0;
+
+	// 	finalColor = vec3(_interpolateRandom(
+	// 		x, -0.5, 0.25, 0.2, false
+	// 	) + 0.5);
+
+	// 	if(abs(fmn_worldTime - x) < 0.025) {
+	// 		finalColor = vec3(1.0, 0.0, 0.0);
+	// 	}
+	// }
+
 	fragColor = vec4(finalColor, 1.0);
 }

@@ -42,7 +42,7 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.altitude = 0.001;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude + 0.00001 * fmn_time / cloudLayer.altitude;
 
-	cloudLayer.density = 15.0;
+	cloudLayer.density = 25.0;
 	cloudLayer.selfShadowSteps = 5;
 
 	cloudLayer.useNoiseTexture = false;
@@ -58,8 +58,8 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.domainShift = vec2(0.0);
 	cloudLayer.rangeShift = fmn_atmosphereParams.cloudCoverage;
 
-	cloudLayer.curlNoiseAmount = 0.0001;
-	cloudLayer.curlNoiseFrequency = 3.5;
+	cloudLayer.curlNoiseAmount = 0.000075;
+	cloudLayer.curlNoiseFrequency = 4.0;
 
 	cloudLayer.render = true;
 
@@ -143,9 +143,11 @@ float sampleCloudNoise(in CloudLayer cloudLayer, in sampler2D noiseTexture) {
 }
 
 vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLayer) {
-	if(viewDir.y < -0.05) {
+	if(rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM) > 0.0) {
 		return vec2(1.0, 0.0);
 	}
+
+	vec2 plane = cloudLayer.plane;
 
 	float noise = sampleCloudNoise(cloudLayer);
 	
@@ -170,14 +172,17 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
 
-		lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 3);
+		lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 4) * 1.4;
 		lightOpticalDepth = max(0.0, lightOpticalDepth);
 
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.3);
 	}
 
+	transmittance = mix(transmittance, 1.0, exp(-clamp01(viewDir.y) * 100.0));
+	//transmittance = mix(transmittance, 0.0, smoothstep(0.7, 0.9, _interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false)));
+
 	return vec2(
-		mix(transmittance, 1.0, linearstep(0.01, -0.01, viewDir.y)),
+		transmittance,
 		scattering
 	);
 }
@@ -210,8 +215,12 @@ vec3 getSkyColor(
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
 		
+		float dist = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
+
+		sunBrightness *= step(dist, 0.0);
+
 		vec3 sun = sunBrightness * step(0.9997, dot(viewDir, sunVector)) * sunTransmittance;
-		vec3 moon = sunBrightness * step(0.9998, dot(viewDir, moonVector)) * moonTransmittance;
+		vec3 moon = sunBrightness * 0.5 * step(0.9998, dot(viewDir, moonVector)) * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
@@ -332,7 +341,7 @@ vec3 getClouds(
 
 	vec3 cloudPos = vec3(
 		0.0,
-		skyViewPos.y + cloudLayer.altitude,// * clamp01(dot(cloudLayer.plane, sunVector.xz)),
+		skyViewPos.y + cloudLayer.altitude * (dot(viewDir, sunVector)),
 		0.0
 	);
 
