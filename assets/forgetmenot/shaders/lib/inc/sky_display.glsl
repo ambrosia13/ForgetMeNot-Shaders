@@ -32,6 +32,8 @@ struct CloudLayer {
 };
 
 CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
+	float VdotMoon = smoothstep(0.995, 0.9998, dot(viewDir, getMoonVector())) * smoothstep(0.1, 0.07, getMoonVector().y);
+
 	CloudLayer cloudLayer;
 
 	#ifndef CUMULUS_CLOUDS
@@ -42,14 +44,14 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.altitude = 0.001;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude + 0.00001 * fmn_time / cloudLayer.altitude;
 
-	cloudLayer.density = 25.0;
+	cloudLayer.density = 25.0 + 10.0 * VdotMoon;
 	cloudLayer.selfShadowSteps = 5;
 
 	cloudLayer.useNoiseTexture = false;
 
 	cloudLayer.noiseOctaves = 6;
 	cloudLayer.noiseLacunarity = 2.5;
-	cloudLayer.noiseLowerBound = 0.35 - 0.2 * fmn_rainFactor;
+	cloudLayer.noiseLowerBound = 0.35 - 0.2 * fmn_rainFactor - 0.3 * VdotMoon;
 	cloudLayer.noiseUpperBound = 1.0;
 	
 	cloudLayer.domainMult = vec2(1.0);
@@ -219,8 +221,13 @@ vec3 getSkyColor(
 
 		sunBrightness *= step(dist, 0.0);
 
+		float moonRadius = 0.9998 - 0.0003 * exp(-clamp01(moonVector.y) * 10.0);
+		
+		float moonFactor = step(moonRadius, dot(viewDir, moonVector));
+
+
 		vec3 sun = sunBrightness * step(0.9997, dot(viewDir, sunVector)) * sunTransmittance;
-		vec3 moon = sunBrightness * 0.5 * step(0.9998, dot(viewDir, moonVector)) * moonTransmittance;
+		vec3 moon = sunBrightness * 0.25 * moonFactor * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
 		vec3 nightColor = nightColorSample + moon;
@@ -242,7 +249,7 @@ vec3 getSkyColor(
 			vec3 tdata = getTimeOfDayFactors();
 			float starMultiplier = tdata.z * 0.5 + tdata.y;
 
-			nightColor += stars * starMultiplier;
+			nightColor += stars * starMultiplier * (1.0 - moonFactor);
 		}
 
 		vec3 result = 40.0 * blueHourMultiplier * (dayColor + nightColor);
