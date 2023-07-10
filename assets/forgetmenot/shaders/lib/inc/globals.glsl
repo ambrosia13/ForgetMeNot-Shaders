@@ -91,14 +91,14 @@ void initGlobals() {
 	}
 
 	// cloud coverage
-	float cloudCoverage = _interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false);
-	cloudCoverage += 0.2 * fmn_rainFactor;
+	float cloudCoverage = 0.1;//_interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false);
+	cloudCoverage += 0.5 * fmn_rainFactor;
 	
 	fmn_atmosphereParams.cloudCoverage = cloudCoverage;
 
 	// fog density
-	fmn_atmosphereParams.blocksPerFogUnit = _interpolateRandom(fmn_worldTime, 400.0, 1500.0, 0.0, true);
-	fmn_atmosphereParams.blocksPerFogUnit -= 200.0 * fmn_rainFactor;
+	fmn_atmosphereParams.blocksPerFogUnit = 1500.0;//_interpolateRandom(fmn_worldTime, 400.0, 1500.0, 0.0, true);
+	fmn_atmosphereParams.blocksPerFogUnit -= 1000.0 * fmn_rainFactor;
 
 	fmn_atmosphereParams.blocksPerFogUnit = mix(300.0, fmn_atmosphereParams.blocksPerFogUnit, frx_smoothedEyeBrightness.y);
 }

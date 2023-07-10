@@ -59,10 +59,10 @@
 					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
 				},
 				{
-					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
 				}, 
 				{
-					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
 				}
 			]
 		},
@@ -127,10 +127,10 @@
 					name: "TEXTURE_MAG_FILTER", val: "LINEAR"
 				},
 				{
-					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_BORDER"
+					name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"
 				}, 
 				{
-					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_BORDER"
+					name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"
 				}
 			]
 		},

@@ -32,8 +32,6 @@ struct CloudLayer {
 };
 
 CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
-	float VdotMoon = smoothstep(0.995, 0.9998, dot(viewDir, getMoonVector())) * smoothstep(0.1, 0.07, getMoonVector().y);
-
 	CloudLayer cloudLayer;
 
 	#ifndef CUMULUS_CLOUDS
@@ -44,15 +42,15 @@ CloudLayer createCumulusCloudLayer(in vec3 viewDir) {
 	cloudLayer.altitude = 0.001;
 	cloudLayer.plane = createCloudPlane(viewDir) + 0.00001 * frx_cameraPos.xz / cloudLayer.altitude + 0.00001 * fmn_time / cloudLayer.altitude;
 
-	cloudLayer.density = 25.0 + 10.0 * VdotMoon;
+	cloudLayer.density = 45.0;
 	cloudLayer.selfShadowSteps = 5;
 
 	cloudLayer.useNoiseTexture = false;
 
 	cloudLayer.noiseOctaves = 6;
 	cloudLayer.noiseLacunarity = 2.5;
-	cloudLayer.noiseLowerBound = 0.35 - 0.2 * fmn_rainFactor - 0.3 * VdotMoon;
-	cloudLayer.noiseUpperBound = 1.0;
+	cloudLayer.noiseLowerBound = 0.35 - 0.1 * fmn_rainFactor;
+	cloudLayer.noiseUpperBound = 1.5;
 	
 	cloudLayer.domainMult = vec2(1.0);
 	cloudLayer.rangeMult = mix(smoothHash(cloudLayer.plane * 0.3 + frx_renderSeconds * 0.01), 1.0, smoothstep(0.2, 0.4, fmn_atmosphereParams.cloudCoverage));
@@ -157,7 +155,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 	float scattering = 0.75;
 
 	if(cloudLayer.selfShadowSteps > 0) {
-		cloudLayer.noiseOctaves = max(2, cloudLayer.noiseOctaves / 2);
+		cloudLayer.noiseOctaves = max(4, cloudLayer.noiseOctaves / 2);
 
 		vec2 temp = viewDir.xz * rcp(viewDir.y);
 		float skyLightZenithAngle = rcp(abs(frx_skyLightVector.y));
@@ -170,11 +168,12 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 		float lightOpticalDepth = 0.0;
 
 		for(int i = 0; i < cloudLayer.selfShadowSteps; i++) {
-			cloudLayer.plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i) * 0.5;
+			cloudLayer.plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i) * 0.25;
 			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
 
-		lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 4) * 1.4;
+		//lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 4) * 1.4;
+		//lightOpticalDepth *= 1.0 - transmittance;
 		lightOpticalDepth = max(0.0, lightOpticalDepth);
 
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.3);
@@ -249,7 +248,7 @@ vec3 getSkyColor(
 			vec3 tdata = getTimeOfDayFactors();
 			float starMultiplier = tdata.z * 0.5 + tdata.y;
 
-			nightColor += stars * starMultiplier * (1.0 - moonFactor);
+			nightColor += 0.25 * stars * starMultiplier * (1.0 - moonFactor);
 		}
 
 		vec3 result = 40.0 * blueHourMultiplier * (dayColor + nightColor);
@@ -348,7 +347,7 @@ vec3 getClouds(
 
 	vec3 cloudPos = vec3(
 		0.0,
-		skyViewPos.y + cloudLayer.altitude * (dot(viewDir, sunVector)),
+		skyViewPos.y + cloudLayer.altitude * (dot(viewDir, sunVector) * 0.5 + 0.5),
 		0.0
 	);
 
@@ -365,11 +364,12 @@ vec3 getClouds(
 		skyLutNight
 	);
 
+	float transmittance = cloudsTransmittanceAndScattering.x;
+
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
 		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
-	) + ambientColor;
+	) + ambientColor * exp(-fbmHash(cloudLayer.plane, 4) * 0.5);
 
-	float transmittance = cloudsTransmittanceAndScattering.x;
 
 	return mix(scattering, skyColor, transmittance);
 }

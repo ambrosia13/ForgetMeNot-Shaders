@@ -346,7 +346,7 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Weather blending
-	composite = mix(composite, weatherColor.rgb * 40.0 * frx_luminance(atmosphericColor), weatherColor.a * step(weatherDepth, compositeDepth) * 0.5);
+	composite = mix(composite, weatherColor.rgb * 10.0 * frx_luminance(atmosphericColor), weatherColor.a * step(weatherDepth, compositeDepth) * 0.5);
 
 
 	// ----------------------------------------------------------------------------------------------------
