@@ -93,6 +93,48 @@
 	"config.forgetmenot.name.motion_blur": "Motion Blur",
 	"config.forgetmenot.desc.motion_blur": "Blurs the screen along the motion vector.",
 
+	"config.forgetmenot.name.purkinje_amount": "Purkinje Amount",
+	"config.forgetmenot.desc.purkinje_amount": "Amount for purkinje effect. Zero disables.",
+
+	"config.forgetmenot.name.purkinje_lift": "Purkinje Lift",
+	"config.forgetmenot.desc.purkinje_lift": "Applies a small lift to the grayscale color from the purkinje effect.",
+
+	"config.forgetmenot.name.saturation": "Saturation",
+	"config.forgetmenot.desc.saturation": "Amount of saturation in the image.",
+
+	"config.forgetmenot.name.contrast": "Contrast",
+	"config.forgetmenot.desc.contrast": "Amount of contrast in the image.",
+
+	"config.forgetmenot.name.vibrance": "Vibrance",
+	"config.forgetmenot.desc.vibrance": "Amount of vibrance in the image.",
+
+	"config.forgetmenot.name.lift_r": "Lift - Red",
+	"config.forgetmenot.desc.lift_r": "Amount of lift in this component of the image.",
+
+	"config.forgetmenot.name.lift_g": "Lift - Green",
+	"config.forgetmenot.desc.lift_g": "Amount of lift in this component of the image.",
+
+	"config.forgetmenot.name.lift_b": "Lift - Blue",
+	"config.forgetmenot.desc.lift_b": "Amount of lift in this component of the image.",
+
+	"config.forgetmenot.name.gamma_r": "Gamma - Red",
+	"config.forgetmenot.desc.gamma_r": "Amount of gamma in this component of the image.",
+
+	"config.forgetmenot.name.gamma_g": "Gamma - Green",
+	"config.forgetmenot.desc.gamma_g": "Amount of gamma in this component of the image.",
+
+	"config.forgetmenot.name.gamma_b": "Gamma - Blue",
+	"config.forgetmenot.desc.gamma_b": "Amount of gamma in this component of the image.",
+
+	"config.forgetmenot.name.gain_r": "Gain - Red",
+	"config.forgetmenot.desc.gain_r": "Amount of gain in this component of the image.",
+
+	"config.forgetmenot.name.gain_g": "Gain - Green",
+	"config.forgetmenot.desc.gain_g": "Amount of gain in this component of the image.",
+
+	"config.forgetmenot.name.gain_b": "Gain - Blue",
+	"config.forgetmenot.desc.gain_b": "Amount of gain in this component of the image.",
+
 	"config.forgetmenot.category.dimensions": "Dimensions",
 
 	"config.forgetmenot.name.nether_diffuse": "Nether Diffuse",

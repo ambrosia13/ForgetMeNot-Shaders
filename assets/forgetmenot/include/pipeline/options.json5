@@ -94,7 +94,7 @@
 					descriptionKey: "config.forgetmenot.desc.blocklight_warmth"
 				},
 				ambient_brightness: {
-					default: 0.02,
+					default: 0.01,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.ambient_brightness",
@@ -196,6 +196,104 @@
 					default: false,
 					nameKey: "config.forgetmenot.name.motion_blur",
 					descriptionKey: "config.forgetmenot.desc.motion_blur"
+				},
+				purkinje_amount: {
+					default: 1.0,
+					min: 0.0,
+					max: 1.0,
+					nameKey: "config.forgetmenot.name.purkinje_amount",
+					descriptionKey: "config.forgetmenot.desc.purkinje_amount"
+				},
+				purkinje_lift: {
+					default: 0.0,
+					min: 0.0,
+					max: 0.3,
+					nameKey: "config.forgetmenot.name.purkinje_lift",
+					descriptionKey: "config.forgetmenot.desc.purkinje_lift"
+				},
+				saturation: {
+					default: 1.0,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.saturation",
+					descriptionKey: "config.forgetmenot.desc.saturation"
+				},
+				contrast: {
+					default: 1.0,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.contrast",
+					descriptionKey: "config.forgetmenot.desc.contrast"
+				},
+				vibrance: {
+					default: 1.0,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.vibrance",
+					descriptionKey: "config.forgetmenot.desc.vibrance"
+				},
+				lift_r: {
+					default: 0.0,
+					min: -1.0,
+					max: 1.0,
+					nameKey: "config.forgetmenot.name.lift_r",
+					descriptionKey: "config.forgetmenot.desc.lift_r"
+				},
+				lift_g: {
+					default: 0.0,
+					min: -1.0,
+					max: 1.0,
+					nameKey: "config.forgetmenot.name.lift_g",
+					descriptionKey: "config.forgetmenot.desc.lift_g"
+				},
+				lift_b: {
+					default: 0.0,
+					min: -1.0,
+					max: 1.0,
+					nameKey: "config.forgetmenot.name.lift_b",
+					descriptionKey: "config.forgetmenot.desc.lift_b"
+				},
+				gamma_r: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gamma_r",
+					descriptionKey: "config.forgetmenot.desc.gamma_r"
+				},
+				gamma_g: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gamma_g",
+					descriptionKey: "config.forgetmenot.desc.gamma_g"
+				},
+				gamma_b: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gamma_b",
+					descriptionKey: "config.forgetmenot.desc.gamma_b"
+				},
+				gain_r: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gain_r",
+					descriptionKey: "config.forgetmenot.desc.gain_r"
+				},
+				gain_g: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gain_g",
+					descriptionKey: "config.forgetmenot.desc.gain_g"
+				},
+				gain_b: {
+					default: 1.0,
+					min: 0.001,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.gain_b",
+					descriptionKey: "config.forgetmenot.desc.gain_b"
 				},
 			}
 		},
