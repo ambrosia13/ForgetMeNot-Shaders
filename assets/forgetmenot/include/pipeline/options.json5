@@ -93,6 +93,13 @@
 					nameKey: "config.forgetmenot.name.blocklight_warmth",
 					descriptionKey: "config.forgetmenot.desc.blocklight_warmth"
 				},
+				blocklight_brightness: {
+					default: 1.0,
+					min: 0.0,
+					max: 4.0,
+					nameKey: "config.forgetmenot.name.blocklight_brightness",
+					descriptionKey: "config.forgetmenot.desc.blocklight_brightness"
+				},
 				ambient_brightness: {
 					default: 0.01,
 					min: 0.0,

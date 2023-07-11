@@ -155,7 +155,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 	float scattering = 0.75;
 
 	if(cloudLayer.selfShadowSteps > 0) {
-		cloudLayer.noiseOctaves = max(4, cloudLayer.noiseOctaves / 2);
+		//cloudLayer.noiseOctaves = max(4, cloudLayer.noiseOctaves / 2);
 
 		vec2 temp = viewDir.xz * rcp(viewDir.y);
 		float skyLightZenithAngle = rcp(abs(frx_skyLightVector.y));
@@ -368,7 +368,7 @@ vec3 getClouds(
 
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
 		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
-	) + ambientColor * exp(-fbmHash(cloudLayer.plane, 4) * 0.5);
+	) + ambientColor * exp(-fbmHash(cloudLayer.plane, 4) * 0.5) * 2.0;
 
 
 	return mix(scattering, skyColor, transmittance);

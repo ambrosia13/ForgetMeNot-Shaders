@@ -45,6 +45,9 @@
 	"config.forgetmenot.name.blocklight_warmth": "Block Light Warmth",
 	"config.forgetmenot.desc.blocklight_warmth": "Controls how warm the block light color is.",
 
+	"config.forgetmenot.name.blocklight_brightness": "Block Light Brightness",
+	"config.forgetmenot.desc.blocklight_brightness": "Controls how bright the block light is.",
+
 	"config.forgetmenot.name.ambient_brightness": "Base Ambient Brightness",
 	"config.forgetmenot.desc.ambient_brightness": "How much ambient lighting is added everywhere, regardless of dimension, blocklight, or skylight.",
 

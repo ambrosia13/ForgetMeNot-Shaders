@@ -2,7 +2,7 @@
 	nameKey: "pipeline.forgetmenot.name",
 	descriptionKey: "pipeline.forgetmenot.desc",
 
-	glslVersion: 330,
+	glslVersion: 420,
 	smoothBrightnessBidirectionaly: true,
 	rainSmoothingFrames: 250,
 	thunderSmoothingFrames: 500,

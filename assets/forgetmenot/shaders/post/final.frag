@@ -4,6 +4,8 @@
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
 
+layout(rgba16) uniform image2D u_color_img;
+
 in vec2 texcoord;
 in float exposure;
 
@@ -20,7 +22,7 @@ ExposureProfile getOverworldExposureProfile() {
 	return ExposureProfile(0.5, 0.9, 5.7, 0.75);
 }
 ExposureProfile getNetherExposureProfile() {
-	return ExposureProfile(0.2, 1.5, 2.0, 1.0);
+	return ExposureProfile(0.2, 1.5, 2.0, 0.75);
 }
 ExposureProfile getEndExposureProfile() {
 	return ExposureProfile(0.2, 1.0, 1.4, 1.5);
@@ -92,10 +94,31 @@ void main() {
 
 	color = frx_toneMap(color);
 
+	//#define DEBUG_LIFT_GAMMA_GAIN
+	#ifdef DEBUG_LIFT_GAMMA_GAIN
+		vec3 lift = vec3(-0.01, 0.0, 0.0);
+		vec3 gamma = vec3(1.4, 0.9, 1.0);
+		vec3 gain = vec3(0.9, 1.0, 1.0);
+
+		#define LIFT_R lift.r
+		#define LIFT_G lift.g
+		#define LIFT_B lift.b
+
+		#define GAMMA_R gamma.r
+		#define GAMMA_G gamma.g
+		#define GAMMA_B gamma.b
+
+		#define GAIN_R gain.r
+		#define GAIN_G gain.g
+		#define GAIN_B gain.b
+	#endif
+
 	// Lift-gamma-gain component-wise
-	color.r = liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R);
-	color.b = liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G);
-	color.g = liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B);
+	color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
+	color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
+	color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
+
+	imageStore(u_color_img, ivec2(0), vec4(1.0));
 
 	// finally, back into srgb
 	color = clamp01(pow(color, vec3(1.0 / 2.2)));

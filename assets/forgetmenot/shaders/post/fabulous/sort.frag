@@ -121,7 +121,7 @@ void main() {
 			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) / 250.0) * 250.0) * 0.065;
 			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(10.0, 1.5) + 600.0 - waterWindDirection) / 250.0) * 250.0) * 0.125;
 
-			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 4.0);
+			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 3.0);
 			waterNoise *= 0.1;
 
 			material.fragNormal = tbn * normalize(

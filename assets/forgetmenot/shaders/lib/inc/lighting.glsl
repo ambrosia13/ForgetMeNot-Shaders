@@ -203,7 +203,7 @@ vec3 basicLighting(
 
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
-		ambientLighting += 2.0 * blockLight * fmn_blockLightColor;
+		ambientLighting += 2.0 * blockLight * fmn_blockLightColor * BLOCKLIGHT_BRIGHTNESS;
 		
 		// handheld light
 		{
