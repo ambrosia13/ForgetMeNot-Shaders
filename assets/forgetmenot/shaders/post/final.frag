@@ -4,8 +4,6 @@
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
 
-layout(rgba16) uniform image2D u_color_img;
-
 in vec2 texcoord;
 in float exposure;
 
@@ -78,7 +76,7 @@ void main() {
 
 	// Purkinje effect
 	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
-	color = mix(saturation(color, 0.0) * vec3(0.5, 1.2, 1.8) + PURKINJE_LIFT, color, purkinjeFactor * PURKINJE_AMOUNT);
+	color = mix(color, saturation(color, 0.0) * vec3(0.5, 1.2, 1.8) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
 
 	#ifdef ENABLE_BLOOM
 		color *= getExposureValue() * getExposureProfile().exposureMultiplier;
@@ -117,8 +115,6 @@ void main() {
 	color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
 	color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
 	color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
-
-	imageStore(u_color_img, ivec2(0), vec4(1.0));
 
 	// finally, back into srgb
 	color = clamp01(pow(color, vec3(1.0 / 2.2)));
