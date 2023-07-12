@@ -34,6 +34,7 @@
 				"u_skybox",
 
 				"u_transmittance",
+				"u_multiscattering",
 				"u_sky_display",
 
 				"u_smooth_uniforms"
@@ -69,12 +70,17 @@
 			]
 		},
 		{
-			name: "motion_blur",
+			name: "post_sort",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/fabulous/motion_blur.frag",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/post_sort.frag",
 			samplers: [
 				"u_color",
-				"u_depth"
+				"u_depth",
+
+				"u_transmittance",
+				"u_multiscattering",
+
+				"u_skybox"
 			]
 		}
 	]

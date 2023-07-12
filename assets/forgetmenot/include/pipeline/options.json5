@@ -199,11 +199,11 @@
 					nameKey: "config.forgetmenot.name.enable_bloom",
 					descriptionKey: "config.forgetmenot.desc.enable_bloom"
 				},
-				motion_blur: {
-					default: false,
-					nameKey: "config.forgetmenot.name.motion_blur",
-					descriptionKey: "config.forgetmenot.desc.motion_blur"
-				},
+				// motion_blur: {
+				// 	default: false,
+				// 	nameKey: "config.forgetmenot.name.motion_blur",
+				// 	descriptionKey: "config.forgetmenot.desc.motion_blur"
+				// },
 				aces_tonemap: {
 					default: false,
 					nameKey: "config.forgetmenot.name.aces_tonemap",

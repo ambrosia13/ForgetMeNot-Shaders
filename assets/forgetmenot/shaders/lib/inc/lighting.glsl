@@ -172,7 +172,7 @@ vec3 basicLighting(
 
 		directLighting *= 1.5;
 
-		directLighting *= NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting *= NdotL * sqrt(frx_skyLightTransitionFactor) * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
@@ -181,7 +181,7 @@ vec3 basicLighting(
 		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
 		skyLightDir.y = abs(skyLightDir.y); // this prevents bottom faces from being too dark
 
-		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 1.0;
+		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
 		// This is really cursed. If you're reading this in the future, I'm sorry.

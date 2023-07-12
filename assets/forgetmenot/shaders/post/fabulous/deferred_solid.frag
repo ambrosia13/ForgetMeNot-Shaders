@@ -18,6 +18,7 @@ uniform sampler2DArray u_shadow_tex;
 uniform samplerCube u_skybox;
 
 uniform sampler2D u_transmittance;
+uniform sampler2D u_multiscattering;
 uniform sampler2D u_sky_display;
 
 uniform sampler2D u_smooth_uniforms;
@@ -223,6 +224,10 @@ void main() {
 			16,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r
 		);
+
+		//color = vec3(tMax * 0.5);
+
+		// color = texture(u_multiscattering, texcoord).rgb;
 		
 	} else {
 		color = texture(u_sky_display, texcoord).rgb;

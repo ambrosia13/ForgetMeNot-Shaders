@@ -73,6 +73,7 @@
 					"skybox",
 
 					"transmittance_lut",
+					"multiscattering_lut",
 					"sky_display",
 
 					"smooth_uniforms"
@@ -108,12 +109,17 @@
 				]
 			},
 			{
-				name: "motion_blur_and_copy",
-				program: "motion_blur",
+				name: "post_sort",
+				program: "post_sort",
 				framebuffer: "copy_to_main",
 				samplerImages: [
 					"sort",
-					"translucent_depth"
+					"composite_depth",
+
+					"transmittance_lut",
+					"multiscattering_lut",
+
+					"skybox"
 				]
 			},
 			{
