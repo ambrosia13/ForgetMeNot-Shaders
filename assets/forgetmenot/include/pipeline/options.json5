@@ -204,6 +204,22 @@
 					nameKey: "config.forgetmenot.name.motion_blur",
 					descriptionKey: "config.forgetmenot.desc.motion_blur"
 				},
+				aces_tonemap: {
+					default: false,
+					nameKey: "config.forgetmenot.name.aces_tonemap",
+					descriptionKey: "config.forgetmenot.desc.aces_tonemap"
+				},
+			}
+		},
+		{
+			includeToken: "forgetmenot:advanced_camera",
+			categoryKey: "config.forgetmenot.category.advanced_camera",
+			elements: {
+				enable_post_processing: {
+					default: true,
+					nameKey: "config.forgetmenot.name.enable_post_processing",
+					descriptionKey: "config.forgetmenot.desc.enable_post_processing"
+				},
 				purkinje_amount: {
 					default: 1.0,
 					min: 0.0,
@@ -301,6 +317,69 @@
 					max: 2.0,
 					nameKey: "config.forgetmenot.name.gain_b",
 					descriptionKey: "config.forgetmenot.desc.gain_b"
+				},
+				min_exposure_overworld: {
+					default: 0.9,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.min_exposure_overworld",
+					descriptionKey: "config.forgetmenot.desc.min_exposure_overworld"
+				},
+				max_exposure_overworld: {
+					default: 5.7,
+					min: 2.0,
+					max: 10.0,
+					nameKey: "config.forgetmenot.name.max_exposure_overworld",
+					descriptionKey: "config.forgetmenot.desc.max_exposure_overworld"
+				},
+				exposure_multiplier_overworld: {
+					default: 0.75,
+					min: 0.0,
+					max: 3.0,
+					nameKey: "config.forgetmenot.name.exposure_multiplier_overworld",
+					descriptionKey: "config.forgetmenot.desc.exposure_multiplier_overworld"
+				},
+				min_exposure_nether: {
+					default: 1.5,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.min_exposure_nether",
+					descriptionKey: "config.forgetmenot.desc.min_exposure_nether"
+				},
+				max_exposure_nether: {
+					default: 2.0,
+					min: 2.0,
+					max: 10.0,
+					nameKey: "config.forgetmenot.name.max_exposure_nether",
+					descriptionKey: "config.forgetmenot.desc.max_exposure_nether"
+				},
+				exposure_multiplier_nether: {
+					default: 0.75,
+					min: 0.0,
+					max: 3.0,
+					nameKey: "config.forgetmenot.name.exposure_multiplier_nether",
+					descriptionKey: "config.forgetmenot.desc.exposure_multiplier_nether"
+				},
+				min_exposure_end: {
+					default: 1.0,
+					min: 0.0,
+					max: 2.0,
+					nameKey: "config.forgetmenot.name.min_exposure_end",
+					descriptionKey: "config.forgetmenot.desc.min_exposure_end"
+				},
+				max_exposure_end: {
+					default: 1.4,
+					min: 1.0,
+					max: 10.0,
+					nameKey: "config.forgetmenot.name.max_exposure_end",
+					descriptionKey: "config.forgetmenot.desc.max_exposure_end"
+				},
+				exposure_multiplier_end: {
+					default: 1.5,
+					min: 0.0,
+					max: 3.0,
+					nameKey: "config.forgetmenot.name.exposure_multiplier_end",
+					descriptionKey: "config.forgetmenot.desc.exposure_multiplier_end"
 				},
 			}
 		},

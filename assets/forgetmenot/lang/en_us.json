@@ -96,6 +96,14 @@
 	"config.forgetmenot.name.motion_blur": "Motion Blur",
 	"config.forgetmenot.desc.motion_blur": "Blurs the screen along the motion vector.",
 
+	"config.forgetmenot.name.aces_tonemap": "Use ACES Tonemap",
+	"config.forgetmenot.desc.aces_tonemap": "If enabled, uses a contrasty and realistic tone map. Otherwise, uses Lottes tone map, which is more vibrant and colorful.",
+
+	"config.forgetmenot.category.advanced_camera": "Advanced Camera",
+
+	"config.forgetmenot.name.enable_post_processing": "Enable Post Processing Pipeline",
+	"config.forgetmenot.desc.enable_post_processing": "Enables the post-processing pipeline. In order for the options below to work, this option must be enabled.",
+
 	"config.forgetmenot.name.purkinje_amount": "Purkinje Amount",
 	"config.forgetmenot.desc.purkinje_amount": "Amount for purkinje effect. Zero disables.",
 
@@ -137,6 +145,33 @@
 
 	"config.forgetmenot.name.gain_b": "Gain - Blue",
 	"config.forgetmenot.desc.gain_b": "Amount of gain in this component of the image.",
+
+	"config.forgetmenot.name.min_exposure_overworld": "Min Exposure - Overworld",
+	"config.forgetmenot.desc.min_exposure_overworld": "Minimum exposure in this dimension.",
+
+	"config.forgetmenot.name.max_exposure_overworld": "Max Exposure - Overworld",
+	"config.forgetmenot.desc.max_exposure_overworld": "Maximum exposure in this dimension.",
+
+	"config.forgetmenot.name.exposure_multiplier_overworld": "Exposure Multiplier - Overworld",
+	"config.forgetmenot.desc.exposure_multiplier_overworld": "The multiplier for exposure in this dimension.",
+
+	"config.forgetmenot.name.min_exposure_nether": "Min Exposure - Nether",
+	"config.forgetmenot.desc.min_exposure_nether": "Minimum exposure in this dimension.",
+
+	"config.forgetmenot.name.max_exposure_nether": "Max Exposure - Nether",
+	"config.forgetmenot.desc.max_exposure_nether": "Maximum exposure in this dimension.",
+
+	"config.forgetmenot.name.exposure_multiplier_nether": "Exposure Multiplier - Nether",
+	"config.forgetmenot.desc.exposure_multiplier_nether": "The multiplier for exposure in this dimension.",
+
+	"config.forgetmenot.name.min_exposure_end": "Min Exposure - End",
+	"config.forgetmenot.desc.min_exposure_end": "Minimum exposure in this dimension.",
+
+	"config.forgetmenot.name.max_exposure_end": "Max Exposure - End",
+	"config.forgetmenot.desc.max_exposure_end": "Maximum exposure in this dimension.",
+
+	"config.forgetmenot.name.exposure_multiplier_end": "Exposure Multiplier - End",
+	"config.forgetmenot.desc.exposure_multiplier_end": "The multiplier for exposure in this dimension.",
 
 	"config.forgetmenot.category.dimensions": "Dimensions",
 

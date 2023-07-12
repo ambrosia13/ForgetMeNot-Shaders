@@ -17,13 +17,13 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.5, 0.9, 5.7, 0.75);
+	return ExposureProfile(0.5, MIN_EXPOSURE_OVERWORLD, MAX_EXPOSURE_OVERWORLD, EXPOSURE_MULTIPLIER_OVERWORLD);
 }
 ExposureProfile getNetherExposureProfile() {
-	return ExposureProfile(0.2, 1.5, 2.0, 0.75);
+	return ExposureProfile(0.2, MIN_EXPOSURE_NETHER, MAX_EXPOSURE_NETHER, EXPOSURE_MULTIPLIER_NETHER);
 }
 ExposureProfile getEndExposureProfile() {
-	return ExposureProfile(0.2, 1.0, 1.4, 1.5);
+	return ExposureProfile(0.2, MIN_EXPOSURE_END, MAX_EXPOSURE_END, EXPOSURE_MULTIPLIER_END);
 }
 
 ExposureProfile getExposureProfile() {
@@ -69,6 +69,24 @@ float liftGammaGain(float color, float lift, float gamma, float gain) {
     return color;
 }
 
+// Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
+vec3 lottes(vec3 x) {
+	const vec3 a = vec3(1.6);
+	const vec3 d = vec3(0.977);
+	const vec3 hdrMax = vec3(8.0);
+	const vec3 midIn = vec3(0.18);
+	const vec3 midOut = vec3(0.267);
+
+	const vec3 b =
+		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+	const vec3 c =
+		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
+		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
+
+	return pow(x, a) / (pow(x, a * d) * b + c);
+}
+
 void main() {
 	initGlobals();
 
@@ -82,15 +100,21 @@ void main() {
 		color *= getExposureValue() * getExposureProfile().exposureMultiplier;
 	#endif
 
-	// Contrast in log-scale to preserve more color detail
-	color = log(color);
-	color = contrast(color, CONTRAST);
-	color = exp(color);
+	#ifdef ENABLE_POST_PROCESSING
+		// Contrast in log-scale to preserve more color detail
+		color = log(color);
+		color = contrast(color, CONTRAST);
+		color = exp(color);
 
-	color = saturation(color, SATURATION);
-	color = vibrance(color, VIBRANCE);
+		color = saturation(color, SATURATION);
+		color = vibrance(color, VIBRANCE);
+	#endif
 
-	color = frx_toneMap(color);
+	#ifndef ACES_TONEMAP
+		color = lottes(color * 0.45);
+	#else
+		color = frx_toneMap(color);
+	#endif
 
 	//#define DEBUG_LIFT_GAMMA_GAIN
 	#ifdef DEBUG_LIFT_GAMMA_GAIN
@@ -111,10 +135,12 @@ void main() {
 		#define GAIN_B gain.b
 	#endif
 
-	// Lift-gamma-gain component-wise
-	color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
-	color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
-	color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
+	#ifdef ENABLE_POST_PROCESSING
+		// Lift-gamma-gain component-wise
+		color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
+		color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
+		color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
+	#endif 
 
 	// finally, back into srgb
 	color = clamp01(pow(color, vec3(1.0 / 2.2)));

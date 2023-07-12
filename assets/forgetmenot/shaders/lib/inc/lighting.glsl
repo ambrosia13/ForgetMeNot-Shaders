@@ -170,7 +170,7 @@ vec3 basicLighting(
 			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
-		directLighting *= 1.5;
+		//directLighting *= 1.5;
 
 		directLighting *= NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
@@ -181,7 +181,7 @@ vec3 basicLighting(
 		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
 		skyLightDir.y = abs(skyLightDir.y); // this prevents bottom faces from being too dark
 
-		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 3.0;
+		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 2.0;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
 		// This is really cursed. If you're reading this in the future, I'm sorry.
@@ -203,7 +203,7 @@ vec3 basicLighting(
 
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
-		ambientLighting += 2.0 * blockLight * fmn_blockLightColor * BLOCKLIGHT_BRIGHTNESS;
+		ambientLighting += 2.0 * pow2(blockLight) * fmn_blockLightColor * BLOCKLIGHT_BRIGHTNESS;
 		
 		// handheld light
 		{
@@ -228,7 +228,7 @@ vec3 basicLighting(
 
 	if(AMBIENT_BRIGHTNESS != 0.0) {
 		// Tiny point light around the player so caves aren't completely dark
-		totalLighting = max(totalLighting, vec3(0.2 * (1.0 - skyLight)) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
+		totalLighting = max(totalLighting, vec3(0.05 * (1.0 - skyLight)) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
 	}
 
 	// Night vision

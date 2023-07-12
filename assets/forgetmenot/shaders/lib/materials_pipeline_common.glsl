@@ -10,6 +10,7 @@ Common things that should be available to both pipeline and material shaders.
 #include forgetmenot:rtao
 #include forgetmenot:water
 #include forgetmenot:camera
+#include forgetmenot:advanced_camera
 #include forgetmenot:dimensions
 #include forgetmenot:general
 #include forgetmenot:seasons
