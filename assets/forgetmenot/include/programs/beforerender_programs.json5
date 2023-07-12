@@ -18,6 +18,15 @@
 			]
 		},
 		{
+			name: "aerial_perspective",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/pre/aerial_perspective.frag",
+			samplers: [
+				"u_transmittance",
+				"u_multiscattering",
+			]
+		},
+		{
 			name: "clouds",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/pre/clouds.frag",

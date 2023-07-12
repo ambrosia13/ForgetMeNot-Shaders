@@ -77,9 +77,7 @@
 				"u_color",
 				"u_depth",
 
-				"u_transmittance",
-				"u_multiscattering",
-
+				"u_aerial_perspective",
 				"u_skybox"
 			]
 		}

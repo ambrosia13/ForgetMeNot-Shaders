@@ -116,9 +116,7 @@
 					"sort",
 					"composite_depth",
 
-					"transmittance_lut",
-					"multiscattering_lut",
-
+					"aerial_perspective",
 					"skybox"
 				]
 			},

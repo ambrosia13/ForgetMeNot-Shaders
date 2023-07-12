@@ -179,8 +179,6 @@ vec3 basicLighting(
 	// Ambient lighting
 	{
 		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		skyLightDir.y = abs(skyLightDir.y); // this prevents bottom faces from being too dark
-
 		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
