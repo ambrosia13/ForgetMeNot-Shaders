@@ -41,27 +41,6 @@ void main() {
 				float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
-				// vec3[] scatteringValues = vec3[2](vec3(0.0), vec3(0.0));
-				// vec3 timeFactors = getTimeOfDayFactors();
-				
-				// if(timeFactors.x + timeFactors.z > 0.0) {
-				// 	scatteringValues[0] = raymarchScattering(
-				// 		skyViewPos, viewDir, getSunVector(),
-				// 		blockDistance / 1e4, 16.0,
-				// 		u_transmittance, u_multiscattering
-				// 	) * 20.0;
-				// }
-
-				// if(timeFactors.y + timeFactors.z > 0.0) {
-				// 	scatteringValues[1] = raymarchScattering(
-				// 		skyViewPos, viewDir, getMoonVector(),
-				// 		blockDistance / 1e4, 16.0,
-				// 		u_transmittance, u_multiscattering
-				// 	) * 20.0;
-				// 	scatteringValues[1] = nightAdjust(scatteringValues[1]);
-				// }
-
-				// scattering = scatteringValues[0] + scatteringValues[1];
 				int fogDistanceWhole = int(blockDistance / 2.0);
 				scattering = getAerialPerspectiveSlice(min(fogDistanceWhole, 225));
 
