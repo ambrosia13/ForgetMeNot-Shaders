@@ -53,10 +53,10 @@ void autoGenNormal() {
 
 	float lodFactor = pow(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal)), 1.0 / 2.0);
 
-	vec4 sample1 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv1)), 0);
-	vec4 sample2 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv2)), 0);
-	vec4 sample3 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv3)), 0);
-	vec4 sample4 = textureLod(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv4)), 0);
+	vec4 sample1 = texture(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv1)), -1);
+	vec4 sample2 = texture(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv2)), -1);
+	vec4 sample3 = texture(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv3)), -1);
+	vec4 sample4 = texture(frxs_baseColor, frx_mapNormalizedUV(repeatAndMirrorCoords(uv4)), -1);
 
 	//frx_fragColor.rgb = mix(frx_fragColor.rgb, vec3(1.0, 0.0, 0.0), pow4(clamp01(dot(normalize(frx_vertex.xyz), -frx_vertexNormal))));
 

@@ -333,7 +333,7 @@
 					descriptionKey: "config.forgetmenot.desc.max_exposure_overworld"
 				},
 				exposure_multiplier_overworld: {
-					default: 0.75,
+					default: 0.65,
 					min: 0.0,
 					max: 3.0,
 					nameKey: "config.forgetmenot.name.exposure_multiplier_overworld",

@@ -45,7 +45,7 @@ void main() {
 				float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
-				const float distanceFactor = 20.0;
+				const float distanceFactor = 15.0;
 
 				int fogDistanceWhole = int(blockDistance / distanceFactor);
 				float fogDistancePart = fract(blockDistance / distanceFactor);
