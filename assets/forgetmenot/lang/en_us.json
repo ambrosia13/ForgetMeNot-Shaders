@@ -13,6 +13,9 @@
 	"config.forgetmenot.name.fog": "Fog",
 	"config.forgetmenot.desc.fog": "Enables atmospheric fog.",
 
+	"config.forgetmenot.name.fog_mie_amount": "Fog Mie Amount",
+	"config.forgetmenot.desc.fog_mie_amount": "Multiplier for how much mie scattering to add when calculating fog. Controls the brightness of the highlight around the sun.",
+
 	"config.forgetmenot.category.clouds": "Clouds",
 
 	"config.forgetmenot.name.cumulus_clouds": "Enable Cumulus Clouds",

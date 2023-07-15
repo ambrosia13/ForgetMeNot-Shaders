@@ -29,8 +29,8 @@ void main() {
 	vec3 viewDir = normalize(setupSceneSpacePos(layerCoord, 1.0));
 
 	float tMax = (layer + 50.0) / 1e4;
-	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, u_transmittance, u_multiscattering) * 20.0;
-	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, u_transmittance, u_multiscattering) * 20.0);
+	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0;
+	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0);
 
 	fragColor = vec4(color, 1.0);
 }

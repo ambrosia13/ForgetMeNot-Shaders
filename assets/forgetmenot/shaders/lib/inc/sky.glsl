@@ -125,6 +125,7 @@ vec3 raymarchScattering(
 	vec3 sunDir,
 	float tMax,
 	float numSteps,
+	float mieScatteringAmount,
 	sampler2D transmittanceLut,
 	sampler2D multiscatteringLut
 ) {
@@ -154,7 +155,7 @@ vec3 raymarchScattering(
 		
 		vec3 rayleighInScattering = rayleighScattering*(rayleighPhaseValue*sunTransmittance + psiMS);
 		vec3 mieInScattering = mieScattering*(miePhaseValue*sunTransmittance + psiMS);
-		vec3 inScattering = (rayleighInScattering + mieInScattering);
+		vec3 inScattering = (rayleighInScattering + mieInScattering * mieScatteringAmount);
 
 		// Integrated scattering within path segment.
 		vec3 scatteringIntegral = (inScattering - inScattering * sampleTransmittance) / extinction;
@@ -164,6 +165,27 @@ vec3 raymarchScattering(
 		transmittance *= sampleTransmittance;
 	}
 	return lum;
+}
+
+vec3 raymarchScattering(
+	vec3 pos, 
+	vec3 rayDir, 
+	vec3 sunDir,
+	float tMax,
+	float numSteps,
+	sampler2D transmittanceLut,
+	sampler2D multiscatteringLut
+) {
+	return raymarchScattering(
+		pos, 
+		rayDir, 
+		sunDir,
+		tMax,
+		numSteps,
+		1.0,
+		transmittanceLut,
+		multiscatteringLut
+	);
 }
 
 vec3 getValFromSkyLUT(vec3 rayDir, vec3 sunDir, sampler2D skyLut) {

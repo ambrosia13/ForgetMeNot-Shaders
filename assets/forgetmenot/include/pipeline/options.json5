@@ -23,6 +23,13 @@
 					nameKey: "config.forgetmenot.name.fog",
 					descriptionKey: "config.forgetmenot.desc.fog"
 				},
+				fog_mie_amount: {
+					default: 1.0,
+					min: 0.0,
+					max: 1.0,
+					nameKey: "config.forgetmenot.name.fog_mie_amount",
+					descriptionKey: "config.forgetmenot.desc.fog_mie_amount"
+				},
 			}
 		},
 		{
