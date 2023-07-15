@@ -15,7 +15,7 @@ layout(location = 0) out vec4 fragColor;
 void main() {
 	initGlobals();
 
-	const int LAYER_SIZE = 15;
+	const int LAYER_SIZE = 45;
 	const int TOTAL_SIZE = LAYER_SIZE * LAYER_SIZE;
 
 	ivec2 coord = ivec2(gl_FragCoord.xy);
@@ -28,7 +28,7 @@ void main() {
 
 	vec3 viewDir = normalize(setupSceneSpacePos(layerCoord, 1.0));
 
-	float tMax = (2.0 * layer) / 1e4;
+	float tMax = (layer + 50.0) / 1e4;
 	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, u_transmittance, u_multiscattering) * 20.0;
 	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, u_transmittance, u_multiscattering) * 20.0);
 

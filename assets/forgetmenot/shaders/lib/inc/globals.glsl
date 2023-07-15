@@ -98,7 +98,7 @@ void initGlobals() {
 
 	// fog density
 	fmn_atmosphereParams.blocksPerFogUnit = 1500.0;//_interpolateRandom(fmn_worldTime, 400.0, 1500.0, 0.0, true);
-	fmn_atmosphereParams.blocksPerFogUnit -= 1000.0 * fmn_rainFactor;
+	fmn_atmosphereParams.blocksPerFogUnit -= 1200.0 * fmn_rainFactor;
 
 	fmn_atmosphereParams.blocksPerFogUnit = mix(300.0, fmn_atmosphereParams.blocksPerFogUnit, frx_smoothedEyeBrightness.y);
 }

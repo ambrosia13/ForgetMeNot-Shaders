@@ -8,7 +8,7 @@
 const vec3 moonFlux = vec3(0.56, 0.8, 1.1);
 
 vec3 nightAdjust(in vec3 color) {
-	return color * 0.05;//mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.075;
+	return color * 0.03;//mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.075;
 } 
 
 // Units are in megameters.

@@ -14,8 +14,10 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 vec3 getAerialPerspectiveSlice(int layerIndex) {
-	ivec2 layer = ivec2(layerIndex % 15, layerIndex / 15);
-	vec2 coord = texcoord / 16.0 + layer * vec2(15.0 / 225.0);
+	layerIndex = min(layerIndex, 24);
+
+	ivec2 layer = ivec2(layerIndex % 5, layerIndex / 5);
+	vec2 coord = texcoord / 5.0 + layer * vec2(45.0 / 225.0);
 	
 	return texture(u_aerial_perspective, coord).rgb;
 }
@@ -35,14 +37,22 @@ void main() {
 		// Fog
 		if(!fmn_isModdedDimension) {
 			vec3 scattering = vec3(0.0);
-			float transmittance = exp(-blockDistance / fmn_atmosphereParams.blocksPerFogUnit * 2.0);
+
+			float fogMultiplier = mix(3.0, 15.0, float(frx_worldIsNether));
+			float transmittance = exp(-blockDistance / fmn_atmosphereParams.blocksPerFogUnit * fogMultiplier);
 
 			if(frx_worldIsOverworld == 1) {
 				float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 
-				int fogDistanceWhole = int(blockDistance / 2.0);
-				scattering = getAerialPerspectiveSlice(min(fogDistanceWhole, 225));
+				const float distanceFactor = 20.0;
+
+				int fogDistanceWhole = int(blockDistance / distanceFactor);
+				float fogDistancePart = fract(blockDistance / distanceFactor);
+				fogDistancePart = fogDistancePart * fogDistancePart * (3.0 - 2.0 * fogDistancePart);
+				
+				scattering = getAerialPerspectiveSlice(fogDistanceWhole);
+				scattering = mix(scattering, getAerialPerspectiveSlice(fogDistanceWhole + 1), fogDistancePart);
 
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {

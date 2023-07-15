@@ -170,7 +170,7 @@ vec3 basicLighting(
 			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
-		directLighting *= 1.5;
+		directLighting *= 2.0;
 
 		directLighting *= NdotL * sqrt(frx_skyLightTransitionFactor) * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
@@ -179,7 +179,7 @@ vec3 basicLighting(
 	// Ambient lighting
 	{
 		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb;
+		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 2.0;
 
 		// Prevent ambient lighting from getting too bright while still preserving the color
 		// This is really cursed. If you're reading this in the future, I'm sorry.

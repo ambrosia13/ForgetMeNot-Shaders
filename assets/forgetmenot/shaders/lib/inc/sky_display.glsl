@@ -213,8 +213,8 @@ vec3 getSkyColor(
 			linearstep(0.05, -0.05, sunVector.y)
 		);
 
-		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay);
-		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight);
+		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay) * 1.4;
+		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight) * 1.4;
 		
 		float dist = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
 
