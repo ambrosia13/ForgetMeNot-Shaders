@@ -178,15 +178,28 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		vec3 skyLightDir = fragNormal;//mix(fragNormal, vec3(0.0, 1.0, 0.0), sssAmount);
-		ambientLighting = textureLod(skybox, skyLightDir, 7).rgb * 2.0;
+		// Directional skylight is more realistic, but it seems like non-directional skylight has tiny bit better
+		// results.
+		#ifdef DIRECTIONAL_SKYLIGHT
+			ambientLighting = textureLod(skybox, fragNormal, 7).rgb * 2.0;
 
-		// Prevent ambient lighting from getting too bright while still preserving the color
-		// This is really cursed. If you're reading this in the future, I'm sorry.
-		vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
-		vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
+			// Prevent ambient lighting from getting too bright while still preserving the color
+			// This is really cursed. If you're reading this in the future, I'm sorry.
+			vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
+			vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
 
-		ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
+			ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
+		#else
+			ambientLighting = 
+				textureLod(skybox, vec3(1.0, 0.0, 0.0), 7).rgb + 
+				textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb + 
+				textureLod(skybox, vec3(0.0, 0.0, 1.0), 7).rgb + 
+				textureLod(skybox, -vec3(1.0, 0.0, 0.0), 7).rgb + 
+				textureLod(skybox, -vec3(0.0, 1.0, 0.0), 7).rgb + 
+				textureLod(skybox, -vec3(0.0, 0.0, 1.0), 7).rgb;
+
+			ambientLighting /= 6.0;
+		#endif
 
 		ambientLighting *= skyLight;
 
@@ -196,7 +209,8 @@ vec3 basicLighting(
 				ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * vanillaAo;
 			#endif
 		} else if(frx_worldIsEnd == 1) {
-			ambientLighting += END_MIST_COLOR * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
+			ambientLighting *= 0.1;
+			// ambientLighting += END_MIST_COLOR * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
 		}
 
 		ambientLighting += AMBIENT_BRIGHTNESS;
@@ -237,6 +251,8 @@ vec3 basicLighting(
 }
 
 // Schlick fresnel approximation
-vec3 getReflectance(in vec3 f0, in float NdotV) {
-	return f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+vec3 getReflectance(in vec3 f0, in float NdotV, in float roughness) {
+	vec3 r = f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+
+	return mix(r, min(r, vec3(0.1)), roughness);
 }

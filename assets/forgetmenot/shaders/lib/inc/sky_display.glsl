@@ -213,8 +213,10 @@ vec3 getSkyColor(
 			linearstep(0.05, -0.05, sunVector.y)
 		);
 
-		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay) * 1.4;
-		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight) * 1.4;
+		const float skyBrightness = 1.6;
+
+		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay) * skyBrightness;
+		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight) * skyBrightness;
 		
 		float dist = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
 
@@ -259,22 +261,51 @@ vec3 getSkyColor(
 	} else if(frx_worldIsEnd == 1) {
 		vec3 skyColor = vec3(0.0);
 
-		float mistAmount = 0.1 * fbmHash3D(viewDir * 3.0, 4);
-		vec3 mist = END_MIST_COLOR * mistAmount;
 
-		vec3 starPos = normalize(vec3(-0.7, 0.1, 0.7));
-		float VdotStar = clamp01(dot(viewDir, starPos));
+		// const vec2 starDirection = vec2(1.0, 0.0);
 
-		vec3 star = END_MIST_COLOR * vec3(min(20.0, 0.04 / (distance(starPos, viewDir))));
+		// const int samples = 100;
 
-		// Not the main star
-		vec3 otherStars = 0.25 * vec3(
-			smoothHash(viewDir * 40.0), 
-			smoothHash(viewDir * 40.0 + 100.0), 
-			smoothHash(viewDir * 40.0 + 200.0)
-		) * linearstep(4.0, 100.0, 1.0 / max(0.0001, cellular2x2x2(viewDir * 10.0).x - 0.03));
 
-		skyColor += mist + star + otherStars;
+		// for(int i = 0; i < samples; i++) {
+		// 	skyColor += starColor * step(0.95 + 0.03 * i / samples, 1.0 - cellular2x2(plane + starDirection * (i + randomFloat()) / samples).x) / samples;
+		// }
+
+		// skyColor *= exp(-plane.x * 0.3);
+
+		vec2 plane = viewDir.xz / (abs(viewDir.y + length(viewDir.xz) * 0.3));
+		plane *= 10.0;
+
+		// Normal stars
+		vec3 stars = vec3(0.0);
+		vec3 starColor = normalize(hash32(floor(plane)) + 0.001);
+
+		for(int i = 0; i < 3; i++) {
+			float brightness = 1.0 + 10.0 * hash12(vec2(i) + floor(plane));
+			stars += brightness * step(0.95 - 0.03 * i, 1.0 - cellular2x2x2(viewDir * 40.0 * (1.0 + i * 0.1)).x);
+		}
+
+		skyColor += (starColor * 0.5 + 0.5) * 0.3 * stars;
+
+		// Special stars 
+		float starDensity = exp(-abs(pow2(rotate2D(viewDir.yz, 0.6).y)) * 20.0);
+		starDensity *= smoothstep(0.0, 0.01, starDensity);
+
+		stars = vec3(0.0);
+		starColor *= vec3(0.5, 1.5, 0.9);
+
+		for(int i = 0; i < 3; i++) {
+			int j = i + 3;
+
+			float brightness = 1.0 + 10.0 * hash12(vec2(j) + floor(plane));
+			stars += brightness * step(0.95 - 0.03 * i, 1.0 - cellular2x2x2(viewDir * 40.0 * (1.0 + j * 0.1)).x);
+		}
+
+		skyColor += starColor * 40.0 * stars * starDensity;
+		
+		// Fog
+		float noise = fbmHash3D(viewDir, 5, 3.0, 0.0);
+		skyColor += vec3(0.2, 0.9, 0.4) * pow4(noise) * (starDensity);
 
 		return skyColor;
 	}
@@ -354,7 +385,7 @@ vec3 getClouds(
 	vec3 sunColor = getValFromTLUT(transmittanceLut, cloudPos, sunVector);
 	vec3 moonColor = nightAdjust(getValFromTLUT(transmittanceLut, cloudPos, moonVector));
 
-	vec3 scatteringColor = sunColor + moonColor;
+	vec3 scatteringColor = (sunColor + moonColor) * 2.0;
 	vec3 ambientColor = getSkyColor(
 		vec3(0.0, 1.0, 0.0), 
 		sunTransmittance, 

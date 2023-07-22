@@ -32,5 +32,7 @@ void main() {
 	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0;
 	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0);
 
+	color *= 1.6;
+
 	fragColor = vec4(color, 1.0);
 }

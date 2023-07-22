@@ -248,7 +248,7 @@ void main() {
 	// Reflections
 	if(compositeDepth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
 		vec3 reflectColor = vec3(0.0);
-		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)));
+		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
@@ -260,6 +260,8 @@ void main() {
 		// number of rays to cast depends on roughness (goodbye performance)
 		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
 		numReflectionRays = min(4, numReflectionRays); // hello performance
+
+		numReflectionRays *= int(step(material.roughness, 0.5));
 
 		float reflectionFactor = 0.0;
 		for(int i = 0; i < numReflectionRays; i++) {
