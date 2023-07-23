@@ -1,6 +1,7 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/lib/inc/sky.glsl
+#include forgetmenot:shaders/lib/inc/exposure.glsl
 
 uniform sampler2D u_color;
 uniform sampler2D u_downsampled;
@@ -8,6 +9,8 @@ uniform sampler2D u_upsampled;
 
 uniform sampler2D u_sort;
 uniform sampler2D u_solid_depth;
+
+uniform sampler2D u_exposure;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -41,5 +44,7 @@ void main() {
 
 	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 7.0;
 
+	float luminance = texelFetch(u_exposure, ivec2(0), 0).r;
+	float exposure = getExposureValue(luminance);
 	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.2 * frx_worldIsNether);
 }

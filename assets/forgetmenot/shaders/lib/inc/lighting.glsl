@@ -170,7 +170,7 @@ vec3 basicLighting(
 			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
-		directLighting *= 2.0;
+		directLighting *= 1.5;
 
 		directLighting *= NdotL * sqrt(frx_skyLightTransitionFactor) * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
@@ -191,14 +191,14 @@ vec3 basicLighting(
 			ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
 		#else
 			ambientLighting = 
-				textureLod(skybox, vec3(1.0, 0.0, 0.0), 7).rgb + 
-				textureLod(skybox, vec3(0.0, 1.0, 0.0), 7).rgb + 
-				textureLod(skybox, vec3(0.0, 0.0, 1.0), 7).rgb + 
-				textureLod(skybox, -vec3(1.0, 0.0, 0.0), 7).rgb + 
-				textureLod(skybox, -vec3(0.0, 1.0, 0.0), 7).rgb + 
-				textureLod(skybox, -vec3(0.0, 0.0, 1.0), 7).rgb;
+				textureLod(skybox, vec3( 1.0,  0.0,  0.0), 7).rgb + 
+				textureLod(skybox, vec3( 0.0,  1.0,  0.0), 7).rgb + 
+				textureLod(skybox, vec3( 0.0,  0.0,  1.0), 7).rgb + 
+				textureLod(skybox, vec3(-1.0,  0.0,  0.0), 7).rgb + 
+				textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
+				textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
 
-			ambientLighting /= 6.0;
+			ambientLighting /= 4.0;
 		#endif
 
 		ambientLighting *= skyLight;

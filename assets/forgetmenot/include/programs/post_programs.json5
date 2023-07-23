@@ -54,7 +54,9 @@
 				"u_upsampled",
 
 				"u_sort",
-				"u_solid_depth"
+				"u_solid_depth",
+
+				"u_exposure"
 			]
 		},
 		{
