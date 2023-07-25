@@ -30,7 +30,7 @@ vec4 clamp01(in vec4 x) {
 	return clamp(x, vec4(0.0), vec4(1.0));
 }
 
-// "faster" normalize functions - probably shouldn't be used.
+// "faster" normalize functions - probably shouldn't be used. Tested to have no effect on performance.
 vec2 fNormalize(in vec2 x) {
 	return x * inversesqrt(dot(x, x));
 }
