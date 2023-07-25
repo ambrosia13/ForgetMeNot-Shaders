@@ -69,6 +69,33 @@ void main() {
 		color *= getExposureValue() * getExposureProfile().exposureMultiplier;
 	#endif
 
+	//#define DEBUG_POST_PROCESSING
+	#ifdef DEBUG_POST_PROCESSING
+		float _contrast = 1.0;
+		float _saturation = 1.0;
+		float _vibrance = 1.0;
+
+		vec3 lift = vec3(0.0, 0.0, 0.0);
+		vec3 gamma = vec3(1.0, 1.0, 1.0);
+		vec3 gain = vec3(1.0, 1.0, 1.0);
+
+		#define CONTRAST _contrast
+		#define SATURATION _saturation
+		#define VIBRANCE _vibrance
+
+		#define LIFT_R lift.r
+		#define LIFT_G lift.g
+		#define LIFT_B lift.b
+
+		#define GAMMA_R gamma.r
+		#define GAMMA_G gamma.g
+		#define GAMMA_B gamma.b
+
+		#define GAIN_R gain.r
+		#define GAIN_G gain.g
+		#define GAIN_B gain.b
+	#endif
+
 	#ifdef ENABLE_POST_PROCESSING
 		// Contrast in log-scale to preserve more color detail
 		color = log(color);
@@ -83,25 +110,6 @@ void main() {
 		color = lottes(color * 0.45);
 	#else
 		color = frx_toneMap(color);
-	#endif
-
-	//#define DEBUG_LIFT_GAMMA_GAIN
-	#ifdef DEBUG_LIFT_GAMMA_GAIN
-		vec3 lift = vec3(-0.01, 0.0, 0.0);
-		vec3 gamma = vec3(1.4, 0.9, 1.0);
-		vec3 gain = vec3(0.9, 1.0, 1.0);
-
-		#define LIFT_R lift.r
-		#define LIFT_G lift.g
-		#define LIFT_B lift.b
-
-		#define GAMMA_R gamma.r
-		#define GAMMA_G gamma.g
-		#define GAMMA_B gamma.b
-
-		#define GAIN_R gain.r
-		#define GAIN_G gain.g
-		#define GAIN_B gain.b
 	#endif
 
 	#ifdef ENABLE_POST_PROCESSING

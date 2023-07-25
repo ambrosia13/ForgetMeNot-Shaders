@@ -222,6 +222,24 @@ vec3 basicLighting(
 			float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
 			heldLightFactor = pow3(heldLightFactor);
 
+			// Spot lights
+			{
+				float innerAngle = sin(frx_heldLightInnerRadius);
+				float outerAngle = sin(frx_heldLightOuterRadius);
+
+				if(innerAngle != 0.0) {
+					vec4 viewSpacePos = frx_viewMatrix * vec4(sceneSpacePos, 1.0);
+					float blockDistance = -viewSpacePos.z;
+
+					float distSq = dot(viewSpacePos.xy, viewSpacePos.xy);
+
+					float innerLimit = pow2(innerAngle * blockDistance);
+					float outerLimit = pow2(outerAngle * blockDistance);
+
+					heldLightFactor = exp(-blockDistance / (max(0.01, frx_heldLight.a) * 8.0)) * smoothstep(outerLimit, innerLimit, distSq);
+				}
+			}
+
 			heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize((sceneSpacePos + frx_cameraPos - frx_eyePos) - vec3(0.0, 1.5, 0.0)))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
 
 			#ifdef frx_isHand
