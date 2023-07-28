@@ -38,7 +38,7 @@ void main() {
 		if(!fmn_isModdedDimension) {
 			vec3 scattering = vec3(0.0);
 
-			float fogMultiplier = mix(3.0, 15.0, float(frx_worldIsNether));
+			float fogMultiplier = mix(1.0 + 2.0 * frx_smoothedEyeBrightness.y, 15.0, float(frx_worldIsNether));
 			float transmittance = exp(-blockDistance / fmn_atmosphereParams.blocksPerFogUnit * fogMultiplier);
 
 			if(frx_worldIsOverworld == 1) {

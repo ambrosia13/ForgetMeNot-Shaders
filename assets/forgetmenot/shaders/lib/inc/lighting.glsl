@@ -219,7 +219,7 @@ vec3 basicLighting(
 		
 		// handheld light
 		{
-			vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.5, 0.0);
+			vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.4, 0.0);
 
 			float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
 			heldLightFactor = pow3(heldLightFactor);
