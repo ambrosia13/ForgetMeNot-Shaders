@@ -5,6 +5,7 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 */
 
 #include forgetmenot:shaders/lib/inc/sky_display.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
 
 // --------------------------------------------------------------------------------------------------------
 // https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
@@ -178,17 +179,21 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
+		#ifndef CLOUD_SHADOWS 
+			#define DIRECTIONAL_SKYLIGHT
+		#endif
+
 		// Directional skylight is more realistic, but it seems like non-directional skylight has tiny bit better
 		// results.
 		#ifdef DIRECTIONAL_SKYLIGHT
-			ambientLighting = textureLod(skybox, fragNormal, 7).rgb * 2.0;
+			ambientLighting = interpolateCubemap(skybox, fragNormal).rgb * 2.0;
 
 			// Prevent ambient lighting from getting too bright while still preserving the color
 			// This is really cursed. If you're reading this in the future, I'm sorry.
-			vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
-			vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
+			// vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
+			// vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
 
-			ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
+			// ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
 		#else
 			ambientLighting = 
 				textureLod(skybox, vec3( 1.0,  0.0,  0.0), 7).rgb + 

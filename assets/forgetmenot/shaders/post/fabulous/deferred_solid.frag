@@ -147,6 +147,29 @@ void main() {
 		}
 	#endif
 
+	// float dist = rayIntersectSphere(vec3(0.0, -300.0, 100.0), viewDir, 10.0);
+	// vec3 spherePos = viewDir * max(0.0, dist);
+	// vec3 sphereNormal = normalize(cross(dFdx(spherePos), dFdy(spherePos)));
+
+	// if(dist >= 0.0 && dist < length(sceneSpacePos)) {
+	// 	sceneSpacePos = spherePos;
+	// 	color = vec3(1.0, 0.0, 0.0);
+	// 	material.fragNormal = sphereNormal;
+	// 	material.vertexNormal = sphereNormal;
+	// 	material.skyLight = 1.0;
+	// 	material.blockLight = 0.0;
+	// 	material.vanillaAo = 1.0;
+	// 	material.f0 = 0.0;
+	// 	material.roughness = 1.0;
+	// 	material.sssAmount = 0.0;
+	// 	material.isWater = 0.0;
+		
+	// 	depth = sceneSpaceToScreenSpace(spherePos).z;
+
+	// 	// fragColor.rgb = sphereNormal;
+	// 	// return;
+	// }
+
 	if(depth < 1.0) {
 		#ifdef RTAO
 			float ambientOcclusion = 1.0;

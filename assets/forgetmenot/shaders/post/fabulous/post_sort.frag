@@ -2,6 +2,7 @@
 #include forgetmenot:shaders/lib/inc/sky.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/cubemap.glsl
 
 uniform sampler2D u_color;
 uniform sampler2D u_depth;
@@ -56,7 +57,7 @@ void main() {
 
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {
-				scattering = textureLod(u_skybox, viewDir, 7).rgb;
+				scattering = interpolateCubemap(u_skybox, viewDir).rgb;
 			}
 
 			color = mix(scattering, color, transmittance);
