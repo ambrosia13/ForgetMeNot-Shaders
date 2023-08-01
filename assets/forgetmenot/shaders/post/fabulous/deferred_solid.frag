@@ -23,30 +23,77 @@ uniform sampler2D u_sky_display;
 
 uniform sampler2D u_smooth_uniforms;
 
+uniform sampler2D u_light_data;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
+struct Hit {
+	vec3 pos;
+	vec3 normal;
+
+	bool success;
+};
+
+bool evaluateHit(inout Hit hit, in vec3 voxelPos) {
+	frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
+
+	return data.isOccluder && data.isFullCube;
+}
+
+Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
+	Hit hit;
+	hit.pos = vec3(0.0);
+	hit.success = false;
+
+	rayPos += frx_cameraPos;
+
+	vec3 stepSizes = 1.0 / abs(rayDir);
+	vec3 stepDir = sign(rayDir);
+	vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(rayPos)) / rayDir;
+
+	ivec3 voxelPos = ivec3(floor(rayPos));
+	vec3 currentPos = rayPos;
+
+	for(int i = 0; i < raytraceLength; i++) {
+		float closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
+
+		currentPos += rayDir * closestDist;
+
+		vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
+
+		voxelPos += ivec3(stepAxis * stepDir);
+
+		nextDist -= closestDist;
+		nextDist += stepSizes * stepAxis;
+
+		hit.normal = stepAxis;
+
+		if(evaluateHit(hit, voxelPos)) {
+			hit.pos = currentPos - frx_cameraPos;
+			hit.normal *= -stepDir;
+			hit.success = true;
+			break;
+		}
+	}
+
+	return hit;
+}
+
 #ifdef FANCY_POWDER_SNOW
-	struct Hit {
-		vec3 pos;
-		vec3 normal;
-
-		bool success;
-	};
-
 	// Controls the scale of the voxel raytrace
 	// One minecraft block is equal to this many voxels
 	const float voxelScale = 16.0;
 
-	bool evaluateHit(inout Hit hit, in vec3 voxelPos) {
+	bool hitSnow(inout Hit hit, in vec3 voxelPos) {
 		float dist = length(voxelPos - frx_cameraPos * voxelScale);
 		dist += hash13(voxelPos) * 4.0 - 2.0;
 
 		return dist > 16.0;
 	}
 
-	Hit raytraceDDA(vec3 rayPos, vec3 rayDir, int raytraceLength) {
+	Hit raytraceSnow(vec3 rayPos, vec3 rayDir, int raytraceLength) {
 		Hit hit;
 		hit.pos = vec3(0.0);
 		hit.success = false;
@@ -74,7 +121,7 @@ layout(location = 0) out vec4 fragColor;
 
 			hit.normal = stepAxis;
 
-			if(evaluateHit(hit, voxelPos)) {
+			if(hitSnow(hit, voxelPos)) {
 				hit.pos = currentPos - frx_cameraPos * voxelScale;
 				hit.normal *= -stepDir;
 				break;
@@ -123,7 +170,7 @@ void main() {
 	#ifdef FANCY_POWDER_SNOW
 		if(frx_playerEyeInSnow == 1 && !frx_isGui) {
 
-			Hit hit = raytraceDDA(vec3(0.0), viewDir, 40);
+			Hit hit = raytraceSnow(vec3(0.0), viewDir, 40);
 
 			hit.pos -= 0.05 * hit.normal;
 			float hitDistance = length(hit.pos / voxelScale);
@@ -179,50 +226,24 @@ void main() {
 
 			const float aoStrength = RTAO_STRENGTH;
 
+			const int aoRange = 2;
+
+			vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
+
 			for(int i = 0; i < numAoRays; i++) {
-				vec3 rayDirWorld = generateCosineVector(material.fragNormal);
-				
-				vec3 rayPosView = setupViewSpacePos(texcoord, depth);
-				vec3 rayDirView = frx_normalModelMatrix * rayDirWorld;
+				vec3 rayDir = generateCosineVector(material.fragNormal);
 
-				// prevent rays from going behind the camera
-				if(rayPosView.z + rayDirView.z > 0.0) continue;
+				Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
+				if(hit.success) {
+					float distToHit = distance(hit.pos, rayPos);
+					float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
 
-				vec3 rayPosScreen = vec3(texcoord, depth);
-				vec3 rayDirScreen = (
-					viewSpaceToScreenSpace(rayPosView + rayDirView) - rayPosScreen
-				);
-
-				// fragColor = vec4(length(rayDirScreen));
-				// return;
-
-				float factor = step(1.0, length(rayDirScreen));
-				rayDirScreen = mix(rayDirScreen, normalize(rayDirScreen), factor);
-
-				float stepLength = mix(0.5, 0.1, factor);
-				vec3 successDir = rayDirWorld;
-
-				for(int i = 0; i < RTAO_RAY_STEPS; i++) {
-					rayPosScreen += rayDirScreen * stepLength * interleavedGradient(i);
-
-					if(clamp01(rayPosScreen) != rayPosScreen) {
-						break;
-					} else {
-						float depthQuery = texelFetch(u_depth, ivec2(rayPosScreen.xy * frxu_size), 0).r;
-
-						if(rayPosScreen.z > depthQuery && depthQuery != 1.0) {
-							float linearDepthQuery = linearizeDepth(depthQuery);
-							float linearRayDepth = linearizeDepth(rayPosScreen.z);
-
-							float diff = abs(linearDepthQuery - linearRayDepth);
-							
-							if(diff < 2.0) {
-								ambientOcclusion -= rayContribution * aoStrength;
-							}
-						}
-					}
+					ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
 				}
 			}
+
+//		fragColor = texture(u_light_data, texcoord);
+//		return;
 		#else
 			float ambientOcclusion = material.vanillaAo;
 		#endif
@@ -243,10 +264,13 @@ void main() {
 			u_transmittance,
 			u_shadow_map,
 			u_shadow_tex,
+			u_light_data,
 			true,
 			16,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r
 		);
+
+//		color = vec3(ambientOcclusion);
 
 		//color = vec3(tMax * 0.5);
 

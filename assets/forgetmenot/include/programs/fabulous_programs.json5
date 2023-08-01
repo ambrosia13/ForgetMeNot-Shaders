@@ -37,7 +37,9 @@
 				"u_multiscattering",
 				"u_sky_display",
 
-				"u_smooth_uniforms"
+				"u_smooth_uniforms",
+				
+				"u_light_data"
 			]
 		},
 		{

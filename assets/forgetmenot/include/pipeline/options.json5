@@ -136,7 +136,7 @@
 					descriptionKey: "config.forgetmenot.desc.rtao"
 				},
 				rtao_strength: {
-					default: 0.35,
+					default: 1.0,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.rtao_strength",

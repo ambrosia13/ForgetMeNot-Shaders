@@ -7,36 +7,30 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 #include forgetmenot:shaders/lib/inc/sky_display.glsl
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 
+// Lighting should only be in the fragment shader; requires things like IGN
+#ifdef FRAGMENT_SHADER
+
 // --------------------------------------------------------------------------------------------------------
 // https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
 // Utility functions for cascaded shadow maps
 // --------------------------------------------------------------------------------------------------------
-#ifdef FRAGMENT_SHADER
-	// Helper function
-	vec3 shadowDist(int cascade, vec4 pos) {
-		vec4 c = frx_shadowCenter(cascade);
-		return abs((c.xyz - pos.xyz) / c.w);
-	}
+vec3 shadowDist(int cascade, vec4 pos) {
+	vec4 c = frx_shadowCenter(cascade);
+	return abs((c.xyz - pos.xyz) / c.w);
+}
 
-	// Function for obtaining the cascade level
-	int selectShadowCascade(vec4 shadowViewSpacePos) {
-		vec3 d3 = shadowDist(3, shadowViewSpacePos);
-		vec3 d2 = shadowDist(2, shadowViewSpacePos);
-		vec3 d1 = shadowDist(1, shadowViewSpacePos);
+// Function for obtaining the cascade level
+int selectShadowCascade(vec4 shadowViewSpacePos) {
+	vec3 d3 = shadowDist(3, shadowViewSpacePos);
+	vec3 d2 = shadowDist(2, shadowViewSpacePos);
+	vec3 d1 = shadowDist(1, shadowViewSpacePos);
 
-		int cascade = 0;
+	if(all(lessThan(d3, vec3(1.0)))) { return 3; }
+	if(all(lessThan(d2, vec3(1.0)))) { return 2; }
+	if(all(lessThan(d1, vec3(1.0)))) { return 1; }
 
-		if(all(lessThan(d3, vec3(1.0)))) {
-			cascade = 3;
-		} else if(all(lessThan(d2, vec3(1.0)))) {
-			cascade = 2;
-		} else if(all(lessThan(d1, vec3(1.0)))) {
-			cascade = 1;
-		}
-
-		return cascade;
-	}
-#endif
+	return 0;
+}
 // --------------------------------------------------------------------------------------------------------
 
 float cascadeDistance(int cascade) {
@@ -81,6 +75,130 @@ vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 normal, out int cascade) {
 	return shadowScreenPos;
 }
 
+float getShadowFactor(
+	in vec3 sceneSpacePos,
+	in vec3 vertexNormal,
+	in float sssAmount,
+	in bool doPcss,
+	in int shadowMapSamples, 
+	in sampler2DArray shadowMapTexture, 
+	in sampler2DArrayShadow shadowMap
+) {
+	const float shadowSampleOffsetFactor = 2048.0;
+
+	int cascade;
+	vec3 shadowScreenPos = setupShadowPos(sceneSpacePos, vertexNormal, cascade);
+
+	float shadowFactor = 0.0;
+	float penumbraSize = 0.0;
+
+	if(doPcss) {
+		int pcssSamples = shadowMapSamples * 1;
+
+		for(int i = 0; i < pcssSamples; i++) {
+			vec2 sampleOffset = diskSampling(i, pcssSamples, sqrt(interleavedGradient(i + pcssSamples)) * TAU) * (250.0 / cascadeDistance(cascade));
+			
+			// Double the sample offset for penumbra search 
+			vec2 sampleCoord = shadowScreenPos.xy + 2.0 * sampleOffset / shadowSampleOffsetFactor;
+
+			float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
+			float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeDistance(cascade);
+
+			penumbraSize += diff / pcssSamples;
+		}
+	} else {
+		penumbraSize = 2.0;
+	}
+
+	penumbraSize = max(1.0, penumbraSize);
+	penumbraSize = mix(penumbraSize, 500.0 / cascadeDistance(cascade), sssAmount * step(dot(vertexNormal, frx_skyLightVector), 0.25));
+
+	for(int i = 0; i < shadowMapSamples; i++) {
+		vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / shadowSampleOffsetFactor;
+		shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
+	}
+
+	return shadowFactor;
+}
+
+vec3 getSkyLightColor(
+	in vec3 fragNormal,
+	in float vanillaAo,
+	in samplerCube skybox
+) {
+	vec3 ambientLighting = vec3(0.0);
+
+	// #ifndef CLOUD_SHADOWS 
+	// 	#define DIRECTIONAL_SKYLIGHT
+	// #endif
+
+	#ifdef DIRECTIONAL_SKYLIGHT
+		// Samples the cube map in the direction of the normal
+		ambientLighting = interpolateCubemap(skybox, fragNormal).rgb * 2.0;
+	#else
+		// Averages the color of all faces
+		ambientLighting = 
+			textureLod(skybox, vec3( 1.0,  0.0,  0.0), 7).rgb + 
+			textureLod(skybox, vec3( 0.0,  1.0,  0.0), 7).rgb + 
+			textureLod(skybox, vec3( 0.0,  0.0,  1.0), 7).rgb + 
+			textureLod(skybox, vec3(-1.0,  0.0,  0.0), 7).rgb + 
+			textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
+			textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
+
+		ambientLighting /= 4.0;
+	#endif
+
+	if(frx_worldIsNether == 1) {
+		#ifdef NETHER_DIFFUSE
+			ambientLighting *= 2.0;
+			ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * vanillaAo;
+		#endif
+	} else if(frx_worldIsEnd == 1) {
+		ambientLighting *= 0.1;
+	}
+
+	return ambientLighting;
+}
+
+vec3 getHandheldLightColor(
+	in vec3 sceneSpacePos,
+	in vec3 fragNormal
+) {
+	vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.4, 0.0);
+
+	float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+	heldLightFactor = pow3(heldLightFactor);
+
+	// Spot lights
+	{
+		float innerAngle = sin(frx_heldLightInnerRadius);
+		float outerAngle = sin(frx_heldLightOuterRadius);
+
+		if(innerAngle != 0.0) {
+
+			vec4 viewSpacePos = frx_viewMatrix * vec4(pos, 1.0);
+			float blockDistance = max(0.0, -viewSpacePos.z);
+
+			float distSq = dot(viewSpacePos.xy, viewSpacePos.xy);
+
+			float innerLimit = pow2(innerAngle * blockDistance);
+			float outerLimit = pow2(outerAngle * blockDistance);
+
+			heldLightFactor = exp(-blockDistance / (max(0.01, frx_heldLight.a) * 8.0)) * smoothstep(outerLimit, innerLimit, distSq);
+			heldLightFactor *= step(viewSpacePos.z, 0.0);
+		}
+	}
+
+	heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize(pos))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+
+	#ifdef frx_isHand
+		heldLightFactor = mix(heldLightFactor, 0.1, float(frx_isHand));
+	#endif
+
+	heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);
+	return pow(frx_heldLight.rgb, vec3(2.2)) * heldLightFactor;
+}
+
 vec3 basicLighting(
 	in vec3 albedo,
 
@@ -102,6 +220,7 @@ vec3 basicLighting(
 	in sampler2D transmittanceLut,
 	in sampler2DArrayShadow shadowMap,
 	in sampler2DArray shadowMapTexture,
+	in sampler2D lightTexture,
 
 	bool doPcss,
 	int shadowMapSamples,
@@ -118,152 +237,53 @@ vec3 basicLighting(
 	vec3 directLighting = vec3(0.0);
 	vec3 ambientLighting = vec3(0.0);
 
+	vec3 worldSpacePos = sceneSpacePos + vertexNormal * 0.05 + frx_cameraPos;
+
 	// Direct lighting
 	if(frx_worldHasSkylight == 1) {
-		const float shadowSampleOffsetFactor = 2048.0;
-
-		int cascade;
-		vec3 shadowScreenPos = setupShadowPos(sceneSpacePos, vertexNormal, cascade);
-
-		float shadowFactor = 0.0;
-		float penumbraSize = 0.0;
-
-		if(doPcss) {
-			int pcssSamples = shadowMapSamples * 1;
-
-			for(int i = 0; i < pcssSamples; i++) {
-				vec2 sampleOffset = diskSampling(i, pcssSamples, sqrt(interleavedGradient(i + pcssSamples)) * TAU) * (250.0 / cascadeDistance(cascade));
-				
-				// Double the sample offset for penumbra search 
-				vec2 sampleCoord = shadowScreenPos.xy + 2.0 * sampleOffset / shadowSampleOffsetFactor;
-
-				float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
-				float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeDistance(cascade);
-
-				penumbraSize += diff / pcssSamples;
-			}
-		} else {
-			penumbraSize = 2.0;
-		}
-
-		penumbraSize = max(1.0, penumbraSize);
-		penumbraSize = mix(penumbraSize, 500.0 / cascadeDistance(cascade), sssAmount * step(dot(vertexNormal, frx_skyLightVector), 0.25));
-
-		for(int i = 0; i < shadowMapSamples; i++) {
-			vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / shadowSampleOffsetFactor;
-			shadowFactor += texture(shadowMap, vec4(shadowScreenPos.xy + sampleOffset, cascade, shadowScreenPos.z)) / shadowMapSamples;
-		}
+		float shadowFactor = getShadowFactor(
+			sceneSpacePos,
+			vertexNormal,
+			sssAmount,
+			doPcss,
+			shadowMapSamples,
+			shadowMapTexture,
+			shadowMap
+		);
 		shadowFactor *= skyLight;
-
-		// #ifdef CLOUD_SHADOWS
-		// 	CloudLayer cloudLayer = createCumulusCloudLayer(frx_skyLightVector);
-		// 	cloudLayer.selfShadowSteps = 0;
-		// 	cloudLayer.noiseOctaves = 2;
-
-		// 	shadowFactor *= 0.25 + 0.75 * getCloudsTransmittanceAndScattering(frx_skyLightVector, cloudLayer).x;
-		// #endif
-
-		shadowFactor = mix(shadowFactor, shadowFactor * 0.5 + 0.5, isWater);
 		
 		#ifdef CLOUD_SHADOWS
 			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
 		#else
+			// Samples sun transmittance directly rather than using the skybox
 			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
 		directLighting *= 1.5;
 
-		directLighting *= NdotL * sqrt(frx_skyLightTransitionFactor) * shadowFactor;
+		directLighting *= NdotL * frx_skyLightTransitionFactor * shadowFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 
 	// Ambient lighting
 	{
-		#ifndef CLOUD_SHADOWS 
-			#define DIRECTIONAL_SKYLIGHT
-		#endif
-
-		// Directional skylight is more realistic, but it seems like non-directional skylight has tiny bit better
-		// results.
-		#ifdef DIRECTIONAL_SKYLIGHT
-			ambientLighting = interpolateCubemap(skybox, fragNormal).rgb * 2.0;
-
-			// Prevent ambient lighting from getting too bright while still preserving the color
-			// This is really cursed. If you're reading this in the future, I'm sorry.
-			// vec3 oppositeHorizonDir = normalize(vec3(-frx_skyLightVector.x, 0.0, -frx_skyLightVector.z));
-			// vec3 oppositeHorizonColor = textureLod(skybox, oppositeHorizonDir, 7).rgb;
-
-			// ambientLighting = normalize(ambientLighting) * min(length(ambientLighting), length(oppositeHorizonColor) * 3.0);
-		#else
-			ambientLighting = 
-				textureLod(skybox, vec3( 1.0,  0.0,  0.0), 7).rgb + 
-				textureLod(skybox, vec3( 0.0,  1.0,  0.0), 7).rgb + 
-				textureLod(skybox, vec3( 0.0,  0.0,  1.0), 7).rgb + 
-				textureLod(skybox, vec3(-1.0,  0.0,  0.0), 7).rgb + 
-				textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
-				textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
-
-			ambientLighting /= 4.0;
-		#endif
-
-		ambientLighting *= skyLight;
-
-		if(frx_worldIsNether == 1) {
-			#ifdef NETHER_DIFFUSE
-				ambientLighting *= 2.0;
-				ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * vanillaAo;
-			#endif
-		} else if(frx_worldIsEnd == 1) {
-			ambientLighting *= 0.1;
-			// ambientLighting += END_MIST_COLOR * clamp01(dot(fragNormal, normalize(vec3(-0.7, 0.1, 0.7))));
-		}
-
+		ambientLighting = getSkyLightColor(fragNormal, vanillaAo, skybox) * skyLight;
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
-		ambientLighting += 2.0 * pow(blockLight, 1.5) * fmn_blockLightColor * BLOCKLIGHT_BRIGHTNESS;
+		// Add block light
+		vec3 blockLightColor = frx_getLightFiltered(lightTexture, worldSpacePos).rgb;
+		blockLightColor = pow(blockLightColor, vec3(2.2));
+
+		ambientLighting += 2.0 * blockLightColor * BLOCKLIGHT_BRIGHTNESS;
 		
 		// handheld light
-		{
-			vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.4, 0.0);
-
-			float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
-			heldLightFactor = pow3(heldLightFactor);
-
-			// Spot lights
-			{
-				float innerAngle = sin(frx_heldLightInnerRadius);
-				float outerAngle = sin(frx_heldLightOuterRadius);
-
-				if(innerAngle != 0.0) {
-
-					vec4 viewSpacePos = frx_viewMatrix * vec4(pos, 1.0);
-					float blockDistance = max(0.0, -viewSpacePos.z);
-
-					float distSq = dot(viewSpacePos.xy, viewSpacePos.xy);
-
-					float innerLimit = pow2(innerAngle * blockDistance);
-					float outerLimit = pow2(outerAngle * blockDistance);
-
-					heldLightFactor = exp(-blockDistance / (max(0.01, frx_heldLight.a) * 8.0)) * smoothstep(outerLimit, innerLimit, distSq);
-					heldLightFactor *= step(viewSpacePos.z, 0.0);
-				}
-			}
-
-			heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize(pos))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
-
-			#ifdef frx_isHand
-				heldLightFactor = mix(heldLightFactor, 0.1, float(frx_isHand));
-			#endif
-
-			heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);
-			ambientLighting += pow(frx_heldLight.rgb, vec3(2.2)) * heldLightFactor;
-		}
+		ambientLighting += getHandheldLightColor(sceneSpacePos, fragNormal);
 
 		ambientLighting *= vanillaAo;
 	}
 
 	totalLighting += directLighting + ambientLighting;
-	totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
+	//totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
 	if(AMBIENT_BRIGHTNESS != 0.0) {
 		// Tiny point light around the player so caves aren't completely dark
@@ -283,3 +303,5 @@ vec3 getReflectance(in vec3 f0, in float NdotV, in float roughness) {
 
 	return mix(r, min(r, vec3(0.1)), roughness);
 }
+
+#endif

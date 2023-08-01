@@ -9,6 +9,10 @@
 	enablePBR: true,
 	runVanillaClear: true,
 
+	coloredLights: {
+		useOcclusionData: true
+	},
+
 	include: [
 		"forgetmenot:include/pipeline/options.json5",
 		"forgetmenot:include/pipeline/shadow_config.json5",

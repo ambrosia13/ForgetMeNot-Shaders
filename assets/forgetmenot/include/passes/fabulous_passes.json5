@@ -76,7 +76,9 @@
 					"multiscattering_lut",
 					"sky_display",
 
-					"smooth_uniforms"
+					"smooth_uniforms",
+
+					"frex:textures/auto/colored_lights"
 				]
 			},
 			{
