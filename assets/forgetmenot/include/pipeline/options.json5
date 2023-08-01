@@ -227,6 +227,14 @@
 					nameKey: "config.forgetmenot.name.enable_post_processing",
 					descriptionKey: "config.forgetmenot.desc.enable_post_processing"
 				},
+				camera_preset: {
+					default: "none",
+					choices: ["none", "moody"],
+					enum: true,
+					prefix: "preset_",
+					nameKey: "config.forgetmenot.name.camera_preset",
+					descriptionKey: "config.forgetmenot.desc.camera_preset"
+				},
 				purkinje_amount: {
 					default: 1.0,
 					min: 0.0,

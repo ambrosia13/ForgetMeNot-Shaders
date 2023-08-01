@@ -39,17 +39,19 @@ float liftGammaGain(float color, float lift, float gamma, float gain) {
 }
 
 // Lottes 2016, "Advanced Techniques and Optimization of HDR Color Pipelines"
-vec3 lottes(vec3 x) {
+vec3 lottes(vec3 x, float whitePoint) {
 	const vec3 a = vec3(1.6);
 	const vec3 d = vec3(0.977);
-	const vec3 hdrMax = vec3(8.0);
+	 
+	vec3 hdrMax = vec3(whitePoint);
+	
 	const vec3 midIn = vec3(0.18);
 	const vec3 midOut = vec3(0.267);
 
-	const vec3 b =
+	vec3 b =
 		(-pow(midIn, a) + pow(hdrMax, a) * midOut) /
 		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
-	const vec3 c =
+	vec3 c =
 		(pow(hdrMax, a * d) * pow(midIn, a) - pow(hdrMax, a) * pow(midIn, a * d) * midOut) /
 		((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
 
@@ -68,6 +70,8 @@ void main() {
 	#ifdef ENABLE_BLOOM
 		color *= getExposureValue() * getExposureProfile().exposureMultiplier;
 	#endif
+
+	#define WHITE_POINT 8.0
 
 	//#define DEBUG_POST_PROCESSING
 	#ifdef DEBUG_POST_PROCESSING
@@ -96,6 +100,30 @@ void main() {
 		#define GAIN_B gain.b
 	#endif
 
+	#if CAMERA_PRESET == PRESET_MOODY
+		#define WHITE_POINT 4.0
+
+		#define CONTRAST 1.15
+		#define SATURATION 0.85
+		#define VIBRANCE 1.0
+
+		vec3 lift = vec3(0.0, 0.0, 0.0);
+		vec3 gamma = vec3(1.0, 1.0, 1.0);
+		vec3 gain = vec3(1.0, 1.0, 1.0);
+	
+		#define LIFT_R lift.r
+		#define LIFT_G lift.g
+		#define LIFT_B lift.b
+
+		#define GAMMA_R gamma.r
+		#define GAMMA_G gamma.g
+		#define GAMMA_B gamma.b
+
+		#define GAIN_R gain.r
+		#define GAIN_G gain.g
+		#define GAIN_B gain.b
+	#endif
+
 	#ifdef ENABLE_POST_PROCESSING
 		// Contrast in log-scale to preserve more color detail
 		color = log(color);
@@ -103,16 +131,17 @@ void main() {
 		color = exp(color);
 
 		color = saturation(color, SATURATION);
-		color = vibrance(color, VIBRANCE);
 	#endif
 
 	#ifndef ACES_TONEMAP
-		color = lottes(color * 0.45);
+		color = lottes(color * 0.45, WHITE_POINT);
 	#else
 		color = frx_toneMap(color);
 	#endif
 
 	#ifdef ENABLE_POST_PROCESSING
+		color = vibrance(color, VIBRANCE);
+
 		// Lift-gamma-gain component-wise
 		color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
 		color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));

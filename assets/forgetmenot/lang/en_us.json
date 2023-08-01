@@ -107,6 +107,9 @@
 	"config.forgetmenot.name.enable_post_processing": "Enable Post Processing Pipeline",
 	"config.forgetmenot.desc.enable_post_processing": "Enables the post-processing pipeline. In order for the options below to work, this option must be enabled.",
 
+	"config.forgetmenot.name.camera_preset": "Camera Preset",
+	"config.forgetmenot.desc.camera_preset": "Presets for all the post-processing options. Selecting 'none' means that the options below are used.",
+
 	"config.forgetmenot.name.purkinje_amount": "Purkinje Amount",
 	"config.forgetmenot.desc.purkinje_amount": "Amount for purkinje effect. Zero disables.",
 
