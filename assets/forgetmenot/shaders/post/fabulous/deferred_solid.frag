@@ -36,16 +36,16 @@ struct Hit {
 	bool success;
 };
 
-bool evaluateHit(inout Hit hit, in vec3 voxelPos) {
+const Hit NO_HIT = Hit(vec3(0.0), vec3(0.0), false);
+
+bool evaluateHit(in vec3 voxelPos) {
 	frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
 
 	return data.isOccluder && data.isFullCube;
 }
 
 Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
-	Hit hit;
-	hit.pos = vec3(0.0);
-	hit.success = false;
+	Hit hit = NO_HIT;
 
 	rayPos += frx_cameraPos;
 
@@ -70,7 +70,7 @@ Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
 
 		hit.normal = stepAxis;
 
-		if(evaluateHit(hit, voxelPos)) {
+		if(evaluateHit(voxelPos)) {
 			hit.pos = currentPos - frx_cameraPos;
 			hit.normal *= -stepDir;
 			hit.success = true;
@@ -226,7 +226,7 @@ void main() {
 
 			const float aoStrength = RTAO_STRENGTH;
 
-			const int aoRange = 2;
+			const int aoRange = 1;
 
 			vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
 
@@ -242,8 +242,7 @@ void main() {
 				}
 			}
 
-//		fragColor = texture(u_light_data, texcoord);
-//		return;
+			ambientOcclusion = min(ambientOcclusion, material.vanillaAo);
 		#else
 			float ambientOcclusion = material.vanillaAo;
 		#endif

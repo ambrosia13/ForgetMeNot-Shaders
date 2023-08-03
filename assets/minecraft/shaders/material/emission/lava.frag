@@ -14,7 +14,7 @@ void frx_materialFragment() {
 
 	#ifdef INTERNAL_MATERIALS
 		//frx_fragColor.rgb *= vec3(1.75, 0.4, 0.05) * 1.5;
-		frx_fragColor.rgb *= vec3(2.0, 1.5, 1.0);
+		frx_fragColor.rgb *= vec3(2.0, 1.5, 1.0) * 0.75;
 	#endif
 
 	#ifdef PBR_ENABLED

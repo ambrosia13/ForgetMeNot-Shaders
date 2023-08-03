@@ -274,10 +274,10 @@ vec3 basicLighting(
 		vec3 blockLightColor = frx_getLightFiltered(lightTexture, worldSpacePos).rgb;
 		blockLightColor = pow(blockLightColor, vec3(2.2));
 
-		ambientLighting += 2.0 * blockLightColor * BLOCKLIGHT_BRIGHTNESS;
+		ambientLighting += blockLightColor * BLOCKLIGHT_BRIGHTNESS;
 		
 		// handheld light
-		ambientLighting += getHandheldLightColor(sceneSpacePos, fragNormal);
+		ambientLighting += 0.5 * getHandheldLightColor(sceneSpacePos, fragNormal);
 
 		ambientLighting *= vanillaAo;
 	}

@@ -9,27 +9,49 @@ const vec3 moonFlux = vec3(0.56, 0.8, 1.1);
 
 vec3 nightAdjust(in vec3 color) {
 	return color * 0.02;//mix(vec3(frx_luminance(color)) * moonFlux, color, 0.05) * 0.075;
-} 
+}
 
-// Units are in megameters.
-const float groundRadiusMM = 6.360;
-const float atmosphereRadiusMM = 6.460;
+#define ATMOSPHERE_EARTH 0
+#define ATMOSPHERE_MARS 1
+#define ATMOSPHERE_
+#define ATMOSPHERE_PRESET ATMOSPHERE_EARTH
+
+#if ATMOSPHERE_PRESET == ATMOSPHERE_EARTH
+	// Units are in megameters.
+	const float groundRadiusMM = 6.360;
+	const float atmosphereRadiusMM = 6.460;
+
+	const vec3 groundAlbedo = vec3(0.0);
+
+	// Units are per-megameter
+	const vec3 rayleighScatteringBase = vec3(5.802, 13.558, 33.1);
+	const float rayleighAbsorptionBase = 0.0;
+
+	const float turbidity = 1.0;
+
+	const float mieScatteringBase = 25.996 * turbidity;
+	const float mieAbsorptionBase = 4.4;
+
+	const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
+#elif ATMOSPHERE_PRESET == ATMOSPHERE_MARS
+	// Units are in megameters.
+	const float groundRadiusMM = 3.376;
+	const float atmosphereRadiusMM = groundRadiusMM + 0.08;
+
+	const vec3 groundAlbedo = vec3(0.840, 0.604, 0.404) * 0.3;
+
+	// Units are per-megameter
+	const vec3 rayleighScatteringBase = vec3(33, 25, 10);
+	const float rayleighAbsorptionBase = 0.0;
+
+	const float mieScatteringBase = 50.0;
+	const float mieAbsorptionBase = 4.4;
+
+	const vec3 ozoneAbsorptionBase = vec3(0.3, 0.6, 0.9);
+#endif
 
 // 500M above the ground.
 const vec3 skyViewPos = vec3(0.0, groundRadiusMM + 0.0005, 0.0);
-
-const vec3 groundAlbedo = vec3(0.0);
-
-// These are per megameter.
-const vec3 rayleighScatteringBase = vec3(5.802, 13.558, 33.1);
-const float rayleighAbsorptionBase = 0.0;
-
-const float turbidity = 1.0;
-
-const float mieScatteringBase = 25.996 * turbidity;
-const float mieAbsorptionBase = 4.4;
-
-const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
 
 // Phase function from Jessie
 // https://www.patreon.com/user?u=49201970
