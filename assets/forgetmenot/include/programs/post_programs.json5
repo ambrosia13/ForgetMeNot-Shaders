@@ -1,6 +1,14 @@
 {
 	programs: [
 		{
+			name: "downscale",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/downscale.frag",
+			samplers: [
+				"u_color",
+			]
+		},
+		{
 			name: "taa",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/taa.frag",
