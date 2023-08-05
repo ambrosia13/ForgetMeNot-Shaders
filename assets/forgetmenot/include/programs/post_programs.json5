@@ -3,9 +3,18 @@
 		{
 			name: "downscale",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/downscale.frag",
+			fragmentSource: "forgetmenot:shaders/post/scale/downscale.frag",
 			samplers: [
 				"u_color",
+			]
+		},
+		{
+			name: "upscale",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/scale/upscale.frag",
+			samplers: [
+				"u_color",
+				"u_previous_color"
 			]
 		},
 		{

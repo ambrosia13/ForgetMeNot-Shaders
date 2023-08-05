@@ -16,6 +16,9 @@
 uniform ivec2 frxu_size;
 uniform int frxu_lod;
 
+// Common between material shaders and pipeline shaders - includes the option includes
+#include forgetmenot:shaders/lib/materials_pipeline_common.glsl
+
 const vec2[] TAA_OFFSETS = vec2[8] (
 	#ifdef NO_TAA_JITTER
 		vec2(0.0),
@@ -41,9 +44,6 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 vec2 getTaaOffset(in uint frame) {
 	return TAA_OFFSETS[frame % 8u];
 }
-
-// Common between material shaders and pipeline shaders - includes the option includes
-#include forgetmenot:shaders/lib/materials_pipeline_common.glsl
 
 // These will always be needed
 #include forgetmenot:shaders/lib/inc/utility.glsl 

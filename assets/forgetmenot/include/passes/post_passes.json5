@@ -2,6 +2,31 @@
 	afterRenderHand: {
 		passes: [
 			{
+				name: "downscale",
+				program: "downscale",
+				framebuffer: "downscale",
+				samplerImages: [
+					"solid_color",
+				]
+			},
+			{
+				name: "upscale",
+				program: "upscale",
+				framebuffer: "upscale",
+				samplerImages: [
+					"downscale",
+					"upscale_copy"
+				]
+			},
+			{
+				name: "upscale_copy",
+				program: "copy",
+				framebuffer: "upscale_copy",
+				samplerImages: [
+					"upscale",
+				]
+			},
+			{
 				name: "taa",
 				program: "taa",
 				framebuffer: "taa",

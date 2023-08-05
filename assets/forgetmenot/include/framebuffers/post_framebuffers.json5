@@ -1,6 +1,30 @@
 {
 	framebuffers: [
 		{
+			name: "downscale",
+			colorAttachments: [
+				{
+					image: "downscale"
+				}
+			]
+		},
+		{
+			name: "upscale",
+			colorAttachments: [
+				{
+					image: "upscale"
+				}
+			]
+		},
+		{
+			name: "upscale_copy",
+			colorAttachments: [
+				{
+					image: "upscale_copy"
+				}
+			]
+		},
+		{
 			name: "taa",
 			colorAttachments: [
 				{
