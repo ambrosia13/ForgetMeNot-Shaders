@@ -50,76 +50,6 @@ void insertLayer(inout vec3 background, inout float backgroundDepth, in vec4 for
 	background = mix(background, background * (1.0 - foreground.a) + foreground.rgb * foreground.a, getClosestDepth(foregroundDepth, backgroundDepth));
 }
 
-
-float D_GGX(in float NdotH, in float roughness) {
-	float a = NdotH * roughness;
-	float k = roughness / (1.0 - pow2(NdotH) + pow2(a));
-	return k * k * (1.0 / PI);
-}
-
-float V_SmithGGXCorrelated(float NdotV, float NdotL, float roughness) {
-	float a = roughness;
-	float GGXV = NdotL * (NdotV * (1.0 - a) + a);
-	float GGXL = NdotV * (NdotL * (1.0 - a) + a);
-	return 0.5 / (GGXV + GGXL);
-}
-
-float F_Schlick(float u, float f0, float f90) {
-	return f0 + (f90 - f0) * pow5(1.0 - u);
-}
-vec3 F_Schlick(float u, vec3 f0) {
-	float f = pow5(1.0 - u);
-	return f + f0 * (1.0 - f);
-}
-
-float Fd_Lambert() {
-	return 1.0 / PI;
-}
-float Fd_Burley(float NdotV, float NdotL, float LdotH, float roughness) {
-	float f90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
-	float lightScatter = F_Schlick(NdotL, 1.0, f90);
-	float viewScatter = F_Schlick(NdotV, 1.0, f90);
-
-	return lightScatter * viewScatter * (1.0 / PI);
-}
-
-vec3 brdf(
-	in vec3 albedo,
-	in vec3 viewDir,
-	in Material material,
-	in samplerCube skybox
-) {
-	vec3 V = viewDir;
-	vec3 N = material.fragNormal;
-	vec3 L = frx_skyLightVector;
-	vec3 H = normalize(V + L);
-
-	float NdotV = abs(dot(N, V)) + 1e-5;
-	float NdotL = clamp01(dot(N, L));
-	float NdotH = clamp01(dot(N, H));
-	float LdotH = clamp01(dot(L, H));
-
-	float a = pow2(material.roughness);
-	vec3 f0 = material.f0 > 0.59 ? albedo : vec3(material.f0);
-
-	float D = D_GGX(NdotH, a);
-	vec3 F = F_Schlick(LdotH, f0);
-	float Vterm = V_SmithGGXCorrelated(NdotV, NdotL, material.roughness);
-
-	vec3 Fr = D * Vterm * F;
-
-	vec3 diffuseColor = textureLod(u_skybox, material.fragNormal, 7).rgb;
-	diffuseColor *= material.skyLight;
-
-	diffuseColor += vec3(1.0, 0.5, 0.2) * material.blockLight;
-	diffuseColor *= material.vanillaAo;
-
-	vec3 Fd = diffuseColor * Fd_Burley(NdotV, NdotL, LdotH, a);
-
-	vec3 result = albedo * (Fd + Fr);
-	return result;
-}
-
 void main() {
 	initGlobals();
 	vec3 viewDir = getViewDir();
@@ -316,74 +246,72 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Reflections
-	// if(compositeDepth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
-	// 	vec3 reflectColor = vec3(0.0);
-	// 	vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
+	if(compositeDepth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
+		vec3 reflectColor = vec3(0.0);
+		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
 
-	// 	vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
-	// 	cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
+		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
+		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
 
-	// 	vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
-	// 	if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
+		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
+		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
 		
 
-	// 	// number of rays to cast depends on roughness (goodbye performance)
-	// 	int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
-	// 	numReflectionRays = min(4, numReflectionRays); // hello performance
+		// number of rays to cast depends on roughness (goodbye performance)
+		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;
+		numReflectionRays = min(4, numReflectionRays); // hello performance
 
-	// 	numReflectionRays *= int(step(material.roughness, 0.5));
+		numReflectionRays *= int(step(material.roughness, 0.5));
 
-	// 	float reflectionFactor = 0.0;
-	// 	for(int i = 0; i < numReflectionRays; i++) {
-	// 		vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
-	// 		vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
+		float reflectionFactor = 0.0;
+		for(int i = 0; i < numReflectionRays; i++) {
+			vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
+			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
-	// 		vec3 screenSpacePos = vec3(texcoord, compositeDepth);
-	// 		vec3 NDC = screenSpacePos * 2.0 - 1.0;
-	// 		vec4 D = frx_projectionMatrix * vec4(viewReflectDir, 0.0);
-	// 		vec3 windowSpaceDir = normalize(
-	// 			(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
-	// 		);
-	// 		vec3 windowSpacePos = vec3(texcoord, compositeDepth) * vec3(frxu_size, 1.0);
+			vec3 screenSpacePos = vec3(texcoord, compositeDepth);
+			vec3 NDC = screenSpacePos * 2.0 - 1.0;
+			vec4 D = frx_projectionMatrix * vec4(viewReflectDir, 0.0);
+			vec3 windowSpaceDir = normalize(
+				(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
+			);
+			vec3 windowSpacePos = vec3(texcoord, compositeDepth) * vec3(frxu_size, 1.0);
 
-	// 		bool hit = false;
-	// 		vec3 hitPos;
+			bool hit = false;
+			vec3 hitPos;
 
-	// 		hit = raytrace(
-	// 			windowSpacePos,
-	// 			windowSpaceDir,
-	// 			40,
-	// 			u_hi_depth_levels,
-	// 			hitPos
-	// 		);
+			hit = raytrace(
+				windowSpacePos,
+				windowSpaceDir,
+				40,
+				u_hi_depth_levels,
+				hitPos
+			);
 
-	// 		// Reproject reflection
-	// 		hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
+			// Reproject reflection
+			hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
 
-	// 		hit = hit && clamp01(hitPos.xy) == hitPos.xy;
+			hit = hit && clamp01(hitPos.xy) == hitPos.xy;
 
-	// 		if(hit) {
-	// 			reflectColor += texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
-	// 			reflectionFactor += 1.0 / numReflectionRays;
-	// 		}
-	// 	}
+			if(hit) {
+				reflectColor += texelFetch(u_previous_color, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
+				reflectionFactor += 1.0 / numReflectionRays;
+			}
+		}
 
-	// 	// Handle sky reflections
-	// 	ambientReflectionColor.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
+		// Handle sky reflections
+		ambientReflectionColor.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
 
-	// 	// blocklight contribution
-	// 	ambientReflectionColor = max(fmn_blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
+		// blocklight contribution
+		ambientReflectionColor = max(fmn_blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
 
-	// 	reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
+		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
-	// 	#ifdef REALISTIC_METALS
-	// 		composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
-	// 	#endif
+		#ifdef REALISTIC_METALS
+			composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
+		#endif
 
-	// 	composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
-	// }
-
-	if(compositeDepth != 1.0) composite = brdf(composite, -viewDir, material, u_skybox);
+		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
+	}
 
 	float blockDistance = rcp(inversesqrt(dot(sceneSpacePos, sceneSpacePos)));
 	float fogDistance = min(512.0, blockDistance);
