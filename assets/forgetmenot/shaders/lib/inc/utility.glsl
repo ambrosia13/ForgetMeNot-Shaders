@@ -79,6 +79,19 @@ vec4 pow4(vec4 x) {
 	return (pow2(x) * pow2(x));
 }
 
+float pow5(float x) {
+	return (pow2(x) * pow2(x) * x);
+}
+vec2 pow5(vec2 x) {
+	return (pow2(x) * pow2(x) * x);
+}
+vec3 pow5(vec3 x) {
+	return (pow2(x) * pow2(x) * x);
+}
+vec4 pow5(vec4 x) {
+	return (pow2(x) * pow2(x) * x);
+}
+
 #define rcp(x) (1.0 / (x))
 
 #define FMN_LINSTEP (clamp01((x - a) * rcp(b - a)))

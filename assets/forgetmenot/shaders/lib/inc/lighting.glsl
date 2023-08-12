@@ -226,6 +226,8 @@ vec3 basicLighting(
 	int shadowMapSamples,
 	float nightVisionFactor
 ) {
+	return albedo;
+
 	blockLight *= blockLight;
 	skyLight *= skyLight;
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
