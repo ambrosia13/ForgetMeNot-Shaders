@@ -22,45 +22,27 @@
 		},
 		{
 			name: "sky_display",
-			colorAttachments: [
-				{
-					image: "sky_display", clearColor: 0x00000000
-				}
-			]
+			colorAttachments: [{image: "sky_display", clearColor: 0x00000000}]
 		},
 		{
 			name: "deferred_solid",
-			colorAttachments: [
-				{
-					image: "deferred_solid", clearColor: 0x00000000
-				}
-			]
+			colorAttachments: [{image: "deferred_solid", clearColor: 0x00000000}]
 		},
 		{
 			name: "sort",
 			colorAttachments: [
-				{
-					image: "sort", clearColor: 0x00000000
-				},
-				{
-					image: "composite_depth", clearColor: 0x00000000
-				}
+				{image: "sort", clearColor: 0x00000000},
+				{image: "composite_depth", clearColor: 0x00000000}
 			]
 		},
 		{
 			name: "sort_copy",
-			colorAttachments: [
-				{
-					image: "sort_copy", clearColor: 0x00000000
-				}
-			]
+			colorAttachments: [{image: "sort_copy", clearColor: 0x00000000}]
 		},
 		{
 			name: "copy_to_main",
 			colorAttachments: [
-				{
-					image: "solid_color", clearColor: 0x00000000
-				}
+				{image: "solid_color", clearColor: 0x00000000}
 			]
 		}
 	]
