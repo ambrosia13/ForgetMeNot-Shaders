@@ -41,6 +41,12 @@ const vec2[] TAA_OFFSETS = vec2[8] (
 vec2 getTaaOffset(in uint frame) {
 	return TAA_OFFSETS[frame % 8u];
 }
+vec2 getJitteredTexcoord(in vec2 coord, in uint frame) {
+	vec2 clip = coord * 2.0 - 1.0;
+	clip += getTaaOffset(frame) * (1.0 / frxu_size);
+
+	return clip * 0.5 + 0.5;
+}
 
 // Common between material shaders and pipeline shaders - includes the option includes
 #include forgetmenot:shaders/lib/materials_pipeline_common.glsl
