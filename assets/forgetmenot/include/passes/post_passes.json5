@@ -220,7 +220,7 @@
 					"bloom_upsample",
 
 					"sort",
-					"solid_depth",
+					"composite_depth",
 
 					"exposure"
 				],

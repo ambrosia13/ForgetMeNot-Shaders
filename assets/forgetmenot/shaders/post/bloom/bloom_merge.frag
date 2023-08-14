@@ -36,15 +36,7 @@ void main() {
 	initGlobals();
 
 	vec4 color = texture(u_color, texcoord);
-
-	float fogTransmittance = texture(u_sort, texcoord).a;
-	fogTransmittance = mix(1.0, fogTransmittance, floor(texture(u_solid_depth, texcoord).r));
-
-	color = mix(frx_sampleTentLod(u_downsampled, texcoord, 1.0 / frxu_size, min(6.0, fogTransmittance * 1.0)), color, smoothstep(0.9, 1.0, fogTransmittance));
-
 	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 7.0;
 
-	float luminance = texelFetch(u_exposure, ivec2(0), 0).r;
-	float exposure = getExposureValue(luminance);
-	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.2 * frx_worldIsNether);
+	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.4 * frx_worldIsNether);
 }
