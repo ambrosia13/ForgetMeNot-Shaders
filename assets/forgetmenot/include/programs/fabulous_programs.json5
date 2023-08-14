@@ -19,6 +19,29 @@
 			]
 		},
 		{
+			name: "rtao",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/rtao/rtao.frag",
+			samplers: [
+				"u_depth",
+				"u_material_data",
+				"u_light_data",
+
+				"u_shadow_tex",
+				"u_shadow_map"
+			]
+		},
+		{
+			name: "rtao_filter",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/rtao/rtao_filter.frag",
+			samplers: [
+				"u_rtao",
+				"u_depth",
+				"u_normal"
+			]
+		},
+		{
 			name: "deferred_solid",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/deferred_solid.frag",
@@ -26,7 +49,7 @@
 				"u_color",
 				"u_data",
 				"u_depth",
-				"u_ssao",
+				"u_ambient_occlusion",
 
 				"u_shadow_map",
 				"u_shadow_tex",

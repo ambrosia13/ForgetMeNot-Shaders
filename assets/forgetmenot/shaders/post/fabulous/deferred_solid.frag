@@ -11,6 +11,7 @@
 uniform sampler2D u_color;
 uniform usampler2D u_data;
 uniform sampler2D u_depth;
+uniform sampler2D u_ambient_occlusion;
 
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
@@ -218,34 +219,51 @@ void main() {
 	// }
 
 	if(depth < 1.0) {
-		#ifdef RTAO
-			float ambientOcclusion = 1.0;
+		// #ifdef RTAO
+		// 	float ambientOcclusion = 1.0;
 
-			const int numAoRays = RTAO_RAYS;
-			const float rayContribution = 1.0 / numAoRays;
+		// 	const int numAoRays = RTAO_RAYS;
+		// 	const float rayContribution = 1.0 / numAoRays;
 
-			const float aoStrength = RTAO_STRENGTH;
+		// 	const float aoStrength = RTAO_STRENGTH;
 
-			const int aoRange = 1;
+		// 	const int aoRange = 2;
 
-			vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
+		// 	vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
 
-			for(int i = 0; i < numAoRays; i++) {
-				vec3 rayDir = generateCosineVector(material.fragNormal);
+		// 	vec3 sunBounceAmount = vec3(0.0);
+		// 	vec3 sunColor = textureLod(u_skybox, frx_skyLightVector, 2).rgb * 0.01;
 
-				Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
-				if(hit.success) {
-					float distToHit = distance(hit.pos, rayPos);
-					float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
+		// 	for(int i = 0; i < numAoRays; i++) {
+		// 		vec3 rayDir = generateCosineVector(material.fragNormal);
 
-					ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
-				}
-			}
+		// 		Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
+		// 		if(hit.success) {
+		// 			float distToHit = distance(hit.pos, rayPos);
+		// 			float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
 
-			ambientOcclusion = min(ambientOcclusion, material.vanillaAo);
-		#else
-			float ambientOcclusion = material.vanillaAo;
-		#endif
+		// 			sunBounceAmount += getShadowFactor(
+		// 				hit.pos,
+		// 				hit.normal,
+		// 				0.0,
+		// 				true,
+		// 				4, 
+		// 				u_shadow_tex, 
+		// 				u_shadow_map
+		// 			);
+
+		// 			ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
+		// 		}
+		// 	}
+
+		// 	sunBounceAmount *= sunColor;
+
+		// 	//ambientOcclusion = min(ambientOcclusion, material.vanillaAo);
+		// #else
+		// 	float ambientOcclusion = material.vanillaAo;
+		// #endif
+
+		vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
 
 		color = basicLighting(
 			color,
@@ -254,7 +272,7 @@ void main() {
 			material.fragNormal,
 			material.blockLight,
 			material.skyLight,
-			ambientOcclusion,
+			pow(rtaoSample.r, 1.5),
 			material.f0,
 			material.roughness,
 			material.sssAmount,
@@ -266,7 +284,8 @@ void main() {
 			u_light_data,
 			true,
 			16,
-			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r
+			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
+			rtaoSample.g
 		);
 
 //		color = vec3(ambientOcclusion);

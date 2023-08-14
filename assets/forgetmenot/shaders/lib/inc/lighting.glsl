@@ -224,7 +224,8 @@ vec3 basicLighting(
 
 	bool doPcss,
 	int shadowMapSamples,
-	float nightVisionFactor
+	float nightVisionFactor,
+	float sunBounceAmount
 ) {
 	blockLight *= blockLight;
 	skyLight *= skyLight;
@@ -250,7 +251,9 @@ vec3 basicLighting(
 			shadowMapTexture,
 			shadowMap
 		);
-		shadowFactor *= skyLight;
+		//shadowFactor *= skyLight;
+
+		//shadowFactor = max(shadowFactor * NdotL, sunBounceAmount);
 		
 		#ifdef CLOUD_SHADOWS
 			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
@@ -261,7 +264,7 @@ vec3 basicLighting(
 
 		directLighting *= 1.5;
 
-		directLighting *= NdotL * frx_skyLightTransitionFactor * shadowFactor;
+		directLighting *= (NdotL * frx_skyLightTransitionFactor * shadowFactor) + sunBounceAmount;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 

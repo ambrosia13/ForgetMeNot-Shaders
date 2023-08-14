@@ -58,6 +58,59 @@
 				lod: 0
 			},
 			{
+				name: "rtao",
+				program: "rtao",
+				framebuffer: "rtao",
+				samplerImages: [
+					"solid_depth",
+					"solid_data",
+					"frex:textures/auto/colored_lights",
+
+					"shadow_map",
+					"shadow_map"
+				]
+			},
+			{
+				name: "rtao_filter_0",
+				program: "rtao_filter",
+				framebuffer: "rtao_filter",
+				samplerImages: [
+					"rtao",
+					"solid_depth",
+					"vertex_normal"
+				]
+			},
+			{
+				name: "rtao_filter_1",
+				program: "rtao_filter",
+				framebuffer: "rtao",
+				samplerImages: [
+					"rtao_filter",
+					"solid_depth",
+					"vertex_normal"
+				]
+			},
+			{
+				name: "rtao_filter_2",
+				program: "rtao_filter",
+				framebuffer: "rtao_filter",
+				samplerImages: [
+					"rtao",
+					"solid_depth",
+					"vertex_normal"
+				]
+			},
+			{
+				name: "rtao_filter_3",
+				program: "rtao_filter",
+				framebuffer: "rtao",
+				samplerImages: [
+					"rtao_filter",
+					"solid_depth",
+					"vertex_normal"
+				]
+			},
+			{
 				name: "deferred_solid",
 				program: "deferred_solid",
 				framebuffer: "deferred_solid",
@@ -65,7 +118,7 @@
 					"solid_color",
 					"solid_data",
 					"solid_depth",
-					"ssao",
+					"rtao",
 
 					"shadow_map",
 					"shadow_map",
