@@ -55,6 +55,8 @@ void main() {
 				scattering = getAerialPerspectiveSlice(fogDistanceWhole);
 				scattering = mix(scattering, getAerialPerspectiveSlice(fogDistanceWhole + 1), fogDistancePart);
 
+				scattering *= 2.0;
+
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {
 				scattering = interpolateCubemap(u_skybox, viewDir).rgb;
