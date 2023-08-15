@@ -54,6 +54,8 @@
 					"transmittance_lut",
 					"sky_lut_day",
 					"sky_lut_night",
+
+					"solid_depth"
 				],
 				lod: 0
 			},

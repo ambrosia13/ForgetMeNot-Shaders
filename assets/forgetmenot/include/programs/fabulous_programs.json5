@@ -15,7 +15,9 @@
 			samplers: [
 				"u_transmittance",
 				"u_sky_day",
-				"u_sky_night"
+				"u_sky_night",
+
+				"u_solid_depth"
 			]
 		},
 		{
