@@ -65,6 +65,9 @@
 	"config.forgetmenot.name.rtao": "Raytraced Ambient Occlusion (RTAO)",
 	"config.forgetmenot.desc.rtao": "Enables slow, high-quality ambient occlusion.",
 
+	"config.forgetmenot.name.indirect_sunlight": "Indirect Sunlight",
+	"config.forgetmenot.desc.indirect_sunlight": "Uses ray tracing to calculate indirect sunlight, slow.",
+
 	"config.forgetmenot.name.rtao_strength": "RTAO Strength",
 	"config.forgetmenot.desc.rtao_strength": "Strength of the RTAO: 1.0 for full strength, 0.0 for no strength.",
 
