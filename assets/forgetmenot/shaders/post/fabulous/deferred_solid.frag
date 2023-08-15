@@ -263,7 +263,11 @@ void main() {
 		// 	float ambientOcclusion = material.vanillaAo;
 		// #endif
 
-		vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
+		#ifdef RTAO
+			vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
+		#else
+			vec2 rtaoSample = vec2(material.vanillaAo, 0.0);
+		#endif
 
 		color = basicLighting(
 			color,

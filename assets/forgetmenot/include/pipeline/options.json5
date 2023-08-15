@@ -135,6 +135,11 @@
 					nameKey: "config.forgetmenot.name.rtao",
 					descriptionKey: "config.forgetmenot.desc.rtao"
 				},
+				indirect_sunlight: {
+					default: false,
+					nameKey: "config.forgetmenot.name.indirect_sunlight",
+					descriptionKey: "config.forgetmenot.desc.indirect_sunlight"
+				},
 				rtao_strength: {
 					default: 1.0,
 					min: 0.0,

@@ -68,7 +68,8 @@
 
 					"shadow_map",
 					"shadow_map"
-				]
+				],
+				toggleConfig: "rtao"
 			},
 			{
 				name: "rtao_filter_0",
@@ -78,7 +79,8 @@
 					"rtao",
 					"solid_depth",
 					"vertex_normal"
-				]
+				],
+				toggleConfig: "rtao"
 			},
 			{
 				name: "rtao_filter_1",
@@ -88,7 +90,8 @@
 					"rtao_filter",
 					"solid_depth",
 					"vertex_normal"
-				]
+				],
+				toggleConfig: "rtao"
 			},
 			{
 				name: "rtao_filter_2",
@@ -98,7 +101,8 @@
 					"rtao",
 					"solid_depth",
 					"vertex_normal"
-				]
+				],
+				toggleConfig: "rtao"
 			},
 			{
 				name: "rtao_filter_3",
@@ -108,7 +112,8 @@
 					"rtao_filter",
 					"solid_depth",
 					"vertex_normal"
-				]
+				],
+				toggleConfig: "rtao"
 			},
 			{
 				name: "deferred_solid",

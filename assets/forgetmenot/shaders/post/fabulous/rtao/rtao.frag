@@ -102,17 +102,19 @@ void main() {
 				float distToHit = distance(hit.pos, rayPos);
 				float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
 
-				if(i < numSunBounceRays) {
-					sunBounceAmount += getShadowFactor(
-						hit.pos,
-						hit.normal,
-						0.0,
-						true,
-						4, 
-						u_shadow_tex, 
-						u_shadow_map
-					) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor;
-				}
+				#ifdef INDIRECT_SUNLIGHT
+					if(i < numSunBounceRays) {
+						sunBounceAmount += getShadowFactor(
+							hit.pos,
+							hit.normal,
+							0.0,
+							true,
+							4, 
+							u_shadow_tex, 
+							u_shadow_map
+						) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor;
+					}
+				#endif
 
 				ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
 			}
