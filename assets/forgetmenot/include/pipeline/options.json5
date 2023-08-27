@@ -187,14 +187,14 @@
 					descriptionKey: "config.forgetmenot.desc.water_color_r"
 				},
 				water_color_g: {
-					default: 0.3,
+					default: 0.2,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_color_g",
 					descriptionKey: "config.forgetmenot.desc.water_color_g"
 				},
 				water_color_b: {
-					default: 0.375,
+					default: 0.275,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_color_b",

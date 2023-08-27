@@ -264,7 +264,7 @@ vec3 basicLighting(
 
 		directLighting *= 1.5;
 
-		directLighting *= (NdotL * frx_skyLightTransitionFactor * shadowFactor) + sunBounceAmount;
+		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
 	}
 

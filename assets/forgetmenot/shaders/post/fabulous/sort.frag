@@ -50,6 +50,127 @@ void insertLayer(inout vec3 background, inout float backgroundDepth, in vec4 for
 	background = mix(background, background * (1.0 - foreground.a) + foreground.rgb * foreground.a, getClosestDepth(foregroundDepth, backgroundDepth));
 }
 
+float mirroredNoise(in vec2 uv) {
+	return smoothHash(repeatAndMirrorCoords(uv / 250.0) * 250.0);
+}
+
+vec2 mirroredNoiseDXY(in vec2 uv) {
+	return smoothHashDXY(repeatAndMirrorCoords(uv / 250.0) * 250.0);
+}
+
+float getWaterHeight(in vec2 uv, in int octaves) {
+	float waterNoise = 0.0;
+
+	vec2 previousUv;
+
+	int octaveCount = octaves;
+	float lacunarity = 2.0;
+	float amplitude = 0.5;
+
+	float[] signs = float[2](-1.0, 1.0);
+
+	for(int i = 0; i < octaveCount; i++) {
+		vec2 flowDirection = mirroredNoiseDXY(previousUv) * 0.1;
+		uv += flowDirection;
+
+		previousUv = uv;
+
+		uv = rotate2D(uv, PI * 2.0 / octaveCount);
+		uv = uv + i + fmn_time * i * signs[i % 2];
+
+		waterNoise += mirroredNoise(uv) * amplitude;
+
+		uv *= lacunarity;
+		amplitude *= 0.5;
+	}
+
+	return waterNoise * (float(octaveCount + 1) / octaveCount);
+}
+float getWaterHeight(in vec2 uv) {
+	return getWaterHeight(uv, 5);
+}
+
+vec2 getWaterHeightDXY(in vec2 uv) {
+	// vec2 waterNoise = vec2(0.0);
+
+	// vec2 previousUv;
+
+	// const int octaveCount = 5;
+	// float lacunarity = 2.0;
+	// float amplitude = 0.5;
+
+	// float[] signs = float[2](-1.0, 1.0);
+
+	// for(int i = 0; i < octaveCount; i++) {
+	// 	vec2 flowDirection = mirroredNoiseDXY(previousUv) * 0.1;
+	// 	uv += flowDirection;
+
+	// 	previousUv = uv;
+
+	// 	uv = rotate2D(uv, PI * 2.0 / octaveCount);
+	// 	uv = uv + i + fmn_time * i * signs[i % 2];
+
+	// 	waterNoise += mirroredNoiseDXY(uv) * amplitude;
+
+	// 	uv *= lacunarity;
+	// 	amplitude *= 0.5;
+	// }
+
+	// return waterNoise * (float(octaveCount + 1) / octaveCount) * 0.1;
+
+	float sampleOffset = 1e-3;
+
+	float center = getWaterHeight(uv);
+	float diffX = (getWaterHeight(uv + vec2(sampleOffset, 0.0)) - center) / sampleOffset;
+	float diffY = (getWaterHeight(uv + vec2(0.0, sampleOffset)) - center) / sampleOffset;
+
+	return vec2(diffX, diffY) * 0.1;
+}
+
+// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+vec2 waterParallax(in mat3 tbn, in vec3 cameraPos, in vec3 worldSpacePos, in vec2 uv) {
+	vec3 tangentCameraPos = tbn * cameraPos;
+	vec3 tangentWorldPos = tbn * worldSpacePos;
+
+	vec3 viewDir = normalize(tangentCameraPos - tangentWorldPos);
+
+	float minLayers = 8.0;
+	float maxLayers = 32.0;
+
+	float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
+	float layerDepth = 1.0 / numLayers;
+
+	float currentLayerDepth = 0.0;
+	
+	vec2 shift = viewDir.xy / viewDir.z * 0.2;
+	vec2 deltaUv = shift / numLayers;
+
+	vec2 currentUv = uv;
+	float currentHeight = getWaterHeight(currentUv, 3);
+
+	int safetyCount = 0;
+	int safetyLimit = 40;
+	while(currentLayerDepth < currentHeight && safetyCount++ < safetyLimit) {
+		currentUv -= deltaUv;
+		currentHeight = getWaterHeight(currentUv, 3);
+
+		currentLayerDepth += layerDepth;
+	}
+
+	vec2 previousUv = currentUv + deltaUv;
+
+	// interpolation
+	float after = currentHeight - currentLayerDepth;
+	float before = getWaterHeight(previousUv, 3) - currentLayerDepth + layerDepth;
+
+	float weight = after / (after - before);
+	
+	vec2 finalUv = mix(currentUv, previousUv, weight);
+
+	return finalUv;
+}
+
+
 void main() {
 	initGlobals();
 	vec3 viewDir = getViewDir();
@@ -107,28 +228,23 @@ void main() {
 			// Math from Balint
 			int face = int(dot(max(material.vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-material.vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
 
-			vec3 worldSpacePos = sceneSpacePos + frx_cameraPos;
-			vec2 uv = frx_faceUv(worldSpacePos, face);
+			vec3 cameraPos = mod(frx_cameraPos, 500.0);
+
+			vec3 worldSpacePos = sceneSpacePos + cameraPos;
+			vec2 uv = 0.25 * frx_faceUv(worldSpacePos, face);
 
 			// Parallaxify
-			uv = parallaxMapping(sceneSpacePos, tbn, uv, smoothHash(uv + fmn_time) * 0.1);
+			uv = waterParallax(tbn, cameraPos, worldSpacePos, uv);
 
-			vec2 waterNoise = vec2(0.0);
-			vec2 waterWindDirection = vec2(fmn_time, fmn_time * 0.25);
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords(rotate2D(uv * vec2(1.5, 0.5) + waterWindDirection, radians( 15.0)) / 250.0) * 250.0) * 0.5;
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords(rotate2D(uv * vec2(1.0, 0.2) + waterWindDirection, radians(-15.0)) / 250.0) * 250.0) * 0.75;
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(3.0, 1.0) + 200.0 + waterWindDirection * 4.0) / 250.0) * 250.0) * 0.125;
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(5.0, 1.5) + 400.0 + waterWindDirection * 8.0) / 250.0) * 250.0) * 0.065;
-			waterNoise += smoothHashDXY(repeatAndMirrorCoords((uv * vec2(10.0, 1.5) + 600.0 - waterWindDirection) / 250.0) * 250.0) * 0.125;
-
-			waterNoise *= pow(dot(-material.vertexNormal, viewDir), 1.0 / 3.0);
-			waterNoise *= 0.1;
+			vec2 waterNoise = getWaterHeightDXY(uv);
 
 			material.fragNormal = tbn * normalize(
 				cross(vec3(2.0, 0.0, waterNoise.x), vec3(0.0, 2.0, waterNoise.y))
 			);
 		}
 	#endif
+			// fragColor = vec4(material.fragNormal, 1.0);
+			// return;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Refractions
@@ -251,7 +367,13 @@ void main() {
 		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
-		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), step(dot(cleanReflectDir, material.vertexNormal), 0.0));
+
+		float invalidNormal = step(dot(cleanReflectDir, material.vertexNormal), 0.0);
+
+		material.fragNormal = normalize(material.fragNormal + material.vertexNormal * invalidNormal);
+		
+		cleanReflectDir = reflect(viewDir, material.fragNormal);
+		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), invalidNormal);
 
 		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
