@@ -58,6 +58,9 @@ vec3 viewSpaceToScreenSpace(in vec3 viewSpacePos) {
 vec3 sceneSpaceToViewSpace(in vec3 sceneSpacePos) {
 	return setupViewSpacePos(sceneSpaceToScreenSpace(sceneSpacePos));
 }
+vec3 viewSpaceToSceneSpace(in vec3 viewSpacePos) {
+	return setupSceneSpacePos(viewSpaceToScreenSpace(viewSpacePos));
+}
 
 float linearizeDepth(in float depth) {
 	mat2 tempMatrix = mat2(

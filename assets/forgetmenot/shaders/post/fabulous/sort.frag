@@ -51,7 +51,7 @@ void insertLayer(inout vec3 background, inout float backgroundDepth, in vec4 for
 }
 
 float mirroredNoise(in vec2 uv) {
-	return smoothHash(repeatAndMirrorCoords(uv / 250.0) * 250.0);
+	return snoise(repeatAndMirrorCoords(uv / 250.0) * 250.0) * 0.5 + 0.5;
 }
 
 vec2 mirroredNoiseDXY(in vec2 uv) {
@@ -61,8 +61,6 @@ vec2 mirroredNoiseDXY(in vec2 uv) {
 float getWaterHeight(in vec2 uv, in int octaves) {
 	float waterNoise = 0.0;
 
-	vec2 previousUv;
-
 	int octaveCount = octaves;
 	float lacunarity = 2.0;
 	float amplitude = 0.5;
@@ -70,13 +68,8 @@ float getWaterHeight(in vec2 uv, in int octaves) {
 	float[] signs = float[2](-1.0, 1.0);
 
 	for(int i = 0; i < octaveCount; i++) {
-		vec2 flowDirection = mirroredNoiseDXY(previousUv) * 0.1;
-		uv += flowDirection;
-
-		previousUv = uv;
-
-		uv = rotate2D(uv, PI * 2.0 / octaveCount);
 		uv = uv + i + fmn_time * i * signs[i % 2];
+		uv = rotate2D(uv, PI * 0.25);
 
 		waterNoise += mirroredNoise(uv) * amplitude;
 
@@ -84,40 +77,15 @@ float getWaterHeight(in vec2 uv, in int octaves) {
 		amplitude *= 0.5;
 	}
 
-	return waterNoise * (float(octaveCount + 1) / octaveCount);
+	waterNoise *= (float(octaveCount + 1) / octaveCount);
+
+	return waterNoise * 0.25;
 }
 float getWaterHeight(in vec2 uv) {
 	return getWaterHeight(uv, 5);
 }
 
 vec2 getWaterHeightDXY(in vec2 uv) {
-	// vec2 waterNoise = vec2(0.0);
-
-	// vec2 previousUv;
-
-	// const int octaveCount = 5;
-	// float lacunarity = 2.0;
-	// float amplitude = 0.5;
-
-	// float[] signs = float[2](-1.0, 1.0);
-
-	// for(int i = 0; i < octaveCount; i++) {
-	// 	vec2 flowDirection = mirroredNoiseDXY(previousUv) * 0.1;
-	// 	uv += flowDirection;
-
-	// 	previousUv = uv;
-
-	// 	uv = rotate2D(uv, PI * 2.0 / octaveCount);
-	// 	uv = uv + i + fmn_time * i * signs[i % 2];
-
-	// 	waterNoise += mirroredNoiseDXY(uv) * amplitude;
-
-	// 	uv *= lacunarity;
-	// 	amplitude *= 0.5;
-	// }
-
-	// return waterNoise * (float(octaveCount + 1) / octaveCount) * 0.1;
-
 	float sampleOffset = 1e-3;
 
 	float center = getWaterHeight(uv);
@@ -127,15 +95,17 @@ vec2 getWaterHeightDXY(in vec2 uv) {
 	return vec2(diffX, diffY) * 0.1;
 }
 
-// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-vec2 waterParallax(in mat3 tbn, in vec3 cameraPos, in vec3 worldSpacePos, in vec2 uv) {
-	vec3 tangentCameraPos = tbn * cameraPos;
-	vec3 tangentWorldPos = tbn * worldSpacePos;
+struct ParallaxResult {
+	vec2 coord;
+	float shiftDistance;
+};
 
-	vec3 viewDir = normalize(tangentCameraPos - tangentWorldPos);
+// https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+ParallaxResult waterParallax(in mat3 tbn, in vec3 sceneSpacePos, in vec2 uv) {
+	vec3 viewDir = normalize(tbn * sceneSpacePos);
 
 	float minLayers = 8.0;
-	float maxLayers = 32.0;
+	float maxLayers = 16.0;
 
 	float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
 	float layerDepth = 1.0 / numLayers;
@@ -149,7 +119,7 @@ vec2 waterParallax(in mat3 tbn, in vec3 cameraPos, in vec3 worldSpacePos, in vec
 	float currentHeight = getWaterHeight(currentUv, 3);
 
 	int safetyCount = 0;
-	int safetyLimit = 40;
+	int safetyLimit = int(maxLayers + 0.5);
 	while(currentLayerDepth < currentHeight && safetyCount++ < safetyLimit) {
 		currentUv -= deltaUv;
 		currentHeight = getWaterHeight(currentUv, 3);
@@ -167,7 +137,7 @@ vec2 waterParallax(in mat3 tbn, in vec3 cameraPos, in vec3 worldSpacePos, in vec
 	
 	vec2 finalUv = mix(currentUv, previousUv, weight);
 
-	return finalUv;
+	return ParallaxResult(finalUv, currentLayerDepth);
 }
 
 
@@ -234,7 +204,22 @@ void main() {
 			vec2 uv = 0.25 * frx_faceUv(worldSpacePos, face);
 
 			// Parallaxify
-			uv = waterParallax(tbn, cameraPos, worldSpacePos, uv);
+			ParallaxResult result = waterParallax(tbn, sceneSpacePos, uv);
+			uv = result.coord;
+
+			// vec3 parallaxPos = setupViewSpacePos(texcoord, translucentDepth);
+			// parallaxPos.z += result.shiftDistance;
+
+			// parallaxPos = viewSpaceToSceneSpace(parallaxPos);
+
+			// material.fragNormal = normalize(
+			// 	cross(
+			// 		dFdx(parallaxPos),
+			// 		dFdy(parallaxPos)
+			// 	)
+			// );
+
+			//translucentDepth = viewSpaceToScreenSpace(parallaxPos).z;
 
 			vec2 waterNoise = getWaterHeightDXY(uv);
 
@@ -368,12 +353,12 @@ void main() {
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 
-		float invalidNormal = step(dot(cleanReflectDir, material.vertexNormal), 0.0);
+		// float invalidNormal = step(dot(cleanReflectDir, material.vertexNormal), 0.0);
 
-		material.fragNormal = normalize(material.fragNormal + material.vertexNormal * invalidNormal);
+		// material.fragNormal = normalize(material.fragNormal + material.vertexNormal * invalidNormal);
 		
-		cleanReflectDir = reflect(viewDir, material.fragNormal);
-		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), invalidNormal);
+		// cleanReflectDir = reflect(viewDir, material.fragNormal);
+		// cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), invalidNormal);
 
 		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
