@@ -123,7 +123,7 @@ float getShadowFactor(
 
 vec3 getSkyLightColor(
 	in vec3 fragNormal,
-	in float vanillaAo,
+	in float ambientOcclusion,
 	in samplerCube skybox
 ) {
 	vec3 ambientLighting = vec3(0.0);
@@ -151,7 +151,7 @@ vec3 getSkyLightColor(
 	if(frx_worldIsNether == 1) {
 		#ifdef NETHER_DIFFUSE
 			ambientLighting *= 2.0;
-			ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * vanillaAo;
+			ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * ambientOcclusion;
 		#endif
 	} else if(frx_worldIsEnd == 1) {
 		ambientLighting *= 0.1;
@@ -209,7 +209,7 @@ vec3 basicLighting(
 
 	in float blockLight,
 	in float skyLight,
-	in float vanillaAo,
+	in float ambientOcclusion,
 
 	in float f0,
 	in float roughness,
@@ -251,7 +251,7 @@ vec3 basicLighting(
 			shadowMapTexture,
 			shadowMap
 		);
-		//shadowFactor *= skyLight;
+		shadowFactor *= skyLight;
 
 		//shadowFactor = max(shadowFactor * NdotL, sunBounceAmount);
 		
@@ -262,15 +262,15 @@ vec3 basicLighting(
 			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
-		directLighting *= 1.5;
+		directLighting *= 1.125;
 
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
-		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.5;
+		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;
 	}
 
 	// Ambient lighting
 	{
-		ambientLighting = getSkyLightColor(fragNormal, vanillaAo, skybox) * skyLight;
+		ambientLighting = getSkyLightColor(fragNormal, ambientOcclusion, skybox) * skyLight * 0.65;
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		// Add block light
@@ -282,7 +282,7 @@ vec3 basicLighting(
 		// handheld light
 		ambientLighting += 0.5 * getHandheldLightColor(sceneSpacePos, fragNormal);
 
-		ambientLighting *= vanillaAo;
+		ambientLighting *= ambientOcclusion;
 	}
 
 	totalLighting += directLighting + ambientLighting;
@@ -294,7 +294,7 @@ vec3 basicLighting(
 	}
 
 	// Night vision
-	totalLighting = mix(totalLighting, max(totalLighting, normalize(totalLighting) * vanillaAo), nightVisionFactor);
+	totalLighting = mix(totalLighting, max(totalLighting, normalize(totalLighting) * ambientOcclusion), nightVisionFactor);
 
 	vec3 color = albedo * (totalLighting + emission);
 	return color;

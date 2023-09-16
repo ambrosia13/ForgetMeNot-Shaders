@@ -55,7 +55,7 @@ void main() {
 				scattering = getAerialPerspectiveSlice(fogDistanceWhole);
 				scattering = mix(scattering, getAerialPerspectiveSlice(fogDistanceWhole + 1), fogDistancePart);
 
-				scattering *= 2.0;
+				scattering *= 1.5;
 
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {

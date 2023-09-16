@@ -116,7 +116,7 @@ void main() {
 							4, 
 							u_shadow_tex, 
 							u_shadow_map
-						) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor;
+						) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor * material.skyLight;
 					}
 				#endif
 

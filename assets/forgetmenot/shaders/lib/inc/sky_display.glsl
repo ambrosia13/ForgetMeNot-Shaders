@@ -253,7 +253,7 @@ vec3 getSkyColor(
 			nightColor += 0.25 * stars * starMultiplier * (1.0 - moonFactor);
 		}
 
-		vec3 result = 40.0 * blueHourMultiplier * (dayColor + nightColor);
+		vec3 result = 40.0 * (dayColor + nightColor);
 
 		return result * (1.0 + 9.0 * frx_skyFlashStrength);
 	} else if(frx_worldIsNether == 1) {

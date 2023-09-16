@@ -1,6 +1,6 @@
 // This file is a mess.
 
-const vec3 caveFogColor = vec3(0.0125, 0.03125, 0.05) * 1.0;
+const vec3 caveFogColor = vec3(0.02, 0.01, 0.03);
 
 // SEASONS
 const vec3 springTreeColor = vec3(0.7, 0.9, 0.6);
