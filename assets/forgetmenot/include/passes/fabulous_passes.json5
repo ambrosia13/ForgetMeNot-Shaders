@@ -69,7 +69,22 @@
 					"frex:textures/auto/colored_lights",
 
 					"shadow_map",
-					"shadow_map"
+					"shadow_map",
+
+					"rtao_copy", // Previous rtao
+					"depth_copy", // Contains previous solid depth
+					"normal_copy", // Contains previous normals
+				],
+				toggleConfig: "rtao"
+			},
+			{
+				name: "rtao_copy",
+				program: "rtao_copy",
+				framebuffer: "rtao_copy",
+				samplerImages: [
+					"rtao",
+					"solid_depth",
+					"solid_data",
 				],
 				toggleConfig: "rtao"
 			},
@@ -86,28 +101,6 @@
 			},
 			{
 				name: "rtao_filter_1",
-				program: "rtao_filter",
-				framebuffer: "rtao",
-				samplerImages: [
-					"rtao_filter",
-					"solid_depth",
-					"vertex_normal"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_2",
-				program: "rtao_filter",
-				framebuffer: "rtao_filter",
-				samplerImages: [
-					"rtao",
-					"solid_depth",
-					"vertex_normal"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_3",
 				program: "rtao_filter",
 				framebuffer: "rtao",
 				samplerImages: [

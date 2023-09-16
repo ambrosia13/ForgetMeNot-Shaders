@@ -26,7 +26,19 @@
 		},
 		{
 			name: "rtao",
-			colorAttachments: [{image: "rtao", clearColor: 0x00000000}]
+			colorAttachments: [
+				{image: "rtao", clearColor: 0x00000000},
+			]
+		},
+		{
+			name: "rtao_copy",
+			colorAttachments: [
+				{image: "rtao_copy", clearColor: 0x00000000},
+				// Depth copy
+				{image: "depth_copy", clearColor: 0x00000000},
+				// Normal copy
+				{image: "normal_copy", clearColor: 0x00000000}
+			]
 		},
 		{
 			name: "rtao_filter",

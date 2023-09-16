@@ -30,7 +30,21 @@
 				"u_light_data",
 
 				"u_shadow_tex",
-				"u_shadow_map"
+				"u_shadow_map",
+
+				"u_previous_rtao",
+				"u_previous_depth",
+				"u_previous_normal"
+			]
+		},
+		{
+			name: "rtao_copy",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/fabulous/rtao/rtao_copy.frag",
+			samplers: [
+				"u_rtao",
+				"u_depth",
+				"u_data",
 			]
 		},
 		{

@@ -12,8 +12,6 @@ layout(location = 0) out vec4 fragColor;
 void main() {
 	initGlobals();
 	
-	// vec4 samples = textureGather(u_rtao, texcoord, 0);
-
 	float centerDepth = linearizeDepth(texture(u_depth, texcoord).r);
 	vec3 centerNormal = texture(u_normal, texcoord).rgb;
 	vec4 centerColor = texture(u_rtao, texcoord);
@@ -35,8 +33,4 @@ void main() {
 			fragColor += mix(centerColor * k, texture(u_rtao, sampleCoord) * k, factor);
 		}
 	}
-
-	//fragColor = texture(u_normal, texcoord);
-
-	// fragColor = vec4(min(samples.x, min(samples.y, min(samples.z, samples.w))));
 }

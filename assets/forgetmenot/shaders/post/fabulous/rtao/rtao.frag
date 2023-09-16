@@ -12,6 +12,10 @@ uniform sampler2D u_light_data;
 uniform sampler2DArray u_shadow_tex;
 uniform sampler2DArrayShadow u_shadow_map;
 
+uniform sampler2D u_previous_rtao;
+uniform sampler2D u_previous_depth;
+uniform sampler2D u_previous_normal;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
@@ -77,13 +81,13 @@ void main() {
 		uvec3 packedSample = texture(u_material_data, texcoord).xyz;
 		Material material = unpackMaterial(packedSample);
 
-		vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
-		sceneSpacePos += 0.01 * material.vertexNormal;
+		vec3 originalSceneSpacePos = setupSceneSpacePos(texcoord, depth);
+		vec3 sceneSpacePos = originalSceneSpacePos + 0.01 * material.vertexNormal;
 
 		float ambientOcclusion = 1.0;
 		float sunBounceAmount = 0.0;
 
-		const int numAoRays = RTAO_RAYS;
+		const int numAoRays = 3;
 		const int numSunBounceRays = numAoRays; // May need to be adjusted.
 
 		const float rayContribution = 1.0 / numAoRays;
@@ -120,7 +124,24 @@ void main() {
 			}
 		}
 
-		fragColor = vec4(ambientOcclusion, sunBounceAmount, 0.0, 1.0);
+		vec4 result = vec4(ambientOcclusion, sunBounceAmount, 0.0, 1.0);
+
+		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(originalSceneSpacePos + positionDifference);
+		
+		vec4 previousResult = texture(u_previous_rtao, lastScreenPos.xy);
+		float previousDepth = texture(u_previous_depth, lastScreenPos.xy).r;
+		vec3 previousNormal = texture(u_previous_normal, lastScreenPos.xy).rgb;
+
+		bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
+		disocclusion = disocclusion || dot(previousNormal, material.fragNormal) < 0.9;
+		disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > 1.0;
+
+		if(!disocclusion) {
+			result = mix(result, previousResult, 0.9);
+		}
+
+		fragColor = result;
 	} else {
 		fragColor = vec4(0.0);
 	}
