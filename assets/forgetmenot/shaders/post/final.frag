@@ -134,7 +134,7 @@ void main() {
 	#endif
 
 	#ifndef ACES_TONEMAP
-		color = lottes(color * 0.45, WHITE_POINT);
+		color = lottes(color * 0.5, WHITE_POINT);
 	#else
 		color = frx_toneMap(color);
 	#endif
