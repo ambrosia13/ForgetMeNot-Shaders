@@ -75,6 +75,10 @@ vec3 setupShadowPos(in vec3 sceneSpacePos, in vec3 normal, out int cascade) {
 	return shadowScreenPos;
 }
 
+float getPenumbraSizeMultiplier() {
+	return 1.0 + 20.0 * fmn_rainFactor;
+}
+
 float getShadowFactor(
 	in vec3 sceneSpacePos,
 	in vec3 vertexNormal,
@@ -104,7 +108,7 @@ float getShadowFactor(
 			float depthQuery = texture(shadowMapTexture, vec3(sampleCoord, cascade)).r;
 			float diff = max(0.0, shadowScreenPos.z - depthQuery) * (frx_viewDistance * 20.0) / cascadeDistance(cascade);
 
-			penumbraSize += diff / pcssSamples;
+			penumbraSize += diff / pcssSamples * getPenumbraSizeMultiplier();
 		}
 	} else {
 		penumbraSize = 2.0;
@@ -263,6 +267,8 @@ vec3 basicLighting(
 		#endif
 
 		directLighting *= 1.125;
+
+		directLighting *= (1.0 - 0.9 * fmn_rainFactor);
 
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;

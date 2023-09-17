@@ -283,7 +283,7 @@ void main() {
 
 		float reflectionFactor = 0.0;
 		for(int i = 0; i < numReflectionRays; i++) {
-			vec3 reflectDir = generateCosineVector(cleanReflectDir, material.roughness);
+			vec3 reflectDir = mix(cleanReflectDir, generateCosineVector(material.fragNormal), material.roughness);
 			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
 			vec3 screenSpacePos = vec3(texcoord, compositeDepth);
@@ -318,9 +318,6 @@ void main() {
 
 		// Handle sky reflections
 		ambientReflectionColor.rgb *= mix(1.0, pow2(material.vanillaAo) * material.skyLight, material.roughness);
-
-		// blocklight contribution
-		ambientReflectionColor = max(fmn_blockLightColor * pow4(material.blockLight) * pow(dot(material.vertexNormal, material.fragNormal), 300.0), ambientReflectionColor.rgb * material.skyLight);
 
 		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
