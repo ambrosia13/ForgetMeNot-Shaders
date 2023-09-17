@@ -263,7 +263,7 @@ vec3 basicLighting(
 			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
 		#else
 			// Samples sun transmittance directly rather than using the skybox
-			directLighting = SUN_BRIGHTNESS * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+			directLighting = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
 		#endif
 
 		directLighting *= 1.125;

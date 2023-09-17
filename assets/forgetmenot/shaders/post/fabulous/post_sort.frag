@@ -40,6 +40,7 @@ void main() {
 			vec3 scattering = vec3(0.0);
 
 			float fogMultiplier = mix(1.0 + 2.0 * frx_smoothedEyeBrightness.y, 15.0, float(frx_worldIsNether));
+			fogMultiplier = mix(fogMultiplier, 0.0, float(frx_cameraInWater));
 			float transmittance = exp(-blockDistance / fmn_atmosphereParams.blocksPerFogUnit * fogMultiplier);
 
 			if(frx_worldIsOverworld == 1) {

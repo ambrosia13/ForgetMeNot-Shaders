@@ -36,9 +36,9 @@ void main() {
 	getCubemapViewDirs(texcoord, viewDirs);
 
 	// Don't draw the sun in the cube map if cloud shadows are off; makes it more realistic
-	#ifndef CLOUD_SHADOWS 
-		#define SUN_BRIGHTNESS 0.0
-	#endif
+	// #ifndef CLOUD_SHADOWS 
+	// 	#define SUN_BRIGHTNESS 0.0
+	// #endif
 
 	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
 		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], pow2(texture(u_clouds, viewDirs[0]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
