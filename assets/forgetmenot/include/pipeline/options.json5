@@ -5,9 +5,9 @@
 			categoryKey: "config.forgetmenot.category.atmosphere",
 			elements: {
 				sun_brightness: {
-					default: 8.0,
+					default: 64.0,
 					min: 0.0,
-					max: 64.0,
+					max: 256.0,
 					nameKey: "config.forgetmenot.name.sun_brightness",
 					descriptionKey: "config.forgetmenot.desc.sun_brightness"
 				},
@@ -173,7 +173,7 @@
 					descriptionKey: "config.forgetmenot.desc.realistic_water"
 				},
 				water_dirt_amount: {
-					default: 0.2,
+					default: 0.04,
 					min: 0.01,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.water_dirt_amount",

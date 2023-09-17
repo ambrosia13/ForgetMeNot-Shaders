@@ -135,7 +135,10 @@ void main() {
 
 		bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
 		disocclusion = disocclusion || dot(previousNormal, material.fragNormal) < 0.9;
-		disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > 1.0;
+
+
+		float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
+		disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
 
 		if(!disocclusion) {
 			result = mix(result, previousResult, 0.9);
