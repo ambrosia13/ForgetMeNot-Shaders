@@ -11,7 +11,7 @@ void frx_pipelineVertex() {
 		gl_Position = frx_viewProjectionMatrix * gl_Position;
 
 		// Apply TAA jitter
-		gl_Position.xy += getTaaOffset(frx_renderFrames) * (1.0 / vec2(frx_viewWidth, frx_viewHeight)) * gl_Position.w;
+		//gl_Position.xy += getTaaOffset(frx_renderFrames) * (1.0 / vec2(frx_viewWidth, frx_viewHeight)) * gl_Position.w;
 
 		gl_Position = frx_inverseViewProjectionMatrix * gl_Position;
 	#endif

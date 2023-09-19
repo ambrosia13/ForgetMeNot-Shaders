@@ -38,6 +38,6 @@ void main() {
 	vec4 color = texture(u_color, texcoord);
 	vec4 bloom = frx_sampleTent(u_upsampled, texcoord, 1. / frxu_size, 0) / 7.0;
 
-	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.4 * frx_worldIsNether);
+	fragColor = mix(color, bloom, 0.2 + 0.4 * frx_cameraInFluid + 0.2 * frx_worldIsNether);
 	//fragColor = bloom;
 }

@@ -272,8 +272,9 @@ void main() {
 		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), invalidNormal);
 
 		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
-		if(frx_cameraInWater == 0) ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb;
-		
+		if(frx_cameraInWater == 0) {
+			ambientReflectionColor = textureLod(u_skybox, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb * material.skyLight;
+		}
 
 		// number of rays to cast depends on roughness (goodbye performance)
 		int numReflectionRays = int(sqrt(material.roughness) * 10.0) + 1;

@@ -108,7 +108,7 @@
 					descriptionKey: "config.forgetmenot.desc.blocklight_brightness"
 				},
 				ambient_brightness: {
-					default: 0.01,
+					default: 0.005,
 					min: 0.0,
 					max: 1.0,
 					nameKey: "config.forgetmenot.name.ambient_brightness",
@@ -339,21 +339,21 @@
 					descriptionKey: "config.forgetmenot.desc.gain_b"
 				},
 				min_exposure_overworld: {
-					default: 0.3,
+					default: 0.2,
 					min: 0.0,
 					max: 2.0,
 					nameKey: "config.forgetmenot.name.min_exposure_overworld",
 					descriptionKey: "config.forgetmenot.desc.min_exposure_overworld"
 				},
 				max_exposure_overworld: {
-					default: 6.0,
+					default: 4.0,
 					min: 2.0,
 					max: 10.0,
 					nameKey: "config.forgetmenot.name.max_exposure_overworld",
 					descriptionKey: "config.forgetmenot.desc.max_exposure_overworld"
 				},
 				exposure_multiplier_overworld: {
-					default: 1.0,
+					default: 1.75,
 					min: 0.0,
 					max: 3.0,
 					nameKey: "config.forgetmenot.name.exposure_multiplier_overworld",
