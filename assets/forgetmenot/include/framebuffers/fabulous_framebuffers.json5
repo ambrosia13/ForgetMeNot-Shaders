@@ -27,7 +27,50 @@
 		{
 			name: "rtao",
 			colorAttachments: [
-				{image: "rtao", clearColor: 0x00000000},
+				{image: "rtao", lod: 0, clearColor: 0x00000000},
+			]
+		},
+		{
+			name: "rtao_and_disocclusion",
+			colorAttachments: [
+				{image: "rtao", lod: 0, clearColor: 0x00000000},
+				{image: "disocclusion", clearColor: 0x00000000},
+			]
+		},
+		{
+			name: "rtao_lod_1",
+			colorAttachments: [
+				{image: "rtao", lod: 1},
+			]
+		},
+		{
+			name: "rtao_lod_2",
+			colorAttachments: [
+				{image: "rtao", lod: 2},
+			]
+		},
+		{
+			name: "rtao_lod_3",
+			colorAttachments: [
+				{image: "rtao", lod: 3},
+			]
+		},
+		{
+			name: "rtao_lod_4",
+			colorAttachments: [
+				{image: "rtao", lod: 4},
+			]
+		},
+		{
+			name: "rtao_lod_5",
+			colorAttachments: [
+				{image: "rtao", lod: 5},
+			]
+		},
+		{
+			name: "rtao_lod_6",
+			colorAttachments: [
+				{image: "rtao", lod: 6},
 			]
 		},
 		{

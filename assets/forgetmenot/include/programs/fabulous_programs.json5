@@ -1,6 +1,14 @@
 {
 	programs: [
 		{
+			name: "downsample",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/downsample.frag",
+			samplers: [
+				"u_color"
+			]
+		},
+		{
 			name: "depth_downsample",
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
@@ -34,7 +42,10 @@
 
 				"u_previous_rtao",
 				"u_previous_depth",
-				"u_previous_normal"
+				"u_previous_normal",
+
+				"u_skybox",
+				"u_transmittance"
 			]
 		},
 		{
@@ -54,7 +65,10 @@
 			samplers: [
 				"u_rtao",
 				"u_depth",
-				"u_normal"
+				"u_normal",
+
+				"u_rtao_mips",
+				"u_disocclusion"
 			]
 		},
 		{

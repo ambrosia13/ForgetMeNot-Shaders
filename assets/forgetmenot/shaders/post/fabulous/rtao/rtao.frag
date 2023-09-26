@@ -16,26 +16,44 @@ uniform sampler2D u_previous_rtao;
 uniform sampler2D u_previous_depth;
 uniform sampler2D u_previous_normal;
 
+uniform samplerCube u_skybox;
+uniform sampler2D u_transmittance;
+
 in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 fragDisocclusion;
+
+struct Light {
+	vec3 color;
+	bool isFullCube;
+};
 
 struct Hit {
 	vec3 pos;
 	vec3 normal;
 
 	bool success;
+	Light light;
 };
 
-const Hit NO_HIT = Hit(vec3(0.0), vec3(0.0), false);
+const Hit NO_HIT = Hit(vec3(0.0), vec3(0.0), false, Light(vec3(0.0), false));
+const Hit OUT_OF_RANGE = Hit(vec3(1000.0), vec3(1000.0), true, Light(vec3(0.0), false));
 
-bool evaluateHit(in vec3 voxelPos) {
+bool evaluateHit(inout Hit hit, in vec3 voxelPos) {
 	frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
 
-	return data.isOccluder && data.isFullCube;
+	bool condition = (data.isOccluder && data.isFullCube) || data.isLightSource;
+	if(condition) {
+		hit.light = Light(data.light.rgb, data.isFullCube);
+
+		return condition;
+	}
+
+	return false;
 }
 
-Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
+Hit raytrace(vec3 rayPos, vec3 rayDir, int raytraceLength) {
 	Hit hit = NO_HIT;
 
 	rayPos += frx_cameraPos;
@@ -61,7 +79,7 @@ Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
 
 		hit.normal = stepAxis;
 
-		if(evaluateHit(voxelPos)) {
+		if(evaluateHit(hit, voxelPos)) {
 			hit.pos = currentPos - frx_cameraPos;
 			hit.normal *= -stepDir;
 			hit.success = true;
@@ -77,75 +95,81 @@ void main() {
 
 	float depth = texture(u_depth, texcoord).r;
 
-	if(depth != 1.0) {
-		uvec3 packedSample = texture(u_material_data, texcoord).xyz;
-		Material material = unpackMaterial(packedSample);
-
-		vec3 originalSceneSpacePos = setupSceneSpacePos(texcoord, depth);
-		vec3 sceneSpacePos = originalSceneSpacePos + 0.01 * material.vertexNormal;
-
-		float ambientOcclusion = 1.0;
-		float sunBounceAmount = 0.0;
-
-		const int numAoRays = 3;
-		const int numSunBounceRays = numAoRays; // May need to be adjusted.
-
-		const float rayContribution = 1.0 / numAoRays;
-
-		const float aoStrength = RTAO_STRENGTH;
-
-		const int aoRange = 2;
-
-		vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
-
-		for(int i = 0; i < numAoRays; i++) {
-			vec3 rayDir = generateCosineVector(material.fragNormal);
-
-			Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
-			if(hit.success) {
-				float distToHit = distance(hit.pos, rayPos);
-				float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
-
-				#ifdef INDIRECT_SUNLIGHT
-					if(i < numSunBounceRays) {
-						sunBounceAmount += getShadowFactor(
-							hit.pos,
-							hit.normal,
-							0.0,
-							true,
-							4, 
-							u_shadow_tex, 
-							u_shadow_map
-						) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor * material.skyLight;
-					}
-				#endif
-
-				ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
-			}
-		}
-
-		vec4 result = vec4(ambientOcclusion, sunBounceAmount, 0.0, 1.0);
-
-		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(originalSceneSpacePos + positionDifference);
-		
-		vec4 previousResult = texture(u_previous_rtao, lastScreenPos.xy);
-		float previousDepth = texture(u_previous_depth, lastScreenPos.xy).r;
-		vec3 previousNormal = texture(u_previous_normal, lastScreenPos.xy).rgb;
-
-		bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
-		disocclusion = disocclusion || dot(previousNormal, material.fragNormal) < 0.9;
-
-
-		float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
-		disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
-
-		if(!disocclusion) {
-			result = mix(result, previousResult, 0.9);
-		}
-
-		fragColor = result;
-	} else {
-		fragColor = vec4(0.0);
+	if(depth == 1.0) {
+		discard;
 	}
+
+	uvec3 packedSample = texture(u_material_data, texcoord).xyz;
+	vec3 sceneSpacePos = setupSceneSpacePos(texcoord, depth);
+
+	vec3 sunLightColor = getDirectLightColor(u_transmittance, sceneSpacePos);
+
+	Material material = unpackMaterial(packedSample);
+
+	vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.02;
+	vec3 rayColor = vec3(0.0);
+
+	const int numRays = 1;
+	const int numBounces = 4;
+	for(int i = 0; i < numRays; i++) {
+		vec3 throughput = vec3(1.0);
+		vec3 radiance = vec3(0.0);
+
+		vec3 rayDir = generateCosineVector(material.fragNormal);
+		vec3 incomingNormal = material.fragNormal;
+
+		for(int b = 0; b < numBounces; b++) {
+			Hit hit = raytrace(rayPos, rayDir, 40);
+
+			// ray didn't hit anything, add sky color
+			if(!hit.success) {
+				radiance += throughput * 2.0 * textureLod(u_skybox, rayDir, 0).rgb;
+				break;
+			}
+
+			float NdotL = clamp01(dot(incomingNormal, frx_skyLightVector));
+			radiance += sunLightColor * NdotL * getShadowFactor(
+				hit.pos, incomingNormal, 0.0, true, 4, u_shadow_tex, u_shadow_map
+			);
+
+			radiance += hit.light.color * 1.0;
+			throughput *= 0.5 / PI;
+
+			rayPos = hit.pos;
+			rayDir = generateCosineVector(hit.normal);
+
+			incomingNormal = hit.normal;
+		}
+
+		rayColor += radiance / numRays;
+	}
+
+	vec3 result = rayColor;
+
+	vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+	vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(sceneSpacePos + positionDifference);
+	
+	vec4 previousResult = texture(u_previous_rtao, lastScreenPos.xy);
+	float pixelAge = previousResult.a;
+
+	float previousDepth = texture(u_previous_depth, lastScreenPos.xy).r;
+	vec3 previousNormal = texture(u_previous_normal, lastScreenPos.xy).rgb;
+
+	bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
+
+	float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
+	disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
+	disocclusion = disocclusion || length(material.fragNormal - previousNormal) > 0.01;
+
+	if(!disocclusion) {
+		float accumulationFactor = 1.0 - (1.0 / min(120.0, pixelAge + 1.0));
+
+		result = mix(result, previousResult.rgb, accumulationFactor);
+		pixelAge += 1.0;
+	} else {
+		pixelAge = 0.0;
+	}
+
+	fragColor = vec4(result, pixelAge);
+	fragDisocclusion = vec4(float(disocclusion));	
 }

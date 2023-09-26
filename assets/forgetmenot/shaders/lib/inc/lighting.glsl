@@ -125,6 +125,26 @@ float getShadowFactor(
 	return shadowFactor;
 }
 
+vec3 getDirectLightColor(
+	in sampler2D transmittanceLut,
+	in vec3 sceneSpacePos
+) {
+	vec3 directLighting = 8.0 * getValFromTLUT(
+		transmittanceLut, 
+		skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), 
+		frx_skyLightVector
+	);
+
+	directLighting *= 1.125;
+
+	directLighting *= (1.0 - 0.9 * fmn_rainFactor);
+
+	directLighting *= frx_skyLightTransitionFactor;
+	if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;
+
+	return directLighting;
+}
+
 vec3 getSkyLightColor(
 	in vec3 fragNormal,
 	in float ambientOcclusion,
@@ -257,21 +277,7 @@ vec3 basicLighting(
 		);
 		shadowFactor *= skyLight;
 
-		//shadowFactor = max(shadowFactor * NdotL, sunBounceAmount);
-		
-		#ifdef CLOUD_SHADOWS
-			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
-		#else
-			// Samples sun transmittance directly rather than using the skybox
-			directLighting = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		#endif
-
-		directLighting *= 1.125;
-
-		directLighting *= (1.0 - 0.9 * fmn_rainFactor);
-
-		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
-		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;
+		directLighting = (NdotL * shadowFactor + sunBounceAmount) * getDirectLightColor(transmittanceLut, sceneSpacePos);
 	}
 
 	// Ambient lighting

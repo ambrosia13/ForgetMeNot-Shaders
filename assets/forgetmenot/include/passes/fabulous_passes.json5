@@ -62,7 +62,7 @@
 			{
 				name: "rtao",
 				program: "rtao",
-				framebuffer: "rtao",
+				framebuffer: "rtao_and_disocclusion",
 				samplerImages: [
 					"solid_depth",
 					"solid_data",
@@ -74,8 +74,12 @@
 					"rtao_copy", // Previous rtao
 					"depth_copy", // Contains previous solid depth
 					"normal_copy", // Contains previous normals
+
+					"skybox",
+					"transmittance_lut"
 				],
-				toggleConfig: "rtao"
+				toggleConfig: "rtao",
+				lod: 0
 			},
 			{
 				name: "rtao_copy",
@@ -89,13 +93,75 @@
 				toggleConfig: "rtao"
 			},
 			{
+				name: "rtao_downsample_1",
+				program: "downsample",
+				framebuffer: "rtao_lod_1",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 1
+			},
+			{
+				name: "rtao_downsample_2",
+				program: "downsample",
+				framebuffer: "rtao_lod_2",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 2
+			},
+			{
+				name: "rtao_downsample_3",
+				program: "downsample",
+				framebuffer: "rtao_lod_3",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 3
+			},
+			{
+				name: "rtao_downsample_4",
+				program: "downsample",
+				framebuffer: "rtao_lod_4",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 4
+			},
+			{
+				name: "rtao_downsample_5",
+				program: "downsample",
+				framebuffer: "rtao_lod_5",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 5
+			},
+			{
+				name: "rtao_downsample_6",
+				program: "downsample",
+				framebuffer: "rtao_lod_6",
+				samplerImages: [
+					"rtao",
+				],
+				toggleConfig: "rtao",
+				lod: 6
+			},
+			{
 				name: "rtao_filter_0",
 				program: "rtao_filter",
 				framebuffer: "rtao_filter",
 				samplerImages: [
 					"rtao",
 					"solid_depth",
-					"vertex_normal"
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
 				],
 				toggleConfig: "rtao"
 			},
@@ -106,7 +172,61 @@
 				samplerImages: [
 					"rtao_filter",
 					"solid_depth",
-					"vertex_normal"
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
+				],
+				toggleConfig: "rtao"
+			},
+			{
+				name: "rtao_filter_2",
+				program: "rtao_filter",
+				framebuffer: "rtao_filter",
+				samplerImages: [
+					"rtao",
+					"solid_depth",
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
+				],
+				toggleConfig: "rtao"
+			},
+			{
+				name: "rtao_filter_3",
+				program: "rtao_filter",
+				framebuffer: "rtao",
+				samplerImages: [
+					"rtao_filter",
+					"solid_depth",
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
+				],
+				toggleConfig: "rtao",
+			},
+			{
+				name: "rtao_filter_4",
+				program: "rtao_filter",
+				framebuffer: "rtao_filter",
+				samplerImages: [
+					"rtao",
+					"solid_depth",
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
+				],
+				toggleConfig: "rtao"
+			},
+			{
+				name: "rtao_filter_5",
+				program: "rtao_filter",
+				framebuffer: "rtao",
+				samplerImages: [
+					"rtao_filter",
+					"solid_depth",
+					"vertex_normal",
+					"rtao",
+					"disocclusion"
 				],
 				toggleConfig: "rtao"
 			},

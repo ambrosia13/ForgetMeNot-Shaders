@@ -30,8 +30,22 @@
 		},
 		{
 			name: "rtao",
+			lod: 6,
+			internalFormat: "RGBA32F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{name: "TEXTURE_MIN_FILTER", val: "LINEAR_MIPMAP_NEAREST"}, 
+				{name: "TEXTURE_MAG_FILTER", val: "LINEAR"},
+				{name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE"}, 
+				{name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE"}
+			]
+		},
+		{
+			name: "disocclusion",
 			lod: 0,
-			internalFormat: "RG16",
+			internalFormat: "R8",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
@@ -45,7 +59,7 @@
 		{
 			name: "rtao_copy",
 			lod: 0,
-			internalFormat: "RG16",
+			internalFormat: "RGBA32F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",
@@ -87,7 +101,7 @@
 		{
 			name: "rtao_filter",
 			lod: 0,
-			internalFormat: "RG8",
+			internalFormat: "RGBA32F",
 			pixelFormat: "RGBA",
 			pixelDataType: "UNSIGNED_BYTE",
 			target: "TEXTURE_2D",

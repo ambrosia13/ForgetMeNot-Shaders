@@ -263,34 +263,44 @@ void main() {
 		// 	float ambientOcclusion = material.vanillaAo;
 		// #endif
 
-		#ifdef RTAO
-			vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
-		#else
-			vec2 rtaoSample = vec2(material.vanillaAo, 0.0);
-		#endif
+		// #ifdef RTAO
+		// 	vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
+		// #else
+		// 	vec2 rtaoSample = vec2(material.vanillaAo, 0.0);
+		// #endif
 
-		color = basicLighting(
-			color,
-			sceneSpacePos,
-			material.vertexNormal,
-			material.fragNormal,
-			material.blockLight,
-			material.skyLight,
-			pow(rtaoSample.r, 1.5),
-			material.f0,
-			material.roughness,
-			material.sssAmount,
-			material.isWater,
-			u_skybox,
-			u_transmittance,
-			u_shadow_map,
-			u_shadow_tex,
-			u_light_data,
-			true,
-			16,
-			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
-			rtaoSample.g
+		vec3 light = texture(u_ambient_occlusion, texcoord).rgb;
+
+		float NdotL = clamp01(dot(material.fragNormal, frx_skyLightVector));
+		NdotL = mix(NdotL, 1.0, material.sssAmount);
+
+		light += NdotL * getDirectLightColor(u_transmittance, sceneSpacePos) * getShadowFactor(
+			sceneSpacePos, material.fragNormal, material.sssAmount, true, 12, u_shadow_tex, u_shadow_map
 		);
+
+		color *= light;
+		// color = basicLighting(
+		// 	color,
+		// 	sceneSpacePos,
+		// 	material.vertexNormal,
+		// 	material.fragNormal,
+		// 	material.blockLight,
+		// 	material.skyLight,
+		// 	pow(rtaoSample.r, 1.5),
+		// 	material.f0,
+		// 	material.roughness,
+		// 	material.sssAmount,
+		// 	material.isWater,
+		// 	u_skybox,
+		// 	u_transmittance,
+		// 	u_shadow_map,
+		// 	u_shadow_tex,
+		// 	u_light_data,
+		// 	true,
+		// 	16,
+		// 	texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
+		// 	rtaoSample.g
+		// );
 
 //		color = vec3(ambientOcclusion);
 
