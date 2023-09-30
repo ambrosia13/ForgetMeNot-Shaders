@@ -157,9 +157,10 @@ void main() {
 
 	bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
 
-	float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
+	float depthTolerance = 0.1 + 0.05 * (length(sceneSpacePos));
 	disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
 	disocclusion = disocclusion || length(material.fragNormal - previousNormal) > 0.01;
+
 
 	if(!disocclusion) {
 		float accumulationFactor = 1.0 - (1.0 / min(120.0, pixelAge + 1.0));

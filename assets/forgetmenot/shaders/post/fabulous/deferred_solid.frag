@@ -195,80 +195,7 @@ void main() {
 		}
 	#endif
 
-	// float dist = rayIntersectSphere(vec3(0.0, -300.0, 100.0), viewDir, 10.0);
-	// vec3 spherePos = viewDir * max(0.0, dist);
-	// vec3 sphereNormal = normalize(cross(dFdx(spherePos), dFdy(spherePos)));
-
-	// if(dist >= 0.0 && dist < length(sceneSpacePos)) {
-	// 	sceneSpacePos = spherePos;
-	// 	color = vec3(1.0, 0.0, 0.0);
-	// 	material.fragNormal = sphereNormal;
-	// 	material.vertexNormal = sphereNormal;
-	// 	material.skyLight = 1.0;
-	// 	material.blockLight = 0.0;
-	// 	material.vanillaAo = 1.0;
-	// 	material.f0 = 0.0;
-	// 	material.roughness = 1.0;
-	// 	material.sssAmount = 0.0;
-	// 	material.isWater = 0.0;
-		
-	// 	depth = sceneSpaceToScreenSpace(spherePos).z;
-
-	// 	// fragColor.rgb = sphereNormal;
-	// 	// return;
-	// }
-
 	if(depth < 1.0) {
-		// #ifdef RTAO
-		// 	float ambientOcclusion = 1.0;
-
-		// 	const int numAoRays = RTAO_RAYS;
-		// 	const float rayContribution = 1.0 / numAoRays;
-
-		// 	const float aoStrength = RTAO_STRENGTH;
-
-		// 	const int aoRange = 2;
-
-		// 	vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
-
-		// 	vec3 sunBounceAmount = vec3(0.0);
-		// 	vec3 sunColor = textureLod(u_skybox, frx_skyLightVector, 2).rgb * 0.01;
-
-		// 	for(int i = 0; i < numAoRays; i++) {
-		// 		vec3 rayDir = generateCosineVector(material.fragNormal);
-
-		// 		Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
-		// 		if(hit.success) {
-		// 			float distToHit = distance(hit.pos, rayPos);
-		// 			float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
-
-		// 			sunBounceAmount += getShadowFactor(
-		// 				hit.pos,
-		// 				hit.normal,
-		// 				0.0,
-		// 				true,
-		// 				4, 
-		// 				u_shadow_tex, 
-		// 				u_shadow_map
-		// 			);
-
-		// 			ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
-		// 		}
-		// 	}
-
-		// 	sunBounceAmount *= sunColor;
-
-		// 	//ambientOcclusion = min(ambientOcclusion, material.vanillaAo);
-		// #else
-		// 	float ambientOcclusion = material.vanillaAo;
-		// #endif
-
-		// #ifdef RTAO
-		// 	vec2 rtaoSample = texture(u_ambient_occlusion, texcoord).rg;
-		// #else
-		// 	vec2 rtaoSample = vec2(material.vanillaAo, 0.0);
-		// #endif
-
 		vec3 light = texture(u_ambient_occlusion, texcoord).rgb;
 
 		float NdotL = clamp01(dot(material.fragNormal, frx_skyLightVector));
@@ -279,35 +206,6 @@ void main() {
 		);
 
 		color *= light;
-		// color = basicLighting(
-		// 	color,
-		// 	sceneSpacePos,
-		// 	material.vertexNormal,
-		// 	material.fragNormal,
-		// 	material.blockLight,
-		// 	material.skyLight,
-		// 	pow(rtaoSample.r, 1.5),
-		// 	material.f0,
-		// 	material.roughness,
-		// 	material.sssAmount,
-		// 	material.isWater,
-		// 	u_skybox,
-		// 	u_transmittance,
-		// 	u_shadow_map,
-		// 	u_shadow_tex,
-		// 	u_light_data,
-		// 	true,
-		// 	16,
-		// 	texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
-		// 	rtaoSample.g
-		// );
-
-//		color = vec3(ambientOcclusion);
-
-		//color = vec3(tMax * 0.5);
-
-		// color = texture(u_multiscattering, texcoord).rgb;
-		
 	} else {
 		color = texture(u_sky_display, texcoord).rgb;
 	}
