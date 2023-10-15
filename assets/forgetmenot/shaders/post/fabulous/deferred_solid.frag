@@ -198,12 +198,14 @@ void main() {
 	if(depth < 1.0) {
 		vec3 light = texture(u_ambient_occlusion, texcoord).rgb;
 
-		float NdotL = clamp01(dot(material.fragNormal, frx_skyLightVector));
-		NdotL = mix(NdotL, 1.0, material.sssAmount);
+		#ifndef RENDER_MODE
+			float NdotL = clamp01(dot(material.fragNormal, frx_skyLightVector));
+			NdotL = mix(NdotL, 1.0, material.sssAmount);
 
-		light += NdotL * getDirectLightColor(u_transmittance, sceneSpacePos) * getShadowFactor(
-			sceneSpacePos, material.fragNormal, material.sssAmount, true, 12, u_shadow_tex, u_shadow_map
-		);
+			light += NdotL * getDirectLightColor(u_transmittance, sceneSpacePos) * getShadowFactor(
+				sceneSpacePos, material.fragNormal, material.sssAmount, true, 12, u_shadow_tex, u_shadow_map
+			);
+		#endif
 
 		color *= light;
 	} else {

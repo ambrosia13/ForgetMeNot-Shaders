@@ -119,7 +119,12 @@ void pcg(inout uint seed) {
 }
 
 #ifdef FRAGMENT_SHADER
-	uint rngState = uint(frxu_size.x * frxu_size.y) * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+	#ifdef RENDER_MODE
+		uint rngState = uint(frxu_size.x * frxu_size.y) * frx_renderFrames;
+	#else
+		uint rngState = uint(frxu_size.x * frxu_size.y) * frx_renderFrames + uint(gl_FragCoord.x + gl_FragCoord.y * frxu_size.x);
+	#endif
+
 	uint staticRngState = 1u;
 
 	uint randomUint() {

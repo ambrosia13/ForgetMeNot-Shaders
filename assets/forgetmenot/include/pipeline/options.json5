@@ -123,6 +123,11 @@
 					default: false,
 					nameKey: "config.forgetmenot.name.fullbright",
 					descriptionKey: "config.forgetmenot.desc.fullbright"
+				},
+				render_mode: {
+					default: true,
+					nameKey: "Render Mode",
+					descriptionKey: "Sacrifices gameplay viability for perfect noiseless rendering"
 				}
 			}
 		},

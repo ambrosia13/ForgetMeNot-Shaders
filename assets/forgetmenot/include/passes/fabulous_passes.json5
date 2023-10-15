@@ -152,84 +152,84 @@
 				toggleConfig: "rtao",
 				lod: 6
 			},
-			{
-				name: "rtao_filter_0",
-				program: "rtao_filter",
-				framebuffer: "rtao_filter",
-				samplerImages: [
-					"rtao",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_1",
-				program: "rtao_filter",
-				framebuffer: "rtao",
-				samplerImages: [
-					"rtao_filter",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_2",
-				program: "rtao_filter",
-				framebuffer: "rtao_filter",
-				samplerImages: [
-					"rtao",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_3",
-				program: "rtao_filter",
-				framebuffer: "rtao",
-				samplerImages: [
-					"rtao_filter",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao",
-			},
-			{
-				name: "rtao_filter_4",
-				program: "rtao_filter",
-				framebuffer: "rtao_filter",
-				samplerImages: [
-					"rtao",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao"
-			},
-			{
-				name: "rtao_filter_5",
-				program: "rtao_filter",
-				framebuffer: "rtao",
-				samplerImages: [
-					"rtao_filter",
-					"solid_depth",
-					"vertex_normal",
-					"rtao",
-					"disocclusion"
-				],
-				toggleConfig: "rtao"
-			},
+			// {
+			// 	name: "rtao_filter_0",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao_filter",
+			// 	samplerImages: [
+			// 		"rtao",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao"
+			// },
+			// {
+			// 	name: "rtao_filter_1",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao",
+			// 	samplerImages: [
+			// 		"rtao_filter",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao"
+			// },
+			// {
+			// 	name: "rtao_filter_2",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao_filter",
+			// 	samplerImages: [
+			// 		"rtao",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao"
+			// },
+			// {
+			// 	name: "rtao_filter_3",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao",
+			// 	samplerImages: [
+			// 		"rtao_filter",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao",
+			// },
+			// {
+			// 	name: "rtao_filter_4",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao_filter",
+			// 	samplerImages: [
+			// 		"rtao",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao"
+			// },
+			// {
+			// 	name: "rtao_filter_5",
+			// 	program: "rtao_filter",
+			// 	framebuffer: "rtao",
+			// 	samplerImages: [
+			// 		"rtao_filter",
+			// 		"solid_depth",
+			// 		"vertex_normal",
+			// 		"rtao",
+			// 		"disocclusion"
+			// 	],
+			// 	toggleConfig: "rtao"
+			// },
 			{
 				name: "deferred_solid",
 				program: "deferred_solid",

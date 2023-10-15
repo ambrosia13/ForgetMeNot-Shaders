@@ -90,6 +90,15 @@ Hit raytrace(vec3 rayPos, vec3 rayDir, int raytraceLength) {
 	return hit;
 }
 
+void castRayToSun(inout vec3 radiance, in Hit hit, in float NdotL, in vec3 sunLightColor) {
+	vec3 sunDir = generateCosineVector(frx_skyLightVector, 0.1);
+
+	Hit sunHit = raytrace(hit.pos + hit.normal * 0.02, sunDir, 40);
+	if(!hit.success) {
+		radiance += sunLightColor * NdotL;
+	}
+}
+
 void main() {
 	initGlobals();
 
@@ -106,20 +115,39 @@ void main() {
 
 	Material material = unpackMaterial(packedSample);
 
-	vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.02;
 	vec3 rayColor = vec3(0.0);
 
-	const int numRays = 1;
-	const int numBounces = 4;
+	#ifdef RENDER_MODE
+		const int numRays = 2;
+		const int numBounces = 5;
+		const int rayRange = 60;
+	#else
+		const int numRays = 1;
+		const int numBounces = 4;
+		const int rayRange = 40;
+	#endif
+
 	for(int i = 0; i < numRays; i++) {
 		vec3 throughput = vec3(1.0);
 		vec3 radiance = vec3(0.0);
 
+		vec3 sunDir = generateCosineVector(frx_skyLightVector, 0.0075);
+
+		vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.02;
 		vec3 rayDir = generateCosineVector(material.fragNormal);
 		vec3 incomingNormal = material.fragNormal;
 
+		#ifdef RENDER_MODE
+			if(frx_worldHasSkylight == 1) {
+				Hit sunHit = raytrace(rayPos, sunDir, rayRange);
+				if(!sunHit.success) {
+					radiance += sunLightColor * (clamp01(dot(incomingNormal, sunDir)));
+				}
+			}
+		#endif
+
 		for(int b = 0; b < numBounces; b++) {
-			Hit hit = raytrace(rayPos, rayDir, 40);
+			Hit hit = raytrace(rayPos, rayDir, rayRange);
 
 			// ray didn't hit anything, add sky color
 			if(!hit.success) {
@@ -127,13 +155,22 @@ void main() {
 				break;
 			}
 
-			float NdotL = clamp01(dot(incomingNormal, frx_skyLightVector));
-			radiance += sunLightColor * NdotL * getShadowFactor(
-				hit.pos, incomingNormal, 0.0, true, 4, u_shadow_tex, u_shadow_map
-			);
+			float NdotL = clamp01(dot(incomingNormal, sunDir));
+			#ifdef RENDER_MODE
+				if(frx_worldHasSkylight == 1) {
+					Hit sunHit = raytrace(rayPos, sunDir, rayRange);
+					if(!sunHit.success) {
+						radiance += sunLightColor * (clamp01(dot(incomingNormal, sunDir)));
+					}
+				}
+			#else
+				radiance += sunLightColor * NdotL * getShadowFactor(
+					hit.pos, incomingNormal, 0.0, true, 4, u_shadow_tex, u_shadow_map
+				);
+			#endif
 
-			radiance += hit.light.color * 1.0;
-			throughput *= 0.5 / PI;
+			radiance += hit.light.color * 10.0;
+			throughput *= (hit.light.color * 0.5 + 0.25) / PI;
 
 			rayPos = hit.pos;
 			rayDir = generateCosineVector(hit.normal);
@@ -161,9 +198,21 @@ void main() {
 	disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
 	disocclusion = disocclusion || length(material.fragNormal - previousNormal) > 0.01;
 
+	#ifdef RENDER_MODE
+		if(frx_cameraPos != frx_lastCameraPos) {
+			fragColor = vec4(exp(-length(sceneSpacePos / 30.0)) * 0.5 + 0.5);
+			return;
+		}
+	#endif
 
 	if(!disocclusion) {
-		float accumulationFactor = 1.0 - (1.0 / min(120.0, pixelAge + 1.0));
+		#ifdef RENDER_MODE
+			float maxAccumulatedFrames = 1e10;
+		#else
+			float maxAccumulatedFrames = 120.0;
+		#endif
+
+		float accumulationFactor = 1.0 - (1.0 / min(maxAccumulatedFrames, pixelAge + 1.0));
 
 		result = mix(result, previousResult.rgb, accumulationFactor);
 		pixelAge += 1.0;
