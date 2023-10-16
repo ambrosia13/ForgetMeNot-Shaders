@@ -4,7 +4,6 @@
 Contains functions for season coloring.
 */
 
-
 vec4 getSeasonFactors(out float time) {
 	time = fmn_worldTime;
 

@@ -1,5 +1,5 @@
 // Rain factor variable that condenses frx_rainGradient and frx_thunderGradient
-// into a single variable.
+// into a single value.
 float fmn_rainFactor;
 
 // Time variable that wraps around at high values to preserve precision.
@@ -30,49 +30,6 @@ struct AtmosphereParams {
 	float blocksPerFogUnit;
 } fmn_atmosphereParams;
 
-// just for utility
-const float _coverageModifiers[] = float[](
-	-0.15, 0.0, 0.1, 0.3, 1.0, 0.1, -0.5,
-	-0.1, -0.2, 0.0, 0.3, 0.5, 0.1, -0.1
-);
-const float _fogDensityModifiers[] = float[](
-	1200.0, 1000.0, 800.0, 700.0, 400.0, 900.0, 1400.0,
-	1200.0, 1300.0, 1000.0, 800.0, 500.0, 600.0, 1000.0
-);
-
-float _getNoise(vec2 x, float lowerBound, float upperBound, float centerness, bool reverse) {
-	//return (upperBound + lowerBound) / 2.0;
-
-	float rand = frx_noise2d(x);
-	if(rand > 0.97) return upperBound * 4.0;
-
-	rand = mix(rand, 1.0 - rand, float(reverse));
-
-	return mix(rand, 0.5, centerness) * (upperBound - lowerBound) + lowerBound;
-}
-float _interpolateRandom(float x, float lowerBound, float upperBound, float centerness, bool reverse) {
-	const int period = 60;
-	const float offset = 81.0;
-
-	float wrappedInput = mod(x + offset, float(period));
-
-	int whole = int(wrappedInput);
-	float part = fract(wrappedInput);
-	part = part * part * (3.0 - 2.0 * part);
-
-	float coverage1 = _getNoise(vec2(whole), lowerBound, upperBound, centerness, reverse);
-	float coverage2 = _getNoise(vec2((whole + 1) % period), lowerBound, upperBound, centerness, reverse);
-	
-	return mix(coverage1, coverage2, part);
-}
-
-AtmosphereParams _paramsMix(AtmosphereParams a, AtmosphereParams b, float x) {
-	return AtmosphereParams(
-		mix(a.cloudCoverage, b.cloudCoverage, x),
-		mix(a.blocksPerFogUnit, b.blocksPerFogUnit, x)
-	);
-}
-
 // Should be called in every program that uses these variables
 void initGlobals() {
 	fmn_rainFactor = frx_smoothedRainGradient * 0.5 + frx_smoothedThunderGradient * 0.5;
@@ -91,13 +48,13 @@ void initGlobals() {
 	}
 
 	// cloud coverage
-	float cloudCoverage = 0.1;//_interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false);
+	float cloudCoverage = 0.1;
 	cloudCoverage += 0.5 * fmn_rainFactor;
 	
 	fmn_atmosphereParams.cloudCoverage = cloudCoverage;
 
 	// fog density
-	fmn_atmosphereParams.blocksPerFogUnit = 1500.0;//_interpolateRandom(fmn_worldTime, 400.0, 1500.0, 0.0, true);
+	fmn_atmosphereParams.blocksPerFogUnit = 1500.0;
 	fmn_atmosphereParams.blocksPerFogUnit -= 1200.0 * fmn_rainFactor;
 
 	fmn_atmosphereParams.blocksPerFogUnit = mix(300.0, fmn_atmosphereParams.blocksPerFogUnit, frx_smoothedEyeBrightness.y);

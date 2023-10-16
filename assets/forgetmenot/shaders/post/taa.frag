@@ -111,26 +111,6 @@ void main() {
 		color.rgb = inverseToneMap(color.rgb);
 		fragColor = color;
 	#else
-		// fragColor = vec4(0.0);
-
-		// float centerDepth = linearizeDepth(texture(u_depth, texcoord).r);
-		// vec4 centerColor = texture(u_color, texcoord);
-
-		// const int blurWidth = 10;
-		// for(int y = -blurWidth; y <= blurWidth; y++) {
-		// 	for(int x = -blurWidth; x <= blurWidth; x++) {
-		// 		vec2 sampleCoord = texcoord + vec2(x, y) / frxu_size;
-
-		// 		float depth = linearizeDepth(texture(u_depth, sampleCoord).r);
-
-		// 		float diff = abs(depth - centerDepth) * 0.1;
-		// 		float factor = exp(-diff * diff * 16.0);
-
-		// 		float k = 1.0 / pow2(blurWidth * 2.0 + 1.0);
-		// 		fragColor += mix(centerColor * k, texture(u_color, sampleCoord) * k, factor);
-		// 	}
-		// }
-
 		fragColor = texture(u_color, texcoord);
 	#endif
 }

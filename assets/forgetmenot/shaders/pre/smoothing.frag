@@ -39,7 +39,7 @@ void main() {
 		}
 	}
 
-	float smoothingFactor = 1.0 / smoothingFrames;//1.0 - exp(-1.0 / smoothingFrames);
+	float smoothingFactor = 1.0 / smoothingFrames;
 	result = mix(texelFetch(u_smoothing_previous, index, 0).r, result, smoothingFactor);
 
 	fragColor = result;

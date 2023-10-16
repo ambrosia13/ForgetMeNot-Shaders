@@ -90,7 +90,7 @@ CloudLayer createCirrusCloudLayer(in vec3 viewDir) {
 	cloudLayer.domainMult = vec2(6.0, 1.0);
 	cloudLayer.rangeMult = smoothHash(cloudLayer.plane + frx_renderSeconds * 0.01);
 
-	cloudLayer.domainShift = vec2(0.0);//vec2(sin(cloudLayer.plane.y) * 0.25 + sin(cloudLayer.plane.y * 2.0 + 100.0) * 0.125, 1.0);
+	cloudLayer.domainShift = vec2(0.0);
 	cloudLayer.rangeShift = -0.1;
 
 	cloudLayer.curlNoiseAmount = 0.00035;
@@ -155,8 +155,6 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 	float scattering = 0.75;
 
 	if(cloudLayer.selfShadowSteps > 0) {
-		//cloudLayer.noiseOctaves = max(4, cloudLayer.noiseOctaves / 2);
-
 		vec2 temp = viewDir.xz * rcp(viewDir.y);
 		float skyLightZenithAngle = rcp(abs(frx_skyLightVector.y));
 		vec2 sunLightDirection = mix(
@@ -174,15 +172,11 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
 		}
 
-		//lightOpticalDepth *= 1.0 + noise - fbmHash(cloudLayer.plane, 4) * 1.4;
-		//lightOpticalDepth *= 1.0 - transmittance;
 		lightOpticalDepth = max(0.0, lightOpticalDepth);
-
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.3);
 	}
 
 	transmittance = mix(transmittance, 1.0, exp(-clamp01(viewDir.y) * 100.0));
-	//transmittance = mix(transmittance, 0.0, smoothstep(0.7, 0.9, _interpolateRandom(fmn_worldTime, -0.5, 0.25, 0.2, false)));
 
 	return vec2(
 		transmittance,
@@ -262,18 +256,6 @@ vec3 getSkyColor(
 		return normalize(pow(frx_fogColor.rgb, vec3(2.2))) * 0.4 + 0.075;
 	} else if(frx_worldIsEnd == 1) {
 		vec3 skyColor = vec3(0.0);
-
-
-		// const vec2 starDirection = vec2(1.0, 0.0);
-
-		// const int samples = 100;
-
-
-		// for(int i = 0; i < samples; i++) {
-		// 	skyColor += starColor * step(0.95 + 0.03 * i / samples, 1.0 - cellular2x2(plane + starDirection * (i + randomFloat()) / samples).x) / samples;
-		// }
-
-		// skyColor *= exp(-plane.x * 0.3);
 
 		vec2 plane = viewDir.xz / (abs(viewDir.y + length(viewDir.xz) * 0.3));
 		plane *= 10.0;
@@ -490,17 +472,6 @@ vec3 getSkyAndClouds(
 		CloudLayer cirrusClouds = createCirrusCloudLayer(viewDir);
 		CloudLayer cumulusClouds = createCumulusCloudLayer(viewDir);
 
-		// color = getClouds(
-		// 	viewDir,
-		// 	sunTransmittance,
-		// 	moonTransmittance,
-		// 	cloudsTransmittanceAndScattering,
-		// 	cirrusClouds,
-		// 	transmittanceLut,
-		// 	skyLutDay,
-		// 	skyLutNight,
-		// 	color
-		// );
 		color = getClouds(
 			viewDir,
 			sunTransmittance,

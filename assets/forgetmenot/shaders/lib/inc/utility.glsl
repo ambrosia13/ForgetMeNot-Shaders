@@ -15,7 +15,6 @@ float dotSelf(in vec4 x) {
 	return FMN_DOT_SELF;
 }
 
-
 // Quick clamp functions between 0 and 1
 float clamp01(in float x) {
 	return clamp(x, 0.0, 1.0);

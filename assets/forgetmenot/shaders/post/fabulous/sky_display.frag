@@ -21,7 +21,7 @@ void main() {
 		return;
 	}
 
-	vec2 jitteredCoord = gl_FragCoord.xy;// + getTaaOffset(frx_renderFrames);
+	vec2 jitteredCoord = gl_FragCoord.xy;
 	vec3 viewDir = normalize(setupSceneSpacePos(jitteredCoord / frxu_size, 1.0));
 
 	fragColor.rgb = getSkyAndClouds(
