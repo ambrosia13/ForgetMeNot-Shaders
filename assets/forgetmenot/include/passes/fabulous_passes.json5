@@ -95,7 +95,7 @@
 				samplerImages: [
 					"rtao",
 					"solid_depth",
-					"vertex_normal"
+					"normal_copy"
 				],
 				toggleConfig: "rtao"
 			},
@@ -106,7 +106,7 @@
 				samplerImages: [
 					"rtao_filter",
 					"solid_depth",
-					"vertex_normal"
+					"normal_copy"
 				],
 				toggleConfig: "rtao"
 			},

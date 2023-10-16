@@ -99,7 +99,7 @@ void main() {
 		vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
 
 		for(int i = 0; i < numAoRays; i++) {
-			vec3 rayDir = generateCosineVector(material.fragNormal);
+			vec3 rayDir = generateCosineVector(material.vertexNormal);
 
 			Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
 			if(hit.success) {

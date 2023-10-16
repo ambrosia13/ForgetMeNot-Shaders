@@ -19,5 +19,5 @@ void main() {
 
 	rtaoTarget = texture(u_rtao, texcoord);
 	depthTarget = texture(u_depth, texcoord);
-	normalTarget = vec4(material.fragNormal, 1.0);
+	normalTarget = vec4(material.vertexNormal, 1.0);
 }
