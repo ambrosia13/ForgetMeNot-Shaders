@@ -165,6 +165,8 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 			linearstepFrom0(0.2, getMoonVector().y)
 		);
 
+		sunLightDirection = normalize(sunLightDirection);
+
 		float lightOpticalDepth = 0.0;
 
 		for(int i = 0; i < cloudLayer.selfShadowSteps; i++) {
@@ -224,10 +226,10 @@ vec3 getSkyColor(
 
 		float moonRadius = 0.9998 - 0.0003 * exp(-clamp01(moonVector.y) * 10.0);
 		
-		float moonFactor = step(moonRadius, dot(viewDir, moonVector));
+		float moonFactor = smoothstep(moonRadius - 0.00002, moonRadius, dot(viewDir, moonVector));
 
 
-		vec3 sun = sunBrightness * step(0.9997, dot(viewDir, sunVector)) * sunTransmittance;
+		vec3 sun = sunBrightness * smoothstep(0.99975, 0.99977, dot(viewDir, sunVector)) * sunTransmittance;
 		vec3 moon = sunBrightness * 0.25 * moonFactor * moonTransmittance;
 
 		vec3 dayColor = dayColorSample + sun;
@@ -398,7 +400,8 @@ vec3 getClouds(
 	float transmittance = cloudsTransmittanceAndScattering.x;
 
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
-		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
+		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 
+		0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
 	) + ambientColor * exp(-fbmHash(cloudLayer.plane, 4) * 0.5) * 2.0;
 
 
