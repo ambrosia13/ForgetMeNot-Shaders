@@ -10,6 +10,20 @@ Contains the diffuse lighting function as well as some other lighting utilities.
 // Lighting should only be in the fragment shader; requires things like IGN
 #ifdef FRAGMENT_SHADER
 
+// Distribution function for specular highlight
+float distribution(in float NdotH, in float roughness) {
+	float a = NdotH * roughness;
+	float k = roughness / (1.0 - pow2(NdotH) + pow2(a));
+	return k * k * (1.0 / PI);
+}
+
+// Schlick fresnel approximation
+vec3 getReflectance(in vec3 f0, in float NdotV, in float roughness) {
+	vec3 r = f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+
+	return mix(r, min(r, vec3(0.1)), roughness);
+}
+
 // --------------------------------------------------------------------------------------------------------
 // https://github.com/spiralhalo/CanvasTutorial/wiki/Chapter-4
 // Utility functions for cascaded shadow maps
@@ -136,9 +150,10 @@ vec3 getSkyLightColor(
 	// 	#define DIRECTIONAL_SKYLIGHT
 	// #endif
 
+	//#define DIRECTIONAL_SKYLIGHT
 	#ifdef DIRECTIONAL_SKYLIGHT
 		// Samples the cube map in the direction of the normal
-		ambientLighting = interpolateCubemap(skybox, fragNormal).rgb * 2.0;
+		ambientLighting = interpolateCubemap(skybox, fragNormal).rgb;
 	#else
 		// Averages the color of all faces
 		ambientLighting = 
@@ -149,7 +164,7 @@ vec3 getSkyLightColor(
 			textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
 			textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
 
-		ambientLighting /= 4.0;
+		ambientLighting /= 6.0;
 	#endif
 
 	if(frx_worldIsNether == 1) {
@@ -244,9 +259,21 @@ vec3 basicLighting(
 
 	vec3 worldSpacePos = sceneSpacePos + vertexNormal * 0.05 + frx_cameraPos;
 
+	#ifdef CLOUD_SHADOWS
+		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
+	#else
+		// Samples sun transmittance directly rather than using the skybox
+		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+	#endif
+
+	float shadowFactor = 0.0;
+
 	// Direct lighting
 	if(frx_worldHasSkylight == 1) {
-		float shadowFactor = getShadowFactor(
+		directLighting = directLightColor;
+		directLighting *= (1.0 - 0.9 * fmn_rainFactor);
+		
+		shadowFactor = getShadowFactor(
 			sceneSpacePos,
 			vertexNormal,
 			sssAmount,
@@ -255,28 +282,15 @@ vec3 basicLighting(
 			shadowMapTexture,
 			shadowMap
 		);
-		shadowFactor *= skyLight;
-
-		//shadowFactor = max(shadowFactor * NdotL, sunBounceAmount);
+		shadowFactor *= skyLight * step(0.0, NdotL);
 		
-		#ifdef CLOUD_SHADOWS
-			directLighting = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
-		#else
-			// Samples sun transmittance directly rather than using the skybox
-			directLighting = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-		#endif
-
-		directLighting *= 1.125;
-
-		directLighting *= (1.0 - 0.9 * fmn_rainFactor);
-
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
 		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;
 	}
 
 	// Ambient lighting
 	{
-		ambientLighting = getSkyLightColor(fragNormal, ambientOcclusion, skybox) * skyLight * 0.65;
+		ambientLighting = getSkyLightColor(fragNormal, ambientOcclusion, skybox) * skyLight * 1.5;
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		// Add block light
@@ -303,14 +317,18 @@ vec3 basicLighting(
 	totalLighting = mix(totalLighting, max(totalLighting, normalize(totalLighting) * ambientOcclusion), nightVisionFactor);
 
 	vec3 color = albedo * (totalLighting + emission);
+
+	// Specular highlight
+	vec3 viewDir = -normalize(sceneSpacePos);
+	vec3 halfwayVector = normalize(viewDir + frx_skyLightVector);
+
+	float NdotH = clamp01(dot(halfwayVector, fragNormal));
+	float NdotV = clamp01(dot(viewDir, fragNormal));
+
+	// Hardcoding material params here 
+	vec3 specularHighlightFactor = distribution(NdotH, 0.4) * getReflectance(vec3(0.0), NdotV, 0.0);
+	color += 0.5 * shadowFactor * directLightColor * specularHighlightFactor;
+
 	return color;
 }
-
-// Schlick fresnel approximation
-vec3 getReflectance(in vec3 f0, in float NdotV, in float roughness) {
-	vec3 r = f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
-
-	return mix(r, min(r, vec3(0.1)), roughness);
-}
-
 #endif
