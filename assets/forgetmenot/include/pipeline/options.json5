@@ -339,14 +339,14 @@
 					descriptionKey: "config.forgetmenot.desc.gain_b"
 				},
 				min_exposure_overworld: {
-					default: 0.2,
+					default: 0.25,
 					min: 0.0,
 					max: 2.0,
 					nameKey: "config.forgetmenot.name.min_exposure_overworld",
 					descriptionKey: "config.forgetmenot.desc.min_exposure_overworld"
 				},
 				max_exposure_overworld: {
-					default: 4.0,
+					default: 3.0,
 					min: 2.0,
 					max: 10.0,
 					nameKey: "config.forgetmenot.name.max_exposure_overworld",
