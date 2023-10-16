@@ -10,7 +10,7 @@ struct ExposureProfile {
 };
 
 ExposureProfile getOverworldExposureProfile() {
-	return ExposureProfile(0.5, MIN_EXPOSURE_OVERWORLD, MAX_EXPOSURE_OVERWORLD, EXPOSURE_MULTIPLIER_OVERWORLD);
+	return ExposureProfile(1.0, MIN_EXPOSURE_OVERWORLD, MAX_EXPOSURE_OVERWORLD, EXPOSURE_MULTIPLIER_OVERWORLD);
 }
 ExposureProfile getNetherExposureProfile() {
 	return ExposureProfile(0.2, MIN_EXPOSURE_NETHER, MAX_EXPOSURE_NETHER, EXPOSURE_MULTIPLIER_NETHER);
