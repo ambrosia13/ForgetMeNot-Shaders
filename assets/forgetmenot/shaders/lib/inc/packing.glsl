@@ -33,7 +33,7 @@ uint packUnormArb3Elements(float[3] data, uint[3] bits) {
 	float[3] mul;
 
 	for(int i = 0; i < 3; i++) {
-		mul[i] = (1u << bits[i]) - 1.0;
+		mul[i] = float(1u << bits[i]) - 1.0;
 	}
 
 	uint[3] shift;
@@ -93,7 +93,7 @@ uint packUnormArb5Elements(float[5] data, uint[5] bits) {
 	float[5] mul;
 
 	for(int i = 0; i < 5; i++) {
-		mul[i] = (1u << bits[i]) - 1.0;
+		mul[i] = float(1u << bits[i]) - 1.0;
 	}
 
 	uint[5] shift;
@@ -153,7 +153,7 @@ uint packUnormArb6Elements(float[6] data, uint[6] bits) {
 	float[6] mul;
 
 	for(int i = 0; i < 6; i++) {
-		mul[i] = (1u << bits[i]) - 1.0;
+		mul[i] = float(1u << bits[i]) - 1.0;
 	}
 
 	uint[6] shift;
