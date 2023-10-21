@@ -139,6 +139,24 @@ float getShadowFactor(
 	return shadowFactor;
 }
 
+vec3 getSunLightColor(
+	in samplerCube skybox,
+	in sampler2D transmittanceLut,
+	in vec3 sceneSpacePos
+) {
+	#ifdef CLOUD_SHADOWS
+		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
+	#else
+		// Samples sun transmittance directly rather than using the skybox
+		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+	#endif
+	if(frx_worldIsMoonlit == 1) {
+		directLightColor = nightAdjust(directLightColor);
+	}
+
+	return directLightColor;
+}
+
 vec3 getSkyLightColor(
 	in vec3 fragNormal,
 	in float ambientOcclusion,
@@ -259,13 +277,7 @@ vec3 basicLighting(
 
 	vec3 worldSpacePos = sceneSpacePos + vertexNormal * 0.05 + frx_cameraPos;
 
-	#ifdef CLOUD_SHADOWS
-		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
-	#else
-		// Samples sun transmittance directly rather than using the skybox
-		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-	#endif
-
+	vec3 directLightColor = getSunLightColor(skybox, transmittanceLut, sceneSpacePos);
 	float shadowFactor = 0.0;
 
 	// Direct lighting
@@ -285,7 +297,6 @@ vec3 basicLighting(
 		shadowFactor *= skyLight * step(0.0, NdotL);
 		
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
-		if(frx_worldIsMoonlit == 1) directLighting = nightAdjust(directLighting) * 0.75;
 	}
 
 	// Ambient lighting
@@ -306,7 +317,6 @@ vec3 basicLighting(
 	}
 
 	totalLighting += directLighting + ambientLighting;
-	//totalLighting = mix(totalLighting, vec3(frx_luminance(totalLighting)), isWater);
 
 	if(AMBIENT_BRIGHTNESS != 0.0) {
 		// Tiny point light around the player so caves aren't completely dark
@@ -326,7 +336,7 @@ vec3 basicLighting(
 	float NdotV = clamp01(dot(viewDir, fragNormal));
 
 	// Hardcoding material params here 
-	vec3 specularHighlightFactor = distribution(NdotH, 0.4) * getReflectance(vec3(0.0), NdotV, 0.0);
+	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, roughness * 0.4)) * getReflectance(vec3(0.0), NdotV, 0.0);
 	color += 0.5 * shadowFactor * directLightColor * specularHighlightFactor;
 
 	return color;
