@@ -129,7 +129,7 @@ float getShadowFactor(
 	}
 
 	penumbraSize = max(1.0, penumbraSize);
-	penumbraSize = mix(penumbraSize, 500.0 / cascadeDistance(cascade), sssAmount * step(dot(vertexNormal, frx_skyLightVector), 0.25));
+	penumbraSize = mix(penumbraSize, 250.0 / cascadeDistance(cascade), sssAmount * step(dot(vertexNormal, frx_skyLightVector), 0.25));
 
 	for(int i = 0; i < shadowMapSamples; i++) {
 		vec2 sampleOffset = diskSampling(i, shadowMapSamples, sqrt(interleavedGradient(i)) * TAU) * penumbraSize / shadowSampleOffsetFactor;
@@ -269,7 +269,11 @@ vec3 basicLighting(
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
 	float emission = clamp01(frx_luminance(albedo) - 1.0);
-	float NdotL = mix(clamp01(dot(fragNormal, frx_skyLightVector)), 1.0, step(0.001, sssAmount));
+	
+	float NdotL = clamp01(dot(fragNormal, frx_skyLightVector));
+	NdotL = mix(NdotL, 1.0, step(0.001, sssAmount));
+	//NdotL = mix(NdotL, 1.0, step(NdotL, 0.001) * step(0.001, sssAmount));
+
 
 	vec3 totalLighting = vec3(0.0);
 	vec3 directLighting = vec3(0.0);
@@ -294,7 +298,7 @@ vec3 basicLighting(
 			shadowMapTexture,
 			shadowMap
 		);
-		shadowFactor *= skyLight * step(0.0, NdotL);
+		shadowFactor *= skyLight * step(0.01, NdotL);
 		
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
 	}
@@ -335,9 +339,12 @@ vec3 basicLighting(
 	float NdotH = clamp01(dot(halfwayVector, fragNormal));
 	float NdotV = clamp01(dot(viewDir, fragNormal));
 
-	// Hardcoding material params here 
-	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, roughness * 0.4)) * getReflectance(vec3(0.0), NdotV, 0.0);
-	color += 0.5 * shadowFactor * directLightColor * specularHighlightFactor;
+	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, roughness)) * getReflectance(vec3(f0), NdotV, roughness);
+
+	// Have a bit of albedo color for metals
+	vec3 specularHighlightColor = directLightColor * mix(vec3(1.0), normalize(albedo), step(0.99, f0));
+
+	color += 0.5 * shadowFactor * specularHighlightColor * specularHighlightFactor;
 
 	return color;
 }
