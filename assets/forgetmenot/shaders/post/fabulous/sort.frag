@@ -242,7 +242,7 @@ void main() {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Reflections
-	if(compositeDepth < 1.0 && (material.roughness < 0.95 || material.f0 > 0.99)) {
+	if(compositeDepth < 1.0 && (material.roughness < 0.3 || material.f0 > 0.99)) {
 		vec3 reflectColor = vec3(0.0);
 		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
 
@@ -307,7 +307,7 @@ void main() {
 		reflectColor += ambientReflectionColor * (1.0 - reflectionFactor);
 
 		#ifdef REALISTIC_METALS
-			composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0));
+			composite *= mix(vec3(1.0), reflectColor, step(0.999, material.f0) * 0.5);
 		#endif
 
 		composite = mix(composite, reflectColor, reflectance * step(material.f0, 0.999));
