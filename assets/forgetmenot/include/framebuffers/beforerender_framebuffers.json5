@@ -28,14 +28,6 @@
 			]
 		},
 		{
-			name: "aerial_perspective",
-			colorAttachments: [
-				{
-					image: "aerial_perspective", lod: 0
-				},
-			]
-		},
-		{
 			name: "clouds",
 			colorAttachments: [
 				{image: "clouds", layer: 0},

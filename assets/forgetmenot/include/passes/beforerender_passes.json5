@@ -33,17 +33,6 @@
 				]
 			},
 			{
-				name: "aerial_perspective",
-				program: "aerial_perspective",
-				framebuffer: "aerial_perspective",
-				width: 225,
-				height: 225,
-				samplerImages: [
-					"transmittance_lut",
-					"multiscattering_lut"
-				]
-			},
-			{
 				name: "clouds",
 				program: "clouds",
 				framebuffer: "clouds",

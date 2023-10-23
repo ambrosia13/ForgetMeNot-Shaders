@@ -171,7 +171,12 @@
 					"sort",
 					"composite_depth",
 
-					"aerial_perspective",
+					"transmittance_lut",
+					"multiscattering_lut",
+
+					"shadow_map",
+					"shadow_map",
+
 					"skybox"
 				]
 			},

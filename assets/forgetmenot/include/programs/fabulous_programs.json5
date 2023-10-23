@@ -118,7 +118,12 @@
 				"u_color",
 				"u_depth",
 
-				"u_aerial_perspective",
+				"u_transmittance",
+				"u_multiscattering",
+
+				"u_shadow_map",
+				"u_shadow_tex",
+
 				"u_skybox"
 			]
 		}

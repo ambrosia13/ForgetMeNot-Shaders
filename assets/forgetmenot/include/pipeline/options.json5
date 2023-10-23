@@ -217,7 +217,7 @@
 				// 	descriptionKey: "config.forgetmenot.desc.motion_blur"
 				// },
 				aces_tonemap: {
-					default: false,
+					default: true,
 					nameKey: "config.forgetmenot.name.aces_tonemap",
 					descriptionKey: "config.forgetmenot.desc.aces_tonemap"
 				},
@@ -339,7 +339,7 @@
 					descriptionKey: "config.forgetmenot.desc.gain_b"
 				},
 				min_exposure_overworld: {
-					default: 0.25,
+					default: 0.15,
 					min: 0.0,
 					max: 2.0,
 					nameKey: "config.forgetmenot.name.min_exposure_overworld",
