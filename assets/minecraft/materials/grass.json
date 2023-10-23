@@ -1,0 +1,7 @@
+{
+	"layers": [
+		{
+			"fragmentSource": "minecraft:shaders/material/grass.frag"
+		}
+	]
+}

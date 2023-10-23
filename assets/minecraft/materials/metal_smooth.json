@@ -1,0 +1,7 @@
+{
+	"layers": [
+		{
+			"fragmentSource": "minecraft:shaders/material/metal_smooth.frag"
+		}
+	]
+}
