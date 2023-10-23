@@ -337,13 +337,15 @@ vec3 basicLighting(
 	}
 
 	// Specular highlight
+	float alpha = pow2(roughness);
+
 	vec3 viewDir = -normalize(sceneSpacePos);
 	vec3 halfwayVector = normalize(viewDir + frx_skyLightVector);
 
 	float NdotH = clamp01(dot(halfwayVector, fragNormal));
 	float NdotV = clamp01(dot(viewDir, fragNormal));
 
-	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, roughness)) * getReflectance(vec3(f0), NdotV, roughness);
+	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, alpha)) * getReflectance(vec3(f0), NdotV, alpha);
 
 	// Have a bit of albedo color for metals
 	vec3 specularHighlightColor = directLightColor * mix(vec3(1.0), normalize(albedo), step(0.99, f0));
