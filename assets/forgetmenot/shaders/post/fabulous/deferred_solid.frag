@@ -161,12 +161,12 @@ void main() {
 
 	Material material = unpackMaterial(packedSample);
 
-	#ifdef REALISTIC_METALS
-		if(material.f0 > 0.999) {
-			fragColor = vec4(color, 1.0);
-			return;
-		}
-	#endif
+	// #ifdef REALISTIC_METALS
+	// 	if(material.f0 > 0.999) {
+	// 		fragColor = vec4(color, 1.0);
+	// 		return;
+	// 	}
+	// #endif
 
 	#ifdef FANCY_POWDER_SNOW
 		if(frx_playerEyeInSnow == 1 && !frx_isGui) {
@@ -223,7 +223,13 @@ void main() {
 			16,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
 			rtaoSample.g
-		);		
+		);
+
+		#ifdef REALISTIC_METALS 
+		if(material.f0 > 0.999) {
+			color *= 0.5;
+		}
+		#endif		
 	} else {
 		color = texture(u_sky_display, texcoord).rgb;
 	}
