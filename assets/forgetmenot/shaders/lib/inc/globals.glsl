@@ -49,7 +49,7 @@ void initGlobals() {
 
 	// cloud coverage
 	float cloudCoverage = 0.1;
-	cloudCoverage += 0.5 * fmn_rainFactor;
+	cloudCoverage += 0.35 * fmn_rainFactor;
 	
 	fmn_atmosphereParams.cloudCoverage = cloudCoverage;
 
