@@ -332,6 +332,10 @@ vec3 basicLighting(
 
 	vec3 color = albedo * (totalLighting + emission);
 
+	if(isWater > 0.5) {
+		return color;
+	}
+
 	// Specular highlight
 	vec3 viewDir = -normalize(sceneSpacePos);
 	vec3 halfwayVector = normalize(viewDir + frx_skyLightVector);
