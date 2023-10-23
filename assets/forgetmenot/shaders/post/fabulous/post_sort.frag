@@ -14,13 +14,8 @@ in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
 
-vec3 getAerialPerspectiveSlice(int layerIndex) {
-	layerIndex = min(layerIndex, 24);
-
-	ivec2 layer = ivec2(layerIndex % 5, layerIndex / 5);
-	vec2 coord = texcoord / 5.0 + layer * vec2(45.0 / 225.0);
-	
-	return texture(u_aerial_perspective, coord).rgb;
+vec3 getAerialPerspective() {
+	return texture(u_aerial_perspective, texcoord).rgb;
 }
 
 void main() {
@@ -53,10 +48,9 @@ void main() {
 				float fogDistancePart = fract(blockDistance / distanceFactor);
 				fogDistancePart = fogDistancePart * fogDistancePart * (3.0 - 2.0 * fogDistancePart);
 				
-				scattering = getAerialPerspectiveSlice(fogDistanceWhole);
-				scattering = mix(scattering, getAerialPerspectiveSlice(fogDistanceWhole + 1), fogDistancePart);
+				scattering = getAerialPerspective();
 
-				scattering *= 3.0;
+				scattering *= 1.0;
 
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {

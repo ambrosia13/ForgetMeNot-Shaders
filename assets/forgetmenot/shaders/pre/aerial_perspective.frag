@@ -14,21 +14,12 @@ layout(location = 0) out vec4 fragColor;
 // the view area for aerial perspective.
 void main() {
 	initGlobals();
-
-	const int LAYER_SIZE = 45;
-	const int TOTAL_SIZE = LAYER_SIZE * LAYER_SIZE;
-
-	ivec2 coord = ivec2(gl_FragCoord.xy);
-	
-	int layer = coord.x * LAYER_SIZE / TOTAL_SIZE;
-	layer += coord.y * LAYER_SIZE / TOTAL_SIZE * LAYER_SIZE;
 	
 	vec3 color = vec3(0.0);
-	vec2 layerCoord = vec2(coord % LAYER_SIZE + 0.5) / LAYER_SIZE;
 
-	vec3 viewDir = normalize(setupSceneSpacePos(layerCoord, 1.0));
+	vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
 
-	float tMax = (layer + 50.0) / 1e4;
+	float tMax = 0.025;
 	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0;
 	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0);
 
