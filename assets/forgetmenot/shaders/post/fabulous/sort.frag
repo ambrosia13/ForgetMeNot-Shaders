@@ -112,7 +112,7 @@ void main() {
 			vec3 cameraPos = mod(frx_cameraPos, 500.0);
 
 			vec3 worldSpacePos = sceneSpacePos + cameraPos;
-			vec2 uv = 0.3 * frx_faceUv(worldSpacePos, face);
+			vec2 uv = frx_faceUv(worldSpacePos, face);
 
 			// Parallaxify
 			ParallaxResult result = waterParallax(tbn, sceneSpacePos, uv);
@@ -244,7 +244,7 @@ void main() {
 	// Reflections
 	if(compositeDepth < 1.0 && (material.roughness < 0.3 || material.f0 > 0.99)) {
 		vec3 reflectColor = vec3(0.0);
-		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), 0.0);
+		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 
