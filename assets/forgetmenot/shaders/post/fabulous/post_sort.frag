@@ -129,8 +129,10 @@ void main() {
 
 	#define VOLUMETRIC_LIGHT
 	#ifdef VOLUMETRIC_LIGHT
-		vec3 volumetricLight = getVolumetricLight(sceneSpacePos, viewDir, depth);
-		color += volumetricLight;
+		if(!fmn_isModdedDimension) {
+			vec3 volumetricLight = getVolumetricLight(sceneSpacePos, viewDir, depth);
+			color += volumetricLight;
+		}
 	#endif
 
 

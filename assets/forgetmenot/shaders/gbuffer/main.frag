@@ -98,7 +98,7 @@ void resolveLightmap() {
 	// If the current dimension is non-vanilla, use MC's lightmap.
 	if(fmn_isModdedDimension) {
 		lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;
-		lightmap *= mix(frx_vertexLight.z, 1.0, float(frx_matDisableAo));
+		lightmap *= mix(frx_vertexLight.z, 1.0, clamp01(float(frx_matDisableAo) + fmn_sssAmount));
 
 		lightmap = mix(lightmap, vec3(1.0), frx_fragEmissive);
 
