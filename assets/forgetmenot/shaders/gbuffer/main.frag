@@ -63,12 +63,10 @@ void autoGenNormal() {
 	sample3 = mix(sample3, sample4, step(sample3.a, 0.0001));
 	sample4 = mix(sample4, sample3, step(sample4.a, 0.0001));
 
-	vec3 worldSpacePos = getClippedWorldSpacePos();
-
-	float height1 = frx_luminance(sample1.rgb * sample1.a);// + 0.025 * (hash13(worldSpacePos) * 2.0 - 1.0);
-	float height2 = frx_luminance(sample2.rgb * sample2.a);// + 0.025 * (hash13(worldSpacePos + 100.0) * 2.0 - 1.0);
-	float height3 = frx_luminance(sample3.rgb * sample3.a);// + 0.025 * (hash13(worldSpacePos + 200.0) * 2.0 - 1.0);
-	float height4 = frx_luminance(sample4.rgb * sample4.a);// + 0.025 * (hash13(worldSpacePos + 300.0) * 2.0 - 1.0);
+	float height1 = frx_luminance(sample1.rgb * sample1.a);
+	float height2 = frx_luminance(sample2.rgb * sample2.a);
+	float height3 = frx_luminance(sample3.rgb * sample3.a);
+	float height4 = frx_luminance(sample4.rgb * sample4.a);
 
 	float deltaX = (height2 - height1) * fmn_autoGenNormalStrength * 2.0 * lodFactor;
 	float deltaY = (height4 - height3) * fmn_autoGenNormalStrength * 2.0 * lodFactor;
