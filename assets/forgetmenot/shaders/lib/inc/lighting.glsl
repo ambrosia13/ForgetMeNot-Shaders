@@ -125,7 +125,7 @@ float getShadowFactor(
 			penumbraSize += diff / pcssSamples * getPenumbraSizeMultiplier();
 		}
 	} else {
-		penumbraSize = 2.0;
+		penumbraSize = 0.0;
 	}
 
 	penumbraSize = max(1.0, penumbraSize);
@@ -305,7 +305,7 @@ vec3 basicLighting(
 
 	// Ambient lighting
 	{
-		ambientLighting = getSkyLightColor(fragNormal, ambientOcclusion, skybox) * skyLight * 1.5;
+		ambientLighting = getSkyLightColor(fragNormal, ambientOcclusion, skybox) * skyLight;
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		// Add block light
