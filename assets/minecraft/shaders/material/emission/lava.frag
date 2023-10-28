@@ -18,7 +18,7 @@ void frx_materialFragment() {
 	#endif
 
 	#ifdef PBR_ENABLED
-		fmn_autoGenNormalStrength = 0.5;
+		fmn_autoGenNormalStrength = 0.0;
 	#endif
 
 	frx_fragEmissive = frx_luminance(frx_fragColor.rgb) * 0.5;
