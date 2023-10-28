@@ -19,7 +19,7 @@ float getWaterHeight(in vec2 uv, in int octaves) {
 		uv = rotate2D(uv, PI / 3.0 / octaves);
 		uv += fmn_time * 0.1 * exp2(i);
 
-		waterNoise += smoothHash(uv) * exp2(-i + 1);
+		waterNoise += pow4(smoothHash(uv)) * exp2(-i + 1);
 	}
 
 	return waterNoise / octaves;
