@@ -3,7 +3,7 @@
 void frx_materialFragment() {
 	#ifdef PBR_ENABLED
 		frx_fragReflectance = 0.01;
-		frx_fragRoughness = 0.6 + 0.3 * frx_luminance(frx_fragColor.rgb);
+		frx_fragRoughness = 0.6;
 		
 		fmn_autoGenNormalStrength = 1.25;
 	#endif
