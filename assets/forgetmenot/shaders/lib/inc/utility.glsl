@@ -180,3 +180,45 @@ vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height
 int intMix(int a, int b, int x) {
 	return a * (1 - x) + b * x;
 }
+
+// I don't understand this code in the slightest.
+// Ported from https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1,
+// check that out for better documented code.
+vec4 textureCatmullRom(in sampler2D tex, in vec2 uv, in vec2 texSize) {
+	vec2 samplePos = uv * texSize;
+	vec2 texPos1 = floor(samplePos - 0.5) + 0.5;
+
+	vec2 f = samplePos - texPos1;
+
+	vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f));
+	vec2 w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
+	vec2 w2 = f * (0.5 + f * (2.0 - 1.5 * f));
+	vec2 w3 = f * f * (-0.5 + 0.5 * f);
+
+	vec2 w12 = w1 + w2;
+	vec2 offset12 = w2 / w12;
+
+	vec2 texPos0 = texPos1 - 1.0;
+	vec2 texPos3 = texPos1 + 2.0;
+	vec2 texPos12 = texPos1 + offset12;
+
+	texPos0 /= texSize;
+	texPos3 /= texSize;
+	texPos12 /= texSize;
+
+	vec4 result = vec4(0.0);
+
+	result += texture(tex, vec2(texPos0.x, texPos0.y)) * w0.x * w0.y;
+	result += texture(tex, vec2(texPos12.x, texPos0.y)) * w12.x * w0.y;
+	result += texture(tex, vec2(texPos3.x, texPos0.y)) * w3.x * w0.y;
+
+	result += texture(tex, vec2(texPos0.x, texPos12.y)) * w0.x * w12.y;
+	result += texture(tex, vec2(texPos12.x, texPos12.y)) * w12.x * w12.y;
+	result += texture(tex, vec2(texPos3.x, texPos12.y)) * w3.x * w12.y;
+
+	result += texture(tex, vec2(texPos0.x, texPos3.y)) * w0.x * w3.y;
+	result += texture(tex, vec2(texPos12.x, texPos3.y)) * w12.x * w3.y;
+	result += texture(tex, vec2(texPos3.x, texPos3.y)) * w3.x * w3.y;
+
+	return result;
+}

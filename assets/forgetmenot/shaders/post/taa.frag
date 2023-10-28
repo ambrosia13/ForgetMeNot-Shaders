@@ -94,7 +94,7 @@ void main() {
 		lastScreenPos = mix(lastScreenPos, screenPos, step(handDepth, 0.99));
 
 		color.rgb = toneMap(color.rgb);
-		previousColor = texture(u_previous_frame, lastScreenPos.xy);
+		previousColor = textureCatmullRom(u_previous_frame, lastScreenPos.xy, vec2(frxu_size));
 		previousColor.rgb = toneMap(previousColor.rgb);
 
 		vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
