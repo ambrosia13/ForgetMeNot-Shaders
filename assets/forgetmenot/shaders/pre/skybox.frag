@@ -11,6 +11,7 @@
 uniform sampler2D u_sky_day;
 uniform sampler2D u_sky_night;
 uniform sampler2D u_transmittance;
+uniform sampler2D u_moon_texture;
 uniform samplerCube u_clouds;
 
 in vec2 texcoord;
@@ -36,18 +37,18 @@ void main() {
 	getCubemapViewDirs(texcoord, viewDirs);
 
 	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
-		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], pow2(texture(u_clouds, viewDirs[0]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], pow2(texture(u_clouds, viewDirs[1]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], pow2(texture(u_clouds, viewDirs[2]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], pow2(texture(u_clouds, viewDirs[3]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], pow2(texture(u_clouds, viewDirs[4]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], pow2(texture(u_clouds, viewDirs[5]).rg), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
+		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], pow2(texture(u_clouds, viewDirs[0]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], pow2(texture(u_clouds, viewDirs[1]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], pow2(texture(u_clouds, viewDirs[2]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], pow2(texture(u_clouds, viewDirs[3]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], pow2(texture(u_clouds, viewDirs[4]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], pow2(texture(u_clouds, viewDirs[5]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
 	#else
-		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
-		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, SUN_BRIGHTNESS, false), 1.0);
+		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
+		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
 	#endif
 }

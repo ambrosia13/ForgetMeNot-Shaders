@@ -16,6 +16,7 @@
 				"u_transmittance",
 				"u_sky_day",
 				"u_sky_night",
+				"u_moon_texture",
 
 				"u_solid_depth"
 			]

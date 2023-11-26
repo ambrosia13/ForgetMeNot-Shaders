@@ -6,6 +6,7 @@
 uniform sampler2D u_transmittance;
 uniform sampler2D u_sky_day;
 uniform sampler2D u_sky_night;
+uniform sampler2D u_moon_texture;
 
 uniform sampler2D u_solid_depth;
 
@@ -29,6 +30,7 @@ void main() {
 		u_transmittance,
 		u_sky_day,
 		u_sky_night,
+		u_moon_texture,
 		true // stars
 	);
 

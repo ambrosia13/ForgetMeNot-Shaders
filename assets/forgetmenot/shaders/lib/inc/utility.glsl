@@ -222,3 +222,26 @@ vec4 textureCatmullRom(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 
 	return result;
 }
+
+float getDistanceToBox(in vec3 viewDir, in vec3 pos, in vec3 normal, out vec2 uv) {
+	float dist = length(pos);
+
+	vec3 right = normalize(vec3(normal.z, 0.0, -normal.x));
+	vec3 up = normalize(cross(normal, right));
+
+	float t = -dist / dot(viewDir, normal);
+	vec3 hitPoint = viewDir * t;
+	vec3 diff = hitPoint - pos;
+	
+	uv = vec2(dot(diff, right), dot(diff, up));
+	float distToCenter = max(abs(uv.x), abs(uv.y));
+	
+	return distToCenter;
+
+	// float sun = step(distToCenter, 1.5) * step(t, 0.0);
+	// float moon = step(distToCenter, 1.0) * (1.0 - step(t, 0.0));
+
+	// float l = frx_luminance(mainColor.rgb);
+	// mainColor.rgb *= mix(1.0, 3.0 * EMISSION / l, moon * smoothstep(0.15, 1.0, l) * (1.0 - frx_rainGradient));
+	// mainColor.rgb *= mix(vec3(1.0), (3.0 * EMISSION / l) * vec3(1.3, 1.2, 1.0), sun * (1.0 - frx_rainGradient));
+}

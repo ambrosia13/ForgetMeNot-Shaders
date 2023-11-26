@@ -54,6 +54,7 @@
 					"transmittance_lut",
 					"sky_lut_day",
 					"sky_lut_night",
+					"minecraft:textures/environment/moon_phases.png",
 
 					"solid_depth"
 				],
