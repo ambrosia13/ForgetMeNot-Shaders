@@ -248,7 +248,7 @@
 					descriptionKey: "config.forgetmenot.desc.purkinje_amount"
 				},
 				purkinje_lift: {
-					default: 0.0,
+					default: 0.0025,
 					min: 0.0,
 					max: 0.3,
 					nameKey: "config.forgetmenot.name.purkinje_lift",
