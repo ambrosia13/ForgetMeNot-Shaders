@@ -49,7 +49,13 @@ void main() {
 	
 	float atmoDist = rayIntersectSphere(skyViewPos, rayDir, atmosphereRadiusMM);
 	float groundDist = rayIntersectSphere(skyViewPos, rayDir, groundRadiusMM);
-	float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 20.0; // Eyeballed constant.
+
+	//#define HIDE_SKY_GROUND
+	#ifdef HIDE_SKY_GROUND
+		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 20.0; // Eyeballed constant.
+	#else
+		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 2.5; // Eyeballed constant.
+	#endif
 
 	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering) * 0.5, 1.0);
 	nightColor = vec4(nightAdjust(raymarchScattering(skyViewPos, rayDir, sunDirMoon, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering)), 1.0);
