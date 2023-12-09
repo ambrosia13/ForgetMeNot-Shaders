@@ -3,8 +3,8 @@
 
 void frx_materialFragment() {
 	#ifdef PBR_ENABLED
-		frx_fragReflectance = 0.1;
-		frx_fragRoughness = 0.01;
+		frx_fragReflectance = 0.02;
+		frx_fragRoughness = 0.0;
 
 		// Lumi PBR support
 		#if LUMI_PBR_API >= 8
