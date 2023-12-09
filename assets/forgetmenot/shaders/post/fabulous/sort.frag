@@ -244,16 +244,16 @@ void main() {
 	// Reflections
 	if(compositeDepth < 1.0 && (material.roughness < 0.3 || material.f0 > 0.99)) {
 		vec3 reflectColor = vec3(0.0);
-		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
 
 		vec3 cleanReflectDir = reflect(viewDir, material.fragNormal);
 
-		float invalidNormal = step(dot(cleanReflectDir, material.vertexNormal), 0.0);
+		// Shifts the fragment normal to be more aligned with the vertex normal until the reflection is impossible
+		for(int i = 0; i < 10 && dot(cleanReflectDir, material.vertexNormal) < 0.0; i++) {
+			material.fragNormal = normalize(material.fragNormal + material.vertexNormal * 0.5);
+			cleanReflectDir = reflect(viewDir, material.fragNormal);
+		}
 
-		material.fragNormal = normalize(material.fragNormal + material.vertexNormal * invalidNormal);
-		
-		cleanReflectDir = reflect(viewDir, material.fragNormal);
-		cleanReflectDir = mix(cleanReflectDir, reflect(viewDir, material.vertexNormal), invalidNormal);
+		vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
 
 		vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 		if(frx_cameraInWater == 0) {
