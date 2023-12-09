@@ -203,15 +203,6 @@ vec3 getSkyColor(
 		vec3 sunVector = getSunVector();
 		vec3 moonVector = getMoonVector();
 
-		const vec3 blueHourColor = vec3(0.593, 0.815, 1.111);
-		vec3 blueHourMultiplier = mix(
-			vec3(1.0), 
-			blueHourColor, 
-			linearstep(0.05, -0.05, sunVector.y)
-		);
-
-		const float skyBrightness = 1.4;
-
 		vec3 dayColorSample = 2.0 * getValFromSkyLUT(viewDir, sunVector, skyLutDay) * skyBrightness;
 		vec3 nightColorSample = getValFromSkyLUT(viewDir, moonVector, skyLutNight) * skyBrightness;
 		
@@ -241,7 +232,7 @@ vec3 getSkyColor(
 			starViewDir.y = abs(starViewDir.y);
 
 			vec2 starPlane = starViewDir.xz / (starViewDir.y + length(starViewDir.xz));
-			starPlane *= 500.0;
+			starPlane *= 750.0;
 
 			const float starThreshold = 0.995;
 
@@ -381,6 +372,7 @@ vec3 getClouds(
 	vec3 moonColor = nightAdjust(getValFromTLUT(transmittanceLut, cloudPos, moonVector));
 
 	vec3 scatteringColor = (sunColor + moonColor) * 2.0;
+
 	vec3 ambientColor = getSkyColor(
 		vec3(0.0, 1.0, 0.0), 
 		sunTransmittance, 
@@ -391,15 +383,12 @@ vec3 getClouds(
 		moonTexture
 	);
 
-	float transmittance = cloudsTransmittanceAndScattering.x;
-
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
 		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 
 		0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
-	) + ambientColor * exp(-fbmHash(cloudLayer.plane, 4) * 0.5) * 2.0;
+	) + ambientColor * 1.5;
 
-
-	return mix(scattering, skyColor, transmittance);
+	return mix(scattering, skyColor, cloudsTransmittanceAndScattering.x);
 }
 
 vec3 getSkyAndClouds(
