@@ -27,9 +27,9 @@ float rayPlaneIntersection(vec3 rayPos, vec3 rayDir, vec3 planeNormal, float pla
 
 float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) {
 	vec3 startPos = vec3(0.0);
-	vec3 endPos = viewDir * min(frx_viewDistance * 0.1, length(sceneSpacePos));
+	vec3 endPos = viewDir * min(frx_viewDistance, length(sceneSpacePos));
 
-	const int volumetricLightSteps = 10;
+	const int volumetricLightSteps = 30;
 	vec3 rayPos = startPos;
 	vec3 rayStep = (endPos - startPos) / float(volumetricLightSteps);
 
@@ -53,12 +53,12 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir, in float 
 	return volumetricLightFactor * distance(startPos, endPos);
 }
 
-vec3 getAerialPerspective(in vec3 viewDir) {
+vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
 	vec3 color = vec3(0.0);
 
 	vec3 tdata = getTimeOfDayFactors();
 
-	const float tMax = 0.025;
+	float tMax = 64.0 * blockDistance / 1e6;
 	
 	if(tdata.x + tdata.z > 0.0) {
 		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, 0.0, u_transmittance, u_multiscattering) * 20.0;
@@ -68,10 +68,14 @@ vec3 getAerialPerspective(in vec3 viewDir) {
 		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, 0.0, u_transmittance, u_multiscattering) * 20.0);
 	}
 
-	return color *= 1.6;
+	return color *= 1.5 * skyBrightness;
 }
 
 vec3 getVolumetricLight(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) {
+	// if (depth == 1.0) {
+	// 	return vec3(0.0);
+	// }
+
 	vec3 vlColor = 8.0 * getValFromTLUT(u_transmittance, skyViewPos, frx_skyLightVector);
 
 	if(frx_worldIsMoonlit == 1) {
@@ -83,9 +87,9 @@ vec3 getVolumetricLight(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) 
 	}
 
 	float VdotL = (dot(viewDir, frx_skyLightVector));
-	float phase = getMiePhase(VdotL, 0.6);
+	float phase = getMiePhase(VdotL, 0.5);
 
-	return 0.01 * vlColor * getVolumetricLightFactor(sceneSpacePos, viewDir, depth) * phase;
+	return 0.001 * vlColor * getVolumetricLightFactor(sceneSpacePos, viewDir, depth) * phase;
 }
 
 void main() {
@@ -113,7 +117,7 @@ void main() {
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 				
 				if(undergroundFactor > 0.01) {
-					scattering = getAerialPerspective(viewDir);
+					scattering = getAerialPerspective(viewDir, blockDistance);
 				}
 
 				scattering = mix(caveFogColor, scattering, undergroundFactor);
@@ -121,6 +125,7 @@ void main() {
 				scattering = interpolateCubemap(u_skybox, viewDir).rgb;
 			}
 
+			//color = scattering;
 			color = mix(scattering, color, transmittance);
 		} else {
 			color = mix(color, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, blockDistance));
