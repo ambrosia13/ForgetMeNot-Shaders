@@ -186,7 +186,7 @@
 				program: "copy",
 				framebuffer: "sort_copy",
 				samplerImages: [
-					"sort"
+					"solid_color"
 				]
 			}
 		]
