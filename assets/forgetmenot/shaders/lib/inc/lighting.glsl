@@ -350,7 +350,7 @@ vec3 basicLighting(
 	// Have a bit of albedo color for metals
 	vec3 specularHighlightColor = directLightColor * mix(vec3(1.0), normalize(albedo), step(0.99, f0));
 
-	color += 0.5 * shadowFactor * specularHighlightColor * specularHighlightFactor;
+	color += 0.25 * shadowFactor * specularHighlightColor * specularHighlightFactor;
 
 	return color;
 }
