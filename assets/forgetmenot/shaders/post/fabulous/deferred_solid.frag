@@ -39,49 +39,6 @@ struct Hit {
 
 const Hit NO_HIT = Hit(vec3(0.0), vec3(0.0), false);
 
-bool evaluateHit(in vec3 voxelPos) {
-	frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
-
-	return data.isOccluder && data.isFullCube;
-}
-
-Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
-	Hit hit = NO_HIT;
-
-	rayPos += frx_cameraPos;
-
-	vec3 stepSizes = 1.0 / abs(rayDir);
-	vec3 stepDir = sign(rayDir);
-	vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(rayPos)) / rayDir;
-
-	ivec3 voxelPos = ivec3(floor(rayPos));
-	vec3 currentPos = rayPos;
-
-	for(int i = 0; i < raytraceLength; i++) {
-		float closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
-
-		currentPos += rayDir * closestDist;
-
-		vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
-
-		voxelPos += ivec3(stepAxis * stepDir);
-
-		nextDist -= closestDist;
-		nextDist += stepSizes * stepAxis;
-
-		hit.normal = stepAxis;
-
-		if(evaluateHit(voxelPos)) {
-			hit.pos = currentPos - frx_cameraPos;
-			hit.normal *= -stepDir;
-			hit.success = true;
-			break;
-		}
-	}
-
-	return hit;
-}
-
 #ifdef FANCY_POWDER_SNOW
 	// Controls the scale of the voxel raytrace
 	// One minecraft block is equal to this many voxels
@@ -220,7 +177,7 @@ void main() {
 			u_shadow_tex,
 			u_light_data,
 			true,
-			16,
+			8,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
 			rtaoSample.g
 		);
