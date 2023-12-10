@@ -10,45 +10,20 @@ vec2 mirroredNoiseDXY(in vec2 uv) {
 }
 
 float getWaterHeight(in vec2 uv, in int octaves) {
-	// float waterNoise = 0.0;
+	uv *= 2.0;
+	float lacunarity = 1.5;
+	float t = 0.4;
 
-	// uv = rotate2D(uv, -PI / 6.0);
+	float noise = 0.01;
+	float amp = 0.5;
 
-	// for(int i = 0; i < octaves; i++) {
-	// 	uv *= vec2(1.7, 1.1);
-	// 	uv = rotate2D(uv, PI / 3.0 / octaves);
-	// 	uv += fmn_time * 0.1 * exp2(i);
+	for (int i = 0; i < octaves; i++) {
+		noise += amp * smoothstep(0.0, 1.0, smoothHash(uv));
+		uv = ROTATE_30_DEGREES * uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
+		amp *= 0.5;
+	}
 
-	// 	waterNoise += smoothHash(uv) * exp2(-i + 1);
-	// }
-
-	// return waterNoise / octaves;
-
-	// uv *= 0.3;
-
-	// float waterNoise = 0.0;
-	// float amplitude = 1.0;
-
-	// for(int i = 0; i < octaves; i++) {
-	// 	uv *= 1.5;
-	// 	uv += 100.0;
-	// 	uv += fmn_time * 0.1 * i;
-
-	// 	float noise = snoise(uv) * 0.5 + 0.5;
-
-	// 	waterNoise += noise * amplitude;
-	// 	amplitude *= 0.45;
-	// }
-
-	// return waterNoise / octaves;
-
-	// float waterNoise = (snoise(uv + fmn_time * 0.1) * 0.5 + 0.5) * 0.5 * (pow2(sin(fmn_time)) * 0.5 + 0.5);
-	// waterNoise += (snoise(uv * 1.5 - fmn_time * 0.2) * 0.5 + 0.5) * 0.25 * (pow2(sin(fmn_time + 10.0)) * 0.5 + 0.5);
-	// waterNoise += (snoise(uv * 2.5 + fmn_time * 0.3) * 0.5 + 0.5) * 0.125 * (pow2(sin(fmn_time - 10.0)) * 0.5 + 0.5);
-
-	// return waterNoise;
-
-	return fbmHash(uv * 2.0, 5, 1.5, 0.4) * 0.75;
+	return (noise * (octaves + 1.0) / octaves) * 0.5;
 }
 float getWaterHeight(in vec2 uv) {
 	return getWaterHeight(uv, 5);
@@ -59,7 +34,7 @@ vec2 getWaterHeightDXY(in vec2 uv) {
 
 	float center = getWaterHeight(uv);
 	float diffX = (getWaterHeight(uv + vec2(sampleOffset, 0.0)) - center) / sampleOffset;
-	float diffY = (getWaterHeight(uv + vec2(0.0, sampleOffset)) - center) / sampleOffset;
+	float diffY = -(getWaterHeight(uv + vec2(0.0, sampleOffset)) - center) / sampleOffset;
 
 	return vec2(diffX, diffY) * sampleOffset * 100.0;
 }
