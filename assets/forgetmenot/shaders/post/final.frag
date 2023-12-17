@@ -1,6 +1,7 @@
 #include forgetmenot:shaders/lib/inc/header.glsl 
 #include forgetmenot:shaders/lib/inc/exposure.glsl 
 #include forgetmenot:shaders/lib/inc/noise.glsl 
+#include forgetmenot:shaders/lib/inc/zcam_tonemapper.glsl 
 
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
@@ -148,11 +149,6 @@ void main() {
 		color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
 	#endif 
 
-	// finally, back into srgb
 	color = clamp01(pow(color, vec3(1.0 / 2.2)));
-
-	const int bitDepth = 256;
-	color = floor(color * bitDepth + randomFloat()) / bitDepth;
-
 	fragColor = vec4(color, 1.0);
 }
