@@ -225,8 +225,8 @@ void frx_pipelineFragment() {
 			frxs_shadowMap,
 			frxs_shadowMapTexture,
 			frxs_lightData,
-			false,
-			4,
+			true,
+			8,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,
 			0.0
 		);
