@@ -127,43 +127,6 @@
 			}
 		},
 		{
-			includeToken: "forgetmenot:rtao",
-			categoryKey: "config.forgetmenot.category.rtao",
-			elements: {
-				rtao: {
-					default: false,
-					nameKey: "config.forgetmenot.name.rtao",
-					descriptionKey: "config.forgetmenot.desc.rtao"
-				},
-				indirect_sunlight: {
-					default: false,
-					nameKey: "config.forgetmenot.name.indirect_sunlight",
-					descriptionKey: "config.forgetmenot.desc.indirect_sunlight"
-				},
-				rtao_strength: {
-					default: 1.0,
-					min: 0.0,
-					max: 1.0,
-					nameKey: "config.forgetmenot.name.rtao_strength",
-					descriptionKey: "config.forgetmenot.desc.rtao_strength"
-				},
-				rtao_rays: {
-					default: 10,
-					min: 1,
-					max: 20,
-					nameKey: "config.forgetmenot.name.rtao_rays",
-					descriptionKey: "config.forgetmenot.desc.rtao_rays"
-				},
-				rtao_ray_steps: {
-					default: 3,
-					min: 2,
-					max: 6,
-					nameKey: "config.forgetmenot.name.rtao_ray_steps",
-					descriptionKey: "config.forgetmenot.desc.rtao_ray_steps"
-				},
-			}
-		},
-		{
 			includeToken: "forgetmenot:water",
 			categoryKey: "config.forgetmenot.category.water",
 			elements: {
@@ -211,11 +174,6 @@
 					nameKey: "config.forgetmenot.name.enable_bloom",
 					descriptionKey: "config.forgetmenot.desc.enable_bloom"
 				},
-				// motion_blur: {
-				// 	default: false,
-				// 	nameKey: "config.forgetmenot.name.motion_blur",
-				// 	descriptionKey: "config.forgetmenot.desc.motion_blur"
-				// },
 				aces_tonemap: {
 					default: true,
 					nameKey: "config.forgetmenot.name.aces_tonemap",

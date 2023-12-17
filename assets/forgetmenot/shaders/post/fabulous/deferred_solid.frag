@@ -11,7 +11,7 @@
 uniform sampler2D u_color;
 uniform usampler2D u_data;
 uniform sampler2D u_depth;
-uniform sampler2D u_ambient_occlusion;
+// uniform sampler2D u_ambient_occlusion;
 
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;

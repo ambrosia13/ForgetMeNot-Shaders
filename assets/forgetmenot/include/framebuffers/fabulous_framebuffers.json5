@@ -25,26 +25,6 @@
 			colorAttachments: [{image: "sky_display", clearColor: 0x00000000}]
 		},
 		{
-			name: "rtao",
-			colorAttachments: [
-				{image: "rtao", clearColor: 0x00000000},
-			]
-		},
-		{
-			name: "rtao_copy",
-			colorAttachments: [
-				{image: "rtao_copy", clearColor: 0x00000000},
-				// Depth copy
-				{image: "depth_copy", clearColor: 0x00000000},
-				// Normal copy
-				{image: "normal_copy", clearColor: 0x00000000}
-			]
-		},
-		{
-			name: "rtao_filter",
-			colorAttachments: [{image: "rtao_filter", clearColor: 0x00000000}]
-		},
-		{
 			name: "deferred_solid",
 			colorAttachments: [{image: "deferred_solid", clearColor: 0x00000000}]
 		},
