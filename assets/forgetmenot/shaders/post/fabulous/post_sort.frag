@@ -29,7 +29,7 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir, in float 
 	vec3 startPos = vec3(0.0);
 	vec3 endPos = viewDir * min(frx_viewDistance, length(sceneSpacePos));
 
-	const int volumetricLightSteps = 30;
+	const int volumetricLightSteps = 10;
 	vec3 rayPos = startPos;
 	vec3 rayStep = (endPos - startPos) / float(volumetricLightSteps);
 
