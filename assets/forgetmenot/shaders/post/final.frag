@@ -1,7 +1,6 @@
 #include forgetmenot:shaders/lib/inc/header.glsl 
 #include forgetmenot:shaders/lib/inc/exposure.glsl 
 #include forgetmenot:shaders/lib/inc/noise.glsl 
-#include forgetmenot:shaders/lib/inc/zcam_tonemapper.glsl 
 
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
