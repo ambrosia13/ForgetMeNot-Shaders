@@ -167,9 +167,11 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 
 		float lightOpticalDepth = 0.0;
 
+		int selfShadowCloudDetail = max(1, cloudLayer.selfShadowSteps - 1);
+
 		for(int i = 0; i < cloudLayer.selfShadowSteps; i++) {
 			cloudLayer.plane += sunLightDirection * rcp(cloudLayer.selfShadowSteps) * interleavedGradient(i) * 0.5;
-			lightOpticalDepth += sampleCloudNoise(cloudLayer) * rcp(cloudLayer.selfShadowSteps);
+			lightOpticalDepth += sampleCloudNoise(cloudLayer, selfShadowCloudDetail) * rcp(cloudLayer.selfShadowSteps);
 		}
 
 		lightOpticalDepth = max(0.0, lightOpticalDepth);
