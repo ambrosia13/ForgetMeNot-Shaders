@@ -185,6 +185,9 @@ vec3 getSkyLightColor(
 		ambientLighting /= 6.0;
 	#endif
 
+	// Fake directional light
+	ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
+
 	if(frx_worldIsNether == 1) {
 		#ifdef NETHER_DIFFUSE
 			ambientLighting *= 4.0;
