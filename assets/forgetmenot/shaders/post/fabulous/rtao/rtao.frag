@@ -92,6 +92,9 @@ void main() {
 
 		const float rayContribution = 1.0 / numAoRays;
 
+		#ifndef RTAO_STRENGTH
+			#define RTAO_STRENGTH 1.0
+		#endif
 		const float aoStrength = RTAO_STRENGTH;
 
 		const int aoRange = 2;
