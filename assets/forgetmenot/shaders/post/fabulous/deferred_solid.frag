@@ -11,7 +11,6 @@
 uniform sampler2D u_color;
 uniform usampler2D u_data;
 uniform sampler2D u_depth;
-// uniform sampler2D u_ambient_occlusion;
 
 uniform sampler2DArrayShadow u_shadow_map;
 uniform sampler2DArray u_shadow_tex;
@@ -23,8 +22,6 @@ uniform sampler2D u_multiscattering;
 uniform sampler2D u_sky_display;
 
 uniform sampler2D u_smooth_uniforms;
-
-uniform sampler2D u_light_data;
 
 in vec2 texcoord;
 
@@ -175,7 +172,6 @@ void main() {
 			u_transmittance,
 			u_shadow_map,
 			u_shadow_tex,
-			u_light_data,
 			true,
 			8,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,

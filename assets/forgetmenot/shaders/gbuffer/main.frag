@@ -129,7 +129,7 @@ void applyRainEffects(in vec3 worldSpacePos) {
 }
 
 void applyEmission() {
-	float emissiveBoost = frx_isHand ? EMISSION * 0.5 : EMISSION;
+	float emissiveBoost = frx_isHand ? EMISSION * 0.15 : EMISSION;
 	emissiveBoost *= 0.5;
 
 	frx_fragColor.rgb *= 1.0 + emissiveBoost * frx_fragEmissive;
@@ -143,7 +143,7 @@ void applyEnchantmentGlint() {
 }
 
 void resolveLightValues() {
-	frx_fragLight.xy = linearstep(1.0 / 16.0, 15.0 / 16.0, frx_fragLight.xy);
+	frx_fragLight.xy = linearstep(1.0 / 32.0, 31.0 / 32.0, frx_fragLight.xy);
 	frx_fragLight.y = mix(frx_fragLight.y, 1.0, float(frx_worldIsEnd));
 }
 
@@ -224,7 +224,6 @@ void frx_pipelineFragment() {
 			u_transmittance,
 			frxs_shadowMap,
 			frxs_shadowMapTexture,
-			frxs_lightData,
 			true,
 			8,
 			texelFetch(u_smooth_uniforms, ivec2(3, 0), 0).r,

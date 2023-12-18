@@ -190,7 +190,7 @@ vec3 getSkyLightColor(
 
 	if(frx_worldIsNether == 1) {
 		#ifdef NETHER_DIFFUSE
-			ambientLighting *= 4.0;
+			ambientLighting *= 2.0;
 			ambientLighting += vec3(4.0, 1.5, 0.0) * (clamp01(-fragNormal.y * 0.75 + 0.25)) * ambientOcclusion;
 		#endif
 	} else if(frx_worldIsEnd == 1) {
@@ -260,14 +260,13 @@ vec3 basicLighting(
 	in sampler2D transmittanceLut,
 	in sampler2DArrayShadow shadowMap,
 	in sampler2DArray shadowMapTexture,
-	in sampler2D lightTexture,
 
 	bool doPcss,
 	int shadowMapSamples,
 	float nightVisionFactor,
 	float sunBounceAmount
 ) {
-	blockLight *= blockLight;
+	//blockLight *= blockLight;
 	skyLight *= skyLight;
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
@@ -312,11 +311,12 @@ vec3 basicLighting(
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		// Add block light
-		vec3 blockLightColor = frx_getLightFiltered(lightTexture, worldSpacePos).rgb;
-		blockLightColor = pow(blockLightColor, vec3(2.2));
+		float distToLight = 16.0 * smoothstep(1.0, 0.0, blockLight);
+		vec3 blockLightColor = vec3(2.0, 1.2, 0.5);
 
-		ambientLighting += blockLightColor * BLOCKLIGHT_BRIGHTNESS;
-		
+		ambientLighting += 1.0 * blockLightColor / (pow2(distToLight) + 1.0) * smoothstep(0.0, 0.5, blockLight) * BLOCKLIGHT_BRIGHTNESS;
+		ambientLighting += 0.5 * blockLightColor * blockLight * blockLight;
+
 		// handheld light
 		ambientLighting += 0.5 * getHandheldLightColor(sceneSpacePos, fragNormal);
 
