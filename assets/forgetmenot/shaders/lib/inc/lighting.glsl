@@ -182,7 +182,7 @@ vec3 getSkyLightColor(
 			textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
 			textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
 
-		ambientLighting /= 6.0;
+		ambientLighting /= 3.0;
 	#endif
 
 	// Fake directional light
@@ -311,11 +311,14 @@ vec3 basicLighting(
 		ambientLighting += AMBIENT_BRIGHTNESS;
 
 		// Add block light
-		float distToLight = 16.0 * smoothstep(1.0, 0.0, blockLight);
+		float distToLight = 16.0 * linearstep(0.8, 0.0, blockLight);
 		vec3 blockLightColor = vec3(2.0, 1.2, 0.5);
 
+		// Realistic falloff based on distance, but it only works for bright light sources
 		ambientLighting += 1.0 * blockLightColor / (pow2(distToLight) + 1.0) * smoothstep(0.0, 0.5, blockLight) * BLOCKLIGHT_BRIGHTNESS;
-		ambientLighting += 0.5 * blockLightColor * blockLight * blockLight;
+
+		// Flat lightmap addition for darker light sources
+		ambientLighting += blockLightColor * blockLight * blockLight;
 
 		// handheld light
 		ambientLighting += 0.5 * getHandheldLightColor(sceneSpacePos, fragNormal);
