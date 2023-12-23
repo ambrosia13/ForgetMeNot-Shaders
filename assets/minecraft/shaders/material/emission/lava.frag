@@ -11,7 +11,7 @@ void frx_materialFragment() {
 	float noiseA = fmn_fbm2D(uv * vec2(2.0, 1.0), noiseOctaves, 0.01);
 	float noiseB = fmn_fbm2D(uv * vec2(2.0, 1.0) + 0.1, noiseOctaves, 0.01);
 
-	vec3 coldLavaColor = vec3(0.5, 0.25, 0.1) * 0.5;
+	vec3 coldLavaColor = vec3(0.5, 0.15, 0.1) * 0.75;
 	vec3 hotLavaColor = vec3(2.0, 1.0, 0.05);
 
 	float hotLavaFactor = smoothstep(0.0, 0.01, pow(abs(noiseA - noiseB), 2.0));
