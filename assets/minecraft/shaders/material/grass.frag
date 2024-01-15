@@ -17,7 +17,7 @@ void frx_materialFragment() {
 	#ifdef PBR_ENABLED
 		if(isGrass) {
 			frx_fragRoughness = 0.5 + 0.3 * luminance;
-			frx_fragReflectance = 0.05;
+			frx_fragReflectance = 0.04;
 
 
 			#if FMN_PBR >= 3

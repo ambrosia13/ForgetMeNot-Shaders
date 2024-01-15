@@ -60,12 +60,14 @@ vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
 
 	float tMax = 64.0 * blockDistance / 1e6;
 	
+	float raymarchSteps = mix(32.0, 16.0, tdata.z);
+
 	if(tdata.x + tdata.z > 0.0) {
-		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, 0.0, u_transmittance, u_multiscattering) * 20.0;
+		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, raymarchSteps, 0.0, u_transmittance, u_multiscattering) * 20.0;
 	}
 	
 	if(tdata.y + tdata.z > 0.0) {
-		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, 0.0, u_transmittance, u_multiscattering) * 20.0);
+		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, raymarchSteps, 0.0, u_transmittance, u_multiscattering) * 20.0);
 	}
 
 	return color *= 1.5 * skyBrightness;

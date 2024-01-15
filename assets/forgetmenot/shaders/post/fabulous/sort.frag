@@ -268,7 +268,7 @@ void main() {
 
 		float reflectionFactor = 0.0;
 		for(int i = 0; i < numReflectionRays; i++) {
-			vec3 reflectDir = mix(cleanReflectDir, generateCosineVector(material.fragNormal), material.roughness);
+			vec3 reflectDir = mix(cleanReflectDir, generateCosineVector(material.fragNormal), pow2(material.roughness));
 			vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
 
 			vec3 screenSpacePos = vec3(texcoord, compositeDepth);

@@ -48,6 +48,13 @@ vec2 getJitteredTexcoord(in vec2 coord, in uint frame) {
 	return clip * 0.5 + 0.5;
 }
 
+vec2 getUnjitteredTexcoord(in vec2 coord, in uint frame) {
+	vec2 clip = coord * 2.0 - 1.0;
+	clip -= getTaaOffset(frame) * (1.0 / frxu_size);
+
+	return clip * 0.5 + 0.5;
+}
+
 // Common between material shaders and pipeline shaders - includes the option includes
 #include forgetmenot:shaders/lib/materials_pipeline_common.glsl
 

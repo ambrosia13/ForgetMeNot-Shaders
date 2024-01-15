@@ -386,7 +386,7 @@ vec3 getClouds(
 	);
 
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
-		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.7) + 
+		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.8) + 
 		0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
 	) + ambientColor * 1.5;
 
