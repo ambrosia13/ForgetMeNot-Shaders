@@ -134,7 +134,7 @@ void main() {
 		}
 	}
 
-	#define VOLUMETRIC_LIGHT
+	//#define VOLUMETRIC_LIGHT
 	#ifdef VOLUMETRIC_LIGHT
 		if(frx_worldHasSkylight == 1) {
 			vec3 volumetricLight = getVolumetricLight(sceneSpacePos, viewDir, depth);
