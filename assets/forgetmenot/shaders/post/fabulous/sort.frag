@@ -95,38 +95,6 @@ void main() {
 	Material material = unpackMaterial(samplePacked);
 
 	// ----------------------------------------------------------------------------------------------------
-	// Water normals
-	#ifdef REALISTIC_WATER
-		if(material.isWater > 0.5 || frx_cameraInWater == 1) {
-			// Get TBN matrix
-			vec3 tangent = normalize(cross(material.vertexNormal, vec3(0.0, 1.0, 1.0)));
-			mat3 tbn = mat3(
-				tangent,
-				cross(material.vertexNormal, tangent),
-				material.vertexNormal
-			);
-
-			// Math from Balint
-			int face = int(dot(max(material.vertexNormal, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-material.vertexNormal, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
-
-			vec3 cameraPos = mod(frx_cameraPos, 500.0);
-
-			vec3 worldSpacePos = sceneSpacePos + cameraPos;
-			vec2 uv = frx_faceUv(worldSpacePos, face);
-
-			// Parallaxify
-			ParallaxResult result = waterParallax(tbn, sceneSpacePos, uv);
-			uv = result.coord;
-
-			vec2 waterNoise = getWaterHeightDXY(uv);
-
-			material.fragNormal = tbn * normalize(
-				cross(vec3(2.0, 0.0, waterNoise.x), vec3(0.0, 2.0, waterNoise.y))
-			);
-		}
-	#endif
-
-	// ----------------------------------------------------------------------------------------------------
 	// Refractions
 	vec4 solidColor; 
 	float solidDepth = texture(u_solid_depth, texcoord).r;

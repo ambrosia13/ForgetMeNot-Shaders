@@ -144,15 +144,17 @@ vec3 getSunLightColor(
 	in sampler2D transmittanceLut,
 	in vec3 sceneSpacePos
 ) {
+	#define CLOUD_SHADOWS
 	#ifdef CLOUD_SHADOWS
-		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.04;
+		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.5;
 	#else
 		// Samples sun transmittance directly rather than using the skybox
 		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+	
+		if(frx_worldIsMoonlit == 1) {
+			directLightColor = nightAdjust(directLightColor);
+		}
 	#endif
-	if(frx_worldIsMoonlit == 1) {
-		directLightColor = nightAdjust(directLightColor);
-	}
 
 	return directLightColor;
 }
@@ -168,10 +170,10 @@ vec3 getSkyLightColor(
 	// 	#define DIRECTIONAL_SKYLIGHT
 	// #endif
 
-	//#define DIRECTIONAL_SKYLIGHT
+	#define DIRECTIONAL_SKYLIGHT
 	#ifdef DIRECTIONAL_SKYLIGHT
 		// Samples the cube map in the direction of the normal
-		ambientLighting = interpolateCubemap(skybox, fragNormal).rgb;
+		ambientLighting = textureLod(skybox, fragNormal, 7).rgb * 2.0;
 	#else
 		// Averages the color of all faces
 		ambientLighting = 
@@ -183,10 +185,10 @@ vec3 getSkyLightColor(
 			textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
 
 		ambientLighting /= 3.0;
-	#endif
 
-	// Fake directional light
-	ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
+		// Fake directional light
+		ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
+	#endif
 
 	if(frx_worldIsNether == 1) {
 		#ifdef NETHER_DIFFUSE
@@ -204,10 +206,14 @@ vec3 getHandheldLightColor(
 	in vec3 sceneSpacePos,
 	in vec3 fragNormal
 ) {
-	vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.4, 0.0);
+	vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.6, 0.0);
+	float blockDistance = length(pos);
 
-	float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
-	heldLightFactor = pow3(heldLightFactor);
+	float heldLightFactor = (2.5 * frx_heldLight.a) / (0.001 + length(pos));
+	heldLightFactor *= smoothstep(32.0, 16.0, blockDistance);
+
+	// float heldLightFactor = frx_smootherstep(pow4(frx_heldLight.a) * 13.0, 0.0, distance(frx_eyePos, sceneSpacePos + frx_cameraPos));
+	// heldLightFactor = pow3(heldLightFactor);
 
 	// Spot lights
 	{
@@ -217,22 +223,31 @@ vec3 getHandheldLightColor(
 		if(innerAngle != 0.0) {
 
 			vec4 viewSpacePos = frx_viewMatrix * vec4(pos, 1.0);
-			float blockDistance = max(0.0, -viewSpacePos.z);
+			//float blockDistance = max(0.0, -viewSpacePos.z);
 
 			float distSq = dot(viewSpacePos.xy, viewSpacePos.xy);
 
 			float innerLimit = pow2(innerAngle * blockDistance);
 			float outerLimit = pow2(outerAngle * blockDistance);
 
-			heldLightFactor = exp(-blockDistance / (max(0.01, frx_heldLight.a) * 8.0)) * smoothstep(outerLimit, innerLimit, distSq);
-			heldLightFactor *= step(viewSpacePos.z, 0.0);
+			//heldLightFactor = exp(-blockDistance / (max(0.01, frx_heldLight.a) * 8.0)) * smoothstep(outerLimit, innerLimit, distSq);
+			float spotlightFactor = smoothstep(outerLimit, innerLimit, distSq);
+
+			// Flashlight shape
+			spotlightFactor -= 0.5 * (
+				smoothstep(outerLimit * 0.5, mix(outerLimit, innerLimit, 0.4) * 0.5, distSq) -
+				smoothstep(mix(outerLimit, innerLimit, 0.6) * 0.5, innerLimit * 0.5, distSq) + 
+				smoothstep(outerLimit * 0.05, innerLimit * 0.05, distSq)
+			);
+
+			heldLightFactor *= step(viewSpacePos.z, 0.0) * spotlightFactor;
 		}
 	}
 
-	heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize(pos))), 1.0, frx_smootherstep(1.0, 0.0, distance(frx_eyePos + vec3(0.0, 1.0, 0.0), sceneSpacePos + frx_cameraPos))); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
+	heldLightFactor *= mix(clamp01(dot(-fragNormal, normalize(pos))), 1.0, frx_smootherstep(1.0, 0.0, blockDistance)); // direct surfaces lit more - idea from Lumi Lights by spiralhalo
 
 	#ifdef frx_isHand
-		heldLightFactor = mix(heldLightFactor, 0.1, float(frx_isHand));
+		heldLightFactor = mix(heldLightFactor, 1.0, float(frx_isHand));
 	#endif
 
 	heldLightFactor *= 2.0 * step(0.01, frx_heldLight.a);

@@ -6,6 +6,8 @@
 #include forgetmenot:shaders/lib/inc/sky.glsl 
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl 
+
+#define IGNORE_MIE_SCATTERING_ON_CLOUDS
 #include forgetmenot:shaders/lib/inc/sky_display.glsl
 
 uniform sampler2D u_sky_day;
@@ -35,6 +37,8 @@ void main() {
 		vec3(0.0)
 	);
 	getCubemapViewDirs(texcoord, viewDirs);
+
+	#define SUN_BRIGHTNESS 0.0
 
 	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
 		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], pow2(texture(u_clouds, viewDirs[0]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
