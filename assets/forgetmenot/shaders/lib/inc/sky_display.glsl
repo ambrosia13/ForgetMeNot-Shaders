@@ -178,7 +178,7 @@ vec2 getCloudsTransmittanceAndScattering(in vec3 viewDir, in CloudLayer cloudLay
 		scattering = exp2(-lightOpticalDepth * cloudLayer.density * 0.3);
 	}
 
-	transmittance = mix(transmittance, 1.0, exp(-clamp01(viewDir.y) * 100.0));
+	transmittance = mix(transmittance, 1.0, exp(-clamp01(viewDir.y) * 10.0));
 
 	return vec2(
 		transmittance,
@@ -385,12 +385,18 @@ vec3 getClouds(
 		moonTexture
 	);
 
+	float mieMultiplier = 10.0;
+
+	#ifdef IGNORE_MIE_SCATTERING_ON_CLOUDS
+		mieMultiplier = 0.0;
+	#endif
+
 	vec3 scattering = cloudsTransmittanceAndScattering.y * scatteringColor * (
-		4.0 + 10.0 * (getMiePhase(dot(viewDir, sunVector), 0.8) + 
+		4.0 + mieMultiplier * (getMiePhase(dot(viewDir, sunVector), 0.8) + 
 		0.5 * getMiePhase(dot(viewDir, moonVector), 0.7))
 	) + ambientColor * 1.5;
 
-	return mix(scattering, skyColor, cloudsTransmittanceAndScattering.x);
+	return mix(scattering, skyColor, clamp01(cloudsTransmittanceAndScattering.x));
 }
 
 vec3 getSkyAndClouds(
