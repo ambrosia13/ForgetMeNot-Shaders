@@ -7,6 +7,7 @@
 #include forgetmenot:shaders/lib/inc/lighting.glsl
 #include forgetmenot:shaders/lib/inc/seasons.glsl
 #include forgetmenot:shaders/lib/inc/space.glsl
+#include forgetmenot:shaders/lib/inc/water.glsl
 
 uniform samplerCube u_skybox;
 uniform sampler2D u_transmittance;
@@ -136,6 +137,30 @@ void applyEmission() {
 	frx_fragColor.rgb += frx_fragColor.rgb * 1.0 * EMISSION * frx_fragEmissive;
 }
 
+void applyWaterNormals() {
+	#ifdef REALISTIC_WATER
+		if(fmn_isWater == 1 || frx_cameraInWater == 1) {
+			// Math from Balint
+			int face = int(dot(max(frx_vertexNormal.xyz, 0.0), vec3(FACE_EAST, FACE_UP, FACE_SOUTH)) + dot(max(-frx_vertexNormal.xyz, 0.0), vec3(FACE_WEST, FACE_DOWN, FACE_NORTH)) + 0.5);
+
+			vec3 cameraPos = mod(frx_cameraPos, 500.0);
+
+			vec3 worldSpacePos = frx_vertex.xyz + cameraPos;
+			vec2 uv = frx_faceUv(worldSpacePos, frx_vertexNormal.xyz);
+
+			// Parallaxify
+			ParallaxResult result = waterParallax(tbn, frx_vertex.xyz, uv);
+			uv = result.coord;
+
+			vec2 waterNoise = getWaterHeightDXY(uv);
+
+			frx_fragNormal = tbn * normalize(
+				cross(vec3(-2.0, 0.0, waterNoise.x), vec3(0.0, -2.0, -waterNoise.y))
+			);
+		}
+	#endif
+}
+
 void applyEnchantmentGlint() {
 	vec3 glint = texture(u_glint, fract(frx_normalizeMappedUV(frx_texcoord) * 0.5 + frx_renderSeconds * 0.1)).rgb;
 	glint = pow(glint, vec3(4.0));
@@ -189,6 +214,8 @@ void resolveMaterials() {
 
 	// Not entirely vanilla implementation of enchantment glint
 	applyEnchantmentGlint();
+
+	applyWaterNormals();
 
 	// Fix up lightmap values
 	resolveLightValues();
