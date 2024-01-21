@@ -25,7 +25,7 @@ float rayPlaneIntersection(vec3 rayPos, vec3 rayDir, vec3 planeNormal, float pla
 	return -(dot(rayPos, planeNormal) + planeHeight) / dot(rayDir, planeNormal);
 }
 
-float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) {
+float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir) {
 	vec3 startPos = vec3(0.0);
 	vec3 endPos = viewDir * min(frx_viewDistance, length(sceneSpacePos));
 
@@ -50,7 +50,7 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir, in float 
 		volumetricLightFactor += shadowFactor / float(volumetricLightSteps);
 	}
 
-	return volumetricLightFactor * distance(startPos, endPos);
+	return volumetricLightFactor;// * distance(startPos, endPos);
 }
 
 vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
@@ -62,12 +62,19 @@ vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
 	
 	float raymarchSteps = mix(32.0, 16.0, tdata.z);
 
+	float mieAmount = 0.0;
+
+	#define SUBTLE_VOLUMETRIC_LIGHT
+	#ifdef SUBTLE_VOLUMETRIC_LIGHT
+		mieAmount = getVolumetricLightFactor(viewDir * blockDistance, viewDir);
+	#endif
+
 	if(tdata.x + tdata.z > 0.0) {
-		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, raymarchSteps, 0.0, u_transmittance, u_multiscattering);
+		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, raymarchSteps, mieAmount, u_transmittance, u_multiscattering);
 	}
 	
 	if(tdata.y + tdata.z > 0.0) {
-		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, raymarchSteps, 0.0, u_transmittance, u_multiscattering));
+		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, raymarchSteps, mieAmount, u_transmittance, u_multiscattering));
 	}
 
 	return color * skyBrightness * 20.0;
@@ -91,7 +98,7 @@ vec3 getVolumetricLight(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) 
 	float VdotL = (dot(viewDir, frx_skyLightVector));
 	float phase = getMiePhase(VdotL, 0.5);
 
-	return 0.001 * vlColor * getVolumetricLightFactor(sceneSpacePos, viewDir, depth) * phase;
+	return 0.001 * vlColor * getVolumetricLightFactor(sceneSpacePos, viewDir) * phase;
 }
 
 void main() {
