@@ -86,8 +86,6 @@
 				program: "sort",
 				framebuffer: "sort",
 				samplerImages: [
-					"sort_copy",
-
 					"deferred_solid",
 					"solid_depth",
 					"translucent_color",
@@ -101,13 +99,9 @@
 					"particles_color",
 					"particles_depth",
 
-					"hi_depth_levels",
-
 					"composite_data",
 
 					"skybox",
-
-					"smooth_uniforms"
 				]
 			},
 			{
@@ -124,7 +118,12 @@
 					"shadow_map",
 					"shadow_map",
 
-					"skybox"
+					"skybox",
+					"hi_depth_levels",
+					"composite_data",
+
+					"smooth_uniforms",
+					"sort_copy",
 				]
 			},
 			{

@@ -47,8 +47,6 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/sort.frag",
 			samplers: [
-				"u_previous_color",
-
 				"u_solid_color",
 				"u_solid_depth",
 				"u_translucent_color",
@@ -62,13 +60,9 @@
 				"u_particles_color",
 				"u_particles_depth",
 
-				"u_hi_depth_levels",
-
 				"u_data",
 
 				"u_skybox",
-
-				"u_smooth_uniforms"
 			]
 		},
 		{
@@ -85,7 +79,12 @@
 				"u_shadow_map",
 				"u_shadow_tex",
 
-				"u_skybox"
+				"u_skybox",
+				"u_hi_depth_levels",
+				"u_data",
+
+				"u_smooth_uniforms",
+				"u_previous_color",
 			]
 		}
 	]
