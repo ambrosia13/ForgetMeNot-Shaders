@@ -206,7 +206,7 @@ vec3 getHandheldLightColor(
 	in vec3 sceneSpacePos,
 	in vec3 fragNormal
 ) {
-	vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.6, 0.0);
+	vec3 pos = sceneSpacePos + frx_cameraPos - frx_eyePos;
 	float blockDistance = length(pos);
 
 	float heldLightFactor = (2.5 * frx_heldLight.a) / (0.001 + length(pos));
