@@ -78,15 +78,22 @@ void reflections(
 	float reflectionFactor = 0.0;
 	for(int i = 0; i < numReflectionRays; i++) {
 		vec3 reflectDir = mix(cleanReflectDir, generateCosineVector(material.fragNormal), pow2(material.roughness));
-		vec3 viewReflectDir = frx_normalModelMatrix * reflectDir;
+		vec3 viewReflectDir = mat3(frx_lastViewMatrix) * reflectDir;
 
 		vec3 screenSpacePos = vec3(texcoord, depth);
+
+		screenSpacePos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(screenSpacePos) + frx_cameraPos - frx_lastCameraPos);
+		float prevFrameDepth = texelFetch(hiDepthLevels, ivec2(screenSpacePos.xy*frxu_size), 0).r;
+
+		// TODO some threshold?
+		screenSpacePos.z = min(screenSpacePos.z, prevFrameDepth);
+
 		vec3 NDC = screenSpacePos * 2.0 - 1.0;
-		vec4 D = frx_projectionMatrix * vec4(viewReflectDir, 0.0);
+		vec4 D = frx_lastProjectionMatrix * vec4(viewReflectDir, 0.0);
 		vec3 windowSpaceDir = normalize(
 			(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
 		);
-		vec3 windowSpacePos = vec3(texcoord, depth) * vec3(frxu_size, 1.0);
+		vec3 windowSpacePos = screenSpacePos * vec3(frxu_size, 1.0);
 
 		bool hit = false;
 		vec3 hitPos;
@@ -98,11 +105,6 @@ void reflections(
 			hiDepthLevels,
 			hitPos
 		);
-
-		// Reproject reflection
-		hitPos = lastFrameSceneSpaceToScreenSpace(setupSceneSpacePos(hitPos) + frx_cameraPos - frx_lastCameraPos);
-
-		hit = hit && clamp01(hitPos.xy) == hitPos.xy;
 
 		if(hit) {
 			reflectColor += texelFetch(reflectionColorSampler, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
