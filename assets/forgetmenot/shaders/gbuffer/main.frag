@@ -82,7 +82,7 @@ void resolveNormals() {
 	#endif
 
 	// Tranform normal from tangent space to world space
-	frx_fragNormal = tbn * normalize(frx_fragNormal);
+	frx_fragNormal = normalize(tbn * frx_fragNormal);
 
 	// Fix hand normals
 	frx_fragNormal = mix(frx_fragNormal, frx_fragNormal * frx_normalModelMatrix, float(frx_isHand));
@@ -123,7 +123,7 @@ void applyRainEffects(in vec3 worldSpacePos) {
 
 		frx_fragRoughness = mix(frx_fragRoughness, 0.0, puddles);
 		frx_fragReflectance = mix(frx_fragReflectance, 0.025, puddles);
-		frx_fragNormal = mix(frx_fragNormal, frx_vertexNormal, puddles * 0.75);
+		frx_fragNormal = normalize(mix(frx_fragNormal, frx_vertexNormal, puddles * 0.75));
 
 		frx_fragColor.rgb *= mix(vec3(1.0), frx_fragColor.rgb, porosity * puddles * 0.5);
 	}
@@ -154,9 +154,9 @@ void applyWaterNormals() {
 
 			vec2 waterNoise = getWaterHeightDXY(uv);
 
-			frx_fragNormal = tbn * normalize(
+			frx_fragNormal = normalize(tbn * normalize(
 				cross(vec3(-2.0, 0.0, waterNoise.x), vec3(0.0, -2.0, -waterNoise.y))
-			);
+			));
 		}
 	#endif
 }
