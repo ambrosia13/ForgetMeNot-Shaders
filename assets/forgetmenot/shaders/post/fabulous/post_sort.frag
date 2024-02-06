@@ -32,12 +32,12 @@ layout(location = 0) out vec4 fragColor;
 void reflections(
 	inout vec3 color,
 	in sampler2D reflectionColorSampler,
-	in sampler2D hiDepthLevels, 
-	in samplerCube skyboxSampler, 
-	in Material material, 
-	in float depth, 
-	in vec3 sceneSpacePos, 
-	in vec3 viewDir	
+	in sampler2D hiDepthLevels,
+	in samplerCube skyboxSampler,
+	in Material material,
+	in float depth,
+	in vec3 sceneSpacePos,
+	in vec3 viewDir
 ) {
 	if(!(depth < 1.0 && (material.roughness < 0.3 || material.f0 > 0.99))) {
 		return;
@@ -157,7 +157,7 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir) {
 		rayPos += rayStep * interleavedGradient(i);
 
 		float shadowFactor = getShadowFactor(
-			rayPos, 
+			rayPos,
 			vec3(0.0), // vertex normal offset: not needed
 			0.0, // sss amount
 			false, // do pcss?
@@ -237,12 +237,12 @@ void main() {
 		reflections(
 			color,
 			u_previous_color,
-			u_hi_depth_levels, 
-			u_skybox, 
-			material, 
-			depth, 
-			sceneSpacePos, 
-			viewDir	
+			u_hi_depth_levels,
+			u_skybox,
+			material,
+			depth,
+			sceneSpacePos,
+			viewDir
 		);
 
 		float blockDistance = length(sceneSpacePos);
