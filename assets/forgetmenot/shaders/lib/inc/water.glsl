@@ -46,7 +46,7 @@ struct ParallaxResult {
 
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 ParallaxResult waterParallax(in mat3 tbn, in vec3 sceneSpacePos, in vec2 uv) {
-	vec3 viewDir = normalize(tbn * sceneSpacePos);
+	vec3 viewDir = normalize(transpose(tbn) * sceneSpacePos);
 
 	float minLayers = 16.0;
 	float maxLayers = 32.0;
