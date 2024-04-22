@@ -52,9 +52,9 @@ void main() {
 
 	//#define HIDE_SKY_GROUND
 	#ifdef HIDE_SKY_GROUND
-		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 20.0; // Eyeballed constant.
-	#else
 		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 2.5; // Eyeballed constant.
+	#else
+		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 1.5; // Eyeballed constant.
 	#endif
 
 	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering) * 0.5, 1.0);
