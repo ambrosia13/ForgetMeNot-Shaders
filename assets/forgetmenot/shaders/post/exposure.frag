@@ -18,7 +18,7 @@ void main() {
 	for(int x = 0; x < size.x; x++) {
 		for(int y = 0; y < size.y; y++) {
 			float currentSample = frx_luminance(texelFetch(u_color, ivec2(x, y), luminanceLod).rgb);
-			currentSample = min(currentSample, 2.0);
+			//currentSample = min(currentSample, 2.0);
 
 			avgLuminance += currentSample;
 		}
