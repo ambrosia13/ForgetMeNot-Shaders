@@ -10,7 +10,9 @@ vec2 mirroredNoiseDXY(in vec2 uv) {
 }
 
 float getWaterHeight(in vec2 uv, in int octaves) {
-	uv *= 2.0;
+	vec2 originalUv = uv;
+
+	uv *= 1.0;
 	float lacunarity = 1.5;
 	float t = 0.4;
 
@@ -22,6 +24,9 @@ float getWaterHeight(in vec2 uv, in int octaves) {
 		uv = ROTATE_30_DEGREES * uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
 		amp *= 0.5;
 	}
+
+	noise += (snoise(uv * 0.75) * 0.5 + 0.5) * 0.02;
+	octaves += 1;
 
 	return (noise * (octaves + 1.0) / octaves) * 0.5;
 }
