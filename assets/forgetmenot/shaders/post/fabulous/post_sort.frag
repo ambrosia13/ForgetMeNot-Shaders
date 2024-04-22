@@ -67,6 +67,23 @@ void reflections(
 	vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 	if(frx_cameraInWater == 0) {
 		ambientReflectionColor = textureLod(skyboxSampler, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb * material.skyLight;
+
+		vec3 directLightColor = 8.0 * getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
+	
+		if(frx_worldIsMoonlit == 1) {
+			directLightColor = nightAdjust(directLightColor);
+		}
+
+		float alpha = pow2(material.roughness);
+
+		vec3 halfwayVector = normalize(-viewDir + frx_skyLightVector);
+
+		float NdotH = clamp01(dot(halfwayVector, material.fragNormal));
+		float NdotV = clamp01(dot(-viewDir, material.fragNormal));
+
+		vec3 specularHighlightFactor = distribution(NdotH, max(0.005, alpha)) * getReflectance(vec3(material.f0), NdotV, alpha);
+
+		ambientReflectionColor += directLightColor * 1.0 * specularHighlightFactor;
 	}
 
 	// number of rays to cast depends on roughness (goodbye performance)
