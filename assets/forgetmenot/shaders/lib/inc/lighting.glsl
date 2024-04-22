@@ -144,9 +144,9 @@ vec3 getSunLightColor(
 	in sampler2D transmittanceLut,
 	in vec3 sceneSpacePos
 ) {
-	#define CLOUD_SHADOWS
+	//#define CLOUD_SHADOWS
 	#ifdef CLOUD_SHADOWS
-		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb * 0.5;
+		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb;
 	#else
 		// Samples sun transmittance directly rather than using the skybox
 		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
@@ -170,7 +170,7 @@ vec3 getSkyLightColor(
 	// 	#define DIRECTIONAL_SKYLIGHT
 	// #endif
 
-	#define DIRECTIONAL_SKYLIGHT
+	//#define DIRECTIONAL_SKYLIGHT
 	#ifdef DIRECTIONAL_SKYLIGHT
 		// Samples the cube map in the direction of the normal
 		ambientLighting = textureLod(skybox, fragNormal, 7).rgb * 2.0;
@@ -187,7 +187,7 @@ vec3 getSkyLightColor(
 		ambientLighting /= 3.0;
 
 		// Fake directional light
-		ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
+		// ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
 	#endif
 
 	if(frx_worldIsNether == 1) {
@@ -366,7 +366,7 @@ vec3 basicLighting(
 	float NdotH = clamp01(dot(halfwayVector, fragNormal));
 	float NdotV = clamp01(dot(viewDir, fragNormal));
 
-	vec3 specularHighlightFactor = distribution(NdotH, max(0.001, alpha)) * getReflectance(vec3(f0), NdotV, alpha);
+	vec3 specularHighlightFactor = distribution(NdotH, max(0.005, alpha)) * getReflectance(vec3(f0), NdotV, alpha);
 
 	// Have a bit of albedo color for metals
 	vec3 specularHighlightColor = directLightColor * mix(vec3(1.0), normalize(albedo), step(0.99, f0));
