@@ -63,75 +63,77 @@ void main() {
 
 	vec3 color = texture(u_color, texcoord).rgb;
 
-	// Purkinje effect
-	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
-	color = mix(color, saturation(color, 0.0) * vec3(0.5, 1.2, 1.8) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
+	// // Purkinje effect
+	// float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
+	// color = mix(color, saturation(color, 0.0) * vec3(0.5, 1.2, 1.8) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
 
-	#ifdef ENABLE_BLOOM
-		color *= getExposureValue() * getExposureProfile().exposureMultiplier;
-	#endif
+	// #ifdef ENABLE_BLOOM
+	// 	color *= getExposureValue() * getExposureProfile().exposureMultiplier;
+	// #endif
 
-	#define WHITE_POINT 8.0
+	// #define WHITE_POINT 8.0
 
-	//#define DEBUG_POST_PROCESSING
-	#ifdef DEBUG_POST_PROCESSING
-		float _contrast = 1.0;
-		float _saturation = 1.0;
-		float _vibrance = 1.0;
+	// //#define DEBUG_POST_PROCESSING
+	// #ifdef DEBUG_POST_PROCESSING
+	// 	float _contrast = 1.0;
+	// 	float _saturation = 1.0;
+	// 	float _vibrance = 1.0;
 
-		vec3 lift = vec3(0.0, 0.0, 0.0);
-		vec3 gamma = vec3(1.0, 1.0, 1.0);
-		vec3 gain = vec3(1.0, 1.0, 1.0);
+	// 	vec3 lift = vec3(0.0, 0.0, 0.0);
+	// 	vec3 gamma = vec3(1.0, 1.0, 1.0);
+	// 	vec3 gain = vec3(1.0, 1.0, 1.0);
 
-		#define CONTRAST _contrast
-		#define SATURATION _saturation
-		#define VIBRANCE _vibrance
+	// 	#define CONTRAST _contrast
+	// 	#define SATURATION _saturation
+	// 	#define VIBRANCE _vibrance
 
-		#define LIFT_R lift.r
-		#define LIFT_G lift.g
-		#define LIFT_B lift.b
+	// 	#define LIFT_R lift.r
+	// 	#define LIFT_G lift.g
+	// 	#define LIFT_B lift.b
 
-		#define GAMMA_R gamma.r
-		#define GAMMA_G gamma.g
-		#define GAMMA_B gamma.b
+	// 	#define GAMMA_R gamma.r
+	// 	#define GAMMA_G gamma.g
+	// 	#define GAMMA_B gamma.b
 
-		#define GAIN_R gain.r
-		#define GAIN_G gain.g
-		#define GAIN_B gain.b
-	#endif
+	// 	#define GAIN_R gain.r
+	// 	#define GAIN_G gain.g
+	// 	#define GAIN_B gain.b
+	// #endif
 
-	#if CAMERA_PRESET == PRESET_MOODY
-		#define WHITE_POINT 4.0
+	// #if CAMERA_PRESET == PRESET_MOODY
+	// 	#define WHITE_POINT 4.0
 
-		#define CONTRAST 1.15
-		#define SATURATION 0.85
-		#define VIBRANCE 1.0
+	// 	#define CONTRAST 1.15
+	// 	#define SATURATION 0.85
+	// 	#define VIBRANCE 1.0
 
-		vec3 lift = vec3(0.0, 0.0, 0.0);
-		vec3 gamma = vec3(1.0, 1.0, 1.0);
-		vec3 gain = vec3(1.0, 1.0, 1.0);
+	// 	vec3 lift = vec3(0.0, 0.0, 0.0);
+	// 	vec3 gamma = vec3(1.0, 1.0, 1.0);
+	// 	vec3 gain = vec3(1.0, 1.0, 1.0);
 	
-		#define LIFT_R lift.r
-		#define LIFT_G lift.g
-		#define LIFT_B lift.b
+	// 	#define LIFT_R lift.r
+	// 	#define LIFT_G lift.g
+	// 	#define LIFT_B lift.b
 
-		#define GAMMA_R gamma.r
-		#define GAMMA_G gamma.g
-		#define GAMMA_B gamma.b
+	// 	#define GAMMA_R gamma.r
+	// 	#define GAMMA_G gamma.g
+	// 	#define GAMMA_B gamma.b
 
-		#define GAIN_R gain.r
-		#define GAIN_G gain.g
-		#define GAIN_B gain.b
-	#endif
+	// 	#define GAIN_R gain.r
+	// 	#define GAIN_G gain.g
+	// 	#define GAIN_B gain.b
+	// #endif
 
-	#ifdef ENABLE_POST_PROCESSING
-		// Contrast in log-scale to preserve more color detail
-		color = log(color);
-		color = contrast(color, CONTRAST);
-		color = exp(color);
+	// #ifdef ENABLE_POST_PROCESSING
+	// 	// Contrast in log-scale to preserve more color detail
+	// 	color = log(color);
+	// 	color = contrast(color, CONTRAST);
+	// 	color = exp(color);
 
-		color = saturation(color, SATURATION);
-	#endif
+	// 	color = saturation(color, SATURATION);
+	// #endif
+
+	//color *= 0.001;
 
 	#ifndef ACES_TONEMAP
 		color = lottes(color * 0.45, WHITE_POINT);
@@ -139,14 +141,14 @@ void main() {
 		color = frx_toneMap(color);
 	#endif
 
-	#ifdef ENABLE_POST_PROCESSING
-		color = vibrance(color, VIBRANCE);
+	// #ifdef ENABLE_POST_PROCESSING
+	// 	color = vibrance(color, VIBRANCE);
 
-		// Lift-gamma-gain component-wise
-		color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
-		color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
-		color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
-	#endif 
+	// 	// Lift-gamma-gain component-wise
+	// 	color.r = clamp01(liftGammaGain(color.r, LIFT_R, GAMMA_R, GAIN_R));
+	// 	color.b = clamp01(liftGammaGain(color.b, LIFT_G, GAMMA_G, GAIN_G));
+	// 	color.g = clamp01(liftGammaGain(color.g, LIFT_B, GAMMA_B, GAIN_B));
+	// #endif 
 
 	color = clamp01(pow(color, vec3(1.0 / 2.2)));
 	fragColor = vec4(color, 1.0);
