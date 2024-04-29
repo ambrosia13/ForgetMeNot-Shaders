@@ -32,15 +32,15 @@
 					"multiscattering_lut"
 				]
 			},
-			{
-				name: "clouds",
-				program: "clouds",
-				framebuffer: "clouds",
-				width: 64,
-				height: 64,
-				samplerImages: [
-				]
-			},
+			// {
+			// 	name: "clouds",
+			// 	program: "clouds",
+			// 	framebuffer: "clouds",
+			// 	width: 64,
+			// 	height: 64,
+			// 	samplerImages: [
+			// 	]
+			// },
 			{
 				name: "skybox",
 				program: "skybox",
@@ -52,6 +52,7 @@
 					"sky_lut_day",
 					"sky_lut_night",
 					"transmittance_lut",
+					"multiscattering_lut",
 					"minecraft:textures/environment/moon_phases.png",
 					"clouds",
 				]
