@@ -7,6 +7,7 @@
 				framebuffer: "sky_display",
 				samplerImages: [
 					"transmittance_lut",
+					"multiscattering_lut",
 					"sky_lut_day",
 					"sky_lut_night",
 					"minecraft:textures/environment/moon_phases.png",

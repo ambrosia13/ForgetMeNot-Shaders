@@ -5,56 +5,41 @@
 // Minimal code changes; modified for my use case. Original Shadertoy code released under the MIT License.
 // --------------------------------------------------------------------------------------------------------
 
-const vec3 moonFlux = vec3(0.56, 0.8, 1.1);
-const float skyBrightness = 1.4;
-
 vec3 nightAdjust(in vec3 color) {
-	return color * 0.02;
+	return color * 0.01;
 }
 
-#define ATMOSPHERE_EARTH 0
-#define ATMOSPHERE_MARS 1
-#define ATMOSPHERE_
-#define ATMOSPHERE_PRESET ATMOSPHERE_EARTH
+// Units are in megameters.
+const float groundRadiusMM = 6.360;
+const float atmosphereRadiusMM = 6.460;
 
-#if ATMOSPHERE_PRESET == ATMOSPHERE_EARTH
-	// Units are in megameters.
-	const float groundRadiusMM = 6.360;
-	const float atmosphereRadiusMM = 6.460;
+const vec3 groundAlbedo = vec3(0.0);
 
-	const vec3 groundAlbedo = vec3(0.0);
+// Units are per-megameter
+const vec3 rayleighScatteringBase = vec3(5.802, 13.558, 33.1);
+const float rayleighAbsorptionBase = 0.0;
 
-	// Units are per-megameter
-	const vec3 rayleighScatteringBase = vec3(5.802, 13.558, 33.1);
-	const float rayleighAbsorptionBase = 0.0;
+const float turbidity = 1.0;
 
-	const float turbidity = 1.0;
+const float mieScatteringBase = 25.996 * turbidity;
+const float mieAbsorptionBase = 4.4;
 
-	const float mieScatteringBase = 25.996 * turbidity;
-	const float mieAbsorptionBase = 4.4;
+const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
 
-	const vec3 ozoneAbsorptionBase = vec3(0.650, 1.881, 0.085);
-#elif ATMOSPHERE_PRESET == ATMOSPHERE_MARS
-	// Units are in megameters.
-	const float groundRadiusMM = 3.376;
-	const float atmosphereRadiusMM = groundRadiusMM + 0.08;
+// Gives the current position of the camera in the atmosphere
+const float minecraftToAtmosphereUnitScale = 25.0;
 
-	const vec3 groundAlbedo = vec3(0.840, 0.604, 0.404) * 0.0;
+// Sky view pos at the camera position
+vec3 getSkyViewPos() {
+	// 500M above the ground.
+	return vec3(0.0, groundRadiusMM + 0.0005 + 0.000001 * max(0.0, frx_cameraPos.y - 100.0) * minecraftToAtmosphereUnitScale, 0.0);
+}
 
-	// Units are per-megameter
-	const vec3 rayleighScatteringBase = vec3(33, 25, 10);
-	const float rayleighAbsorptionBase = 0.0;
-
-	const float turbidity = 8.0;
-
-	const float mieScatteringBase = 25.996 * turbidity;
-	const float mieAbsorptionBase = 4.4;
-
-	const vec3 ozoneAbsorptionBase = vec3(0.3, 1.2, 1.9);
-#endif
-
-// 500M above the ground.
-const vec3 skyViewPos = vec3(0.0, groundRadiusMM + 0.0005, 0.0);
+// Sky view pos at the specific scene space position
+vec3 getSkyViewPos(in vec3 sceneSpacePos) {
+	// 500M above the ground.
+	return vec3(0.0, groundRadiusMM + 0.0005 + 0.000001 * max(0.0, (sceneSpacePos.y + frx_cameraPos.y) - 100.0) * minecraftToAtmosphereUnitScale, 0.0);
+}
 
 // Phase function from Jessie
 // https://www.patreon.com/user?u=49201970
@@ -214,6 +199,8 @@ vec3 raymarchScattering(
 }
 
 vec3 getValFromSkyLUT(vec3 rayDir, vec3 sunDir, sampler2D skyLut) {
+	vec3 skyViewPos = getSkyViewPos();
+
 	float height = length(skyViewPos);
 	vec3 up = skyViewPos * rcp(height);
 	

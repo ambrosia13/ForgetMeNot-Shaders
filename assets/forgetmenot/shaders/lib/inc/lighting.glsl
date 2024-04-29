@@ -144,19 +144,14 @@ vec3 getSunLightColor(
 	in sampler2D transmittanceLut,
 	in vec3 sceneSpacePos
 ) {
-	//#define CLOUD_SHADOWS
-	#ifdef CLOUD_SHADOWS
-		vec3 directLightColor = textureLod(skybox, frx_skyLightVector, 2.0).rgb;
-	#else
-		// Samples sun transmittance directly rather than using the skybox
-		vec3 directLightColor = 8.0 * getValFromTLUT(transmittanceLut, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-	
-		if(frx_worldIsMoonlit == 1) {
-			directLightColor = nightAdjust(directLightColor);
-		}
-	#endif
+	// Samples sun transmittance directly rather than using the skybox
+	vec3 directLightColor = getValFromTLUT(transmittanceLut, getSkyViewPos(sceneSpacePos), frx_skyLightVector);
 
-	return directLightColor;
+	if(frx_worldIsMoonlit == 1) {
+		directLightColor = nightAdjust(directLightColor);
+	}
+
+	return directLightColor * 2.5;
 }
 
 vec3 getSkyLightColor(
@@ -166,14 +161,10 @@ vec3 getSkyLightColor(
 ) {
 	vec3 ambientLighting = vec3(0.0);
 
-	// #ifndef CLOUD_SHADOWS 
-	// 	#define DIRECTIONAL_SKYLIGHT
-	// #endif
-
-	//#define DIRECTIONAL_SKYLIGHT
+	#define DIRECTIONAL_SKYLIGHT
 	#ifdef DIRECTIONAL_SKYLIGHT
 		// Samples the cube map in the direction of the normal
-		ambientLighting = textureLod(skybox, fragNormal, 7).rgb * 2.0;
+		ambientLighting = textureLod(skybox, fragNormal, 7).rgb;
 	#else
 		// Averages the color of all faces
 		ambientLighting = 
@@ -184,10 +175,7 @@ vec3 getSkyLightColor(
 			textureLod(skybox, vec3( 0.0, -1.0,  0.0), 7).rgb + 
 			textureLod(skybox, vec3( 0.0,  0.0, -1.0), 7).rgb;
 
-		ambientLighting /= 3.0;
-
-		// Fake directional light
-		// ambientLighting *= (fragNormal.y * 0.5 + 0.5) * 0.25 + 0.75;
+		ambientLighting /= 6.0;
 	#endif
 
 	if(frx_worldIsNether == 1) {
@@ -280,7 +268,7 @@ vec3 basicLighting(
 	int shadowMapSamples,
 	float nightVisionFactor,
 	float sunBounceAmount
-) {
+) {	
 	//blockLight *= blockLight;
 	skyLight *= skyLight;
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
@@ -290,7 +278,6 @@ vec3 basicLighting(
 	float NdotL = clamp01(dot(fragNormal, frx_skyLightVector));
 	NdotL = mix(NdotL, 1.0, step(0.001, sssAmount));
 	//NdotL = mix(NdotL, 1.0, step(NdotL, 0.001) * step(0.001, sssAmount));
-
 
 	vec3 totalLighting = vec3(0.0);
 	vec3 directLighting = vec3(0.0);
@@ -316,6 +303,8 @@ vec3 basicLighting(
 			shadowMap
 		);
 		shadowFactor *= skyLight * step(0.01, NdotL);
+
+		if (isWater > 0.5) shadowFactor = 1.0;
 		
 		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
 	}
@@ -352,10 +341,6 @@ vec3 basicLighting(
 	totalLighting = mix(totalLighting, max(totalLighting, normalize(totalLighting) * ambientOcclusion), nightVisionFactor);
 
 	vec3 color = albedo * (totalLighting + emission);
-
-	if(isWater > 0.5) {
-		return color;
-	}
 
 	// Specular highlight
 	float alpha = pow2(roughness);

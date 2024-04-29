@@ -20,8 +20,8 @@ void main() {
 	vec3 viewDir = normalize(setupSceneSpacePos(texcoord, 1.0));
 
 	float tMax = 0.025;
-	color = raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0;
-	color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0);
+	color = raymarchScattering(getSkyViewPos(), viewDir, getSunVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0;
+	color += nightAdjust(raymarchScattering(getSkyViewPos(), viewDir, getMoonVector(), tMax, 32.0, FOG_MIE_AMOUNT, u_transmittance, u_multiscattering) * 20.0);
 
 	color *= 1.6;
 

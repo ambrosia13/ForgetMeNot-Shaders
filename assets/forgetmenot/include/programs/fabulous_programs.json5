@@ -14,6 +14,7 @@
 			fragmentSource: "forgetmenot:shaders/post/fabulous/sky_display.frag",
 			samplers: [
 				"u_transmittance",
+				"u_multiscattering",
 				"u_sky_day",
 				"u_sky_night",
 				"u_moon_texture",

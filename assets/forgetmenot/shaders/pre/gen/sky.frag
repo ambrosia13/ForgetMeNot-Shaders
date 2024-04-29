@@ -33,6 +33,8 @@ void main() {
 		adjV = coord*coord;
 	}
 	
+	vec3 skyViewPos = getSkyViewPos();
+
 	float height = length(skyViewPos);
 	vec3 up = skyViewPos / height;
 	float horizonAngle = safeacos(sqrt(height * height - groundRadiusMM * groundRadiusMM) / height) - 0.5*PI;
@@ -54,9 +56,9 @@ void main() {
 	#ifdef HIDE_SKY_GROUND
 		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 2.5; // Eyeballed constant.
 	#else
-		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 1.5; // Eyeballed constant.
+		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 1.; // Eyeballed constant.
 	#endif
 
-	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering) * 0.5, 1.0);
+	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering), 1.0);
 	nightColor = vec4(nightAdjust(raymarchScattering(skyViewPos, rayDir, sunDirMoon, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering)), 1.0);
 }

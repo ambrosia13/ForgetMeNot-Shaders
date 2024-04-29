@@ -7,12 +7,12 @@
 #include forgetmenot:shaders/lib/inc/cubemap.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl 
 
-#define IGNORE_MIE_SCATTERING_ON_CLOUDS
 #include forgetmenot:shaders/lib/inc/sky_display.glsl
 
 uniform sampler2D u_sky_day;
 uniform sampler2D u_sky_night;
 uniform sampler2D u_transmittance;
+uniform sampler2D u_multiscattering;
 uniform sampler2D u_moon_texture;
 uniform samplerCube u_clouds;
 
@@ -38,21 +38,10 @@ void main() {
 	);
 	getCubemapViewDirs(texcoord, viewDirs);
 
-	#define SUN_BRIGHTNESS 0.0
-
-	#ifdef CLOUDS_CONTRIBUTE_TO_LIGHT
-		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], pow2(texture(u_clouds, viewDirs[0]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], pow2(texture(u_clouds, viewDirs[1]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], pow2(texture(u_clouds, viewDirs[2]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], pow2(texture(u_clouds, viewDirs[3]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], pow2(texture(u_clouds, viewDirs[4]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], pow2(texture(u_clouds, viewDirs[5]).rg), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-	#else
-		fragColor0 = vec4(getSkyAndClouds(viewDirs[0], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor1 = vec4(getSkyAndClouds(viewDirs[1], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor2 = vec4(getSkyAndClouds(viewDirs[2], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor3 = vec4(getSkyAndClouds(viewDirs[3], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor4 = vec4(getSkyAndClouds(viewDirs[4], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-		fragColor5 = vec4(getSkyAndClouds(viewDirs[5], vec2(1.0, 0.0), u_transmittance, u_sky_day, u_sky_night, u_moon_texture, SUN_BRIGHTNESS, false), 1.0);
-	#endif
+	fragColor0 = vec4(sampleAtmosphere(viewDirs[0], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
+	fragColor1 = vec4(sampleAtmosphere(viewDirs[1], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
+	fragColor2 = vec4(sampleAtmosphere(viewDirs[2], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
+	fragColor3 = vec4(sampleAtmosphere(viewDirs[3], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
+	fragColor4 = vec4(sampleAtmosphere(viewDirs[4], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
+	fragColor5 = vec4(sampleAtmosphere(viewDirs[5], u_sky_day, u_sky_night, u_transmittance, u_multiscattering), 1.0);
 }

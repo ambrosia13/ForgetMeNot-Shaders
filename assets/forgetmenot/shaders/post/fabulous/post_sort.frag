@@ -67,23 +67,7 @@ void reflections(
 	vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
 	if(frx_cameraInWater == 0) {
 		ambientReflectionColor = textureLod(skyboxSampler, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb * material.skyLight;
-
-		vec3 directLightColor = 8.0 * getValFromTLUT(u_transmittance, skyViewPos + vec3(0.0, 0.00002, 0.0) * max(0.0, (sceneSpacePos + frx_cameraPos).y - 60.0), frx_skyLightVector);
-	
-		if(frx_worldIsMoonlit == 1) {
-			directLightColor = nightAdjust(directLightColor);
-		}
-
-		float alpha = pow2(material.roughness);
-
-		vec3 halfwayVector = normalize(-viewDir + frx_skyLightVector);
-
-		float NdotH = clamp01(dot(halfwayVector, material.fragNormal));
-		float NdotV = clamp01(dot(-viewDir, material.fragNormal));
-
-		vec3 specularHighlightFactor = distribution(NdotH, max(0.005, alpha)) * getReflectance(vec3(material.f0), NdotV, alpha);
-
-		ambientReflectionColor += directLightColor * 1.0 * specularHighlightFactor;
+		drawSunOnAtmosphere(ambientReflectionColor, cleanReflectDir, u_transmittance);
 	}
 
 	// number of rays to cast depends on roughness (goodbye performance)
@@ -190,30 +174,24 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir) {
 }
 
 vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
-	vec3 color = vec3(0.0);
+	vec3 aerialPerspective = vec3(0.0);
 
 	vec3 tdata = getTimeOfDayFactors();
-
-	float tMax = 64.0 * blockDistance / 1e6;
-	
 	float raymarchSteps = mix(32.0, 16.0, tdata.z);
 
-	float mieAmount = 0.0;
+	float tMax = minecraftToAtmosphereUnitScale * blockDistance / 1e6;
 
-	#define SUBTLE_VOLUMETRIC_LIGHT
-	#ifdef SUBTLE_VOLUMETRIC_LIGHT
-		mieAmount = getVolumetricLightFactor(viewDir * blockDistance, viewDir);
-	#endif
+	float mieScatteringAmount = smoothstep(30.0, 80.0, blockDistance);
 
 	if(tdata.x + tdata.z > 0.0) {
-		color += raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, raymarchSteps, mieAmount, u_transmittance, u_multiscattering);
+		aerialPerspective += raymarchScattering(getSkyViewPos(), viewDir, getSunVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering);
 	}
 	
 	if(tdata.y + tdata.z > 0.0) {
-		color += nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, raymarchSteps, mieAmount, u_transmittance, u_multiscattering));
+		aerialPerspective += nightAdjust(raymarchScattering(getSkyViewPos(), viewDir, getMoonVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering));
 	}
 
-	return color * skyBrightness * 20.0;
+	return aerialPerspective * 7.5;
 }
 
 vec3 getVolumetricLight(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) {
@@ -221,7 +199,7 @@ vec3 getVolumetricLight(in vec3 sceneSpacePos, in vec3 viewDir, in float depth) 
 	// 	return vec3(0.0);
 	// }
 
-	vec3 vlColor = 8.0 * getValFromTLUT(u_transmittance, skyViewPos, frx_skyLightVector);
+	vec3 vlColor = 8.0 * getValFromTLUT(u_transmittance, getSkyViewPos(), frx_skyLightVector);
 
 	if(frx_worldIsMoonlit == 1) {
 		vlColor = nightAdjust(vlColor);
@@ -270,7 +248,7 @@ void main() {
 
 			float fogMultiplier = mix(1.0 + 2.0 * frx_smoothedEyeBrightness.y, 15.0, float(frx_worldIsNether));
 			fogMultiplier = mix(fogMultiplier, 0.0, float(frx_cameraInWater));
-			float transmittance = exp(-blockDistance / fmn_atmosphereParams.blocksPerFogUnit * fogMultiplier);
+			float transmittance = exp(-blockDistance * minecraftToAtmosphereUnitScale * 1e-6);
 
 			if(frx_worldIsOverworld == 1) {
 				float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
@@ -285,8 +263,10 @@ void main() {
 				scattering = interpolateCubemap(u_skybox, viewDir).rgb;
 			}
 
-			//color = scattering;
-			color = mix(scattering, color, transmittance);
+			// color += scattering * transmittance;
+			// color = vec3(scattering);
+			color += scattering;
+			//color = mix(scattering, color, transmittance);
 		} else {
 			color = mix(color, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, blockDistance));
 		}
