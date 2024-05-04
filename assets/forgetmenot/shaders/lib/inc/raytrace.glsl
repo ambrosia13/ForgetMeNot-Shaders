@@ -5,8 +5,8 @@ Contains the raytracer from lomo, provided by fewizz.
 */
 
 bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths, out vec3 hitPos) {
-	const uint power_of_two = 2u;
-	const uint last_level = 8u;
+	const int power_of_two = 2;
+	const int last_level = 4;
 
 	float linearDepth = linearizeDepth(pos_win.z);
 
@@ -15,83 +15,58 @@ bool raytrace(in vec3 pos_win, in vec3 dir_ws, in int steps, in sampler2D depths
 
 	float dir_ws_xy_length = length(dir_ws.xy);
 	vec2 dir_xy = dir_ws.xy / dir_ws_xy_length;
-	vec2 sgn_xy = sign(dir_xy);
-	dir_xy *= sgn_xy;
-	ivec2 isgn_xy = ivec2(sgn_xy);
 
-	// shift[x] is 1u if isgn_xy[i] is -1, 0u otherwise
-	uvec2 shift = uvec2((-isgn_xy + 1) / 2);
-	uvec2 texel = uvec2(ivec2(pos_win.xy * sgn_xy)) - shift;
-	vec2 inner = fract(pos_win.xy * sgn_xy);
-	float z = pos_win.z;
+	vec3 pos = vec3(pos_win.xy, pos_win.z);
 
-	while(steps > 0) {
-		--steps;
+	int level = last_level;
+	float upper_depth = texelFetch(depths, ivec2(pos.xy) >> (level*power_of_two), level*power_of_two).r;
+	bool hit = false;
 
-		ivec2 itexel = ivec2(texel + shift) * isgn_xy;
-
-		if( // check if out of buffer bounds
-			any(greaterThanEqual(uvec2(itexel), uvec2(frxu_size))) ||
-			z <= 0.0
+	while(true) {
+		if (
+			steps <= 0 ||
+			any(greaterThanEqual(pos.xy, frxu_size)) ||
+			any(lessThan(pos.xy, vec2(0.0))) ||
+			pos.z <= 0.0
 		) {
 			break;
 		}
+		--steps;
 
-		uint level = last_level;
-		float upper_depth = texelFetch(depths, itexel >> last_level, int(last_level)).r;
-
-		while(z >= upper_depth && level > 0u) {
-			level -= power_of_two;
-			upper_depth = texelFetch(depths, itexel >> level, int(level)).r;
+		while (level > 0 && pos.z >= upper_depth) {
+			--level;
+			upper_depth = texelFetch(depths, ivec2(pos.xy) >> (level*power_of_two), level*power_of_two).r;
 		}
-		// position before advance
-		uvec2 prev_texel = texel;
-		vec2 prev_inner = inner;
-		float prev_z = z;
+
+		if (level == 0 && pos.z >= upper_depth) {
+			hit = true;
+			break;
+		}
 
 		float dist_xy; { // advance, save travelled distance in dist_xy
-			uint cell_size = 1u << level; // 1, 4, 16, etc...
-			vec2 position_in_cell = (texel & (cell_size - 1u)) + inner;
-
+			int cell_size = 1 << (level * power_of_two); // 1, 4, 16, etc...
+			vec2 position_in_cell = mod(pos.xy * sign(dir_xy), cell_size);
 			vec2 dists_to_axis = cell_size - position_in_cell;
-			vec2 diagonal_dists = dists_to_axis / dir_xy;
-
-			uint closest_dim = diagonal_dists.x < diagonal_dists.y ? 0u : 1u;
-			dist_xy = diagonal_dists[closest_dim];
-
-			texel[closest_dim] = ((texel[closest_dim] >> level) + 1u) << level;
-			inner[closest_dim] = 0.0;
-
-			uint farther_dim = 1u - closest_dim;
-			float farther_dist = inner[farther_dim] + dir_xy[farther_dim] * dist_xy;
-			uint ufarther_dist = uint(farther_dist);
-
-			texel[farther_dim] += ufarther_dist;
-			inner[farther_dim] = farther_dist - ufarther_dist;
+			vec2 diagonal_dists = dists_to_axis / abs(dir_xy);
+			dist_xy = max(min(diagonal_dists.x, diagonal_dists.y), 0.001) * 1.001;
 		}
-		// z addition = dir.z per len(dir.xy) * distance
-		z += dist_xy * (dir_ws.z / dir_ws_xy_length);
-		// we didn't hit upper depth yet, continue advancing
-		if(z < upper_depth) continue;
 
-		if(level == 0u) {
-			hitPos.xy = (itexel + 0.5) / frxu_size;
-			hitPos.z = mix(upper_depth, prev_z, step(upper_depth, prev_z));
+		vec3 advance = dist_xy * vec3(dir_xy, dir_ws.z / dir_ws_xy_length);
+		pos += advance;
 
-			float depth_d = abs(linearizeDepth(hitPos.z) - linearizeDepth(upper_depth));
-			return hitPos.z < 1.0 && depth_d < mix(2.0, 10.0, linearstep(10.0, 40.0, linearDepth));
+		if (pos.z >= upper_depth) {
+			pos.xy -= advance.xy * (pos.z - upper_depth) / advance.z;
+			pos.z = upper_depth;
 		}
-		// restore position to hit point
-		dist_xy *= (upper_depth - prev_z) / (z - prev_z);
-
-		vec2 diff = prev_inner + dist_xy * dir_xy;
-		uvec2 udiff = uvec2(diff);
-		inner = diff - udiff;
-		texel = prev_texel + udiff;
-
-		z = upper_depth;
+		else {
+			level = last_level;
+			upper_depth = texelFetch(depths, ivec2(pos.xy) >> (level*power_of_two), level*power_of_two).r;
+		}
 	}
 
-	// No intersection found
-	return false;
+	hitPos.xy = pos.xy / frxu_size;
+	hitPos.z = mix(upper_depth, pos.z, step(upper_depth, pos.z));
+
+	float depth_d = abs(linearizeDepth(hitPos.z) - linearizeDepth(upper_depth));
+	return hit && hitPos.z < 1.0 && depth_d < mix(2.0, 10.0, linearstep(10.0, 40.0, linearDepth));
 }
