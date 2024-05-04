@@ -66,3 +66,7 @@ void drawStarsOnAtmosphere(inout vec3 atmosphere, in vec3 viewDir, in sampler2D 
 
 	atmosphere += stars;
 }
+
+void drawCloudsOnScene(inout vec3 color, in vec3 sceneSpacePos) {
+	
+}
