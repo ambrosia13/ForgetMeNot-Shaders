@@ -179,7 +179,7 @@ void main() {
 
 		if(solidDepth == 1.0) composite = textureLod(u_skybox, refractedViewDir, 0.0).rgb;
 		if(refractedViewDir.y <= 0.001 && material.isWater > 0.5) {
-			composite = waterFogColor;
+			composite = waterFogColor * atmosphereBrightness;
 			material.f0 = 0.95;
 		}
 
