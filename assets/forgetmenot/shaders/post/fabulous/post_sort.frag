@@ -150,12 +150,13 @@ float getVolumetricLightFactor(in vec3 sceneSpacePos, in vec3 viewDir) {
 	vec3 endPos = viewDir * min(frx_viewDistance, length(sceneSpacePos));
 
 	const int volumetricLightSteps = 10;
-	vec3 rayPos = startPos;
+	// vec3 rayPos = startPos;
 	vec3 rayStep = (endPos - startPos) / float(volumetricLightSteps);
 
 	float volumetricLightFactor = 0.0;
 	for(int i = 0; i < volumetricLightSteps; i++) {
-		rayPos += rayStep * interleavedGradient(i);
+		// rayPos += rayStep;
+		vec3 rayPos = startPos + rayStep * (i + interleavedGradient());
 
 		float shadowFactor = getShadowFactor(
 			rayPos,
@@ -181,7 +182,7 @@ vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
 
 	float tMax = minecraftToAtmosphereUnitScale * blockDistance / 1e6;
 
-	float mieScatteringAmount = smoothstep(30.0, 80.0, blockDistance);
+	float mieScatteringAmount = getVolumetricLightFactor(viewDir * blockDistance, viewDir);//smoothstep(30.0, 80.0, blockDistance);
 
 	if(tdata.x + tdata.z > 0.0) {
 		aerialPerspective += raymarchScattering(getSkyViewPos(), viewDir, getSunVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering);
@@ -254,11 +255,12 @@ void main() {
 				float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
 				undergroundFactor = mix(1.0, undergroundFactor, float(frx_worldHasSkylight));
 				
-				if(undergroundFactor > 0.01) {
-					scattering = getAerialPerspective(viewDir, blockDistance);
+				if (frx_cameraInWater == 0) {
+					if (undergroundFactor > 0.01) scattering = getAerialPerspective(viewDir, blockDistance);
+					scattering = mix(caveFogColor, scattering, undergroundFactor);
+				} else {
+					// scattering = vec3(getVolumetricLightFactor(sceneSpacePos, viewDir) * blockDistance * 0.025 * WATER_COLOR);
 				}
-
-				scattering = mix(caveFogColor, scattering, undergroundFactor);
 			} else {
 				scattering = interpolateCubemap(u_skybox, viewDir).rgb;
 			}
