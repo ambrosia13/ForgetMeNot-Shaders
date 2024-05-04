@@ -9,6 +9,10 @@ struct ExposureProfile {
 	float exposureMultiplier;
 };
 
+ExposureProfile getDefaultExposureProfile() {
+	return ExposureProfile(0.5, 0.5, 10.0, 1.0);
+}
+
 ExposureProfile getOverworldExposureProfile() {
 	return ExposureProfile(0.4, MIN_EXPOSURE_OVERWORLD, MAX_EXPOSURE_OVERWORLD, EXPOSURE_MULTIPLIER_OVERWORLD);
 }
@@ -32,5 +36,5 @@ float getExposureValue(const in ExposureProfile ep, const in float luminance) {
 	return clamp(exposureValue, ep.minExposure, ep.maxExposure);
 }
 float getExposureValue(const in float luminance) {
-	return getExposureValue(getExposureProfile(), luminance);
+	return getExposureValue(getDefaultExposureProfile(), luminance);
 }

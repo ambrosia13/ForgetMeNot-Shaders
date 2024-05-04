@@ -10,10 +10,6 @@ in float exposure;
 
 layout(location = 0) out vec4 fragColor;
 
-float getExposureValue() {
-	return getExposureValue(exposure);
-}
-
 // Post-processing stuff, provided by belmu
 vec3 vibrance(vec3 color, float intensity) {
 	float mn = min(color.r, min(color.g, color.b));
@@ -63,13 +59,13 @@ void main() {
 
 	vec3 color = texture(u_color, texcoord).rgb;
 
-	// // Purkinje effect
-	// float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
-	// color = mix(color, saturation(color, 0.0) * vec3(0.5, 1.2, 1.8) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
+	// Purkinje effect
+	float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
+	color = mix(color, saturation(color, 0.5) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
 
-	// #ifdef ENABLE_BLOOM
-	// 	color *= getExposureValue() * getExposureProfile().exposureMultiplier;
-	// #endif
+	#ifdef ENABLE_BLOOM
+		color *= getExposureValue(exposure);// * getExposureProfile().exposureMultiplier;
+	#endif
 
 	// #define WHITE_POINT 8.0
 
