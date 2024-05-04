@@ -25,7 +25,7 @@ float getWaterHeight(in vec2 uv, in int octaves) {
 		amp *= 0.5;
 	}
 
-	noise += (snoise(uv * 0.75) * 0.5 + 0.5) * 0.02;
+	//noise += (snoise(uv * vec2(1.0, 0.5)) * 0.5 + 0.5) * 0.02;
 	octaves += 1;
 
 	return (noise * (octaves + 1.0) / octaves) * 0.5;
