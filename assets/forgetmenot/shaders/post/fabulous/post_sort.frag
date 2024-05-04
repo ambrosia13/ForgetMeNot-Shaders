@@ -185,11 +185,11 @@ vec3 getAerialPerspective(in vec3 viewDir, in float blockDistance) {
 	float mieScatteringAmount = getVolumetricLightFactor(viewDir * blockDistance, viewDir);//smoothstep(30.0, 80.0, blockDistance);
 
 	if(tdata.x + tdata.z > 0.0) {
-		aerialPerspective += raymarchScattering(getSkyViewPos(), viewDir, getSunVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering);
+		aerialPerspective += raymarchScattering(getSkyViewPos(), viewDir, getSunVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering, SUN_COLOR);
 	}
 	
 	if(tdata.y + tdata.z > 0.0) {
-		aerialPerspective += nightAdjust(raymarchScattering(getSkyViewPos(), viewDir, getMoonVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering));
+		aerialPerspective += nightAdjust(raymarchScattering(getSkyViewPos(), viewDir, getMoonVector(), tMax, raymarchSteps, mieScatteringAmount, u_transmittance, u_multiscattering, MOON_COLOR));
 	}
 
 	return aerialPerspective * 7.5;
@@ -257,7 +257,7 @@ void main() {
 				
 				if (frx_cameraInWater == 0) {
 					if (undergroundFactor > 0.01) scattering = getAerialPerspective(viewDir, blockDistance);
-					scattering = mix(caveFogColor, scattering, undergroundFactor);
+					scattering = mix(caveFogColor * 0.1, scattering, undergroundFactor);
 				} else {
 					// scattering = vec3(getVolumetricLightFactor(sceneSpacePos, viewDir) * blockDistance * 0.025 * WATER_COLOR);
 				}

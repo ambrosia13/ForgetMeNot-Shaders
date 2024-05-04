@@ -149,9 +149,11 @@ vec3 getSunLightColor(
 
 	if(frx_worldIsMoonlit == 1) {
 		directLightColor = nightAdjust(directLightColor);
+	} else {
+		directLightColor *= SUN_COLOR;
 	}
 
-	return directLightColor * 2.5;
+	return directLightColor * 3.0;
 }
 
 vec3 getSkyLightColor(
@@ -273,7 +275,7 @@ vec3 basicLighting(
 	skyLight *= skyLight;
 	if(frx_worldHasSkylight == 0) skyLight = 1.0;
 
-	float emission = clamp01(frx_luminance(albedo) - 1.0);
+	float emission = max(0.0, frx_luminance(albedo) - 1.0);
 	
 	float NdotL = clamp01(dot(fragNormal, frx_skyLightVector));
 	NdotL = mix(NdotL, 1.0, step(0.001, sssAmount));
@@ -306,7 +308,7 @@ vec3 basicLighting(
 
 		if (isWater > 0.5) shadowFactor = 1.0;
 		
-		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * frx_skyLightTransitionFactor;
+		directLighting *= (NdotL * shadowFactor + sunBounceAmount) * (1.0 - pow4(1.0 - frx_skyLightTransitionFactor));
 	}
 
 	// Ambient lighting
@@ -316,12 +318,13 @@ vec3 basicLighting(
 
 		// Add block light
 		float distToLight = 16.0 * linearstep(0.8, 0.0, blockLight);
-		vec3 blockLightColor = vec3(2.0, 1.2, 0.5);
+		vec3 blockLightColor = vec3(2.0, 0.75, 0.25);
 
-		// Realistic falloff based on distance, but it only works for bright light sources
-		ambientLighting += 1.0 * blockLightColor / (pow2(distToLight) + 1.0) * smoothstep(0.0, 0.5, blockLight) * BLOCKLIGHT_BRIGHTNESS;
+		// // Realistic falloff based on distance, but it only works for bright light sources
+		// ambientLighting += 1.0 * blockLightColor / (pow2(distToLight) + 1.0) * smoothstep(0.0, 0.5, blockLight) * BLOCKLIGHT_BRIGHTNESS;
 
 		// Flat lightmap addition for darker light sources
+		blockLight = max(0.0, blockLight - emission);
 		ambientLighting += blockLightColor * blockLight * blockLight;
 
 		// handheld light

@@ -59,6 +59,6 @@ void main() {
 		float tMax = (groundDist < 0.0) ? atmoDist : groundDist * 1.; // Eyeballed constant.
 	#endif
 
-	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering), 1.0);
-	nightColor = vec4(nightAdjust(raymarchScattering(skyViewPos, rayDir, sunDirMoon, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering)), 1.0);
+	dayColor = vec4(raymarchScattering(skyViewPos, rayDir, sunDir, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering, SUN_COLOR), 1.0);
+	nightColor = vec4(nightAdjust(raymarchScattering(skyViewPos, rayDir, sunDirMoon, tMax, float(numScatteringSteps), u_transmittance, u_multiscattering, MOON_COLOR)), 1.0);
 }

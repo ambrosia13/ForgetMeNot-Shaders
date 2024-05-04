@@ -9,6 +9,9 @@ vec3 nightAdjust(in vec3 color) {
 	return color * 0.01;
 }
 
+const vec3 SUN_COLOR = vec3(1.0, 0.85, 0.8);
+const vec3 MOON_COLOR = vec3(1.0, 1.0, 0.9);
+
 // Units are in megameters.
 const float groundRadiusMM = 6.360;
 const float atmosphereRadiusMM = 6.460;
@@ -137,7 +140,8 @@ vec3 raymarchScattering(
 	float numSteps,
 	float mieScatteringAmount,
 	sampler2D transmittanceLut,
-	sampler2D multiscatteringLut
+	sampler2D multiscatteringLut,
+	vec3 sunColor
 ) {
 	float cosTheta = dot(rayDir, sunDir);
 	
@@ -160,7 +164,7 @@ vec3 raymarchScattering(
 		
 		vec3 sampleTransmittance = exp(-dt*extinction);
 
-		vec3 sunTransmittance = getValFromTLUT(transmittanceLut, newPos, sunDir);
+		vec3 sunTransmittance = getValFromTLUT(transmittanceLut, newPos, sunDir) * sunColor;
 		vec3 psiMS = getValFromMultiScattLUT(multiscatteringLut, newPos, sunDir);
 		
 		vec3 rayleighInScattering = rayleighScattering*(rayleighPhaseValue*sunTransmittance + psiMS);
@@ -184,7 +188,8 @@ vec3 raymarchScattering(
 	float tMax,
 	float numSteps,
 	sampler2D transmittanceLut,
-	sampler2D multiscatteringLut
+	sampler2D multiscatteringLut,
+	vec3 sunColor
 ) {
 	return raymarchScattering(
 		pos, 
@@ -194,7 +199,8 @@ vec3 raymarchScattering(
 		numSteps,
 		1.0,
 		transmittanceLut,
-		multiscatteringLut
+		multiscatteringLut,
+		sunColor
 	);
 }
 

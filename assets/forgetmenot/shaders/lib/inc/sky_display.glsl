@@ -16,8 +16,8 @@ vec3 sampleAtmosphere(in vec3 viewDir, in sampler2D skyLutDay, in sampler2D skyL
 		float tMax = (groundDist < 0.0) ? atmoDist : groundDist;
 
 		skyColor =
-			raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, float(numScatteringSteps), transmittanceLut, multiscatteringLut) + 
-			nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, float(numScatteringSteps), transmittanceLut, multiscatteringLut));
+			raymarchScattering(skyViewPos, viewDir, getSunVector(), tMax, float(numScatteringSteps), transmittanceLut, multiscatteringLut, SUN_COLOR) + 
+			nightAdjust(raymarchScattering(skyViewPos, viewDir, getMoonVector(), tMax, float(numScatteringSteps), transmittanceLut, multiscatteringLut, MOON_COLOR));
 	}
 
 	return skyColor * 7.5;
@@ -36,8 +36,8 @@ void drawSunOnAtmosphere(inout vec3 atmosphere, in vec3 viewDir, in sampler2D tr
 
 	float sunBrightness = 100.0 * step(distToPlanet, 0.0);
 
-	vec3 sunDisk = smoothstep(0.99975, 0.99977, dot(viewDir, sunVector)) * sunTransmittance * sunBrightness;
-	vec3 moonDisk = smoothstep(0.99985, 0.99987, dot(viewDir, moonVector)) * moonTransmittance * sunBrightness;
+	vec3 sunDisk = smoothstep(0.99975, 0.99977, dot(viewDir, sunVector)) * sunTransmittance * sunBrightness * SUN_COLOR;
+	vec3 moonDisk = smoothstep(0.99985, 0.99987, dot(viewDir, moonVector)) * moonTransmittance * sunBrightness * MOON_COLOR;
 
 	atmosphere += sunDisk + moonDisk;
 }
@@ -68,5 +68,5 @@ void drawStarsOnAtmosphere(inout vec3 atmosphere, in vec3 viewDir, in sampler2D 
 }
 
 void drawCloudsOnScene(inout vec3 color, in vec3 sceneSpacePos) {
-	
+
 }
