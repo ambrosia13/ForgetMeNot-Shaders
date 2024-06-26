@@ -95,20 +95,23 @@ void reflections(
 			(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
 		);
 		vec3 windowSpacePos = screenSpacePos * vec3(frxu_size, 1.0);
+		windowSpacePos.z -= max(0.0, windowSpaceDir.z * 4.0);
+		windowSpacePos.z -= 1.0 / 1000000.0;
 
-		bool hit = false;
-		vec3 hitPos;
+		float hitDepth;
 
-		hit = raytrace(
+		bool hit = raytrace(
 			windowSpacePos,
 			windowSpaceDir,
 			40,
 			hiDepthLevels,
-			hitPos
+			hitDepth
 		);
 
+		hit = hit && 1.0/(1.0-windowSpacePos.z)-1.0/(1.0-hitDepth) < 48.0;
+
 		if(hit) {
-			reflectColor += texelFetch(reflectionColorSampler, ivec2(hitPos.xy * frxu_size), 0).rgb / numReflectionRays;
+			reflectColor += texelFetch(reflectionColorSampler, ivec2(windowSpacePos.xy), 0).rgb / numReflectionRays;
 			reflectionFactor += 1.0 / numReflectionRays;
 		}
 	}
