@@ -95,7 +95,7 @@ void reflections(
 			(D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
 		);
 		vec3 windowSpacePos = screenSpacePos * vec3(frxu_size, 1.0);
-		windowSpacePos.z -= max(0.0, windowSpaceDir.z * 4.0);
+		windowSpacePos.z -= max(0.0, windowSpaceDir.z * 4.0 * exp(material.roughness*2.0));
 		windowSpacePos.z -= 1.0 / 1000000.0;
 
 		float hitDepth;
