@@ -5,7 +5,7 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
 			samplers: [
-				"u_depth"
+				"u_depth_mips"
 			]
 		},
 		{
