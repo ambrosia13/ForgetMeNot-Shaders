@@ -1,8 +1,10 @@
 # Forget-me-not Shaders
 
-**Forget-me-not** is a semi-realistic pipeline shader for the [Canvas](https://modrinth.com/mod/canvas) mod. It's designed to give the most authentic and immersive experience while sticking to "traditional" rendering methods to keep up good performance.
+**Forget-me-not** is a semi-realistic pipeline shader for the [Can-Pipe](https://modrinth.com/mod/can-pipe) mod, with the goal of using a wide variety of visual effects for a truly diverse Minecraft experience.
 
-**Canvas** is a client-side renderer mod that uses shaders for advanced rendering with the goal of having a modern and very flexible design for high performance and better readability. The shader system is entirely different from Optifine and Iris & Sodium and as such, Forget-me-not won't work with any of these mods! See the `how to use` section for installation instructions. 
+**Can-Pipe** is a continuation of Canvas, a client-side renderer mod that uses shaders for advanced rendering. The shader system is entirely different from Optifine and Iris & Sodium and thus will not work with Can-Pipe or Forget-me-not.
+
+See the `how to use` section for installation instructions. 
 
 ## notice
 
@@ -10,37 +12,29 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 ## how to use third-party shaders with canvas
 
-1. Be sure you're on 1.19.4 or above. Support is not guaranteed for versions that Canvas doesn't actively support.
+1. Be sure you're on 26.1.1 or above. Support is not guaranteed for versions that Can-Pipe doesn't actively support. You can check the supported versions of Can-Pipe [here](https://modrinth.com/mod/can-pipe/versions).
 
 2. Install [Fabric](https://fabricmc.net/wiki/install).
 
-3. Get Canvas Renderer mod through [Modrinth](https://modrinth.com/mod/canvas). **Keep in mind that Canvas does not work with Sodium, Iris, OptiFine, or OptiFabric.**
+3. Get Can-Pipe through [Modrinth](https://modrinth.com/mod/can-pipe). **Can-Pipe should not be installed alongside Sodium, Iris, OptiFine, or OptiFabric.**
 
-4. Download your preferred pipeline shaderpack. If you're looking for alternatives to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases), [Lomo (not for gameplay as of this writing)](https://github.com/fewizz/lomo/releases), or [Aerie (vanilla-plus, wip)](https://modrinth.com/shader/aerie-shaders).
+4. Download your preferred pipeline shaderpack. If you're looking for an alternative to Forget-me-not, try out [Lumi Lights](https://github.com/spiralhalo/LumiLights/releases) by spiralhalo.
 
-5. Launch your game, put your downloaded `.zip` file into your `resourcepacks` folder and activate the resource pack. (Don't extract it!)
+5. Launch your game, put your downloaded `.zip` file into your `resourcepacks` folder and activate the resource pack. (There's no need to extract it!)
 
-6. Navigate to `Options / Video Settings / Canvas / Pipeline Options / Pipelines` and select the pipeline that you want to play with.
-
-## troubleshooting
-
-- Experiencing bad shadow outcomes? In `Options / Video Settings / Canvas / Debug`, set `Shadow Priming Strategy` to `TIERED` and `Disable Shadow Self-Occlusion` to true.
-
-- Does Canvas say in chat that some shaders are broken? Please grab your log in `.minecraft/logs/latest.log` and all contents of the `.minecraft/canvas_shader_debug/` folder and either make an issue on GitHub or let me know about it on Discord.
-
-- Does every Canvas pipeline break other than Canvas Basic? If so, your device is probably incompatible with Fabulous graphics, which most Canvas pipelines use. Unfortunately, there's no fix for this.
+6. Navigate to `Options/Video Settings/Quality & Performance/Pipeline` and select the pipeline that you want to use.
 
 ## feature highlights
 
-- seasons! be immersed in your world as the seasons change over time
+- seasons! be immersed in your world with the first shaders-only implementation of dynamic seasons 
 
-- HDR, bloom, and tone mapping
+- internal HDR, tone mapping, bloom, exposure, and other camera emulations
 
-- dramatic skies with atmospheric scattering and custom realistic clouds
+- dramatic skies with a realistic atmosphere and clouds
 
 - water waves and reflections
 
-- support for PBR, with hundreds of built-in default materials
+- hundreds of built-in default PBR materials
 
 - contact-hardening variable penumbra shadows 
 
@@ -48,11 +42,13 @@ If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v
 
 ## credits
 
-Forget-me-not wouldn't be nearly as polished as it is if it weren't for the help of people like fewizz, spiralhalo, Grondag, and many others from the Canvas community for contributing and testing. Many thanks to:
+Forget-me-not wouldn't gotten as far as it did without the support of various people across the Canvas and shaderLABS communities. Special thanks to:
 
+- [fewizz](https://github.com/fewizz), for bringing Canvas into modern versions as the developer of Can-Pipe! Additionally, they made many invaluable contributions to Forget-me-not itself, including the high quality raytracer and countless bug fixes and reports
+- [spiralhalo](https://github.com/spiralhalo) for lots of help in my Canvas journey, as well as their shaderpack, [Lumi Lights](https://github.com/spiralhalo/LumiLights) for inspiration and references for a working TAA implementation
+- [Grondag](https://github.com/grondag) and spiralhalo for the years of development they put into the original Canvas mod, and hearing out my many feature requests along the way
+- [supsm](https://github.com/supsm) for their many hours of active testing, as well as their work towards their Forget-me-not fork, [Brunnera](https://github.com/supsm/Brunnera-Shaders)! 
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
-- [Lumi Lights](https://github.com/spiralhalo/LumiLights) by spiralhalo for lots of different inspiration & help, and also references for a working TAA implementation
-- [lomo](https://github.com/fewizz/lomo/releases) by fewizz for inspiration for many different things, as well as the raytracer and lots of invaluable contributions
 - [@jahan.artt](https://www.instagram.com/jahan.artt/?hl=en) for the icon!
 
 ## discord
