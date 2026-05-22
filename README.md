@@ -49,7 +49,7 @@ Forget-me-not wouldn't gotten as far as it did without the support of various pe
 - [Grondag](https://github.com/grondag) and spiralhalo for the years of development they put into the original Canvas mod, and hearing out my many feature requests along the way
 - [supsm](https://github.com/supsm) for their many hours of active testing, as well as their work towards their Forget-me-not fork, [Brunnera](https://github.com/supsm/Brunnera-Shaders)! 
 - The [shaderLABS discord channel #snippets](https://discord.com/channels/237199950235041794/525510804494221312/959153316401655849) for many useful code snippets
-- [@jahan.artt](https://www.instagram.com/jahan.artt/?hl=en) for the icon!
+- [@jahan.artt](https://www.instagram.com/jahan.artt/?hl=en) for both of Forget-me-not's icons!
 
 ## discord
 
