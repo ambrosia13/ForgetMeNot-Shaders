@@ -4,7 +4,7 @@
 		{
 			name: "solid_gbuffer",
 			depthAttachment: {
-				image: "solid_depth", 
+				image: "solid_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [
@@ -42,7 +42,7 @@
 		{
 			name: "translucent_gbuffer",
 			depthAttachment: {
-				image: "translucent_depth", 
+				image: "translucent_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [
@@ -76,7 +76,7 @@
 		{
 			name: "particles_gbuffer",
 			depthAttachment: {
-				image: "particles_depth", 
+				image: "particles_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [
@@ -110,7 +110,7 @@
 		{
 			name: "entity_gbuffer",
 			depthAttachment: {
-				image: "entity_depth", 
+				image: "entity_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [
@@ -136,7 +136,7 @@
 		{
 			name: "clouds_gbuffer",
 			depthAttachment: {
-				image: "clouds_depth", 
+				image: "clouds_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [
@@ -162,7 +162,7 @@
 		{
 			name: "weather_gbuffer",
 			depthAttachment: {
-				image: "weather_depth", 
+				image: "weather_depth",
 				clearDepth: 1.0
 			},
 			colorAttachments: [

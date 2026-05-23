@@ -21,134 +21,133 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 struct Hit {
-	vec3 pos;
-	vec3 normal;
+    vec3 pos;
+    vec3 normal;
 
-	bool success;
+    bool success;
 };
 
 const Hit NO_HIT = Hit(vec3(0.0), vec3(0.0), false);
 
 bool evaluateHit(in vec3 voxelPos) {
-	frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
+    frx_LightData data = frx_getLightOcclusionData(u_light_data, voxelPos);
 
-	return data.isOccluder && data.isFullCube;
+    return data.isOccluder && data.isFullCube;
 }
 
 Hit raytraceAo(vec3 rayPos, vec3 rayDir, int raytraceLength) {
-	Hit hit = NO_HIT;
+    Hit hit = NO_HIT;
 
-	rayPos += frx_cameraPos;
+    rayPos += frx_cameraPos;
 
-	vec3 stepSizes = 1.0 / abs(rayDir);
-	vec3 stepDir = sign(rayDir);
-	vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(rayPos)) / rayDir;
+    vec3 stepSizes = 1.0 / abs(rayDir);
+    vec3 stepDir = sign(rayDir);
+    vec3 nextDist = (stepDir * 0.5 + 0.5 - fract(rayPos)) / rayDir;
 
-	ivec3 voxelPos = ivec3(floor(rayPos));
-	vec3 currentPos = rayPos;
+    ivec3 voxelPos = ivec3(floor(rayPos));
+    vec3 currentPos = rayPos;
 
-	for(int i = 0; i < raytraceLength; i++) {
-		float closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
+    for (int i = 0; i < raytraceLength; i++) {
+        float closestDist = min(nextDist.x, min(nextDist.y, nextDist.z));
 
-		currentPos += rayDir * closestDist;
+        currentPos += rayDir * closestDist;
 
-		vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
+        vec3 stepAxis = vec3(lessThanEqual(nextDist, vec3(closestDist)));
 
-		voxelPos += ivec3(stepAxis * stepDir);
+        voxelPos += ivec3(stepAxis * stepDir);
 
-		nextDist -= closestDist;
-		nextDist += stepSizes * stepAxis;
+        nextDist -= closestDist;
+        nextDist += stepSizes * stepAxis;
 
-		hit.normal = stepAxis;
+        hit.normal = stepAxis;
 
-		if(evaluateHit(voxelPos)) {
-			hit.pos = currentPos - frx_cameraPos;
-			hit.normal *= -stepDir;
-			hit.success = true;
-			break;
-		}
-	}
+        if (evaluateHit(voxelPos)) {
+            hit.pos = currentPos - frx_cameraPos;
+            hit.normal *= -stepDir;
+            hit.success = true;
+            break;
+        }
+    }
 
-	return hit;
+    return hit;
 }
 
 void main() {
-	initGlobals();
+    initGlobals();
 
-	float depth = texture(u_depth, texcoord).r;
+    float depth = texture(u_depth, texcoord).r;
 
-	if(depth != 1.0) {
-		uvec3 packedSample = texture(u_material_data, texcoord).xyz;
-		Material material = unpackMaterial(packedSample);
+    if (depth != 1.0) {
+        uvec3 packedSample = texture(u_material_data, texcoord).xyz;
+        Material material = unpackMaterial(packedSample);
 
-		vec3 originalSceneSpacePos = setupSceneSpacePos(texcoord, depth);
-		vec3 sceneSpacePos = originalSceneSpacePos + 0.01 * material.vertexNormal;
+        vec3 originalSceneSpacePos = setupSceneSpacePos(texcoord, depth);
+        vec3 sceneSpacePos = originalSceneSpacePos + 0.01 * material.vertexNormal;
 
-		float ambientOcclusion = 1.0;
-		float sunBounceAmount = 0.0;
+        float ambientOcclusion = 1.0;
+        float sunBounceAmount = 0.0;
 
-		const int numAoRays = 3;
-		const int numSunBounceRays = numAoRays; // May need to be adjusted.
+        const int numAoRays = 3;
+        const int numSunBounceRays = numAoRays; // May need to be adjusted.
 
-		const float rayContribution = 1.0 / numAoRays;
+        const float rayContribution = 1.0 / numAoRays;
 
-		#ifndef RTAO_STRENGTH
-			#define RTAO_STRENGTH 1.0
-		#endif
-		const float aoStrength = RTAO_STRENGTH;
+        #ifndef RTAO_STRENGTH
+        #define RTAO_STRENGTH 1.0
+        #endif
+        const float aoStrength = RTAO_STRENGTH;
 
-		const int aoRange = 2;
+        const int aoRange = 2;
 
-		vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
+        vec3 rayPos = sceneSpacePos + material.vertexNormal * 0.01;
 
-		for(int i = 0; i < numAoRays; i++) {
-			vec3 rayDir = generateCosineVector(material.vertexNormal);
+        for (int i = 0; i < numAoRays; i++) {
+            vec3 rayDir = generateCosineVector(material.vertexNormal);
 
-			Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
-			if(hit.success) {
-				float distToHit = distance(hit.pos, rayPos);
-				float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
+            Hit hit = raytraceAo(rayPos, rayDir, aoRange + 1);
+            if (hit.success) {
+                float distToHit = distance(hit.pos, rayPos);
+                float aoDistanceFactor = smoothstep(float(aoRange), float(aoRange - 1), distToHit);
 
-				#ifdef INDIRECT_SUNLIGHT
-					if(i < numSunBounceRays) {
-						sunBounceAmount += getShadowFactor(
-							hit.pos,
-							hit.normal,
-							0.0,
-							true,
-							4, 
-							u_shadow_tex, 
-							u_shadow_map
-						) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor * material.skyLight;
-					}
-				#endif
+                #ifdef INDIRECT_SUNLIGHT
+                if (i < numSunBounceRays) {
+                    sunBounceAmount += getShadowFactor(
+                            hit.pos,
+                            hit.normal,
+                            0.0,
+                            true,
+                            4,
+                            u_shadow_tex,
+                            u_shadow_map
+                        ) / numSunBounceRays * clamp01(dot(hit.normal, frx_skyLightVector)) * aoDistanceFactor * material.skyLight;
+                }
+                #endif
 
-				ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
-			}
-		}
+                ambientOcclusion -= rayContribution * aoStrength * aoDistanceFactor;
+            }
+        }
 
-		vec4 result = vec4(ambientOcclusion, sunBounceAmount, 0.0, 1.0);
+        vec4 result = vec4(ambientOcclusion, sunBounceAmount, 0.0, 1.0);
 
-		vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-		vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(originalSceneSpacePos + positionDifference);
-		
-		vec4 previousResult = texture(u_previous_rtao, lastScreenPos.xy);
-		float previousDepth = texture(u_previous_depth, lastScreenPos.xy).r;
-		vec3 previousNormal = texture(u_previous_normal, lastScreenPos.xy).rgb;
+        vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
+        vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(originalSceneSpacePos + positionDifference);
 
-		bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
-		disocclusion = disocclusion || dot(previousNormal, material.fragNormal) < 0.9;
+        vec4 previousResult = texture(u_previous_rtao, lastScreenPos.xy);
+        float previousDepth = texture(u_previous_depth, lastScreenPos.xy).r;
+        vec3 previousNormal = texture(u_previous_normal, lastScreenPos.xy).rgb;
 
+        bool disocclusion = clamp01(lastScreenPos.xy) != lastScreenPos.xy;
+        disocclusion = disocclusion || dot(previousNormal, material.fragNormal) < 0.9;
 
-		float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
-		disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
+        float depthTolerance = 0.1 + 0.1 * length(sceneSpacePos);
+        disocclusion = disocclusion || abs(linearizeDepth(depth) - linearizeDepth(previousDepth)) > depthTolerance;
 
-		if(!disocclusion) {
-			result = mix(result, previousResult, 0.9);
-		}
+        if (!disocclusion) {
+            result = mix(result, previousResult, 0.9);
+        }
 
-		fragColor = result;
-	} else {
-		fragColor = vec4(0.0);
-	}
+        fragColor = result;
+    } else {
+        fragColor = vec4(0.0);
+    }
 }

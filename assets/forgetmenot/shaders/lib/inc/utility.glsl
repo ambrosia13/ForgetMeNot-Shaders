@@ -6,210 +6,210 @@ Contains all-purpose utility functions.
 
 // Quick clamp functions between 0 and 1
 float clamp01(in float x) {
-	return clamp(x, 0.0, 1.0);
+    return clamp(x, 0.0, 1.0);
 }
 vec2 clamp01(in vec2 x) {
-	return clamp(x, vec2(0.0), vec2(1.0));
+    return clamp(x, vec2(0.0), vec2(1.0));
 }
 vec3 clamp01(in vec3 x) {
-	return clamp(x, vec3(0.0), vec3(1.0));
+    return clamp(x, vec3(0.0), vec3(1.0));
 }
 vec4 clamp01(in vec4 x) {
-	return clamp(x, vec4(0.0), vec4(1.0));
+    return clamp(x, vec4(0.0), vec4(1.0));
 }
 
 float pow2(float x) {
-	return (x * x);
+    return (x * x);
 }
 vec2 pow2(vec2 x) {
-	return (x * x);
+    return (x * x);
 }
 vec3 pow2(vec3 x) {
-	return (x * x);
+    return (x * x);
 }
 vec4 pow2(vec4 x) {
-	return (x * x);
+    return (x * x);
 }
 float pow3(float x) {
-	return (pow2(x) * x);
+    return (pow2(x) * x);
 }
 vec2 pow3(vec2 x) {
-	return (pow2(x) * x);
+    return (pow2(x) * x);
 }
 vec3 pow3(vec3 x) {
-	return (pow2(x) * x);
+    return (pow2(x) * x);
 }
 vec4 pow3(vec4 x) {
-	return (pow2(x) * x);
+    return (pow2(x) * x);
 }
 float pow4(float x) {
-	return (pow2(x) * pow2(x));
+    return (pow2(x) * pow2(x));
 }
 vec2 pow4(vec2 x) {
-	return (pow2(x) * pow2(x));
+    return (pow2(x) * pow2(x));
 }
 vec3 pow4(vec3 x) {
-	return (pow2(x) * pow2(x));
+    return (pow2(x) * pow2(x));
 }
 vec4 pow4(vec4 x) {
-	return (pow2(x) * pow2(x));
+    return (pow2(x) * pow2(x));
 }
 
 #define rcp(x) (1.0 / (x))
 
 float linearstep(float a, float b, float x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec2 linearstep(float a, float b, vec2 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec3 linearstep(float a, float b, vec3 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec4 linearstep(float a, float b, vec4 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec2 linearstep(vec2 a, vec2 b, vec2 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec3 linearstep(vec3 a, vec3 b, vec3 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 vec4 linearstep(vec4 a, vec4 b, vec4 x) {
-	return clamp01((x - a) * rcp(b - a));
+    return clamp01((x - a) * rcp(b - a));
 }
 float linearstepFrom0(float b, float x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec2 linearstepFrom0(float b, vec2 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec3 linearstepFrom0(float b, vec3 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec4 linearstepFrom0(float b, vec4 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec2 linearstepFrom0(vec2 b, vec2 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec3 linearstepFrom0(vec3 b, vec3 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 vec4 linearstepFrom0(vec4 b, vec4 x) {
-	return clamp01(x * rcp(b));
+    return clamp01(x * rcp(b));
 }
 
 // Angle should be in radians
 vec2 rotate2D(vec2 uv, float angle) {
-	float s = sin(angle);
-	float c = cos(angle);
-	mat2 mat = mat2(c, s, -s, c);
-	return mat * uv;
+    float s = sin(angle);
+    float c = cos(angle);
+    mat2 mat = mat2(c, s, -s, c);
+    return mat * uv;
 }
 
 mat3 rotationMatrix3D(vec3 axis, float angle) {
-	float c = cos(angle);
-	float s = sin(angle);
+    float c = cos(angle);
+    float s = sin(angle);
 
-	vec3 temp = vec3((1. - c) * axis);
+    vec3 temp = vec3((1. - c) * axis);
 
-	mat3 m = mat3(0);
-	m[0][0] = c + temp[0] * axis[0];
-	m[0][1] =     temp[0] * axis[1] + s * axis[2];
-	m[0][2] =     temp[0] * axis[2] - s * axis[1];
+    mat3 m = mat3(0);
+    m[0][0] = c + temp[0] * axis[0];
+    m[0][1] = temp[0] * axis[1] + s * axis[2];
+    m[0][2] = temp[0] * axis[2] - s * axis[1];
 
-	m[1][0] =     temp[1] * axis[0] - s * axis[2];
-	m[1][1] = c + temp[1] * axis[1];
-	m[1][2] =     temp[1] * axis[2] + s * axis[0];
+    m[1][0] = temp[1] * axis[0] - s * axis[2];
+    m[1][1] = c + temp[1] * axis[1];
+    m[1][2] = temp[1] * axis[2] + s * axis[0];
 
-	m[2][0] =     temp[2] * axis[0] + s * axis[1];
-	m[2][1] =     temp[2] * axis[1] - s * axis[0];
-	m[2][2] = c + temp[2] * axis[2];
+    m[2][0] = temp[2] * axis[0] + s * axis[1];
+    m[2][1] = temp[2] * axis[1] - s * axis[0];
+    m[2][2] = c + temp[2] * axis[2];
 
-	return m;
+    return m;
 }
 
 vec2 repeatAndMirrorCoords(vec2 uv) {
-	return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
+    return mix(fract(uv), 1.0 - fract(uv), mod(floor(uv), 2.0));
 }
 
 vec3 saturation(in vec3 color, in float amount) {
-	return mix(vec3(frx_luminance(color)), color, amount);
+    return mix(vec3(frx_luminance(color)), color, amount);
 }
 
 float contrast(in float value, float contrast) {
-	return (value - 0.5) * contrast + 0.5;
+    return (value - 0.5) * contrast + 0.5;
 }
 vec3 contrast(in vec3 color, float contrast) {
-	return (color - 0.5) * contrast + 0.5;
+    return (color - 0.5) * contrast + 0.5;
 }
 
 // https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 vec2 parallaxMapping(in vec3 pos, in mat3 tbn, in vec2 texcoord, in float height) {
-	vec3 viewDir = normalize(pos.xyz) * tbn;
-	vec2 p = viewDir.xy / viewDir.z * (height);
-	return texcoord - p;
+    vec3 viewDir = normalize(pos.xyz) * tbn;
+    vec2 p = viewDir.xy / viewDir.z * (height);
+    return texcoord - p;
 }
 
 int intMix(int a, int b, int x) {
-	return a * (1 - x) + b * x;
+    return a * (1 - x) + b * x;
 }
 
 // I don't understand this code in the slightest.
 // Ported from https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1,
 // check that out for better documented code.
 vec4 textureCatmullRom(in sampler2D tex, in vec2 uv, in vec2 texSize) {
-	vec2 samplePos = uv * texSize;
-	vec2 texPos1 = floor(samplePos - 0.5) + 0.5;
+    vec2 samplePos = uv * texSize;
+    vec2 texPos1 = floor(samplePos - 0.5) + 0.5;
 
-	vec2 f = samplePos - texPos1;
+    vec2 f = samplePos - texPos1;
 
-	vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f));
-	vec2 w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
-	vec2 w2 = f * (0.5 + f * (2.0 - 1.5 * f));
-	vec2 w3 = f * f * (-0.5 + 0.5 * f);
+    vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f));
+    vec2 w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
+    vec2 w2 = f * (0.5 + f * (2.0 - 1.5 * f));
+    vec2 w3 = f * f * (-0.5 + 0.5 * f);
 
-	vec2 w12 = w1 + w2;
-	vec2 offset12 = w2 / w12;
+    vec2 w12 = w1 + w2;
+    vec2 offset12 = w2 / w12;
 
-	vec2 texPos0 = texPos1 - 1.0;
-	vec2 texPos3 = texPos1 + 2.0;
-	vec2 texPos12 = texPos1 + offset12;
+    vec2 texPos0 = texPos1 - 1.0;
+    vec2 texPos3 = texPos1 + 2.0;
+    vec2 texPos12 = texPos1 + offset12;
 
-	texPos0 /= texSize;
-	texPos3 /= texSize;
-	texPos12 /= texSize;
+    texPos0 /= texSize;
+    texPos3 /= texSize;
+    texPos12 /= texSize;
 
-	vec4 result = vec4(0.0);
+    vec4 result = vec4(0.0);
 
-	result += texture(tex, vec2(texPos0.x, texPos0.y)) * w0.x * w0.y;
-	result += texture(tex, vec2(texPos12.x, texPos0.y)) * w12.x * w0.y;
-	result += texture(tex, vec2(texPos3.x, texPos0.y)) * w3.x * w0.y;
+    result += texture(tex, vec2(texPos0.x, texPos0.y)) * w0.x * w0.y;
+    result += texture(tex, vec2(texPos12.x, texPos0.y)) * w12.x * w0.y;
+    result += texture(tex, vec2(texPos3.x, texPos0.y)) * w3.x * w0.y;
 
-	result += texture(tex, vec2(texPos0.x, texPos12.y)) * w0.x * w12.y;
-	result += texture(tex, vec2(texPos12.x, texPos12.y)) * w12.x * w12.y;
-	result += texture(tex, vec2(texPos3.x, texPos12.y)) * w3.x * w12.y;
+    result += texture(tex, vec2(texPos0.x, texPos12.y)) * w0.x * w12.y;
+    result += texture(tex, vec2(texPos12.x, texPos12.y)) * w12.x * w12.y;
+    result += texture(tex, vec2(texPos3.x, texPos12.y)) * w3.x * w12.y;
 
-	result += texture(tex, vec2(texPos0.x, texPos3.y)) * w0.x * w3.y;
-	result += texture(tex, vec2(texPos12.x, texPos3.y)) * w12.x * w3.y;
-	result += texture(tex, vec2(texPos3.x, texPos3.y)) * w3.x * w3.y;
+    result += texture(tex, vec2(texPos0.x, texPos3.y)) * w0.x * w3.y;
+    result += texture(tex, vec2(texPos12.x, texPos3.y)) * w12.x * w3.y;
+    result += texture(tex, vec2(texPos3.x, texPos3.y)) * w3.x * w3.y;
 
-	return result;
+    return result;
 }
 
 float getDistanceToBox(in vec3 viewDir, in vec3 pos, in vec3 normal, out vec2 uv) {
-	float dist = length(pos);
+    float dist = length(pos);
 
-	vec3 right = normalize(vec3(normal.z, 0.0, -normal.x));
-	vec3 up = normalize(cross(normal, right));
+    vec3 right = normalize(vec3(normal.z, 0.0, -normal.x));
+    vec3 up = normalize(cross(normal, right));
 
-	float t = -dist / dot(viewDir, normal);
-	vec3 hitPoint = viewDir * t;
-	vec3 diff = hitPoint - pos;
-	
-	uv = vec2(dot(diff, right), dot(diff, up));
-	float distToCenter = max(abs(uv.x), abs(uv.y));
-	
-	return distToCenter;
+    float t = -dist / dot(viewDir, normal);
+    vec3 hitPoint = viewDir * t;
+    vec3 diff = hitPoint - pos;
+
+    uv = vec2(dot(diff, right), dot(diff, up));
+    float distToCenter = max(abs(uv.x), abs(uv.y));
+
+    return distToCenter;
 }

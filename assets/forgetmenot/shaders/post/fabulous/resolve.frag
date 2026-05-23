@@ -1,5 +1,5 @@
-#include forgetmenot:shaders/lib/inc/header.glsl 
-#include forgetmenot:shaders/lib/inc/space.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl
+#include forgetmenot:shaders/lib/inc/space.glsl
 
 uniform sampler2D u_current;
 uniform sampler2D u_previous;
@@ -10,7 +10,7 @@ in vec2 texcoord;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-	initGlobals();
+    initGlobals();
 
-	fragColor = texture(u_current, texcoord);
+    fragColor = texture(u_current, texcoord);
 }

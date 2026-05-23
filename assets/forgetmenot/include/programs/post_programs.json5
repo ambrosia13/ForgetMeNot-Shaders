@@ -57,7 +57,7 @@
 			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
 			fragmentSource: "forgetmenot:shaders/post/bloom/bloom_merge.frag",
 			samplers: [
-				"u_color", 
+				"u_color",
 				"u_downsampled",
 				"u_upsampled",
 
@@ -75,6 +75,6 @@
 				"u_color",
 				"u_exposure"
 			]
-		}		
+		}
 	]
 }

@@ -1,4 +1,4 @@
-#include forgetmenot:shaders/lib/inc/header.glsl 
+#include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/packing.glsl
 #include forgetmenot:shaders/lib/inc/material.glsl
 
@@ -13,11 +13,11 @@ layout(location = 1) out vec4 depthTarget;
 layout(location = 2) out vec4 normalTarget;
 
 void main() {
-	initGlobals();
-	
-	Material material = unpackMaterial(texture(u_data, texcoord).xyz);
+    initGlobals();
 
-	rtaoTarget = texture(u_rtao, texcoord);
-	depthTarget = texture(u_depth, texcoord);
-	normalTarget = vec4(material.vertexNormal, 1.0);
+    Material material = unpackMaterial(texture(u_data, texcoord).xyz);
+
+    rtaoTarget = texture(u_rtao, texcoord);
+    depthTarget = texture(u_depth, texcoord);
+    normalTarget = vec4(material.vertexNormal, 1.0);
 }

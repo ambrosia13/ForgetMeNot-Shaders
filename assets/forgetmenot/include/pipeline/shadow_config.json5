@@ -39,7 +39,7 @@
 			},
 		}
 	],
-	
+
 	skyShadows: {
 		framebuffer: "shadow",
 		allowEntities: true,

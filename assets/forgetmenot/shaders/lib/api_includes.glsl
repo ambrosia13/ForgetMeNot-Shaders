@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------
-// #include forgetmenot:shaders/lib/api_includes.glsl 
+// #include forgetmenot:shaders/lib/api_includes.glsl
 // --------------------------------------------------------------------------------------------------------
 
 #include frex:shaders/api/header.glsl
@@ -21,4 +21,3 @@
 #include frex:shaders/lib/noise/noise3d.glsl
 #include frex:shaders/lib/noise/cellular2d.glsl
 #include frex:shaders/lib/noise/cellular3d.glsl
-

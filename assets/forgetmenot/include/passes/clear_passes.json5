@@ -45,7 +45,7 @@
 				name: "clear_exposure_copy",
 				framebuffer: "exposure_copy",
 				program: "frex_clear"
-			}	
+			}
 		]
 	},
 
