@@ -90,20 +90,34 @@ void reflections(
         screenSpacePos.z = min(screenSpacePos.z, prevFrameDepth);
 
         vec3 NDC = screenSpacePos * 2.0 - 1.0;
+
         vec4 D = frx_lastProjectionMatrix * vec4(viewReflectDir, 0.0);
-        vec3 windowSpaceDir = normalize(
-                (D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0)
-            );
+        vec3 windowSpaceDir = normalize((D.xyz - NDC.xyz * D.w) * vec3(frxu_size, 1.0));
         vec3 windowSpacePos = screenSpacePos * vec3(frxu_size, 1.0);
-        windowSpacePos.z -= max(0.0, windowSpaceDir.z * 4.0 * exp(material.roughness * 2.0));
-        windowSpacePos.z -= 1.0 / 1000000.0;
+
+        vec3 viewSpacePos = setupViewSpacePos(screenSpacePos);
+        vec3 viewSpaceNormal = mat3(frx_lastViewMatrix) * material.fragNormal;
+
+        // Calculating normal in window space, needed for initial position xy shift
+        vec3 shiftedByX = viewSpacePos + vec3(1.0, 0.0, -viewSpaceNormal.x/viewSpaceNormal.z) * 0.001;
+        vec3 shiftedByY = viewSpacePos + vec3(0.0, 1.0, -viewSpaceNormal.y/viewSpaceNormal.z) * 0.001;
+        shiftedByX = (viewSpaceToScreenSpace(shiftedByX) - screenSpacePos) * vec3(frxu_size, 1.0);
+        shiftedByY = (viewSpaceToScreenSpace(shiftedByY) - screenSpacePos) * vec3(frxu_size, 1.0);
+        vec3 windowSpaceNorm = cross(shiftedByY, shiftedByX) * sign(viewSpaceNormal.z);
+
+        windowSpacePos.z -= abs(windowSpaceDir.z) + 0.000001;
+        windowSpacePos.xy =
+            // center
+            floor(windowSpacePos.xy) + vec2(0.5) +
+            // closer to the pixel border, in direction of window space normal
+            (abs(windowSpaceNorm.x) > abs(windowSpaceNorm.y) ? vec2(sign(windowSpaceNorm.x), 0.0) : vec2(0.0, sign(windowSpaceNorm.y))) * 0.35;
 
         float hitDepth;
 
         bool hit = raytrace(
                 windowSpacePos,
                 windowSpaceDir,
-                40,
+                80,
                 hiDepthLevels,
                 hitDepth
             );
