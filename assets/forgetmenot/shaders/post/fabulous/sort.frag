@@ -100,7 +100,7 @@ void main() {
 		const float angleMultiplier[3] = float[3](
 			1.1, 1.3, 1.5
 		);
-		vec2 refractCoord;
+		vec2 refractCoord = texcoord;
 
 		#define DEPTH_AWARE_REFRACTIONS
 		#ifdef DEPTH_AWARE_REFRACTIONS

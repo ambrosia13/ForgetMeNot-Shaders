@@ -4,17 +4,6 @@
 Contains all-purpose utility functions.
 */
 
-#define FMN_DOT_SELF (dot(x, x))
-float dotSelf(in vec2 x) {
-	return FMN_DOT_SELF;
-}
-float dotSelf(in vec3 x) {
-	return FMN_DOT_SELF;
-}
-float dotSelf(in vec4 x) {
-	return FMN_DOT_SELF;
-}
-
 // Quick clamp functions between 0 and 1
 float clamp01(in float x) {
 	return clamp(x, 0.0, 1.0);
@@ -28,18 +17,6 @@ vec3 clamp01(in vec3 x) {
 vec4 clamp01(in vec4 x) {
 	return clamp(x, vec4(0.0), vec4(1.0));
 }
-
-// "faster" normalize functions - probably shouldn't be used. Tested to have no effect on performance.
-vec2 fNormalize(in vec2 x) {
-	return x * inversesqrt(dot(x, x));
-}
-vec3 fNormalize(in vec3 x) {
-	return x * inversesqrt(dot(x, x));
-}
-vec4 fNormalize(in vec4 x) {
-	return x * inversesqrt(dot(x, x));
-}
-#define normalize(x) (fNormalize(x))
 
 float pow2(float x) {
 	return (x * x);
@@ -80,49 +57,47 @@ vec4 pow4(vec4 x) {
 
 #define rcp(x) (1.0 / (x))
 
-#define FMN_LINSTEP (clamp01((x - a) * rcp(b - a)))
-#define FMN_LINSTEP_FROM_ZERO (clamp01(x * rcp(b)))
 float linearstep(float a, float b, float x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec2 linearstep(float a, float b, vec2 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec3 linearstep(float a, float b, vec3 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec4 linearstep(float a, float b, vec4 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec2 linearstep(vec2 a, vec2 b, vec2 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec3 linearstep(vec3 a, vec3 b, vec3 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 vec4 linearstep(vec4 a, vec4 b, vec4 x) {
-	return FMN_LINSTEP;
+	return clamp01((x - a) * rcp(b - a));
 }
 float linearstepFrom0(float b, float x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec2 linearstepFrom0(float b, vec2 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec3 linearstepFrom0(float b, vec3 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec4 linearstepFrom0(float b, vec4 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec2 linearstepFrom0(vec2 b, vec2 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec3 linearstepFrom0(vec3 b, vec3 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 vec4 linearstepFrom0(vec4 b, vec4 x) {
-	return FMN_LINSTEP_FROM_ZERO;
+	return clamp01(x * rcp(b));
 }
 
 // Angle should be in radians
@@ -237,11 +212,4 @@ float getDistanceToBox(in vec3 viewDir, in vec3 pos, in vec3 normal, out vec2 uv
 	float distToCenter = max(abs(uv.x), abs(uv.y));
 	
 	return distToCenter;
-
-	// float sun = step(distToCenter, 1.5) * step(t, 0.0);
-	// float moon = step(distToCenter, 1.0) * (1.0 - step(t, 0.0));
-
-	// float l = frx_luminance(mainColor.rgb);
-	// mainColor.rgb *= mix(1.0, 3.0 * EMISSION / l, moon * smoothstep(0.15, 1.0, l) * (1.0 - frx_rainGradient));
-	// mainColor.rgb *= mix(vec3(1.0), (3.0 * EMISSION / l) * vec3(1.3, 1.2, 1.0), sun * (1.0 - frx_rainGradient));
 }

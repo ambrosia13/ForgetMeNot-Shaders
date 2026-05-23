@@ -8,7 +8,7 @@ vec3 getSunVector() {
 	return frx_worldIsMoonlit == 0 ? frx_skyLightVector : -frx_skyLightVector;
 }
 vec3 getMoonVector() {
-	return -getSunVector();
+	return frx_worldIsMoonlit == 1 ? frx_skyLightVector : -frx_skyLightVector;
 }
 
 // Should not be used for lighting effects
