@@ -2,6 +2,10 @@
 #include forgetmenot:shaders/lib/inc/noise.glsl
 
 vec3 sampleAtmosphere(in vec3 viewDir, in sampler2D skyLutDay, in sampler2D skyLutNight, in sampler2D transmittanceLut, in sampler2D multiscatteringLut) {
+    if (frx_worldIsOverworld == 0) {
+        return frx_fogColor.rgb;
+    }
+
     vec3 skyViewPos = getSkyViewPos();
     vec3 skyColor;
 
@@ -30,7 +34,7 @@ void drawSunOnAtmosphere(inout vec3 atmosphere, in vec3 viewDir, in sampler2D tr
     vec3 moonVector = getMoonVector();
 
     vec3 sunTransmittance = getValFromTLUT(transmittanceLut, skyViewPos, viewDir);
-    vec3 moonTransmittance = nightAdjust(getValFromTLUT(transmittanceLut, skyViewPos, viewDir));
+    vec3 moonTransmittance = nightAdjust(sunTransmittance);
 
     float distToPlanet = rayIntersectSphere(skyViewPos, viewDir, groundRadiusMM);
 
