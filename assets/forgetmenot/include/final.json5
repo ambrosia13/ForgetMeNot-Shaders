@@ -1,0 +1,67 @@
+/*
+ * The final pass that runs before being presented to the screen.
+ * Responsible for tone mapping and basic color and gamma correction.
+ */
+{
+    images: [
+		{
+			name: "final",
+			lod: 0,
+			internalFormat: "R11F_G11F_B10F",
+			pixelFormat: "RGBA",
+			pixelDataType: "UNSIGNED_BYTE",
+			target: "TEXTURE_2D",
+			texParams: [
+				{ name: "TEXTURE_MIN_FILTER", val: "LINEAR" },
+				{ name: "TEXTURE_MAG_FILTER", val: "LINEAR" },
+				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+			]
+		}
+	],
+
+	framebuffers: [
+		{
+			name: "final",
+			colorAttachments: [ { image: "final" } ]
+		},
+		{
+			name: "copy_to_main",
+			colorAttachments: [ { image: "solid_color", clearColor: 0x00000000 } ]
+		}
+	],
+
+    programs: [
+        {
+			name: "final",
+			vertexSource: "forgetmenot:shaders/post/final.vert",
+			fragmentSource: "forgetmenot:shaders/post/final.frag",
+			samplers: [
+				"u_color",
+				"u_exposure"
+			]
+		}
+    ],
+
+    afterRenderHand: {
+		passes: [
+			{
+				name: "final",
+				program: "final",
+				framebuffer: "copy_to_main",
+				samplerImages: [
+					{
+						default: "final",
+						optionMap: {
+							enable_bloom: [
+								{ from: "true", to: "final" },
+								{ from: "false", to: "taa" }
+							]
+						}
+					},
+					"exposure"
+				],
+			}
+		]
+	}
+}

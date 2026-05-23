@@ -1,4 +1,27 @@
+/*
+ * Renders the shadow map.
+ */
+
 {
+    skyShadows: {
+		framebuffer: "shadow",
+		allowEntities: true,
+		allowParticles: true,
+		supportForwardRender: true,
+		vertexSource: "forgetmenot:shaders/gbuffer/shadow.vert",
+		fragmentSource: "forgetmenot:shaders/gbuffer/shadow.frag",
+		offsetSlopeFactor: 1.1,
+		offsetBiasUnits: 4.0,
+		cascadeRadius: [96, 32, 12]
+	},
+
+	sky: {
+		defaultZenithAngle: {
+			default: 40,
+			option: "sun_angle"
+		}
+	},
+
 	images: [
 		{
 			name: "shadow_map",
@@ -18,6 +41,7 @@
 			pixelFormat: "DEPTH_COMPONENT",
 			pixelDataType: "FLOAT",
 			target: "TEXTURE_2D_ARRAY",
+			// 3 cascades + whole world
 			depth: 4,
 			texParams: [
 				{name: "TEXTURE_MIN_FILTER", val: "LINEAR"},
@@ -39,23 +63,4 @@
 			},
 		}
 	],
-
-	skyShadows: {
-		framebuffer: "shadow",
-		allowEntities: true,
-		allowParticles: true,
-		supportForwardRender: true,
-		vertexSource: "forgetmenot:shaders/gbuffer/shadow.vert",
-		fragmentSource: "forgetmenot:shaders/gbuffer/shadow.frag",
-		offsetSlopeFactor: 1.1,
-		offsetBiasUnits: 4.0,
-		cascadeRadius: [96, 32, 12]
-	},
-
-	sky: {
-		defaultZenithAngle: {
-			default: 40,
-			option: "sun_angle"
-		}
-	}
 }

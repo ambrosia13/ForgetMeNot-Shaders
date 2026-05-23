@@ -1,0 +1,100 @@
+/*
+ * Downsamples the screen to get an estimate of the exposure of the screen, for basic brightness correction.
+ *
+ * For now, piggybacks off of the bloom downsample passes for efficiency.
+ */
+{
+    images: [
+        {
+			name: "exposure",
+			size: 1,
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+			]
+		},
+		{
+			name: "exposure_copy",
+			size: 1,
+			lod: 0,
+			internalFormat: "R32F",
+			pixelFormat: "RED",
+			pixelDataType: "FLOAT",
+			target: "TEXTURE_2D",
+			texParams: [
+				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+			]
+		},
+    ],
+
+    framebuffers: [
+        {
+			name: "exposure",
+			colorAttachments: [ { image: "exposure" } ]
+		},
+		{
+			name: "exposure_copy",
+			colorAttachments: [ { image: "exposure_copy", clearColor: 0x00000000 } ]
+		},
+    ],
+
+    programs: [
+        {
+			name: "exposure",
+			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+			fragmentSource: "forgetmenot:shaders/post/exposure.frag",
+			samplers: [
+				"u_color",
+				"u_previous"
+			]
+		},
+    ],
+
+    onInit: {
+        passes: [
+            {
+    			name: "clear_exposure_copy",
+    			framebuffer: "exposure_copy",
+    			program: "frex_clear"
+    		}
+        ]
+    },
+
+    afterRenderHand: {
+        passes: [
+            {
+				name: "exposure",
+				program: "exposure",
+				framebuffer: "exposure",
+				samplerImages: [
+					"bloom_downsample",
+					"exposure_copy"
+				],
+				width: 1,
+				height: 1,
+				toggleConfig: "enable_bloom"
+			},
+			{
+				name: "exposure_copy",
+				program: "copy",
+				framebuffer: "exposure_copy",
+				samplerImages: [
+					"exposure"
+				],
+				width: 1,
+				height: 1,
+				toggleConfig: "enable_bloom"
+			},
+        ]
+    }
+}

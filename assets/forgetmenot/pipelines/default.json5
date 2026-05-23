@@ -10,15 +10,19 @@
 	runVanillaClear: true,
 
 	include: [
-		"forgetmenot:include/pipeline/options.json5",
-		"forgetmenot:include/pipeline/shadow_config.json5",
-		"forgetmenot:include/pipeline/material_program_config.json5",
-		"forgetmenot:include/composites/material_program.json5",
+	    "forgetmenot:include/common.json5",
+	    "forgetmenot:include/options.json5",
 
-		"forgetmenot:include/composites/common.json5",
-		"forgetmenot:include/composites/oninit.json5",
-		"forgetmenot:include/composites/beforerender.json5",
-		"forgetmenot:include/composites/fabulous.json5",
-		"forgetmenot:include/composites/post.json5"
+		"forgetmenot:include/shadowmap.json5",
+		"forgetmenot:include/material_program.json5",
+
+		"forgetmenot:include/smooth_uniforms.json5",
+		"forgetmenot:include/sky.json5",
+		"forgetmenot:include/hi_z.json5",
+		"forgetmenot:include/fabulous_sort.json5",
+		"forgetmenot:include/exposure_meter.json5",
+		"forgetmenot:include/taa.json5",
+		"forgetmenot:include/bloom.json5",
+		"forgetmenot:include/final.json5",
 	]
 }
