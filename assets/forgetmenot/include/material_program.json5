@@ -3,485 +3,485 @@
  */
 {
     materialProgram: {
-		vertexSource: "forgetmenot:shaders/gbuffer/main.vert",
-		fragmentSource: "forgetmenot:shaders/gbuffer/main.frag",
+        vertexSource: "forgetmenot:shaders/gbuffer/main.vert",
+        fragmentSource: "forgetmenot:shaders/gbuffer/main.frag",
 
-		samplers: [
-			"u_skybox",
-			"u_transmittance",
-			"u_glint",
-			"u_smooth_uniforms"
-		],
-		samplerImages: [
-			"skybox",
-			"transmittance_lut",
-			"minecraft:textures/misc/enchanted_item_glint.png",
-			"smooth_uniforms"
-		]
-	},
+        samplers: [
+            "u_skybox",
+            "u_transmittance",
+            "u_glint",
+            "u_smooth_uniforms"
+        ],
+        samplerImages: [
+            "skybox",
+            "transmittance_lut",
+            "minecraft:textures/misc/enchanted_item_glint.png",
+            "smooth_uniforms"
+        ]
+    },
 
-	drawTargets: {
-		solidTerrain: "solid_gbuffer",
-		translucentTerrain: "translucent_gbuffer",
-		translucentEntity: "entity_gbuffer",
-		weather: "weather_gbuffer",
-		clouds: "clouds_gbuffer",
-		translucentParticles: "particles_gbuffer"
-	},
+    drawTargets: {
+        solidTerrain: "solid_gbuffer",
+        translucentTerrain: "translucent_gbuffer",
+        translucentEntity: "entity_gbuffer",
+        weather: "weather_gbuffer",
+        clouds: "clouds_gbuffer",
+        translucentParticles: "particles_gbuffer"
+    },
 
-	fabulousTargets: {
-		translucent: "translucent_unmanaged",
-		entity: "entity_unmanaged",
-		weather: "weather_unmanaged",
-		clouds: "clouds_unmanaged",
-		particles: "particles_unmanaged"
-	},
+    fabulousTargets: {
+        translucent: "translucent_unmanaged",
+        entity: "entity_unmanaged",
+        weather: "weather_unmanaged",
+        clouds: "clouds_unmanaged",
+        particles: "particles_unmanaged"
+    },
 
-	defaultFramebuffer: "solid_unmanaged",
+    defaultFramebuffer: "solid_unmanaged",
 
-	// clear each material target at the start of each frame
-	beforeWorldRender: {
-		passes: [
-			{
-				name: "clear_solid_gbuffer",
-				framebuffer: "solid_gbuffer",
-				program: "frex_clear",
-			},
-			{
-				name: "clear_translucent_gbuffer",
-				framebuffer: "translucent_gbuffer",
-				program: "frex_clear"
-			},
-			{
-				name: "clear_particles_gbuffer",
-				framebuffer: "particles_gbuffer",
-				program: "frex_clear"
-			},
-			{
-				name: "clear_entity_gbuffer",
-				framebuffer: "entity_gbuffer",
-				program: "frex_clear"
-			},
-			{
-				name: "clear_clouds_gbuffer",
-				framebuffer: "clouds_gbuffer",
-				program: "frex_clear"
-			},
-			{
-				name: "clear_weather_gbuffer",
-				framebuffer: "weather_gbuffer",
-				program: "frex_clear"
-			}
-		]
-	},
+    // clear each material target at the start of each frame
+    beforeWorldRender: {
+        passes: [
+            {
+                name: "clear_solid_gbuffer",
+                framebuffer: "solid_gbuffer",
+                program: "frex_clear",
+            },
+            {
+                name: "clear_translucent_gbuffer",
+                framebuffer: "translucent_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_particles_gbuffer",
+                framebuffer: "particles_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_entity_gbuffer",
+                framebuffer: "entity_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_clouds_gbuffer",
+                framebuffer: "clouds_gbuffer",
+                program: "frex_clear"
+            },
+            {
+                name: "clear_weather_gbuffer",
+                framebuffer: "weather_gbuffer",
+                program: "frex_clear"
+            }
+        ]
+    },
 
-	images: [
-		// Color textures for each target.
-		{
-			name: "solid_color",
-			lod: 0,
-			internalFormat: "RGBA16F",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "solid_data",
-			lod: 0,
-			internalFormat: "RGB32UI",
-			pixelFormat: "RGB_INTEGER",
-			pixelDataType: "UNSIGNED_INT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "translucent_color",
-			lod: 0,
-			internalFormat: "RGBA16F",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "particles_color",
-			lod: 0,
-			internalFormat: "RGBA8",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "entity_color",
-			lod: 0,
-			internalFormat: "RGBA8",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "clouds_color",
-			lod: 0,
-			internalFormat: "RGBA8",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "weather_color",
-			lod: 0,
-			internalFormat: "RGBA8",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
+    images: [
+        // Color textures for each target.
+        {
+            name: "solid_color",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "solid_data",
+            lod: 0,
+            internalFormat: "RGB32UI",
+            pixelFormat: "RGB_INTEGER",
+            pixelDataType: "UNSIGNED_INT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "translucent_color",
+            lod: 0,
+            internalFormat: "RGBA16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "particles_color",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "entity_color",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "clouds_color",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "weather_color",
+            lod: 0,
+            internalFormat: "RGBA8",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
 
-		// Depth textures for each target.
-		{
-			name: "solid_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
-		{
-			name: "translucent_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
-		{
-			name: "particles_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
-		{
-			name: "entity_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
-		{
-			name: "clouds_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
-		{
-			name: "weather_depth",
-			lod: 0,
-			internalFormat: "DEPTH_COMPONENT",
-			pixelFormat: "DEPTH_COMPONENT",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_COMPARE_MODE", val: "NONE" }
-			]
-		},
+        // Depth textures for each target.
+        {
+            name: "solid_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
+        {
+            name: "translucent_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
+        {
+            name: "particles_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
+        {
+            name: "entity_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
+        {
+            name: "clouds_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
+        {
+            name: "weather_depth",
+            lod: 0,
+            internalFormat: "DEPTH_COMPONENT",
+            pixelFormat: "DEPTH_COMPONENT",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_COMPARE_MODE", val: "NONE" }
+            ]
+        },
 
-		// All targets write to these images.
-		{
-			name: "vertex_normal",
-			lod: 0,
-			internalFormat: "RGB8",
-			pixelFormat: "RGB",
-			pixelDataType: "UNSIGNED_INT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "composite_data",
-			lod: 0,
-			internalFormat: "RGB32UI",
-			pixelFormat: "RGB_INTEGER",
-			pixelDataType: "UNSIGNED_INT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		}
-	],
+        // All targets write to these images.
+        {
+            name: "vertex_normal",
+            lod: 0,
+            internalFormat: "RGB8",
+            pixelFormat: "RGB",
+            pixelDataType: "UNSIGNED_INT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "composite_data",
+            lod: 0,
+            internalFormat: "RGB32UI",
+            pixelFormat: "RGB_INTEGER",
+            pixelDataType: "UNSIGNED_INT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        }
+    ],
 
-	framebuffers: [
-		// Solid target
-		{
-			name: "solid_gbuffer",
-			depthAttachment: {
-				image: "solid_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "solid_color",
-					clearColor: 0x00000000
-				},
-				{
-					image: "vertex_normal",
-					clearColor: 0x00000000
-				},
-				{
-					image: "composite_data",
-					clearColor: 0x00000000
-				},
-				{
-					image: "solid_data",
-					clearColor: 0x00000000
-				}
-			]
-		},
-		{
-			name: "solid_unmanaged",
-			depthAttachment: {
-				image: "solid_depth"
-			},
-			colorAttachments: [
-				{
-					image: "solid_color"
-				}
-			]
-		},
+    framebuffers: [
+        // Solid target
+        {
+            name: "solid_gbuffer",
+            depthAttachment: {
+                image: "solid_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "solid_color",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "vertex_normal",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "composite_data",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "solid_data",
+                    clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "solid_unmanaged",
+            depthAttachment: {
+                image: "solid_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "solid_color"
+                }
+            ]
+        },
 
-		// Translucent target
-		{
-			name: "translucent_gbuffer",
-			depthAttachment: {
-				image: "translucent_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "translucent_color",
-					clearColor: 0x00000000
-				},
-				{
-					image: "vertex_normal",
-					clearColor: 0x00000000
-				},
-				{
-					image: "composite_data",
-					clearColor: 0x00000000
-				},
-			]
-		},
-		{
-			name: "translucent_unmanaged",
-			depthAttachment: {
-				image: "translucent_depth"
-			},
-			colorAttachments: [
-				{
-					image: "translucent_color"
-				}
-			]
-		},
+        // Translucent target
+        {
+            name: "translucent_gbuffer",
+            depthAttachment: {
+                image: "translucent_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "translucent_color",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "vertex_normal",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "composite_data",
+                    clearColor: 0x00000000
+                },
+            ]
+        },
+        {
+            name: "translucent_unmanaged",
+            depthAttachment: {
+                image: "translucent_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "translucent_color"
+                }
+            ]
+        },
 
-		// Particles target
-		{
-			name: "particles_gbuffer",
-			depthAttachment: {
-				image: "particles_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "particles_color",
-					clearColor: 0x00000000
-				},
-				{
-					image: "vertex_normal",
-					clearColor: 0x00000000
-				},
-				{
-					image: "composite_data",
-					clearColor: 0x00000000
-				},
-			]
-		},
-		{
-			name: "particles_unmanaged",
-			depthAttachment: {
-				image: "particles_depth"
-			},
-			colorAttachments: [
-				{
-					image: "particles_color"
-				}
-			]
-		},
+        // Particles target
+        {
+            name: "particles_gbuffer",
+            depthAttachment: {
+                image: "particles_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "particles_color",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "vertex_normal",
+                    clearColor: 0x00000000
+                },
+                {
+                    image: "composite_data",
+                    clearColor: 0x00000000
+                },
+            ]
+        },
+        {
+            name: "particles_unmanaged",
+            depthAttachment: {
+                image: "particles_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "particles_color"
+                }
+            ]
+        },
 
-		// Entity target
-		{
-			name: "entity_gbuffer",
-			depthAttachment: {
-				image: "entity_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "entity_color",
-					clearColor: 0x00000000
-				}
-			]
-		},
-		{
-			name: "entity_unmanaged",
-			depthAttachment: {
-				image: "entity_depth"
-			},
-			colorAttachments: [
-				{
-					image: "entity_color"
-				}
-			]
-		},
+        // Entity target
+        {
+            name: "entity_gbuffer",
+            depthAttachment: {
+                image: "entity_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "entity_color",
+                    clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "entity_unmanaged",
+            depthAttachment: {
+                image: "entity_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "entity_color"
+                }
+            ]
+        },
 
-		// Clouds target
-		{
-			name: "clouds_gbuffer",
-			depthAttachment: {
-				image: "clouds_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "clouds_color",
-					clearColor: 0x00000000
-				}
-			]
-		},
-		{
-			name: "clouds_unmanaged",
-			depthAttachment: {
-				image: "clouds_depth"
-			},
-			colorAttachments: [
-				{
-					image: "clouds_color"
-				}
-			]
-		},
+        // Clouds target
+        {
+            name: "clouds_gbuffer",
+            depthAttachment: {
+                image: "clouds_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "clouds_color",
+                    clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "clouds_unmanaged",
+            depthAttachment: {
+                image: "clouds_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "clouds_color"
+                }
+            ]
+        },
 
-		// Weather target
-		{
-			name: "weather_gbuffer",
-			depthAttachment: {
-				image: "weather_depth",
-				clearDepth: 1.0
-			},
-			colorAttachments: [
-				{
-					image: "weather_color",
-					clearColor: 0x00000000
-				}
-			]
-		},
-		{
-			name: "weather_unmanaged",
-			depthAttachment: {
-				image: "weather_depth"
-			},
-			colorAttachments: [
-				{
-					image: "weather_color"
-				}
-			]
-		}
-	]
+        // Weather target
+        {
+            name: "weather_gbuffer",
+            depthAttachment: {
+                image: "weather_depth",
+                clearDepth: 1.0
+            },
+            colorAttachments: [
+                {
+                    image: "weather_color",
+                    clearColor: 0x00000000
+                }
+            ]
+        },
+        {
+            name: "weather_unmanaged",
+            depthAttachment: {
+                image: "weather_depth"
+            },
+            colorAttachments: [
+                {
+                    image: "weather_color"
+                }
+            ]
+        }
+    ]
 }

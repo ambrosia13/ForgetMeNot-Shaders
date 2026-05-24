@@ -4,90 +4,90 @@
 {
     images: [
         {
-			name: "hi_depth_levels",
-			lod: 8,
-			internalFormat: "R32F",
-			pixelFormat: "RED",
-			pixelDataType: "FLOAT",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
+            name: "hi_depth_levels",
+            lod: 8,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "FLOAT",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST_MIPMAP_NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
     ],
 
     framebuffers: [
         {
-			name: "hi_depth_levels_0",
-			colorAttachments: [ { image: "hi_depth_levels", lod: 0 } ]
-		},
-		{
-			name: "hi_depth_levels_2",
-			colorAttachments: [ { image: "hi_depth_levels", lod: 2 } ]
-		},
-		{
-			name: "hi_depth_levels_4",
-			colorAttachments: [ { image: "hi_depth_levels", lod: 4 } ]
-		},
-		{
-			name: "hi_depth_levels_6",
-			colorAttachments: [ { image: "hi_depth_levels", lod: 6 } ]
-		},
-		{
-			name: "hi_depth_levels_8",
-			colorAttachments: [ { image: "hi_depth_levels", lod: 8 } ]
-		},
+            name: "hi_depth_levels_0",
+            colorAttachments: [ { image: "hi_depth_levels", lod: 0 } ]
+        },
+        {
+            name: "hi_depth_levels_2",
+            colorAttachments: [ { image: "hi_depth_levels", lod: 2 } ]
+        },
+        {
+            name: "hi_depth_levels_4",
+            colorAttachments: [ { image: "hi_depth_levels", lod: 4 } ]
+        },
+        {
+            name: "hi_depth_levels_6",
+            colorAttachments: [ { image: "hi_depth_levels", lod: 6 } ]
+        },
+        {
+            name: "hi_depth_levels_8",
+            colorAttachments: [ { image: "hi_depth_levels", lod: 8 } ]
+        },
     ],
 
     programs: [
         {
-			name: "depth_downsample",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
-			samplers: [ "u_depth_mips" ]
-		},
+            name: "depth_downsample",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/fabulous/depth_downsample.frag",
+            samplers: [ "u_depth_mips" ]
+        },
     ],
 
     fabulous: {
         passes: [
             {
-				name: "hi_depth_levels_0",
-				program: "copy",
-				framebuffer: "hi_depth_levels_0",
-				samplerImages: [ "translucent_depth" ],
-				lod: 0
-			},
-			{
-				name: "hi_depth_levels_2",
-				program: "depth_downsample",
-				framebuffer: "hi_depth_levels_2",
-				samplerImages: [ "hi_depth_levels" ],
-				lod: 2
-			},
-			{
-				name: "hi_depth_levels_4",
-				program: "depth_downsample",
-				framebuffer: "hi_depth_levels_4",
-				samplerImages: [ "hi_depth_levels" ],
-				lod: 4
-			},
-			{
-				name: "hi_depth_levels_6",
-				program: "depth_downsample",
-				framebuffer: "hi_depth_levels_6",
-				samplerImages: [ "hi_depth_levels" ],
-				lod: 6
-			},
-			{
-				name: "hi_depth_levels_8",
-				program: "depth_downsample",
-				framebuffer: "hi_depth_levels_8",
-				samplerImages: [ "hi_depth_levels" ],
-				lod: 8
-			}
+                name: "hi_depth_levels_0",
+                program: "copy",
+                framebuffer: "hi_depth_levels_0",
+                samplerImages: [ "translucent_depth" ],
+                lod: 0
+            },
+            {
+                name: "hi_depth_levels_2",
+                program: "depth_downsample",
+                framebuffer: "hi_depth_levels_2",
+                samplerImages: [ "hi_depth_levels" ],
+                lod: 2
+            },
+            {
+                name: "hi_depth_levels_4",
+                program: "depth_downsample",
+                framebuffer: "hi_depth_levels_4",
+                samplerImages: [ "hi_depth_levels" ],
+                lod: 4
+            },
+            {
+                name: "hi_depth_levels_6",
+                program: "depth_downsample",
+                framebuffer: "hi_depth_levels_6",
+                samplerImages: [ "hi_depth_levels" ],
+                lod: 6
+            },
+            {
+                name: "hi_depth_levels_8",
+                program: "depth_downsample",
+                framebuffer: "hi_depth_levels_8",
+                samplerImages: [ "hi_depth_levels" ],
+                lod: 8
+            }
         ]
     }
 }

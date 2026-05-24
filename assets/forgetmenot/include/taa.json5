@@ -4,90 +4,90 @@
 {
     images: [
         {
-			name: "taa",
-			lod: 0,
-			internalFormat: "RGB16F",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "LINEAR" },
-				{ name: "TEXTURE_MAG_FILTER", val: "LINEAR" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "taa_copy",
-			lod: 0,
-			internalFormat: "RGB16F",
-			pixelFormat: "RGBA",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "LINEAR" },
-				{ name: "TEXTURE_MAG_FILTER", val: "LINEAR" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
+            name: "taa",
+            lod: 0,
+            internalFormat: "RGB16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "LINEAR" },
+                { name: "TEXTURE_MAG_FILTER", val: "LINEAR" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "taa_copy",
+            lod: 0,
+            internalFormat: "RGB16F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "LINEAR" },
+                { name: "TEXTURE_MAG_FILTER", val: "LINEAR" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
     ],
 
     framebuffers: [
         {
-			name: "taa",
-			colorAttachments: [ { image: "taa" } ]
-		},
-		{
-			name: "taa_copy",
-			colorAttachments: [ { image: "taa_copy", clearColor: 0x00000000 } ]
-		},
+            name: "taa",
+            colorAttachments: [ { image: "taa" } ]
+        },
+        {
+            name: "taa_copy",
+            colorAttachments: [ { image: "taa_copy", clearColor: 0x00000000 } ]
+        },
     ],
 
     programs: [
         {
-			name: "taa",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/taa.frag",
-			samplers: [
-				"u_color",
-				"u_previous_frame",
-				"u_depth",
-				"u_hand_depth"
-			]
-		},
+            name: "taa",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/taa.frag",
+            samplers: [
+                "u_color",
+                "u_previous_frame",
+                "u_depth",
+                "u_hand_depth"
+            ]
+        },
     ],
 
     afterRenderHand: {
         passes: [
             {
-				name: "taa",
-				program: "taa",
-				framebuffer: "taa",
-				samplerImages: [
-					"solid_color",
-					"taa_copy",
-					"composite_depth",
-					"solid_depth"
-				]
-			},
-			{
-				name: "taa_copy",
-				program: "copy",
-				framebuffer: "taa_copy",
-				samplerImages: [ "taa" ],
-				lod: 0,
-			},
+                name: "taa",
+                program: "taa",
+                framebuffer: "taa",
+                samplerImages: [
+                    "solid_color",
+                    "taa_copy",
+                    "composite_depth",
+                    "solid_depth"
+                ]
+            },
+            {
+                name: "taa_copy",
+                program: "copy",
+                framebuffer: "taa_copy",
+                samplerImages: [ "taa" ],
+                lod: 0,
+            },
         ],
     },
 
     onResize: {
         passes: [
             {
-				name: "clear_taa_copy",
-				framebuffer: "taa_copy",
-				program: "frex_clear"
-			}
+                name: "clear_taa_copy",
+                framebuffer: "taa_copy",
+                program: "frex_clear"
+            }
         ]
     }
 }

@@ -1,28 +1,28 @@
 {
-	nameKey: "pipeline.forgetmenot.name",
-	descriptionKey: "pipeline.forgetmenot.desc",
+    nameKey: "pipeline.forgetmenot.name",
+    descriptionKey: "pipeline.forgetmenot.desc",
 
-	glslVersion: 330,
-	smoothBrightnessBidirectionaly: true,
-	rainSmoothingFrames: 250,
-	thunderSmoothingFrames: 500,
-	enablePBR: true,
-	runVanillaClear: true,
+    glslVersion: 330,
+    smoothBrightnessBidirectionaly: true,
+    rainSmoothingFrames: 250,
+    thunderSmoothingFrames: 500,
+    enablePBR: true,
+    runVanillaClear: true,
 
-	include: [
-	    "forgetmenot:include/common.json5",
-	    "forgetmenot:include/options.json5",
+    include: [
+        "forgetmenot:include/common.json5",
+        "forgetmenot:include/options.json5",
 
-		"forgetmenot:include/shadowmap.json5",
-		"forgetmenot:include/material_program.json5",
+        "forgetmenot:include/shadowmap.json5",
+        "forgetmenot:include/material_program.json5",
 
-		"forgetmenot:include/smooth_uniforms.json5",
-		"forgetmenot:include/sky.json5",
-		"forgetmenot:include/hi_z.json5",
-		"forgetmenot:include/fabulous_sort.json5",
-		"forgetmenot:include/exposure_meter.json5",
-		"forgetmenot:include/taa.json5",
-		"forgetmenot:include/bloom.json5",
-		"forgetmenot:include/final.json5",
-	]
+        "forgetmenot:include/smooth_uniforms.json5",
+        "forgetmenot:include/sky.json5",
+        "forgetmenot:include/hi_z.json5",
+        "forgetmenot:include/fabulous_sort.json5",
+        "forgetmenot:include/exposure_meter.json5",
+        "forgetmenot:include/taa.json5",
+        "forgetmenot:include/bloom.json5",
+        "forgetmenot:include/final.json5",
+    ]
 }

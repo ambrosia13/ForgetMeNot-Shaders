@@ -4,22 +4,22 @@
 {
     programs: [
         {
-			name: "copy",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/copy.frag",
-			samplers: [ "u_color" ]
-		},
+            name: "copy",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/copy.frag",
+            samplers: [ "u_color" ]
+        },
         {
-			name: "downscale",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/post/downscale.frag",
-			samplers: [ "u_color" ]
-		},
+            name: "downscale",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/downscale.frag",
+            samplers: [ "u_color" ]
+        },
         {
-			name: "cube_downsample",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/pre/cube_downsample.frag",
-			samplers: [ "u_cube" ]
-		}
+            name: "cube_downsample",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/pre/cube_downsample.frag",
+            samplers: [ "u_cube" ]
+        }
     ]
 }

@@ -3,90 +3,90 @@
  */
 {
     images: [
-		{
-			name: "smooth_uniforms",
-			lod: 0,
-			width: 4,
-			height: 1,
-			internalFormat: "R32F",
-			pixelFormat: "RED",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-		{
-			name: "smooth_uniforms_copy",
-			lod: 0,
-			width: 4,
-			height: 1,
-			internalFormat: "R32F",
-			pixelFormat: "RED",
-			pixelDataType: "UNSIGNED_BYTE",
-			target: "TEXTURE_2D",
-			texParams: [
-				{ name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
-				{ name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
-				{ name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
-			]
-		},
-	],
+        {
+            name: "smooth_uniforms",
+            lod: 0,
+            width: 4,
+            height: 1,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+        {
+            name: "smooth_uniforms_copy",
+            lod: 0,
+            width: 4,
+            height: 1,
+            internalFormat: "R32F",
+            pixelFormat: "RED",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
+    ],
 
-	framebuffers: [
-		{
-			name: "smooth_uniforms",
-			colorAttachments: [ { image: "smooth_uniforms", lod: 0 } ]
-		},
-		{
-			name: "smooth_uniforms_copy",
-			colorAttachments: [ { image: "smooth_uniforms_copy", lod: 0, clearColor: 0x00000000 } ]
-		},
-	],
+    framebuffers: [
+        {
+            name: "smooth_uniforms",
+            colorAttachments: [ { image: "smooth_uniforms", lod: 0 } ]
+        },
+        {
+            name: "smooth_uniforms_copy",
+            colorAttachments: [ { image: "smooth_uniforms_copy", lod: 0, clearColor: 0x00000000 } ]
+        },
+    ],
 
-	programs: [
-		{
-			name: "smooth_uniforms",
-			vertexSource: "forgetmenot:shaders/post/frame_full.vert",
-			fragmentSource: "forgetmenot:shaders/pre/smoothing.frag",
-			samplers: [
-				"u_smoothing_previous"
-			]
-		},
-	],
+    programs: [
+        {
+            name: "smooth_uniforms",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/pre/smoothing.frag",
+            samplers: [
+                "u_smoothing_previous"
+            ]
+        },
+    ],
 
-	onInit: {
-		passes: [
-			{
-				name: "clear_smooth_uniforms_copy",
-				framebuffer: "smooth_uniforms_copy",
-				program: "frex_clear"
-			},
-		]
-	},
+    onInit: {
+        passes: [
+            {
+                name: "clear_smooth_uniforms_copy",
+                framebuffer: "smooth_uniforms_copy",
+                program: "frex_clear"
+            },
+        ]
+    },
 
-	beforeWorldRender: {
-		passes: [
-			{
-				name: "smooth_uniforms",
-				program: "smooth_uniforms",
-				framebuffer: "smooth_uniforms",
-				width: 4,
-				height: 1,
-				samplerImages: [ "smooth_uniforms_copy" ]
-			},
-			{
-				name: "smooth_uniforms_copy",
-				program: "copy",
-				framebuffer: "smooth_uniforms_copy",
-				width: 4,
-				height: 1,
-				samplerImages: [ "smooth_uniforms" ]
-			},
-		]
-	}
+    beforeWorldRender: {
+        passes: [
+            {
+                name: "smooth_uniforms",
+                program: "smooth_uniforms",
+                framebuffer: "smooth_uniforms",
+                width: 4,
+                height: 1,
+                samplerImages: [ "smooth_uniforms_copy" ]
+            },
+            {
+                name: "smooth_uniforms_copy",
+                program: "copy",
+                framebuffer: "smooth_uniforms_copy",
+                width: 4,
+                height: 1,
+                samplerImages: [ "smooth_uniforms" ]
+            },
+        ]
+    }
 }
