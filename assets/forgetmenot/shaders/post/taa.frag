@@ -13,10 +13,10 @@ layout(location = 0) out vec4 fragColor;
 // tone map and inverse tone map your color texture reads
 // to prevent bright regions from being fuzzy due to TAA
 vec3 toneMap(in vec3 color) {
-    return color; //color / (color + 1.0);
+    return color / (color + 1.0);
 }
 vec3 inverseToneMap(in vec3 color) {
-    return color; //-color / (color - 1.0);
+    return -color / (color - 1.0);
 }
 
 // Neighborhood clipping from "Temporal Reprojection Anti-Aliasing in INSIDE"
@@ -40,7 +40,7 @@ vec3 neighbourhoodClipping(sampler2D currTex, vec3 prevColor) {
     for (int x = -NEIGHBORHOOD_SIZE; x <= NEIGHBORHOOD_SIZE; x++) {
         for (int y = -NEIGHBORHOOD_SIZE; y <= NEIGHBORHOOD_SIZE; y++) {
             vec3 color = texelFetch(currTex, ivec2(gl_FragCoord.xy) + ivec2(x, y), 0).rgb;
-            color = toneMap(color);
+
             minColor = min(minColor, color);
             maxColor = max(maxColor, color);
         }
@@ -89,14 +89,9 @@ void main() {
 
     vec3 viewPos = setupSceneSpacePos(screenPos);
     vec3 positionDifference = frx_cameraPos - frx_lastCameraPos;
-    vec3 lastScreenPos = lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
+    vec3 lastScreenPos = handDepth < 0.99 ? screenPos : lastFrameSceneSpaceToScreenSpace(viewPos + positionDifference);
 
-    // Fixes hand smearing
-    lastScreenPos = mix(lastScreenPos, screenPos, step(handDepth, 0.99));
-
-    color.rgb = toneMap(color.rgb);
     previousColor = textureCatmullRom(u_previous_frame, lastScreenPos.xy, vec2(frxu_size));
-    previousColor.rgb = toneMap(previousColor.rgb);
 
     vec3 tempColor = neighbourhoodClipping(u_color, previousColor.rgb);
 
@@ -109,7 +104,6 @@ void main() {
     color.rgb = mix(color.rgb, tempColor, blendFactor);
     #endif
 
-    color.rgb = inverseToneMap(color.rgb);
     fragColor = color;
     #else
     fragColor = texture(u_color, texcoord);

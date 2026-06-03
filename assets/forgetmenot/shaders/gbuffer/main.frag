@@ -97,7 +97,7 @@ void resolveSeasonColoring(in vec3 worldSpacePos) {
 
 void resolveLightmap() {
     // If the current dimension is non-vanilla, use MC's lightmap.
-    if (fmn_isModdedDimension) {
+    if (isModdedDimension()) {
         lightmap = texture(frxs_lightmap, frx_vertexLight.xy).rgb;
         lightmap *= mix(frx_vertexLight.z, 1.0, clamp01(float(frx_matDisableAo) + fmn_sssAmount));
 
@@ -108,10 +108,10 @@ void resolveLightmap() {
 }
 
 void applyRainEffects(in vec3 worldSpacePos) {
-    if (fmn_rainFactor > 0.0 && fmn_isWater == 0) {
+    if (getRainFactor() > 0.0 && fmn_isWater == 0) {
         float porosity = (frx_fragRoughness) * step(frx_fragReflectance, 0.999);
 
-        float rainReflectionFactor = linearstep(0.0, 0.5, fmn_rainFactor) * step(0.95, frx_vertexNormal.y);
+        float rainReflectionFactor = linearstep(0.0, 0.5, getRainFactor()) * step(0.95, frx_vertexNormal.y);
         float puddleNoise = fbmHash(worldSpacePos.xz * 0.5, 3, 0.0);
         puddleNoise += hash13(mod(worldSpacePos * 20.0, 100.0)) * 0.2 - 0.1;
         puddleNoise *= smoothstep(7.0 / 8.0, 15.0 / 16.0, frx_fragLight.y);
@@ -224,13 +224,13 @@ void resolveMaterials() {
 }
 
 void frx_pipelineFragment() {
-    initGlobals();
+    // initGlobals();
     resolveMaterials();
 
     vec4 color = frx_fragColor;
 
     // A non-vanilla dimension is loaded, we don't want to touch lighting.
-    if (fmn_isModdedDimension) {
+    if (isModdedDimension()) {
         color.rgb *= lightmap;
         color.rgb = mix(color.rgb, pow(frx_fogColor.rgb, gamma), frx_smootherstep(frx_fogStart, frx_fogEnd, length(frx_vertex.xyz)));
     } else if ((!frx_renderTargetSolid || frx_isHand)) {

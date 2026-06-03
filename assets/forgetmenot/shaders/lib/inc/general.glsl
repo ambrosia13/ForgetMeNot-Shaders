@@ -27,3 +27,11 @@ float getWorldTime() {
 int getWorldTicks() {
     return int(getWorldTime() * 24000.0);
 }
+
+float getRainFactor() {
+    return frx_smoothedRainGradient * 0.5 + frx_smoothedThunderGradient * 0.5;
+}
+
+bool isModdedDimension() {
+    return (frx_worldIsOverworld | frx_worldIsNether | frx_worldIsEnd) == 0;
+}
