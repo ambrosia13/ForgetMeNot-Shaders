@@ -169,7 +169,7 @@ void main() {
     // Water effects
     if (frx_cameraInWater == 1) {
         float waterFogDistance = length(sceneSpacePos);
-        vec3 waterFogColor = WATER_COLOR;
+        vec3 waterFogColor = WATER_COLOR * max(0.001, frx_smoothedEyeBrightness.y);
 
         composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.2));
         composite = mix(waterFogColor * atmosphereBrightness * 1.5, composite, exp(-waterFogDistance * WATER_DIRT_AMOUNT));
@@ -190,7 +190,7 @@ void main() {
         vec3 waterFogColor = translucentColor.rgb;
 
         // Water absorption
-        composite *= mix(normalize(waterFogColor), vec3(1.0), exp(-waterFogDistance * 0.5));
+        composite *= mix(waterFogColor, vec3(1.0), exp(-waterFogDistance * 0.5));
 
         // Water scattering
         float waterFogTransmittance = exp(-waterFogDistance * (WATER_DIRT_AMOUNT));

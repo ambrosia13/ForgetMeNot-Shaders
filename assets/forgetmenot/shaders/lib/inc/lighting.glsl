@@ -311,7 +311,7 @@ vec3 basicLighting(
             );
         shadowFactor *= smoothstep(0.0, 0.5, skyLight) * step(0.01, NdotL);
 
-        if (isWater > 0.5) shadowFactor = 1.0;
+        if (isWater > 0.5) shadowFactor = skyLight;
 
         directLighting *= (NdotL * shadowFactor + sunBounceAmount) * (1.0 - pow4(1.0 - frx_skyLightTransitionFactor));
     }

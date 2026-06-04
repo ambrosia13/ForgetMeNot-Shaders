@@ -64,7 +64,7 @@ void reflections(
 
     vec3 reflectance = getReflectance(vec3(material.f0 * material.f0), clamp01(dot(-material.fragNormal, viewDir)), material.roughness);
 
-    vec3 ambientReflectionColor = WATER_COLOR * atmosphereBrightness;
+    vec3 ambientReflectionColor = mix(caveFogColor, WATER_COLOR * atmosphereBrightness, material.skyLight);
     if (frx_cameraInWater == 0) {
         ambientReflectionColor = textureLod(skyboxSampler, cleanReflectDir, 7.0 * rcp(inversesqrt(material.roughness))).rgb * material.skyLight;
         drawSunOnAtmosphere(ambientReflectionColor, cleanReflectDir, u_transmittance);
@@ -99,8 +99,8 @@ void reflections(
         vec3 viewSpaceNormal = mat3(frx_lastViewMatrix) * material.fragNormal;
 
         // Calculating normal in window space, needed for initial position xy shift
-        vec3 shiftedByX = viewSpacePos + vec3(1.0, 0.0, -viewSpaceNormal.x/viewSpaceNormal.z) * 0.001;
-        vec3 shiftedByY = viewSpacePos + vec3(0.0, 1.0, -viewSpaceNormal.y/viewSpaceNormal.z) * 0.001;
+        vec3 shiftedByX = viewSpacePos + vec3(1.0, 0.0, -viewSpaceNormal.x / viewSpaceNormal.z) * 0.001;
+        vec3 shiftedByY = viewSpacePos + vec3(0.0, 1.0, -viewSpaceNormal.y / viewSpaceNormal.z) * 0.001;
         shiftedByX = (viewSpaceToScreenSpace(shiftedByX) - screenSpacePos) * vec3(frxu_size, 1.0);
         shiftedByY = (viewSpaceToScreenSpace(shiftedByY) - screenSpacePos) * vec3(frxu_size, 1.0);
         vec3 windowSpaceNorm = cross(shiftedByY, shiftedByX) * sign(viewSpaceNormal.z);
@@ -109,8 +109,8 @@ void reflections(
         windowSpacePos.xy =
             // center
             floor(windowSpacePos.xy) + vec2(0.5) +
-            // closer to the pixel border, in direction of window space normal
-            (abs(windowSpaceNorm.x) > abs(windowSpaceNorm.y) ? vec2(sign(windowSpaceNorm.x), 0.0) : vec2(0.0, sign(windowSpaceNorm.y))) * 0.35;
+                // closer to the pixel border, in direction of window space normal
+                (abs(windowSpaceNorm.x) > abs(windowSpaceNorm.y) ? vec2(sign(windowSpaceNorm.x), 0.0) : vec2(0.0, sign(windowSpaceNorm.y))) * 0.35;
 
         float hitDepth;
 
