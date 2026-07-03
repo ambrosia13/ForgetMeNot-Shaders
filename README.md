@@ -3,15 +3,11 @@
 **Forget-me-not** is a semi-realistic pipeline shader for the [Can-Pipe](https://modrinth.com/mod/can-pipe) mod, with the goal of using a wide variety of visual effects for a diverse Minecraft experience.
 
 **Can-Pipe** is a continuation of Canvas, a client-side renderer mod that uses shaders for advanced rendering. Its rendering system is entirely different from Optifine, Aperture, Iris, and Sodium; thus, it will not work with any of these mods.
-**Can-Pipe** is a continuation of Canvas, a client-side renderer mod that uses shaders for advanced rendering. Its rendering system is entirely different from Optifine, Aperture, Iris, and Sodium; thus, it will not work with any of these mods.
 
 See the `how to use` section for installation instructions. 
 
 ## notice
 
-If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html), so please make sure to read over its terms if you use any of Forget-me-not's original code or distribute it.
-
-Additionally, the only places Forget-me-not is officially released to are the [GitHub](https://github.com/ambrosia13/ForgetMeNot-Shaders) and [Modrinth](https://modrinth.com/shader/forgetmenot) pages. If you're finding Forget-me-not on a mod rehosting site like 9minecraft, it's much safer to just download it from the official (ad-free!) pages instead.
 If you're a developer or mod hoster, Forget-me-not is licensed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html), so please make sure to read over its terms if you use any of Forget-me-not's original code or distribute it.
 
 Additionally, the only places Forget-me-not is officially released to are the [GitHub](https://github.com/ambrosia13/ForgetMeNot-Shaders) and [Modrinth](https://modrinth.com/shader/forgetmenot) pages. If you're finding Forget-me-not on a mod rehosting site like 9minecraft, it's much safer to just download it from the official (ad-free!) pages instead.
@@ -30,7 +26,7 @@ Additionally, the only places Forget-me-not is officially released to are the [G
 
 6. Navigate to `Options/Video Settings/Quality & Performance/Pipeline` and keep clicking until the pipeline you want to use is selected.
 
-> Note: You can also get in-development versions of Forget-me-not on [GitHub](https://github.com/ambrosia13/ForgetMeNot-Shaders)! The easiest way is to `git clone` the repository into your resource pack folder directly, but you can also download the repository as a `.zip` file (in which case you'll have to extract it). 
+> Note: You can also get in-development versions of Forget-me-not on [GitHub](https://github.com/ambrosia13/ForgetMeNot-Shaders)! The easiest way is to `git clone` the repository into your resource pack folder directly, but you can also download the repository as a `.zip` file (in which case you may have to extract it). 
 
 ## feature highlights
 
@@ -50,7 +46,6 @@ Additionally, the only places Forget-me-not is officially released to are the [G
 
 ## credits
 
-Forget-me-not wouldn't have gotten as far as it did without the support of various people across the Canvas and shaderLABS communities. Special thanks to:
 Forget-me-not wouldn't have gotten as far as it did without the support of various people across the Canvas and shaderLABS communities. Special thanks to:
 
 - [fewizz](https://github.com/fewizz), for bringing Canvas into modern versions as the developer of Can-Pipe! Additionally, they made many invaluable contributions to Forget-me-not itself, including the high quality raytracer and countless bug fixes and reports
