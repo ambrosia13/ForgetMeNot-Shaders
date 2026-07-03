@@ -26,18 +26,24 @@ void main() {
     vec2 jitteredCoord = gl_FragCoord.xy;
     vec3 viewDir = normalize(setupSceneSpacePos(jitteredCoord / frxu_size, 1.0));
 
-    // fragColor.rgb = getSkyAndClouds(
-    // 	viewDir,
-    // 	u_transmittance,
-    // 	u_sky_day,
-    // 	u_sky_night,
-    // 	u_moon_texture,
-    // 	true // stars
-    // );
+    vec3 atmosphere = getAtmosphereColor(viewDir, u_sky_day, u_sky_night, u_transmittance, u_multiscattering);
 
-    vec3 atmosphere = sampleAtmosphere(viewDir, u_sky_day, u_sky_night, u_transmittance, u_multiscattering);
-    drawSunOnAtmosphere(atmosphere, viewDir, u_transmittance);
-    drawStarsOnAtmosphere(atmosphere, viewDir, u_transmittance);
+    if (frx_worldHasSkylight == 1) {
+        drawSunOnAtmosphere(atmosphere, viewDir, u_transmittance);
+        drawStarsOnAtmosphere(atmosphere, viewDir, u_transmittance);
+
+        float groundDist = rayIntersectSphere(getSkyViewPos(), viewDir, groundRadiusMM);
+
+        drawCloudsOnAtmosphere(
+            atmosphere,
+            viewDir,
+            getCumulusCloudsTransmittanceScattering(viewDir, groundDist),
+            getCirrusCloudsTransmittanceScattering(viewDir, groundDist),
+            u_transmittance,
+            u_sky_day,
+            u_sky_night
+        );
+    }
 
     fragColor = vec4(atmosphere, 1.0);
 }

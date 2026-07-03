@@ -172,7 +172,7 @@ vec3 getSkyLightColor(
     #define DIRECTIONAL_SKYLIGHT
     #ifdef DIRECTIONAL_SKYLIGHT
     // Samples the cube map in the direction of the normal
-    ambientLighting = textureLod(skybox, fragNormal, 7).rgb;
+    ambientLighting = textureLod(skybox, fragNormal, 7).rgb / 4.0;
     #else
     // Averages the color of all faces
     ambientLighting =
@@ -342,7 +342,7 @@ vec3 basicLighting(
 
     if (AMBIENT_BRIGHTNESS != 0.0) {
         // Tiny point light around the player so caves aren't completely dark
-        totalLighting = max(totalLighting, vec3(0.05 * (1.0 - skyLight)) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
+        totalLighting = max(totalLighting, vec3(0.01 * (1.0 - skyLight)) * exp(-length((sceneSpacePos + frx_cameraPos - frx_eyePos - vec3(0.0, 1.0, 0.0)) * 0.75)));
     }
 
     // Night vision

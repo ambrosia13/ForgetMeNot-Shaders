@@ -194,18 +194,6 @@ float smoothHash(in vec2 st) {
         u.y
     );
 }
-vec2 curlNoise(in vec2 st) {
-    const float eps = 1e-3;
-
-    float centerNoise = smoothHash(st);
-    float noiseUp = smoothHash(st + vec2(st.x, st.y + eps));
-    float noiseRight = smoothHash(st + vec2(st.x + eps, st.y));
-
-    float dx = (noiseUp - centerNoise) / eps;
-    float dy = (noiseRight - centerNoise) / eps;
-
-    return vec2(dx, dy);
-}
 
 float fbmHash(vec2 uv, int octaves, float lacunarity, float t) {
     float noise = 0.01;
@@ -231,7 +219,7 @@ float fbmCellular(vec2 uv, int octaves, float lacunarity, float t) {
     float amp = 0.5;
 
     for (int i = 0; i < octaves; i++) {
-        noise += amp * (1.0 - cellular2x2(uv).x);
+        noise += amp * (1.0 - cellular(uv).x);
         uv = ROTATE_30_DEGREES * uv * lacunarity + mod(frx_renderSeconds * t, 1000.0);
         amp *= 0.5;
     }

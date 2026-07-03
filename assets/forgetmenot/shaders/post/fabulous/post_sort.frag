@@ -264,9 +264,11 @@ void main() {
         if (!fmn_isModdedDimension) {
             vec3 scattering = vec3(0.0);
 
-            float fogMultiplier = mix(1.0 + 2.0 * frx_smoothedEyeBrightness.y, 15.0, float(frx_worldIsNether));
+            float fogMultiplier = mix(1.0 + 2.0 * frx_smoothedEyeBrightness.y, 1500.0, float(frx_worldIsNether));
             fogMultiplier = mix(fogMultiplier, 0.0, float(frx_cameraInWater));
-            float transmittance = exp(-blockDistance * minecraftToAtmosphereUnitScale * 1e-6);
+            float transmittance = frx_worldIsOverworld == 1 
+                ? exp(-blockDistance * minecraftToAtmosphereUnitScale * 1e-6)
+                : exp(-blockDistance * 0.01);
 
             if (frx_worldIsOverworld == 1) {
                 float undergroundFactor = linearstep(0.0, 0.5, frx_smoothedEyeBrightness.y);
@@ -284,8 +286,8 @@ void main() {
 
             // color += scattering * transmittance;
             // color = vec3(scattering);
-            color += scattering;
-            //color = mix(scattering, color, transmittance);
+            // color = color * transmittance + scattering;
+            color = mix(scattering, color, transmittance);
         } else {
             color = mix(color, pow(frx_fogColor.rgb, vec3(2.2)), smoothstep(frx_fogStart, frx_fogEnd, blockDistance));
         }
