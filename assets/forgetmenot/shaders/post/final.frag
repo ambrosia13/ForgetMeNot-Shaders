@@ -1,12 +1,12 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 #include forgetmenot:shaders/lib/inc/exposure.glsl
 #include forgetmenot:shaders/lib/inc/noise.glsl
+#include forgetmenot:shaders/lib/inc/palette.glsl
 
 uniform sampler2D u_color;
 uniform sampler2D u_exposure;
 
 in vec2 texcoord;
-in float exposure;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -59,80 +59,32 @@ void main() {
 
     vec3 color = texture(u_color, texcoord).rgb;
 
-    // Purkinje effect
-    float purkinjeFactor = clamp01(1.0 - exp2(-frx_luminance(color * 40.0)));
-    color = mix(color, saturation(color, 0.5) + PURKINJE_LIFT, (1.0 - purkinjeFactor) * PURKINJE_AMOUNT);
+    float luminance = texelFetch(u_exposure, ivec2(0), 0).r;
 
-    #ifdef ENABLE_BLOOM
-    color *= getExposureValue(exposure); // * getExposureProfile().exposureMultiplier;
-    #endif
+    float exposureBias = 0.25;
+    float minExposure = 0.0;
+    float maxExposure = 1000.0;
+    float exposureMultiplier = 1.0;
 
-    // #define WHITE_POINT 8.0
+    if (frx_worldIsNether == 1) {
+        exposureBias = 0.2;
+        minExposure = MIN_EXPOSURE_NETHER;
+        maxExposure = MAX_EXPOSURE_NETHER;
+        exposureMultiplier = EXPOSURE_MULTIPLIER_NETHER;
+    }
 
-    // //#define DEBUG_POST_PROCESSING
-    // #ifdef DEBUG_POST_PROCESSING
-    // 	float _contrast = 1.0;
-    // 	float _saturation = 1.0;
-    // 	float _vibrance = 1.0;
+    if (frx_worldIsEnd == 1) {
+        exposureBias = 0.2;
+        minExposure = MIN_EXPOSURE_NETHER;
+        maxExposure = MAX_EXPOSURE_NETHER;
+        exposureMultiplier = EXPOSURE_MULTIPLIER_NETHER;
+    }
 
-    // 	vec3 lift = vec3(0.0, 0.0, 0.0);
-    // 	vec3 gamma = vec3(1.0, 1.0, 1.0);
-    // 	vec3 gain = vec3(1.0, 1.0, 1.0);
+    color *= getExposureValue(luminance, 0.25, 0.0, 1000.0, 1.0);
 
-    // 	#define CONTRAST _contrast
-    // 	#define SATURATION _saturation
-    // 	#define VIBRANCE _vibrance
-
-    // 	#define LIFT_R lift.r
-    // 	#define LIFT_G lift.g
-    // 	#define LIFT_B lift.b
-
-    // 	#define GAMMA_R gamma.r
-    // 	#define GAMMA_G gamma.g
-    // 	#define GAMMA_B gamma.b
-
-    // 	#define GAIN_R gain.r
-    // 	#define GAIN_G gain.g
-    // 	#define GAIN_B gain.b
-    // #endif
-
-    // #if CAMERA_PRESET == PRESET_MOODY
-    // 	#define WHITE_POINT 4.0
-
-    // 	#define CONTRAST 1.15
-    // 	#define SATURATION 0.85
-    // 	#define VIBRANCE 1.0
-
-    // 	vec3 lift = vec3(0.0, 0.0, 0.0);
-    // 	vec3 gamma = vec3(1.0, 1.0, 1.0);
-    // 	vec3 gain = vec3(1.0, 1.0, 1.0);
-
-    // 	#define LIFT_R lift.r
-    // 	#define LIFT_G lift.g
-    // 	#define LIFT_B lift.b
-
-    // 	#define GAMMA_R gamma.r
-    // 	#define GAMMA_G gamma.g
-    // 	#define GAMMA_B gamma.b
-
-    // 	#define GAIN_R gain.r
-    // 	#define GAIN_G gain.g
-    // 	#define GAIN_B gain.b
-    // #endif
-
-    // #ifdef ENABLE_POST_PROCESSING
-    // 	// Contrast in log-scale to preserve more color detail
-    // 	color = log(color);
-    // 	color = contrast(color, CONTRAST);
-    // 	color = exp(color);
-
-    // 	color = saturation(color, SATURATION);
-    // #endif
-
-    //color *= 0.001;
-
+    #undef ACES_TONEMAP
     #ifndef ACES_TONEMAP
-    color = lottes(color * 0.45, WHITE_POINT);
+    color = lottes(color * 0.45, 8.0);
     #else
     color = frx_toneMap(color);
     #endif

@@ -1,10 +1,23 @@
 /*
  * Downsamples the screen to get an estimate of the exposure of the screen, for basic brightness correction.
- *
- * For now, piggybacks off of the bloom downsample passes for efficiency.
- */
+] */
 {
     images: [
+        {
+            name: "exposure_downsample",
+            lod: 7,
+            internalFormat: "R32F",
+            pixelFormat: "RGBA",
+            pixelDataType: "UNSIGNED_BYTE",
+            target: "TEXTURE_2D",
+            texParams: [
+                // "nearest" is fine here, since we sample each pixel at lod 7 manually, so no blending is needed
+                { name: "TEXTURE_MIN_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_MAG_FILTER", val: "NEAREST" },
+                { name: "TEXTURE_WRAP_S", val: "CLAMP_TO_EDGE" },
+                { name: "TEXTURE_WRAP_T", val: "CLAMP_TO_EDGE" }
+            ]
+        },
         {
             name: "exposure",
             size: 1,
@@ -39,6 +52,38 @@
 
     framebuffers: [
         {
+            name: "exposure_d0",
+            colorAttachments: [ { image: "exposure_downsample", lod: 0 } ]
+        },
+        {
+            name: "exposure_d1",
+            colorAttachments: [ { image: "exposure_downsample", lod: 1 } ]
+        },
+        {
+            name: "exposure_d2",
+            colorAttachments: [ { image: "exposure_downsample", lod: 2 } ]
+        },
+        {
+            name: "exposure_d3",
+            colorAttachments: [ { image: "exposure_downsample", lod: 3 } ]
+        },
+        {
+            name: "exposure_d4",
+            colorAttachments: [ { image: "exposure_downsample", lod: 4 } ]
+        },
+        {
+            name: "exposure_d5",
+            colorAttachments: [ { image: "exposure_downsample", lod: 5 } ]
+        },
+        {
+            name: "exposure_d6",
+            colorAttachments: [ { image: "exposure_downsample", lod: 6 } ]
+        },
+        {
+            name: "exposure_d7",
+            colorAttachments: [ { image: "exposure_downsample", lod: 7 } ]
+        },
+        {
             name: "exposure",
             colorAttachments: [ { image: "exposure" } ]
         },
@@ -50,11 +95,23 @@
 
     programs: [
         {
+            name: "luminance_blit",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/luminance_blit.frag",
+            samplers: [ "u_color" ]
+        },
+        {
+            name: "exposure_downsample",
+            vertexSource: "forgetmenot:shaders/post/frame_full.vert",
+            fragmentSource: "forgetmenot:shaders/post/luminance_downsample.frag",
+            samplers: [ "u_luminance" ]
+        },
+        {
             name: "exposure",
             vertexSource: "forgetmenot:shaders/post/frame_full.vert",
             fragmentSource: "forgetmenot:shaders/post/exposure.frag",
             samplers: [
-                "u_color",
+                "u_luminance",
                 "u_previous"
             ]
         },
@@ -73,11 +130,66 @@
     afterRenderHand: {
         passes: [
             {
+                name: "exposure_luminance_blit",
+                program: "luminance_blit",
+                framebuffer: "exposure_d0",
+                samplerImages: [ "taa_copy" ],
+            },
+            {
+                name: "exposure_d1",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d1",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 1,
+            },
+            {
+                name: "exposure_d2",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d2",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 2,
+            },
+            {
+                name: "exposure_d3",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d3",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 3,
+            },
+            {
+                name: "exposure_d4",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d4",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 4,
+            },
+            {
+                name: "exposure_d5",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d5",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 5,
+            },
+            {
+                name: "exposure_d6",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d6",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 6,
+            },
+            {
+                name: "exposure_d7",
+                program: "exposure_downsample",
+                framebuffer: "exposure_d7",
+                samplerImages: [ "exposure_downsample" ],
+                lod: 7,
+            },
+            {
                 name: "exposure",
                 program: "exposure",
                 framebuffer: "exposure",
                 samplerImages: [
-                    "bloom_downsample",
+                    "exposure_downsample",
                     "exposure_copy"
                 ],
                 width: 1,

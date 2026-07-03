@@ -1,6 +1,6 @@
 #include forgetmenot:shaders/lib/inc/header.glsl
 
-uniform sampler2D u_color;
+uniform sampler2D u_luminance;
 uniform sampler2D u_previous;
 
 in vec2 texcoord;
@@ -13,13 +13,12 @@ void main() {
     avgLuminance = 0.0;
     const int luminanceLod = 7;
 
-    vec2 size = textureSize(u_color, luminanceLod);
+    vec2 size = textureSize(u_luminance, luminanceLod);
+    ivec2 isize = ivec2(floor(size));
 
-    for (int x = 0; x < size.x; x++) {
-        for (int y = 0; y < size.y; y++) {
-            float currentSample = frx_luminance(texelFetch(u_color, ivec2(x, y), luminanceLod).rgb);
-            //currentSample = min(currentSample, 2.0);
-
+    for (int x = 0; x < isize.x; x++) {
+        for (int y = 0; y < isize.y; y++) {
+            float currentSample = texelFetch(u_luminance, ivec2(x, y), luminanceLod).r;
             avgLuminance += currentSample;
         }
     }

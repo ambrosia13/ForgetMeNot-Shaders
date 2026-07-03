@@ -29,12 +29,9 @@ ExposureProfile getExposureProfile() {
     return getOverworldExposureProfile();
 }
 
-float getExposureValue(const in ExposureProfile ep, const in float luminance) {
-    float ev100 = log2(luminance * 100.0 * ep.bias / 12.5);
+float getExposureValue(float luminance, float bias, float minExposure, float maxExposure, float multiplier) {
+    float ev100 = log2(luminance * 100.0 * bias / 12.5);
     float exposureValue = 1.0 / (1.2 * exp2(ev100));
 
-    return clamp(exposureValue, ep.minExposure, ep.maxExposure);
-}
-float getExposureValue(const in float luminance) {
-    return getExposureValue(getDefaultExposureProfile(), luminance);
+    return multiplier * clamp(exposureValue, minExposure, maxExposure);
 }

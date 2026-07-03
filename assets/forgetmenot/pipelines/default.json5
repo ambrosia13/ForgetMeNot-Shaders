@@ -20,9 +20,9 @@
         "forgetmenot:include/sky.json5",
         "forgetmenot:include/hi_z.json5",
         "forgetmenot:include/fabulous_sort.json5",
-        "forgetmenot:include/exposure_meter.json5",
         "forgetmenot:include/taa.json5",
         "forgetmenot:include/bloom.json5",
+        "forgetmenot:include/exposure_meter.json5",
         "forgetmenot:include/final.json5",
     ]
 }

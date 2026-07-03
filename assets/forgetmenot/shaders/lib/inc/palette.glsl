@@ -14,3 +14,10 @@ const vec3 autumnTreeColor2 = vec3(1.000, 0.141, 0.158) * 1.5;
 
 const vec3 winterFoliageColor = vec3(0.828, 1.000, 0.844);
 const vec3 winterTreeColor = vec3(1.000, 0.874, 0.912);
+
+const float sunDiskBrightness = 1000.0;
+
+const float overworldMinLuminance = 0.05;
+const float overworldMaxLuminance = 2.0;
+const float netherMinLuminance = 0.2;
+const float netherMaxLuminance = 1.5;
